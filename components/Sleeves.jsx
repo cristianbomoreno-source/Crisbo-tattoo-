@@ -30,24 +30,24 @@ export default function Sleeves() {
   return (
     <section
       ref={sectionRef}
-      className="py-20 md:py-32 lg:py-40 px-5 md:px-8 lg:px-12 bg-sage"
+      className="py-section px-5 md:px-8 lg:px-12 bg-accent"
     >
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-container mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left - Content */}
           <div>
-            <h2 className="reveal font-display text-section uppercase leading-[0.9] text-bg">
-              ESTAS PENSANDO<br />
+            <h2 className="reveal font-display text-display-lg uppercase text-bg">
+              ¿ESTÁS PENSANDO<br />
               EN UNA MANGA?
             </h2>
 
             <div className="reveal delay-1 mt-8 md:mt-12 space-y-6">
               <p className="text-bg/90 text-lg md:text-xl leading-relaxed">
-                Una manga no deberia construirse tatuaje por tatuaje sin planificacion.
+                Una manga no debería construirse tatuaje por tatuaje sin planificación.
               </p>
               <p className="text-bg/70 leading-relaxed">
-                Disenamos primero la historia, los elementos principales, la composicion
-                y como todo va a recorrer el brazo antes de comenzar.
+                Diseñamos primero la historia, los elementos principales, la composición
+                y cómo todo va a recorrer el brazo antes de comenzar.
               </p>
             </div>
 
@@ -55,9 +55,9 @@ export default function Sleeves() {
               href="https://wa.me/573202107769"
               target="_blank"
               rel="noopener noreferrer"
-              className="reveal delay-2 inline-flex items-center gap-2 mt-10 bg-bg text-sage text-sm font-medium tracking-wider px-8 py-4 hover:bg-ink transition-colors group"
+              className="reveal delay-2 inline-flex items-center gap-2 mt-10 bg-bg text-accent text-sm font-medium tracking-wider px-8 py-4 hover:bg-ink transition-colors group"
             >
-              DESCUBRE COMO DISENAMOS UNA MANGA
+              DESCUBRE CÓMO DISEÑAMOS UNA MANGA
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
@@ -68,12 +68,12 @@ export default function Sleeves() {
               {/* Document Header */}
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-bg/20">
                 <div>
-                  <p className="text-[10px] tracking-[0.2em] text-bg/60 uppercase">Metodologia</p>
+                  <p className="text-[10px] tracking-[0.2em] text-bg/60 uppercase">Metodología</p>
                   <p className="font-display text-2xl text-bg mt-1">SLEEVE PROJECT</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] tracking-[0.2em] text-bg/60 uppercase">Crisbo Tattoo</p>
-                  <p className="text-sm text-bg/80">Bogota, CO</p>
+                  <p className="text-sm text-bg/80">Bogotá, CO</p>
                 </div>
               </div>
 
@@ -83,21 +83,21 @@ export default function Sleeves() {
                   <span className="font-display text-2xl text-bg/40">01</span>
                   <div>
                     <p className="font-medium text-bg">Narrativa</p>
-                    <p className="text-sm text-bg/70">Definimos la historia que contara tu manga</p>
+                    <p className="text-sm text-bg/70">Definimos la historia que contará tu manga</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <span className="font-display text-2xl text-bg/40">02</span>
                   <div>
-                    <p className="font-medium text-bg">Composicion</p>
-                    <p className="text-sm text-bg/70">Mapeamos como fluiran los elementos</p>
+                    <p className="font-medium text-bg">Composición</p>
+                    <p className="text-sm text-bg/70">Mapeamos cómo fluirán los elementos</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <span className="font-display text-2xl text-bg/40">03</span>
                   <div>
                     <p className="font-medium text-bg">Sesiones</p>
-                    <p className="text-sm text-bg/70">Planificamos cada sesion estrategicamente</p>
+                    <p className="text-sm text-bg/70">Planificamos cada sesión estratégicamente</p>
                   </div>
                 </div>
                 <div className="flex gap-4">

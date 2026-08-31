@@ -3,26 +3,21 @@ export default function Ticker() {
     "BLACK & GREY",
     "REALISM",
     "CUSTOM PROJECTS",
-    "BOGOTA",
-    "BLACK & GREY",
-    "REALISM",
-    "CUSTOM PROJECTS",
-    "BOGOTA",
+    "BOGOTÁ",
   ];
 
   return (
-    <section className="bg-sage overflow-hidden py-4 md:py-5">
+    <section className="bg-accent overflow-hidden py-4 md:py-5">
       <div className="ticker-track">
-        {/* Duplicamos el contenido para el loop infinito */}
-        {[...items, ...items].map((item, i) => (
+        {[...items, ...items, ...items, ...items].map((item, i) => (
           <span
             key={i}
-            className="flex items-center gap-6 md:gap-10 px-6 md:px-10 whitespace-nowrap"
+            className="flex items-center gap-8 md:gap-12 px-8 md:px-12 whitespace-nowrap"
           >
-            <span className="font-display text-xl md:text-2xl lg:text-3xl text-bg tracking-wide">
+            <span className="font-display text-xl md:text-2xl lg:text-[28px] text-bg tracking-wide">
               {item}
             </span>
-            <span className="text-bg/60 text-lg">&#10022;</span>
+            <span className="text-bg/50 text-sm">✦</span>
           </span>
         ))}
       </div>
