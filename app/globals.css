@@ -3,89 +3,111 @@
 @tailwind utilities;
 
 :root {
-  --font-display: 'Bebas Neue', Impact, sans-serif;
-  --font-body: 'Jost', 'Helvetica Neue', Arial, sans-serif;
-  --font-brush: 'Permanent Marker', cursive;
+  --font-display: 'Anton', 'Bebas Neue', Impact, sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
-  background-color: #050505;
+  background-color: #0A0A0A;
 }
 
 body {
-  background-color: #050505;
-  color: #F5F5F5;
+  background-color: #0A0A0A;
+  color: #F1EFE9;
   font-family: var(--font-body);
-  font-weight: 300;
+  font-weight: 400;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: #F7C400;
-  color: #070707;
+  background: #A8B39A;
+  color: #0A0A0A;
 }
 
-/* Blueprint grid backdrop, used behind hero / CTA sections */
-.bp-grid {
-  background-image:
-    linear-gradient(to right, rgba(247, 196, 0, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(247, 196, 0, 0.045) 1px, transparent 1px);
-  background-size: 64px 64px;
-}
-
-/* small decorative technical crosses */
-.bp-cross {
+/* Film grain overlay - sutil */
+.grain {
   position: relative;
 }
-.bp-cross::before,
-.bp-cross::after {
-  content: "";
-  position: absolute;
-  background: rgba(247, 196, 0, 0.35);
-}
-.bp-cross::before {
-  width: 14px;
-  height: 1px;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-}
-.bp-cross::after {
-  width: 1px;
-  height: 14px;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-}
-
-/* film grain overlay */
 .grain::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
+  z-index: 1;
 }
 
-.text-outline-gold {
-  -webkit-text-stroke: 1.5px #F7C400;
+/* Texto outline */
+.text-outline {
+  -webkit-text-stroke: 1px #F1EFE9;
   color: transparent;
 }
 
-.glass-dark {
-  background: rgba(7, 7, 7, 0.72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(247, 196, 0, 0.15);
+/* Ticker animation */
+.ticker-track {
+  display: flex;
+  width: fit-content;
+  animation: ticker 30s linear infinite;
 }
 
-.section-eyebrow {
-  letter-spacing: 0.35em;
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
+/* Reveal animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+
+/* Editorial label */
+.label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9B9B9B;
+}
+
+/* Line decorations */
+.line-h {
+  height: 1px;
+  background: #222222;
+}
+.line-v {
+  width: 1px;
+  background: #222222;
+}
+
+/* Focus states */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #A8B39A;
+  outline-offset: 2px;
+}
+
+/* Smooth image loading */
+img {
+  transition: opacity 0.3s ease;
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -94,5 +116,15 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Responsive utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }

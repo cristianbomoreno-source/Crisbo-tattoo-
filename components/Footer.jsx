@@ -1,84 +1,99 @@
-import { MapPin, Clock, MessageCircle, Instagram } from "lucide-react";
-import Image from "next/image";
+import { Instagram, MessageCircle } from "lucide-react";
 
-const MAPS_URL = "https://share.google/qeywmW0E0sMJvThim";
+const navigation = [
+  { label: "Trabajos", href: "#trabajos" },
+  { label: "Sobre mi", href: "#sobre-mi" },
+  { label: "Estudio", href: "#estudio" },
+  { label: "FAQ", href: "#faq" },
+];
 
-const items = [
+const social = [
   {
-    icon: MapPin,
-    label: "Ubicación",
-    value: (
-      <>
-        Cl. 137b #57b - 39, piso 2
-        <br />
-        Bogotá, Colombia
-      </>
-    ),
-    href: MAPS_URL,
-  },
-  {
-    icon: Clock,
-    label: "Horario",
-    value: (
-      <>
-        Lunes a Sábado
-        <br />
-        10:00 a.m. – 7:00 p.m.
-      </>
-    ),
-  },
-  {
-    icon: MessageCircle,
-    label: "Contacto",
-    value: (
-      <>
-        +57 320 210 7769
-        <br />
-        DM en Instagram
-      </>
-    ),
-    href: "https://wa.me/573202107769",
-  },
-  {
+    label: "Instagram",
+    href: "https://instagram.com/crisbotattoo",
     icon: Instagram,
-    label: "Sígueme",
-    value: "@crisbotattoo",
+  },
+  {
+    label: "WhatsApp",
+    href: "https://wa.me/573202107769",
+    icon: MessageCircle,
   },
 ];
 
 export default function Footer() {
   return (
-    <footer id="contacto" className="border-t border-line/60 bg-bg-secondary py-14">
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {items.map((it) => {
-            const Wrapper = it.href ? "a" : "div";
-            const wrapperProps = it.href
-              ? { href: it.href, target: "_blank", rel: "noopener noreferrer" }
-              : {};
-            return (
-              <Wrapper key={it.label} {...wrapperProps} className="flex gap-4">
-                <it.icon size={19} strokeWidth={1.5} className="text-gold-2 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-1.5">
-                    {it.label}
-                  </p>
-                  <p className="text-sm leading-relaxed">{it.value}</p>
-                </div>
-              </Wrapper>
-            );
-          })}
-        </div>
+    <footer className="bg-bg-secondary border-t border-line">
+      {/* Main Footer */}
+      <div className="max-w-[1400px] mx-auto px-5 md:px-8 lg:px-12 py-16 md:py-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <p className="font-display text-4xl md:text-5xl text-ink">CRISBO</p>
+            <p className="label mt-2">TATTOO ARTIST</p>
+            <p className="mt-6 text-ink-muted text-sm max-w-sm">
+              Bogota, Colombia<br />
+              Disenos personalizados en Black & Grey y Realismo.
+            </p>
+          </div>
 
-        <div className="border-t border-line/60 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-ink/40">
-          <p>© {new Date().getFullYear()} Crisbo Tattoo — Todos cargamos una historia que merece ser contada.</p>
-          <Image
-            src="/images/logo-white.png"
-            alt="Crisbo Tattoo Studio"
-            width={120}
-            height={144}
-            className="h-9 w-auto opacity-90"
-          />
+          {/* Navigation */}
+          <div>
+            <p className="label mb-6">NAVEGACION</p>
+            <ul className="space-y-3">
+              {navigation.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    className="text-ink-muted hover:text-ink transition-colors text-sm"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="label mb-6">CONTACTO</p>
+            <ul className="space-y-3">
+              {social.map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-ink-muted hover:text-ink transition-colors text-sm"
+                  >
+                    <item.icon size={16} />
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8">
+              <p className="label mb-2">UBICACION</p>
+              <p className="text-ink-muted text-sm">
+                Colina Campestre<br />
+                Cl. 137b #57b - 39, piso 2
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Footer */}
+      <div className="border-t border-line">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-8 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-ink-muted text-xs">
+            &copy; {new Date().getFullYear()} Crisbo Tattoo. Todos los derechos reservados.
+          </p>
+
+          {/* Decorative Brand */}
+          <p className="font-display text-6xl md:text-7xl text-ink/[0.03] select-none">
+            CRISBO&trade;
+          </p>
         </div>
       </div>
     </footer>

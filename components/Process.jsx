@@ -1,78 +1,116 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { MessageSquare, PenTool, CalendarCheck, Zap, ShieldCheck, ArrowRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const steps = [
   {
     num: "01",
-    icon: MessageSquare,
-    title: "Cuéntame tu idea",
-    desc: "Hablamos de tu idea, estilo y ubicación del tatuaje.",
+    title: "CONCEPTO",
+    desc: "Escucho tu idea, referencias y vision. Entendemos juntos que quieres comunicar.",
   },
   {
     num: "02",
-    icon: PenTool,
-    title: "Diseñamos una propuesta exclusiva",
-    desc: "Creo un diseño 100% personalizado, único y original.",
+    title: "DISENO",
+    desc: "Creo una propuesta exclusiva pensada para tu cuerpo y composicion anatomica.",
   },
   {
     num: "03",
-    icon: CalendarCheck,
-    title: "Agendamos con un abono",
-    desc: "Reservamos tu cita con un abono para asegurar tu fecha.",
+    title: "SESION",
+    desc: "Ejecutamos el proyecto con la mejor tecnica, higiene y atencion al detalle.",
   },
   {
     num: "04",
-    icon: Zap,
-    title: "Creamos tu tatuaje",
-    desc: "Ejecutamos con la mejor técnica, cuidado y precisión.",
-  },
-  {
-    num: "05",
-    icon: ShieldCheck,
-    title: "Seguimiento y controles",
-    desc: "Te acompaño en el proceso de cicatrización.",
+    title: "RESULTADO",
+    desc: "Una pieza que funciona, que fluye con tu cuerpo y que perdurara en el tiempo.",
   },
 ];
 
 export default function Process() {
-  return (
-    <section id="proceso" className="py-28 lg:py-36 bg-bg-secondary/40">
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
-        <h2 className="font-display text-3xl sm:text-4xl tracking-wide flex items-center gap-4 mb-14">
-          <span className="w-8 h-px bg-gold-2 inline-block" />
-          ¿CÓMO TRABAJAMOS?
-        </h2>
+  const sectionRef = useRef(null);
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {steps.map((s, i) => (
-            <motion.div
-              key={s.num}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="relative group"
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.querySelectorAll(".reveal").forEach((el, i) => {
+              setTimeout(() => el.classList.add("visible"), i * 100);
+            });
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      className="py-20 md:py-32 lg:py-40 px-5 md:px-8 lg:px-12 bg-bg-secondary"
+    >
+      <div className="max-w-[1400px] mx-auto">
+        {/* Title */}
+        <div className="reveal max-w-3xl mb-16 md:mb-24">
+          <h2 className="font-display text-section uppercase leading-[0.9]">
+            EL TATUAJE<br />
+            ES EL RESULTADO.<br />
+            <span className="text-ink-muted">EL PROCESO ES<br />DONDE EMPIEZA TODO.</span>
+          </h2>
+        </div>
+
+        {/* Process Steps */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-line">
+          {steps.map((step, i) => (
+            <div
+              key={step.num}
+              className={`reveal delay-${i + 1} bg-bg-secondary p-8 md:p-10`}
             >
-              <div className="bg-bg-grey border border-line/60 p-6 h-full hover:border-gold/40 hover:-translate-y-1.5 transition-all duration-300 rounded-sm">
-                <span className="inline-block border border-gold-2 text-gold-2 font-display text-sm px-3 py-0.5 mb-6">
-                  {s.num}
-                </span>
-                <s.icon size={22} strokeWidth={1.5} className="text-gold-2/80 mb-4" />
-                <h4 className="text-sm uppercase tracking-wide mb-2 leading-snug">
-                  {s.title}
-                </h4>
-                <p className="text-xs text-ink/50 leading-relaxed">{s.desc}</p>
+              {/* Number */}
+              <div className="flex items-baseline gap-4 mb-6">
+                <span className="font-display text-5xl md:text-6xl text-ink">{step.num}</span>
+                <div className="flex-1 h-px bg-line" />
               </div>
-              {i < steps.length - 1 && (
-                <ArrowRight
-                  size={16}
-                  className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 text-gold-2/40 z-10"
-                />
-              )}
-            </motion.div>
+
+              {/* Content */}
+              <h3 className="font-display text-xl md:text-2xl text-ink mb-4">
+                {step.title}
+              </h3>
+              <p className="text-ink-muted text-sm leading-relaxed">
+                {step.desc}
+              </p>
+            </div>
           ))}
+        </div>
+
+        {/* Additional Info */}
+        <div className="reveal delay-4 mt-16 md:mt-24 grid md:grid-cols-3 gap-8">
+          <div>
+            <p className="label mb-2">CONCEPTUALIZACION</p>
+            <p className="text-ink-muted text-sm leading-relaxed">
+              Cada proyecto comienza con una conversacion. Entender tu historia
+              es el primer paso para crear algo unico.
+            </p>
+          </div>
+          <div>
+            <p className="label mb-2">ADAPTACION ANATOMICA</p>
+            <p className="text-ink-muted text-sm leading-relaxed">
+              El diseno se adapta a las lineas naturales de tu cuerpo,
+              no al reves.
+            </p>
+          </div>
+          <div>
+            <p className="label mb-2">SEGUIMIENTO</p>
+            <p className="text-ink-muted text-sm leading-relaxed">
+              El proceso no termina en la sesion. Te acompano durante
+              toda la cicatrizacion.
+            </p>
+          </div>
         </div>
       </div>
     </section>

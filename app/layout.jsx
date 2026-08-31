@@ -1,24 +1,51 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Crisbo Tattoo | Tatuador en Bogotá — Black & Grey, Realismo, Blackwork",
+  title: "Crisbo Tattoo | Tatuador en Bogota - Black & Grey, Realismo, Custom Projects",
   description:
-    "Crisbo Tattoo, estudio de tatuajes en Bogotá especializado en Black & Grey, Realismo y Blackwork. Más de 9 años creando diseños exclusivos que cuentan tu historia.",
+    "Crisbo Tattoo - Tatuador profesional en Bogota especializado en Black & Grey, Realismo y proyectos personalizados. Mas de 9 anos de experiencia creando disenos exclusivos que cuentan tu historia. Colina Campestre, Bogota.",
   keywords: [
-    "tatuador Bogotá",
-    "tatuajes Bogotá",
+    "tatuador Bogota",
+    "tatuajes Bogota",
     "Crisbo Tattoo",
-    "black and grey tattoo",
-    "realismo tatuaje",
-    "blackwork Bogotá",
+    "black and grey Bogota",
+    "realismo tatuaje Bogota",
+    "tatuajes realismo",
+    "mangas tatuaje Bogota",
+    "tatuador profesional Bogota",
+    "tatuajes personalizados",
+    "custom tattoo Bogota",
+    "Colina Campestre tatuajes",
   ],
+  authors: [{ name: "Crisbo Tattoo" }],
+  creator: "Crisbo Tattoo",
   openGraph: {
-    title: "Crisbo Tattoo | Tatuador en Bogotá",
+    title: "Crisbo Tattoo | Tatuador en Bogota",
     description:
-      "Diseños exclusivos que cuentan tu historia. Black & Grey, Realismo y Blackwork en Bogotá, Colombia.",
+      "Disenos exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogota, Colombia.",
     locale: "es_CO",
     type: "website",
+    siteName: "Crisbo Tattoo",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Crisbo Tattoo | Tatuador en Bogota",
+    description:
+      "Disenos exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogota, Colombia.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://crisbotattoo.com",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0A0A0A",
 };
 
 export default function RootLayout({ children }) {
@@ -26,13 +53,13 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=Jost:wght@300;400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

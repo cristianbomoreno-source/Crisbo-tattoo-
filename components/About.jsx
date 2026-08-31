@@ -1,61 +1,119 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 
 export default function About() {
-  return (
-    <section id="sobre-mi" className="py-28 lg:py-36 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative aspect-[5/4] rounded-sm overflow-hidden bg-bg-secondary border border-line/60"
-        >
-          <Image
-            src="/images/about.jpg"
-            alt="Crisbo, tatuador en Bogotá"
-            fill
-            sizes="(max-width: 1024px) 90vw, 45vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
-          <div className="absolute inset-0 bp-grid opacity-20" />
-          <button
-            aria-label="Reproducir video"
-            className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-gold-2 flex items-center justify-center hover:scale-110 transition-transform duration-300 shadow-gold-glow"
-          >
-            <Play size={22} className="text-bg ml-1" fill="currentColor" />
-          </button>
-        </motion.div>
+  const sectionRef = useRef(null);
 
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <p className="section-eyebrow text-gold-2 text-xs uppercase flex items-center gap-3 mb-5">
-            <span className="w-6 h-px bg-gold-2" />
-            Sobre mí
-          </p>
-          <h2 className="font-display text-4xl sm:text-5xl leading-[0.95] tracking-wide mb-6">
-            PASIÓN. DISCIPLINA.
-            <span className="text-gold-2"> ARTE.</span>
-          </h2>
-          <p className="text-ink/60 text-base sm:text-lg leading-relaxed max-w-md mb-8">
-            Más de 9 años dedicados al arte del tatuaje en Bogotá. Cada proyecto
-            comienza desde cero, escuchando tu historia y transformándola en una
-            pieza única que te acompañará toda la vida.
-          </p>
-          <p className="font-brush text-gold-2 text-3xl">Crisbo</p>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-ink/40 mt-1">
-            Tattoo Artist
-          </p>
-        </motion.div>
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.querySelectorAll(".reveal").forEach((el, i) => {
+              setTimeout(() => el.classList.add("visible"), i * 100);
+            });
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="sobre-mi"
+      className="py-20 md:py-32 lg:py-40 px-5 md:px-8 lg:px-12 bg-bg"
+    >
+      <div className="max-w-[1400px] mx-auto">
+        {/* Section Label */}
+        <div className="reveal mb-8 md:mb-12">
+          <p className="label">01 / THE ARTIST</p>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          {/* Left - Photo */}
+          <div className="reveal delay-1 relative">
+            <div className="aspect-[4/5] relative overflow-hidden">
+              {/* PLACEHOLDER: Foto de Crisbo trabajando */}
+              <Image
+                src="/images/about.jpg"
+                alt="Crisbo tatuando en su estudio"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover grayscale-[10%]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg/30 via-transparent to-transparent" />
+            </div>
+
+            {/* Stats overlay */}
+            <div className="absolute -bottom-6 -right-4 md:right-8 bg-bg-secondary border border-line p-6 md:p-8">
+              <p className="font-display text-5xl md:text-6xl text-ink">9+</p>
+              <p className="label mt-2">ANOS TATUANDO</p>
+            </div>
+          </div>
+
+          {/* Right - Content */}
+          <div className="lg:pt-12">
+            <h2 className="reveal delay-2 font-display text-section uppercase leading-[0.9]">
+              MAS QUE<br />
+              <span className="text-ink-muted">TATUAJES.</span>
+            </h2>
+
+            <div className="reveal delay-3 mt-8 md:mt-12 space-y-6">
+              <p className="text-xl md:text-2xl font-medium text-ink leading-snug">
+                Soy Crisbo.
+              </p>
+              <p className="text-ink-muted leading-relaxed">
+                Mi trabajo parte de una idea simple: un tatuaje no deberia sentirse
+                como imagenes pegadas sobre la piel.
+              </p>
+              <p className="text-ink-muted leading-relaxed">
+                Cada proyecto se disena pensando en composicion, anatomia, contraste
+                y narrativa para que todas las piezas funcionen como una sola obra.
+              </p>
+            </div>
+
+            {/* Editorial Data Blocks */}
+            <div className="reveal delay-4 mt-12 grid grid-cols-2 gap-6">
+              <div className="border-l border-line pl-4">
+                <p className="font-display text-2xl md:text-3xl text-ink">BOGOTA</p>
+                <p className="label mt-1">COLOMBIA</p>
+              </div>
+              <div className="border-l border-line pl-4">
+                <p className="font-display text-2xl md:text-3xl text-ink">BLACK & GREY</p>
+                <p className="label mt-1">REALISM</p>
+              </div>
+              <div className="border-l border-line pl-4">
+                <p className="font-display text-2xl md:text-3xl text-ink">CUSTOM</p>
+                <p className="label mt-1">PROJECTS</p>
+              </div>
+              <div className="border-l border-line pl-4">
+                <p className="font-display text-2xl md:text-3xl text-ink">+500</p>
+                <p className="label mt-1">PROYECTOS</p>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <a
+              href="#estudio"
+              className="reveal delay-4 inline-flex items-center gap-2 mt-12 text-sm tracking-wider text-ink hover:text-sage transition-colors group"
+            >
+              CONOCE MI HISTORIA
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );
