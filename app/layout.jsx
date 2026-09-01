@@ -58,8 +58,19 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Gothic/Blackletter para títulos principales */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap"
+          rel="stylesheet"
+        />
+        {/* Display fuerte para secundarios */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        {/* Body legible */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />

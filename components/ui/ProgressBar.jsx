@@ -6,29 +6,41 @@ export default function ProgressBar({ className = "" }) {
   const { state, totalChapters } = useExperience();
   const { currentChapter } = state;
 
+  // currentChapter es 1-based
+  const progress = currentChapter;
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="label-number">
-        {String(currentChapter + 1).padStart(2, "0")}
+      {/* Chapter number */}
+      <span className="font-display text-gold text-sm">
+        {String(progress).padStart(2, "0")}
       </span>
       <span className="text-cement text-xs">/</span>
-      <span className="label text-cement">
+      <span className="text-cement text-xs">
         {String(totalChapters).padStart(2, "0")}
       </span>
 
-      <div className="flex gap-1 ml-3">
-        {Array.from({ length: totalChapters }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-2 h-2 rounded-sm transition-all duration-300 ${
-              i < currentChapter
-                ? "bg-gold"
-                : i === currentChapter
-                ? "bg-gold shadow-[0_0_8px_rgba(245,196,0,0.5)]"
-                : "bg-line-light"
-            }`}
-          />
-        ))}
+      {/* Progress dots */}
+      <div className="flex gap-1 ml-2">
+        {Array.from({ length: totalChapters }).map((_, i) => {
+          const chapterNum = i + 1;
+          const isCompleted = chapterNum < progress;
+          const isCurrent = chapterNum === progress;
+          const isPending = chapterNum > progress;
+
+          return (
+            <div
+              key={i}
+              className={`h-1.5 rounded-sm transition-all duration-300 ${
+                isCompleted
+                  ? "w-3 bg-gold"
+                  : isCurrent
+                  ? "w-4 bg-gold shadow-[0_0_8px_rgba(245,196,0,0.6)]"
+                  : "w-2 bg-line-light"
+              }`}
+            />
+          );
+        })}
       </div>
     </div>
   );
