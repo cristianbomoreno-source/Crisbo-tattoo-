@@ -81,7 +81,7 @@ export default function Hero() {
                 href="https://wa.me/573202107769"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-accent text-bg text-sm font-medium tracking-wider px-8 py-4 hover:bg-accent-dark transition-colors duration-200"
+                className="inline-flex items-center justify-center gap-2 bg-gold text-bg text-sm font-medium tracking-wider px-8 py-4 hover:bg-gold-dark transition-colors duration-200"
               >
                 COTIZA TU PROYECTO
                 <ArrowRight size={16} />

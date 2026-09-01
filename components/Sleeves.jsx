@@ -30,7 +30,7 @@ export default function Sleeves() {
   return (
     <section
       ref={sectionRef}
-      className="py-section px-5 md:px-8 lg:px-12 bg-accent"
+      className="py-section px-5 md:px-8 lg:px-12 bg-gold"
     >
       <div className="max-w-container mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -55,7 +55,7 @@ export default function Sleeves() {
               href="https://wa.me/573202107769"
               target="_blank"
               rel="noopener noreferrer"
-              className="reveal delay-2 inline-flex items-center gap-2 mt-10 bg-bg text-accent text-sm font-medium tracking-wider px-8 py-4 hover:bg-ink transition-colors group"
+              className="reveal delay-2 inline-flex items-center gap-2 mt-10 bg-bg text-gold text-sm font-medium tracking-wider px-8 py-4 hover:bg-ink transition-colors group"
             >
               DESCUBRE CÓMO DISEÑAMOS UNA MANGA
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

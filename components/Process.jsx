@@ -73,7 +73,7 @@ export default function Process() {
             >
               {/* Number */}
               <div className="flex items-baseline gap-4 mb-6">
-                <span className="font-display text-5xl md:text-6xl text-accent">{step.num}</span>
+                <span className="font-display text-5xl md:text-6xl text-gold">{step.num}</span>
                 <div className="flex-1 h-px bg-line" />
               </div>
 
@@ -91,21 +91,21 @@ export default function Process() {
         {/* Additional Info */}
         <div className="reveal delay-4 mt-16 md:mt-24 grid md:grid-cols-3 gap-10">
           <div>
-            <p className="label-accent mb-3">CONCEPTUALIZACIÓN</p>
+            <p className="label-gold mb-3">CONCEPTUALIZACIÓN</p>
             <p className="text-muted text-sm leading-relaxed">
               Cada proyecto comienza con una conversación. Entender tu historia
               es el primer paso para crear algo único.
             </p>
           </div>
           <div>
-            <p className="label-accent mb-3">ADAPTACIÓN ANATÓMICA</p>
+            <p className="label-gold mb-3">ADAPTACIÓN ANATÓMICA</p>
             <p className="text-muted text-sm leading-relaxed">
               El diseño se adapta a las líneas naturales de tu cuerpo,
               no al revés.
             </p>
           </div>
           <div>
-            <p className="label-accent mb-3">SEGUIMIENTO</p>
+            <p className="label-gold mb-3">SEGUIMIENTO</p>
             <p className="text-muted text-sm leading-relaxed">
               El proceso no termina en la sesión. Te acompaño durante
               toda la cicatrización.

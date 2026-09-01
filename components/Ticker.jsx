@@ -7,7 +7,7 @@ export default function Ticker() {
   ];
 
   return (
-    <section className="bg-accent overflow-hidden py-4 md:py-5">
+    <section className="bg-gold overflow-hidden py-4 md:py-5">
       <div className="ticker-track">
         {[...items, ...items, ...items, ...items].map((item, i) => (
           <span

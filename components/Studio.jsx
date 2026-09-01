@@ -37,7 +37,7 @@ export default function Studio() {
       <div className="max-w-container mx-auto">
         {/* Header */}
         <div className="reveal mb-12 md:mb-20">
-          <p className="label-accent mb-4">03 / THE STUDIO</p>
+          <p className="label-gold mb-4">03 / THE STUDIO</p>
           <h2 className="font-display text-display-lg uppercase">
             UN ESPACIO<br />
             <span className="text-muted">PARA CREAR.</span>
@@ -94,7 +94,7 @@ export default function Studio() {
           {/* Left - Location */}
           <div>
             <div className="flex items-start gap-4">
-              <MapPin size={20} className="text-accent flex-shrink-0 mt-1" />
+              <MapPin size={20} className="text-gold flex-shrink-0 mt-1" />
               <div>
                 <p className="font-display text-2xl md:text-3xl text-ink">Crisbo Tattoo Studio</p>
                 <p className="text-muted mt-2">
@@ -111,7 +111,7 @@ export default function Studio() {
               href="https://share.google/qeywmW0E0sMJvThim"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 mt-6 text-sm tracking-wider text-ink hover:text-accent transition-colors group"
+              className="inline-flex items-center gap-2 mt-6 text-sm tracking-wider text-ink hover:text-gold transition-colors group"
             >
               VER EN GOOGLE MAPS
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

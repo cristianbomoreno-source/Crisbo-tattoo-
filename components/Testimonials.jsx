@@ -88,7 +88,7 @@ export default function Testimonials() {
                         <Star
                           key={idx}
                           size={12}
-                          className="text-accent fill-accent"
+                          className="text-gold fill-gold"
                         />
                       ))}
                     </div>
@@ -105,7 +105,7 @@ export default function Testimonials() {
             href="https://g.page/r/CZlX7tRwMbEJEB0/review"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm tracking-wider text-ink hover:text-accent transition-colors group"
+            className="inline-flex items-center gap-2 text-sm tracking-wider text-ink hover:text-gold transition-colors group"
           >
             VER TODAS LAS RESEÑAS
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

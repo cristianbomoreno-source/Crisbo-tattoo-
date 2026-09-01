@@ -37,7 +37,7 @@ export default function About() {
       <div className="max-w-container mx-auto">
         {/* Section Label */}
         <div className="reveal mb-10 md:mb-14">
-          <p className="label-accent">01 / THE ARTIST</p>
+          <p className="label-gold">01 / THE ARTIST</p>
         </div>
 
         {/* Main Content Grid */}
@@ -106,7 +106,7 @@ export default function About() {
             {/* CTA */}
             <a
               href="#estudio"
-              className="reveal delay-5 inline-flex items-center gap-2 mt-14 text-sm tracking-wider text-ink hover:text-accent transition-colors duration-200 group"
+              className="reveal delay-5 inline-flex items-center gap-2 mt-14 text-sm tracking-wider text-ink hover:text-gold transition-colors duration-200 group"
             >
               CONOCE MI HISTORIA
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />

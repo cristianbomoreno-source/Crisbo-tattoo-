@@ -1,37 +1,38 @@
 import "./globals.css";
+import { ExperienceProvider } from "@/context/ExperienceContext";
 
 export const metadata = {
-  title: "Crisbo Tattoo | Tatuador en Bogota - Black & Grey, Realismo, Custom Projects",
+  title: "Crisbo Tattoo | Tatuador en Bogotá - Black & Grey, Realismo, Custom Projects",
   description:
-    "Crisbo Tattoo - Tatuador profesional en Bogota especializado en Black & Grey, Realismo y proyectos personalizados. Mas de 9 anos de experiencia creando disenos exclusivos que cuentan tu historia. Colina Campestre, Bogota.",
+    "Crisbo Tattoo - Tatuador profesional en Bogotá especializado en Black & Grey, Realismo y proyectos personalizados. Más de 9 años de experiencia creando diseños exclusivos que cuentan tu historia.",
   keywords: [
-    "tatuador Bogota",
-    "tatuajes Bogota",
+    "tatuador Bogotá",
+    "tatuajes Bogotá",
     "Crisbo Tattoo",
-    "black and grey Bogota",
-    "realismo tatuaje Bogota",
+    "black and grey Bogotá",
+    "realismo tatuaje Bogotá",
     "tatuajes realismo",
-    "mangas tatuaje Bogota",
-    "tatuador profesional Bogota",
+    "mangas tatuaje Bogotá",
+    "tatuador profesional Bogotá",
     "tatuajes personalizados",
-    "custom tattoo Bogota",
+    "custom tattoo Bogotá",
     "Colina Campestre tatuajes",
   ],
   authors: [{ name: "Crisbo Tattoo" }],
   creator: "Crisbo Tattoo",
   openGraph: {
-    title: "Crisbo Tattoo | Tatuador en Bogota",
+    title: "Crisbo Tattoo | Tatuador en Bogotá",
     description:
-      "Disenos exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogota, Colombia.",
+      "Diseños exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogotá, Colombia.",
     locale: "es_CO",
     type: "website",
     siteName: "Crisbo Tattoo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Crisbo Tattoo | Tatuador en Bogota",
+    title: "Crisbo Tattoo | Tatuador en Bogotá",
     description:
-      "Disenos exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogota, Colombia.",
+      "Diseños exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogotá, Colombia.",
   },
   robots: {
     index: true,
@@ -45,7 +46,10 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0A0A0A",
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#070707",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }) {
@@ -55,11 +59,17 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <ExperienceProvider>
+          {children}
+        </ExperienceProvider>
+      </body>
     </html>
   );
 }

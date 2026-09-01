@@ -73,7 +73,7 @@ export default function SelectedWork() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14 md:mb-20">
           <div className="reveal">
-            <p className="label-accent mb-4">02 / SELECTED WORK</p>
+            <p className="label-gold mb-4">02 / SELECTED WORK</p>
             <h2 className="font-display text-display-lg uppercase">
               PROYECTOS<br />
               <span className="text-muted">SELECCIONADOS.</span>
@@ -81,7 +81,7 @@ export default function SelectedWork() {
           </div>
           <a
             href="#"
-            className="reveal delay-1 inline-flex items-center gap-2 text-sm tracking-wider text-ink hover:text-accent transition-colors duration-200 group"
+            className="reveal delay-1 inline-flex items-center gap-2 text-sm tracking-wider text-ink hover:text-gold transition-colors duration-200 group"
           >
             VER TODOS LOS PROYECTOS
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
@@ -113,7 +113,7 @@ export default function SelectedWork() {
               <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-between">
                 {/* Top */}
                 <div className="flex justify-between items-start">
-                  <span className="font-display text-3xl md:text-4xl text-accent">{project.id}</span>
+                  <span className="font-display text-3xl md:text-4xl text-gold">{project.id}</span>
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <ArrowUpRight size={24} className="text-ink" />
                   </span>
@@ -146,7 +146,7 @@ export default function SelectedWork() {
         <div className="reveal delay-4 mt-14 md:mt-20 text-center">
           <a
             href="#"
-            className="inline-flex items-center gap-2 border border-line text-ink text-sm tracking-wider px-8 py-4 hover:border-accent hover:text-accent transition-colors duration-200"
+            className="inline-flex items-center gap-2 border border-line text-ink text-sm tracking-wider px-8 py-4 hover:border-gold hover:text-gold transition-colors duration-200"
           >
             VER TODOS LOS PROYECTOS
             <ArrowRight size={16} />

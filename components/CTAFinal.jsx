@@ -46,7 +46,7 @@ export default function CTAFinal() {
             TU IDEA<br />
             PUEDE SER<br />
             EL PRÓXIMO<br />
-            <span className="text-accent">PROYECTO.</span>
+            <span className="text-gold">PROYECTO.</span>
           </h2>
 
           <p className="reveal delay-1 mt-8 md:mt-12 text-muted text-lg md:text-xl max-w-xl mx-auto leading-relaxed">
@@ -58,7 +58,7 @@ export default function CTAFinal() {
             href="https://wa.me/573202107769"
             target="_blank"
             rel="noopener noreferrer"
-            className="reveal delay-2 inline-flex items-center justify-center gap-3 mt-10 md:mt-14 bg-accent text-bg text-base md:text-lg font-medium tracking-wider px-10 md:px-14 py-5 md:py-6 hover:bg-accent-dark transition-colors group"
+            className="reveal delay-2 inline-flex items-center justify-center gap-3 mt-10 md:mt-14 bg-gold text-bg text-base md:text-lg font-medium tracking-wider px-10 md:px-14 py-5 md:py-6 hover:bg-gold-dark transition-colors group"
           >
             COTIZA TU TATUAJE
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

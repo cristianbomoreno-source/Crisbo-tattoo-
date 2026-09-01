@@ -51,7 +51,7 @@ export default function Header() {
         {/* Logo */}
         <a
           href="#inicio"
-          className="font-display text-2xl md:text-[28px] tracking-wide text-ink hover:text-accent transition-colors duration-200"
+          className="font-display text-2xl md:text-[28px] tracking-wide text-ink hover:text-gold transition-colors duration-200"
         >
           CRISBO
         </a>
@@ -75,7 +75,7 @@ export default function Header() {
           href="https://wa.me/573202107769"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden md:inline-flex items-center gap-2 bg-accent text-bg text-[13px] font-medium tracking-wider px-6 py-3 hover:bg-accent-dark transition-colors duration-200"
+          className="hidden md:inline-flex items-center gap-2 bg-gold text-bg text-[13px] font-medium tracking-wider px-6 py-3 hover:bg-gold-dark transition-colors duration-200"
         >
           COTIZAR PROYECTO
           <ArrowRight size={14} strokeWidth={2} />
@@ -106,7 +106,7 @@ export default function Header() {
                   <a
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="block py-4 text-3xl font-display tracking-wide text-ink hover:text-accent transition-colors border-b border-line"
+                    className="block py-4 text-3xl font-display tracking-wide text-ink hover:text-gold transition-colors border-b border-line"
                   >
                     {link.label}
                   </a>
@@ -120,7 +120,7 @@ export default function Header() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 w-full bg-accent text-bg text-sm font-medium tracking-wider py-4"
+                className="flex items-center justify-center gap-2 w-full bg-gold text-bg text-sm font-medium tracking-wider py-4"
               >
                 COTIZAR PROYECTO
                 <ArrowRight size={16} />

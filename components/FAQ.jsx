@@ -61,7 +61,7 @@ export default function FAQ() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Left - Title */}
           <div className="reveal">
-            <p className="label-accent mb-4">04 / FAQ</p>
+            <p className="label-gold mb-4">04 / FAQ</p>
             <h2 className="font-display text-display-lg uppercase">
               PREGUNTAS<br />
               <span className="text-muted">FRECUENTES.</span>
@@ -84,7 +84,7 @@ export default function FAQ() {
                       className="w-full flex items-start justify-between gap-4 text-left group"
                       aria-expanded={isOpen}
                     >
-                      <span className="text-ink text-lg group-hover:text-accent transition-colors">
+                      <span className="text-ink text-lg group-hover:text-gold transition-colors">
                         {faq.q}
                       </span>
                       <span className="flex-shrink-0 mt-1 text-muted">
