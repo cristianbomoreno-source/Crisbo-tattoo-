@@ -102,6 +102,35 @@ export async function PUT(request) {
         success: true,
         message: "Reservacion rechazada",
       });
+    } else if (action === "cancel") {
+      // Cancelar una reservación aprobada
+      const { error: resError } = await supabase
+        .from("raffle_reservations")
+        .update({
+          status: "cancelled",
+          admin_notes: adminNotes || "Cancelado por admin",
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", reservationId);
+
+      if (resError) throw resError;
+
+      // Devolver ticket a disponible
+      const { error: ticketError } = await supabase
+        .from("raffle_tickets")
+        .update({
+          status: "available",
+          reserved_at: null,
+          sold_at: null,
+        })
+        .eq("number", ticketNumber);
+
+      if (ticketError) throw ticketError;
+
+      return NextResponse.json({
+        success: true,
+        message: "Reservacion cancelada",
+      });
     }
 
     return NextResponse.json({ error: "Accion no valida" }, { status: 400 });

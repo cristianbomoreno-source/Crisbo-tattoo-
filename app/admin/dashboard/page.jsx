@@ -136,6 +136,14 @@ export default function AdminDashboard() {
     window.open(`https://wa.me/57${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
   };
 
+  const openWhatsAppReject = (phone, name, tickets) => {
+    const ticketStr = tickets.map(t => `#${t}`).join(', ');
+    const message = encodeURIComponent(
+      `Hola ${name}. Lamentamos informarte que no pudimos verificar el pago de tu reserva (boleta${tickets.length > 1 ? 's' : ''} ${ticketStr}) de la rifa Crisbo Tattoo. Por favor comunícate con nosotros si crees que es un error. Gracias.`
+    );
+    window.open(`https://wa.me/57${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-bg">
       {/* Header */}
@@ -410,6 +418,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               res.tickets.forEach(t => handleAction(res.id, t, "reject"));
+                              openWhatsAppReject(res.buyer_whatsapp, res.buyer_name, res.tickets);
                             }}
                             disabled={processing === res.id}
                             className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-500 transition-colors disabled:opacity-50"
@@ -421,13 +430,27 @@ export default function AdminDashboard() {
                       )}
 
                       {res.status === "approved" && (
-                        <button
-                          onClick={() => openWhatsApp(res.buyer_whatsapp, res.buyer_name, res.tickets)}
-                          className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                          Enviar WhatsApp
-                        </button>
+                        <>
+                          <button
+                            onClick={() => openWhatsApp(res.buyer_whatsapp, res.buyer_name, res.tickets)}
+                            className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors"
+                          >
+                            <MessageCircle className="w-5 h-5" />
+                            WhatsApp
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('¿Seguro que deseas cancelar esta reservación? La boleta volverá a estar disponible.')) {
+                                res.tickets.forEach(t => handleAction(res.id, t, "cancel"));
+                              }
+                            }}
+                            disabled={processing === res.id}
+                            className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-500 transition-colors disabled:opacity-50"
+                          >
+                            <X className="w-5 h-5" />
+                            Cancelar
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
