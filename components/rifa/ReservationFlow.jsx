@@ -41,8 +41,8 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.whatsapp) {
-      setError("Nombre y WhatsApp son obligatorios");
+    if (!formData.name || !formData.whatsapp || !formData.email) {
+      setError("Todos los campos son obligatorios");
       return;
     }
     if (!file) {
@@ -99,7 +99,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
           </button>
 
           {/* Logo */}
-          <div className="relative w-12 h-12">
+          <div className="relative w-24 h-16">
             <Image
               src="/images/logo-crisbo.png"
               alt="Crisbo Tattoo"
@@ -209,8 +209,8 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
               {/* Email */}
               <div>
                 <label className="text-cream text-sm font-medium flex items-center gap-2 mb-2">
-                  <Mail className="w-4 h-4 text-muted" />
-                  Email <span className="text-muted font-normal">(opcional)</span>
+                  <Mail className="w-4 h-4 text-orange" />
+                  Email
                 </label>
                 <input
                   type="email"
@@ -230,8 +230,8 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
 
             <button
               onClick={() => {
-                if (!formData.name || !formData.whatsapp) {
-                  setError("Nombre y WhatsApp son obligatorios");
+                if (!formData.name || !formData.whatsapp || !formData.email) {
+                  setError("Todos los campos son obligatorios");
                   return;
                 }
                 setError("");
