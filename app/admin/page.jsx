@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
+import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -16,10 +17,7 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
 
-    // Verificar password (simple para esta implementación)
-    // En producción, esto debería ser una verificación en el servidor
     if (password === "crisbo2026") {
-      // Guardar sesión en localStorage
       localStorage.setItem("admin_auth", "true");
       router.push("/admin/dashboard");
     } else {
@@ -33,18 +31,26 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="font-gothic text-poster-sm text-gold">CRISBO</h1>
-          <p className="font-display text-cream">ADMIN</p>
+        <div className="flex justify-center mb-8">
+          <div className="relative w-48 h-32">
+            <Image
+              src="/images/logo-crisbo.png"
+              alt="Crisbo Tattoo"
+              fill
+              className="object-contain brightness-0 invert"
+            />
+          </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="card-editorial p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-surface rounded-3xl p-6 space-y-6 border border-line">
           <div className="text-center">
-            <div className="w-16 h-16 bg-surface-light mx-auto flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-gold/20 rounded-full mx-auto flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-gold" />
             </div>
-            <h2 className="font-display text-xl text-cream">Acceso Admin</h2>
+            <h2 className="text-xl text-cream font-bold" style={{ fontFamily: 'var(--font-headline)' }}>
+              PANEL ADMIN
+            </h2>
             <p className="text-muted text-sm mt-1">
               Ingresa la contraseña para continuar
             </p>
@@ -55,14 +61,14 @@ export default function AdminLogin() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-editorial pr-12"
+              className="w-full bg-bg border-2 border-line rounded-2xl px-5 py-4 text-cream placeholder:text-muted focus:border-gold focus:outline-none transition-colors pr-12"
               placeholder="Contraseña"
               autoFocus
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted hover:text-cream"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted hover:text-cream transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -73,7 +79,7 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-3 text-sm text-center">
+            <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-3 rounded-xl text-sm text-center">
               {error}
             </div>
           )}
@@ -81,16 +87,18 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="btn-primary w-full disabled:opacity-50"
+            className="w-full bg-gold text-bg py-4 rounded-full font-bold text-lg tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {loading ? "Verificando..." : "ENTRAR"}
+            {!loading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
 
         {/* Back link */}
         <div className="text-center mt-6">
-          <a href="/" className="text-muted text-sm hover:text-gold">
-            Volver a la rifa
+          <a href="/" className="text-muted text-sm hover:text-gold transition-colors">
+            ← Volver a la rifa
           </a>
         </div>
       </div>

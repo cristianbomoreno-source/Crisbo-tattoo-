@@ -2,17 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   LogOut,
   Check,
   X,
   ExternalLink,
   RefreshCw,
-  Filter,
   Users,
   Ticket,
   Clock,
   CheckCircle,
+  DollarSign,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  Phone,
+  Eye,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -21,9 +28,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("pending");
   const [processing, setProcessing] = useState(null);
+  const [expandedCard, setExpandedCard] = useState(null);
   const router = useRouter();
 
-  // Verificar autenticación
   useEffect(() => {
     const auth = localStorage.getItem("admin_auth");
     if (!auth) {
@@ -31,7 +38,6 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
-  // Cargar datos
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -84,6 +90,24 @@ export default function AdminDashboard() {
     router.push("/admin");
   };
 
+  // Agrupar reservaciones por comprador (mismo comprobante)
+  const groupedReservations = reservations.reduce((acc, res) => {
+    const key = res.payment_proof_url;
+    if (!acc[key]) {
+      acc[key] = {
+        ...res,
+        tickets: [res.ticket_number],
+        totalAmount: 30000,
+      };
+    } else {
+      acc[key].tickets.push(res.ticket_number);
+      acc[key].totalAmount += 30000;
+    }
+    return acc;
+  }, {});
+
+  const groupedList = Object.values(groupedReservations);
+
   // Estadísticas
   const stats = {
     total: tickets.length,
@@ -91,6 +115,9 @@ export default function AdminDashboard() {
     reserved: tickets.filter((t) => t.status === "reserved").length,
     sold: tickets.filter((t) => t.status === "sold").length,
   };
+
+  const totalRecaudado = stats.sold * 30000;
+  const totalPendiente = stats.reserved * 30000;
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString("es-CO", {
@@ -101,97 +128,135 @@ export default function AdminDashboard() {
     });
   };
 
+  const openWhatsApp = (phone, name, tickets) => {
+    const ticketStr = tickets.map(t => `#${t}`).join(', ');
+    const message = encodeURIComponent(
+      `Hola ${name}! Tu reserva de la rifa Crisbo Tattoo (boleta${tickets.length > 1 ? 's' : ''} ${ticketStr}) ha sido confirmada. Gracias por participar y buena suerte!`
+    );
+    window.open(`https://wa.me/57${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="bg-surface border-b border-line sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="font-gothic text-2xl text-gold">ADMIN</h1>
-            <p className="text-muted text-xs">Panel de Rifa</p>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative w-24 h-16">
+              <Image
+                src="/images/logo-crisbo.png"
+                alt="Crisbo Tattoo"
+                fill
+                className="object-contain brightness-0 invert"
+              />
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-gold text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+                PANEL ADMIN
+              </p>
+              <p className="text-muted text-xs">Gestión de Rifa</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className="btn-ghost flex items-center gap-2"
+            className="flex items-center gap-2 text-muted hover:text-cream transition-colors px-3 py-2 rounded-lg hover:bg-surface-light"
           >
             <LogOut className="w-4 h-4" />
-            Salir
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Estadísticas */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="card-editorial p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-surface-light flex items-center justify-center">
-                <Ticket className="w-5 h-5 text-cream" />
-              </div>
-              <div>
-                <p className="text-2xl font-display text-cream">{stats.available}</p>
-                <p className="text-xs text-muted">Disponibles</p>
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <StatCard
+            icon={<Ticket className="w-5 h-5" />}
+            value={stats.available}
+            label="Disponibles"
+            color="cream"
+          />
+          <StatCard
+            icon={<Clock className="w-5 h-5" />}
+            value={stats.reserved}
+            label="Pendientes"
+            color="orange"
+          />
+          <StatCard
+            icon={<CheckCircle className="w-5 h-5" />}
+            value={stats.sold}
+            label="Vendidas"
+            color="green"
+          />
+          <StatCard
+            icon={<DollarSign className="w-5 h-5" />}
+            value={`$${(totalRecaudado / 1000).toFixed(0)}K`}
+            label="Confirmado"
+            color="gold"
+          />
+          <StatCard
+            icon={<Users className="w-5 h-5" />}
+            value={`$${(totalPendiente / 1000).toFixed(0)}K`}
+            label="Pendiente"
+            color="orange"
+            className="col-span-2 lg:col-span-1"
+          />
+        </div>
 
-          <div className="card-editorial p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-teal-muted flex items-center justify-center">
-                <Clock className="w-5 h-5 text-teal" />
-              </div>
-              <div>
-                <p className="text-2xl font-display text-teal">{stats.reserved}</p>
-                <p className="text-xs text-muted">Reservados</p>
-              </div>
-            </div>
+        {/* Barra de progreso */}
+        <div className="bg-surface rounded-2xl p-4 border border-line">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-muted text-sm">Progreso de venta</span>
+            <span className="text-cream text-sm font-bold">
+              {stats.sold + stats.reserved} / {stats.total}
+            </span>
           </div>
-
-          <div className="card-editorial p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gold-muted flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-gold" />
-              </div>
-              <div>
-                <p className="text-2xl font-display text-gold">{stats.sold}</p>
-                <p className="text-xs text-muted">Vendidos</p>
-              </div>
-            </div>
+          <div className="h-3 bg-bg rounded-full overflow-hidden flex">
+            <div
+              className="bg-green-500 transition-all"
+              style={{ width: `${(stats.sold / stats.total) * 100}%` }}
+            />
+            <div
+              className="bg-orange transition-all"
+              style={{ width: `${(stats.reserved / stats.total) * 100}%` }}
+            />
           </div>
-
-          <div className="card-editorial p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-surface-light flex items-center justify-center">
-                <Users className="w-5 h-5 text-cream" />
-              </div>
-              <div>
-                <p className="text-2xl font-display text-cream">
-                  ${((stats.sold + stats.reserved) * 30000).toLocaleString()}
-                </p>
-                <p className="text-xs text-muted">Recaudado</p>
-              </div>
+          <div className="flex items-center gap-4 mt-2 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <span className="text-muted">Confirmadas</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-orange rounded-full" />
+              <span className="text-muted">Pendientes</span>
             </div>
           </div>
         </div>
 
-        {/* Filtros y Refresh */}
+        {/* Filtros */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted" />
-            {["pending", "approved", "rejected", "all"].map((f) => (
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {[
+              { key: "pending", label: "Pendientes", count: stats.reserved },
+              { key: "approved", label: "Aprobados", count: stats.sold },
+              { key: "rejected", label: "Rechazados" },
+              { key: "all", label: "Todos" },
+            ].map((f) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 text-sm font-display ${
-                  filter === f
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
+                  filter === f.key
                     ? "bg-gold text-bg"
-                    : "bg-surface text-muted hover:text-cream"
+                    : "bg-surface text-muted hover:text-cream border border-line"
                 }`}
               >
-                {f === "pending" && "Pendientes"}
-                {f === "approved" && "Aprobados"}
-                {f === "rejected" && "Rechazados"}
-                {f === "all" && "Todos"}
+                {f.label}
+                {f.count !== undefined && filter !== f.key && (
+                  <span className="bg-orange text-bg text-xs px-1.5 py-0.5 rounded-full">
+                    {f.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -199,10 +264,10 @@ export default function AdminDashboard() {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="btn-ghost flex items-center gap-2"
+            className="flex items-center gap-2 text-muted hover:text-cream transition-colors px-3 py-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Actualizar
+            <span className="hidden sm:inline">Actualizar</span>
           </button>
         </div>
 
@@ -210,88 +275,193 @@ export default function AdminDashboard() {
         <div className="space-y-4">
           {loading ? (
             <div className="text-center py-12">
-              <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-10 h-10 border-3 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-muted mt-4">Cargando...</p>
             </div>
-          ) : reservations.length === 0 ? (
-            <div className="text-center py-12 card-editorial">
-              <p className="text-muted">No hay reservaciones {filter !== "all" && filter}</p>
+          ) : groupedList.length === 0 ? (
+            <div className="text-center py-12 bg-surface rounded-2xl border border-line">
+              <div className="w-16 h-16 bg-surface-light rounded-full mx-auto flex items-center justify-center mb-4">
+                <Ticket className="w-8 h-8 text-muted" />
+              </div>
+              <p className="text-muted">
+                No hay reservaciones {filter === "pending" ? "pendientes" : filter === "approved" ? "aprobadas" : filter === "rejected" ? "rechazadas" : ""}
+              </p>
             </div>
           ) : (
-            reservations.map((res) => (
-              <div key={res.id} className="card-editorial p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  {/* Info */}
-                  <div className="flex items-start gap-4">
-                    <div className="sticker text-lg px-4">#{res.ticket_number}</div>
-                    <div>
-                      <h3 className="font-display text-cream">{res.buyer_name}</h3>
-                      <p className="text-sm text-muted">{res.buyer_whatsapp}</p>
-                      {res.buyer_email && (
-                        <p className="text-xs text-cement">{res.buyer_email}</p>
-                      )}
-                      <p className="text-xs text-cement mt-1">
+            groupedList.map((res) => (
+              <div
+                key={res.id}
+                className="bg-surface rounded-2xl border border-line overflow-hidden"
+              >
+                {/* Header de la tarjeta */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    {/* Info del cliente */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        {res.tickets.map((t) => (
+                          <span
+                            key={t}
+                            className="bg-gold text-bg px-3 py-1 rounded-full text-sm font-bold"
+                            style={{ fontFamily: 'var(--font-headline)' }}
+                          >
+                            #{t}
+                          </span>
+                        ))}
+                        <span className="text-gold font-bold ml-2">
+                          ${res.totalAmount.toLocaleString('es-CO')}
+                        </span>
+                      </div>
+                      <h3 className="text-cream font-bold text-lg">{res.buyer_name}</h3>
+                      <div className="flex flex-wrap items-center gap-3 mt-1 text-sm">
+                        <a
+                          href={`tel:${res.buyer_whatsapp}`}
+                          className="flex items-center gap-1 text-muted hover:text-cream"
+                        >
+                          <Phone className="w-4 h-4" />
+                          {res.buyer_whatsapp}
+                        </a>
+                        {res.buyer_email && (
+                          <a
+                            href={`mailto:${res.buyer_email}`}
+                            className="flex items-center gap-1 text-muted hover:text-cream"
+                          >
+                            <Mail className="w-4 h-4" />
+                            {res.buyer_email}
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted mt-2">
                         {formatDate(res.created_at)}
                       </p>
                     </div>
+
+                    {/* Status badge */}
+                    <div>
+                      {res.status === "pending" && (
+                        <span className="bg-orange/20 text-orange border border-orange/50 px-3 py-1 rounded-full text-xs font-bold">
+                          PENDIENTE
+                        </span>
+                      )}
+                      {res.status === "approved" && (
+                        <span className="bg-green-500/20 text-green-400 border border-green-500/50 px-3 py-1 rounded-full text-xs font-bold">
+                          APROBADO
+                        </span>
+                      )}
+                      {res.status === "rejected" && (
+                        <span className="bg-red-500/20 text-red-400 border border-red-500/50 px-3 py-1 rounded-full text-xs font-bold">
+                          RECHAZADO
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Acciones */}
-                  <div className="flex items-center gap-2">
-                    {/* Ver comprobante */}
-                    <a
-                      href={res.payment_proof_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary py-2 px-3 text-xs"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Ver pago
-                    </a>
-
-                    {res.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() => handleAction(res.id, res.ticket_number, "approve")}
-                          disabled={processing === res.id}
-                          className="btn-teal py-2 px-3 text-xs disabled:opacity-50"
-                        >
-                          <Check className="w-4 h-4" />
-                          Aprobar
-                        </button>
-                        <button
-                          onClick={() => handleAction(res.id, res.ticket_number, "reject")}
-                          disabled={processing === res.id}
-                          className="bg-red-500/20 text-red-400 border border-red-500/50 py-2 px-3 text-xs hover:bg-red-500/30"
-                        >
-                          <X className="w-4 h-4" />
-                          Rechazar
-                        </button>
-                      </>
+                  {/* Botón expandir */}
+                  <button
+                    onClick={() => setExpandedCard(expandedCard === res.id ? null : res.id)}
+                    className="w-full mt-4 flex items-center justify-center gap-2 text-muted hover:text-cream py-2 border-t border-line transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="text-sm">Ver comprobante</span>
+                    {expandedCard === res.id ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
                     )}
-
-                    {res.status === "approved" && (
-                      <span className="stamp stamp-gold text-xs">APROBADO</span>
-                    )}
-
-                    {res.status === "rejected" && (
-                      <span className="text-red-400 text-xs border border-red-400/50 px-2 py-1">
-                        RECHAZADO
-                      </span>
-                    )}
-                  </div>
+                  </button>
                 </div>
 
-                {res.admin_notes && (
-                  <p className="mt-3 text-xs text-cement border-t border-line pt-3">
-                    Nota: {res.admin_notes}
-                  </p>
+                {/* Contenido expandible */}
+                {expandedCard === res.id && (
+                  <div className="border-t border-line p-4 bg-bg">
+                    {/* Imagen del comprobante */}
+                    <div className="bg-white rounded-xl p-2 mb-4">
+                      <img
+                        src={res.payment_proof_url}
+                        alt="Comprobante de pago"
+                        className="w-full max-h-96 object-contain rounded-lg"
+                      />
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href={res.payment_proof_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-2 bg-surface text-cream py-3 px-4 rounded-xl hover:bg-surface-light transition-colors border border-line"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Abrir imagen
+                      </a>
+
+                      {res.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              res.tickets.forEach(t => handleAction(res.id, t, "approve"));
+                            }}
+                            disabled={processing === res.id}
+                            className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-50"
+                          >
+                            <Check className="w-5 h-5" />
+                            Aprobar
+                          </button>
+                          <button
+                            onClick={() => {
+                              res.tickets.forEach(t => handleAction(res.id, t, "reject"));
+                            }}
+                            disabled={processing === res.id}
+                            className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-500 transition-colors disabled:opacity-50"
+                          >
+                            <X className="w-5 h-5" />
+                            Rechazar
+                          </button>
+                        </>
+                      )}
+
+                      {res.status === "approved" && (
+                        <button
+                          onClick={() => openWhatsApp(res.buyer_whatsapp, res.buyer_name, res.tickets)}
+                          className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors"
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          Enviar WhatsApp
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             ))
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function StatCard({ icon, value, label, color, className = "" }) {
+  const colors = {
+    cream: "text-cream bg-surface-light",
+    orange: "text-orange bg-orange/20",
+    green: "text-green-400 bg-green-500/20",
+    gold: "text-gold bg-gold/20",
+  };
+
+  return (
+    <div className={`bg-surface rounded-2xl p-4 border border-line ${className}`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors[color]}`}>
+          {icon}
+        </div>
+        <div>
+          <p className={`text-2xl font-bold ${color === 'gold' ? 'text-gold' : color === 'green' ? 'text-green-400' : color === 'orange' ? 'text-orange' : 'text-cream'}`} style={{ fontFamily: 'var(--font-headline)' }}>
+            {value}
+          </p>
+          <p className="text-xs text-muted">{label}</p>
+        </div>
+      </div>
     </div>
   );
 }
