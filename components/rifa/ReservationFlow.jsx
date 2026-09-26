@@ -223,27 +223,27 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                   </p>
                 </div>
 
-                {/* Nequi */}
+                {/* Llave Bre-B */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#E21B73] rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">N</span>
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">B</span>
                     </div>
                     <div>
-                      <p className="text-cream font-semibold">NEQUI</p>
-                      <p className="text-muted text-sm">Cristian Buitrago</p>
+                      <p className="text-cream font-semibold">LLAVE BRE-B</p>
+                      <p className="text-muted text-sm">Transfiere desde cualquier banco</p>
                     </div>
                   </div>
 
                   <button
-                    onClick={() => copyToClipboard("3202107769")}
+                    onClick={() => copyToClipboard("@bfms892177")}
                     className="w-full bg-surface-light rounded-xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform"
                   >
                     <span
                       className="text-cream text-2xl tracking-wider"
                       style={{ fontFamily: 'var(--font-headline)' }}
                     >
-                      320 210 7769
+                      @bfms892177
                     </span>
                     {copied ? (
                       <Check className="w-5 h-5 text-green-500" />
