@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import TicketSelector from "./TicketSelector";
+import MusicPlayer from "./MusicPlayer";
 
 // Iconos SVG inline
 const TattooIcon = () => (
@@ -55,6 +56,9 @@ export default function RifaLanding() {
 
   return (
     <div className="min-h-screen bg-bg relative overflow-hidden flex flex-col">
+      {/* Reproductor de música */}
+      <MusicPlayer />
+
       {/* Imagen de fondo completa (ya incluye todo el diseño) */}
       <div className="relative flex-1 min-h-[70vh]">
         <Image
