@@ -8,22 +8,28 @@ module.exports = {
     extend: {
       colors: {
         // Negros
-        bg: "#070707",
-        "bg-dark": "#0A0A0A",
+        bg: "#0a0a0a",
+        "bg-dark": "#050505",
         surface: "#111111",
-        "surface-light": "#151515",
+        "surface-light": "#1a1a1a",
         panel: "#1a1a1a",
 
         // Blancos
-        cream: "#F1EBDD",
-        "cream-light": "#F4F0E8",
-        ink: "#F1EBDD",
+        cream: "#F5F5F5",
+        "cream-light": "#FFFFFF",
+        ink: "#F5F5F5",
 
-        // Amarillo protagonista
-        gold: "#F5C400",
-        "gold-light": "#FFC400",
-        "gold-dark": "#D9A800",
-        "gold-muted": "rgba(245, 196, 0, 0.15)",
+        // Naranja protagonista (nuevo)
+        orange: "#E85A1B",
+        "orange-light": "#FF6B2C",
+        "orange-dark": "#C94A12",
+        "orange-glow": "rgba(232, 90, 27, 0.4)",
+
+        // Dorado/Amarillo para iconos
+        gold: "#D4A84B",
+        "gold-light": "#E5BC5C",
+        "gold-dark": "#B8923F",
+        "gold-muted": "rgba(212, 168, 75, 0.15)",
 
         // Teal secundario
         teal: "#1F8F87",
@@ -32,14 +38,14 @@ module.exports = {
         "teal-muted": "rgba(31, 143, 135, 0.15)",
 
         // Grises
-        muted: "#8A8A84",
-        cement: "#4A4A46",
+        muted: "#8A8A8A",
+        cement: "#4A4A4A",
 
         // Bordes
-        line: "rgba(241, 235, 221, 0.08)",
-        "line-light": "rgba(241, 235, 221, 0.15)",
-        "line-gold": "rgba(245, 196, 0, 0.4)",
-        "line-teal": "rgba(31, 143, 135, 0.4)",
+        line: "rgba(255, 255, 255, 0.1)",
+        "line-light": "rgba(255, 255, 255, 0.2)",
+        "line-gold": "rgba(212, 168, 75, 0.4)",
+        "line-orange": "rgba(232, 90, 27, 0.4)",
       },
       fontFamily: {
         // Gótica/Blackletter para títulos principales

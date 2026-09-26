@@ -19,7 +19,7 @@ export const metadata = {
   openGraph: {
     title: "RIFA Crisbo Tattoo | Tatuaje $1M + Boleta Ryan Castro",
     description:
-      "200 cupos, $30,000 cada uno. Gana un tatuaje de $1M + boleta para Ryan Castro. Sorteo 24 de octubre 2026 con la Loteria de Colombia.",
+      "200 cupos, $30,000 cada uno. Gana un tatuaje de $1M + boleta para Ryan Castro. Sorteo 24 de octubre 2026 con la Loteria de Boyaca.",
     locale: "es_CO",
     type: "website",
     siteName: "Crisbo Tattoo",
@@ -44,7 +44,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#070707",
+  themeColor: "#0a0a0a",
   viewportFit: "cover",
 };
 
@@ -54,17 +54,17 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Gothic/Blackletter para títulos principales */}
+        {/* Bebas Neue - títulos principales bold condensed */}
         <link
-          href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
           rel="stylesheet"
         />
-        {/* Display fuerte para secundarios */}
+        {/* Oswald - subtítulos */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Body legible */}
+        {/* Inter - body */}
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"

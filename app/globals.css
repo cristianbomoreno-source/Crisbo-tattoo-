@@ -3,34 +3,34 @@
 @tailwind utilities;
 
 /* ================================
-   DESIGN TOKENS - EDITORIAL TATTOO
+   DESIGN TOKENS - RIFA URBANA
    ================================ */
 :root {
-  /* Tipografía - 3 niveles */
-  --font-gothic: 'UnifrakturMaguntia', 'Fraktur', 'Old English Text MT', serif;
-  --font-display: 'Oswald', 'Anton', 'Bebas Neue', sans-serif;
+  /* Tipografía */
+  --font-headline: 'Bebas Neue', 'Impact', sans-serif;
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Colores */
-  --bg: #070707;
-  --bg-dark: #0A0A0A;
+  --bg: #0a0a0a;
+  --bg-dark: #050505;
   --surface: #111111;
-  --surface-light: #151515;
+  --surface-light: #1a1a1a;
   --panel: #1a1a1a;
 
-  --cream: #F1EBDD;
-  --cream-light: #F4F0E8;
+  --cream: #F5F5F5;
+  --cream-light: #FFFFFF;
 
-  --gold: #F5C400;
-  --gold-light: #FFC400;
-  --gold-dark: #D9A800;
+  --orange: #E85A1B;
+  --orange-light: #FF6B2C;
+  --orange-dark: #C94A12;
 
-  --teal: #1F8F87;
-  --teal-light: #2C9F94;
-  --teal-dark: #187A73;
+  --gold: #D4A84B;
+  --gold-light: #E5BC5C;
+  --gold-dark: #B8923F;
 
-  --muted: #8A8A84;
-  --cement: #4A4A46;
+  --muted: #8A8A8A;
+  --cement: #4A4A4A;
 
   /* Espaciado móvil */
   --px: 20px;
