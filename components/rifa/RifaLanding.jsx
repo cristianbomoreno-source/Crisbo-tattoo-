@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import TicketSelector from "./TicketSelector";
 
 // Iconos SVG inline
@@ -53,150 +54,68 @@ export default function RifaLanding() {
   const [showSelector, setShowSelector] = useState(false);
 
   return (
-    <div className="min-h-screen bg-bg relative overflow-hidden">
-      {/* Fondo con gradiente y efecto */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: `
-            linear-gradient(to bottom,
-              rgba(10,10,10,0.3) 0%,
-              rgba(10,10,10,0.1) 30%,
-              rgba(10,10,10,0.7) 70%,
-              rgba(10,10,10,1) 100%
-            ),
-            linear-gradient(to right,
-              rgba(232, 90, 27, 0.3) 0%,
-              rgba(232, 90, 27, 0.1) 50%,
-              rgba(0,0,0,0.5) 100%
-            ),
-            radial-gradient(ellipse at 70% 30%, rgba(232, 90, 27, 0.4) 0%, transparent 60%)
-          `,
-        }}
-      />
+    <div className="min-h-screen bg-bg relative overflow-hidden flex flex-col">
+      {/* Imagen de fondo completa (ya incluye todo el diseño) */}
+      <div className="relative flex-1 min-h-[70vh]">
+        <Image
+          src="/images/ryan-castro.png"
+          alt="Rifa Crisbo Tattoo - Gánate 1 Tatuaje + 1 Boleta Ryan Castro"
+          fill
+          className="object-cover object-top"
+          priority
+        />
+      </div>
 
-      {/* Imagen de Ryan Castro - placeholder con efecto naranja */}
-      <div
-        className="absolute top-0 right-0 w-full h-[70vh] z-0 opacity-90"
-        style={{
-          background: `
-            linear-gradient(to bottom, transparent 60%, rgba(10,10,10,1) 100%),
-            linear-gradient(to left, transparent 0%, rgba(10,10,10,0.8) 100%),
-            url('/images/ryan-castro.png') no-repeat center top
-          `,
-          backgroundSize: 'cover',
-          filter: 'sepia(30%) saturate(150%) hue-rotate(-10deg)',
-        }}
-      />
-
-      {/* Contenido */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Logo */}
-        <div className="pt-8 pb-4 text-center">
-          <div className="inline-block">
-            <div className="text-cream font-bold text-2xl tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
-              <span className="text-3xl">CB</span>
-            </div>
-            <div className="text-cream font-bold text-xl tracking-[0.3em]" style={{ fontFamily: 'var(--font-display)' }}>
-              CRISBO
-            </div>
-            <div className="text-cream/70 text-[10px] tracking-[0.4em]">
-              TATTOO STUDIO
-            </div>
-          </div>
+      {/* Info Cards - Fondo oscuro */}
+      <div className="bg-bg px-4 py-6">
+        {/* Primera fila */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          <InfoCard
+            icon={<TattooIcon />}
+            label="TATUAJE 25 CM"
+            value="B/N"
+            valueColor="text-gold"
+          />
+          <InfoCard
+            icon={<CoinsIcon />}
+            label="VALOR TATUAJE"
+            value="$1.000.000"
+            valueColor="text-cream"
+            bordered
+          />
+          <InfoCard
+            icon={<TicketIcon />}
+            label="BOLETA"
+            value="ORIENTAL BAJA"
+            valueColor="text-gold"
+          />
         </div>
 
-        {/* Título principal */}
-        <div className="flex-1 flex flex-col justify-center px-5 pb-8">
-          <div className="space-y-0">
-            <h1
-              className="text-cream text-[clamp(2.5rem,12vw,4.5rem)] leading-[0.95] font-bold"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              GÁNATE
-            </h1>
-            <h2
-              className="text-orange text-[clamp(3rem,15vw,6rem)] leading-[0.85] font-bold"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              1 TATUAJE +
-            </h2>
-            <h2
-              className="text-orange text-[clamp(3rem,15vw,6rem)] leading-[0.85] font-bold"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              1 BOLETA
-            </h2>
-          </div>
-
-          {/* Subtítulo Ryan Castro */}
-          <div className="mt-6 space-y-0">
-            <p
-              className="text-cream/90 text-xl tracking-[0.15em]"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              RYAN CASTRO
-            </p>
-            <p
-              className="text-gold text-sm tracking-[0.2em]"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              EN BOGOTÁ
-            </p>
-          </div>
-        </div>
-
-        {/* Info Cards */}
-        <div className="px-4 pb-4">
-          {/* Primera fila */}
-          <div className="grid grid-cols-3 gap-2 mb-2">
-            <InfoCard
-              icon={<TattooIcon />}
-              label="TATUAJE 25 CM"
-              value="B/N"
-              valueColor="text-gold"
-            />
-            <InfoCard
-              icon={<CoinsIcon />}
-              label="VALOR TATUAJE"
-              value="$1.000.000"
-              valueColor="text-cream"
-              bordered
-            />
-            <InfoCard
-              icon={<TicketIcon />}
-              label="BOLETA"
-              value="ORIENTAL BAJA"
-              valueColor="text-gold"
-            />
-          </div>
-
-          {/* Segunda fila */}
-          <div className="grid grid-cols-3 gap-2">
-            <InfoCard
-              icon={<CalendarIcon />}
-              label="JUEGA"
-              value="24 OCT 2026"
-              valueColor="text-gold"
-            />
-            <InfoCard
-              icon={<NumbersIcon />}
-              label="VALOR BOLETA"
-              value="$30.000"
-              valueColor="text-cream"
-              bordered
-            />
-            <InfoCard
-              icon={<CloverIcon />}
-              label="LOTERÍA"
-              value="DE BOYACÁ"
-              valueColor="text-gold"
-            />
-          </div>
+        {/* Segunda fila */}
+        <div className="grid grid-cols-3 gap-2">
+          <InfoCard
+            icon={<CalendarIcon />}
+            label="JUEGA"
+            value="24 OCT 2026"
+            valueColor="text-gold"
+          />
+          <InfoCard
+            icon={<NumbersIcon />}
+            label="VALOR BOLETA"
+            value="$30.000"
+            valueColor="text-cream"
+            bordered
+          />
+          <InfoCard
+            icon={<CloverIcon />}
+            label="LOTERÍA"
+            value="DE BOYACÁ"
+            valueColor="text-gold"
+          />
         </div>
 
         {/* Botón Participar */}
-        <div className="px-4 pb-8 pt-4">
+        <div className="pt-6 pb-2">
           <button
             onClick={() => setShowSelector(true)}
             className="w-full bg-cream text-bg py-4 rounded-full font-bold text-lg tracking-wider flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
