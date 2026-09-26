@@ -142,7 +142,7 @@ export default function AdminDashboard() {
       <header className="bg-surface border-b border-line sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="relative w-24 h-16">
+            <div className="relative w-48 h-32">
               <Image
                 src="/images/logo-crisbo.png"
                 alt="Crisbo Tattoo"
