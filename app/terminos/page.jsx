@@ -57,13 +57,26 @@ export default function TerminosPage() {
           </ul>
         </Section>
 
-        <Section title="3. VALOR Y CANTIDAD DE BOLETAS">
-          <ul className="list-disc list-inside space-y-2 text-muted">
-            <li>Valor por boleta: <strong className="text-cream">$30.000 COP</strong></li>
-            <li>Cantidad total de boletas: <strong className="text-cream">200 unidades</strong></li>
-            <li>Numeración: Del 001 al 200</li>
-            <li>Cada participante puede adquirir una o más boletas</li>
+        <Section title="3. VALOR Y PAQUETES DE BOLETAS">
+          <p className="mb-4">Cantidad total de boletas: <strong className="text-cream">200 unidades</strong> (numeración del 001 al 200)</p>
+
+          <p className="text-cream font-semibold mb-2">Paquetes disponibles:</p>
+          <ul className="list-disc list-inside space-y-2 text-muted mb-4">
+            <li>
+              <strong className="text-cream">Paquete BÁSICO:</strong> 1 boleta por <strong className="text-gold">$30.000 COP</strong>
+            </li>
+            <li>
+              <strong className="text-cream">Paquete DÚO:</strong> 2 boletas por <strong className="text-gold">$50.000 COP</strong> (ahorro de $10.000)
+            </li>
+            <li>
+              <strong className="text-cream">Paquete MEGA:</strong> 3 o más boletas a <strong className="text-gold">$20.000 COP</strong> cada una (mejor precio por boleta)
+            </li>
           </ul>
+
+          <p className="text-muted text-sm">
+            Cada participante puede adquirir uno o más paquetes. A mayor cantidad de boletas,
+            mayores oportunidades de ganar.
+          </p>
         </Section>
 
         <Section title="4. FECHA Y MÉTODO DEL SORTEO">
