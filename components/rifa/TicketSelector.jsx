@@ -27,10 +27,10 @@ export default function TicketSelector({ onClose }) {
     }
   };
 
-  // Elegir 4 tickets aleatorios
+  // Elegir hasta 4 tickets aleatorios (o menos si no hay suficientes)
   const pickRandomTickets = (availableTickets) => {
     const shuffled = [...availableTickets].sort(() => Math.random() - 0.5);
-    setRandomTickets(shuffled.slice(0, 4));
+    setRandomTickets(shuffled.slice(0, Math.min(4, shuffled.length)));
   };
 
   // Refrescar boletas
@@ -72,6 +72,15 @@ export default function TicketSelector({ onClose }) {
     );
   }
 
+  // Determinar el grid según cantidad de boletas
+  const getGridClass = () => {
+    const count = randomTickets.length;
+    if (count === 1) return 'grid-cols-1 max-w-[200px] mx-auto';
+    if (count === 2) return 'grid-cols-2 max-w-[400px] mx-auto';
+    if (count === 3) return 'grid-cols-2 max-w-[400px] mx-auto';
+    return 'grid-cols-2';
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-bg">
       {/* Header */}
@@ -97,17 +106,26 @@ export default function TicketSelector({ onClose }) {
           <div className="flex-1 flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-orange animate-spin" />
           </div>
+        ) : randomTickets.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <p className="text-cream text-xl mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
+              ¡BOLETAS AGOTADAS!
+            </p>
+            <p className="text-muted text-sm">
+              Todas las boletas han sido vendidas
+            </p>
+          </div>
         ) : (
           <>
-            {/* Tickets disponibles */}
+            {/* Subtítulo */}
             <div className="text-center mb-6">
               <p className="text-muted text-sm">
-                {tickets.length} boletas disponibles
+                Selecciona tu número de la suerte
               </p>
             </div>
 
-            {/* Grid de 4 boletas */}
-            <div className={`grid grid-cols-2 gap-4 mb-6 ${refreshing ? 'opacity-50' : ''}`}>
+            {/* Grid de boletas */}
+            <div className={`grid ${getGridClass()} gap-4 mb-6 ${refreshing ? 'opacity-50' : ''}`}>
               {randomTickets.map((ticket) => (
                 <button
                   key={ticket.number}
@@ -141,17 +159,19 @@ export default function TicketSelector({ onClose }) {
               ))}
             </div>
 
-            {/* Botón refrescar */}
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center justify-center gap-2 text-muted hover:text-cream py-3 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="text-sm tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
-                VER OTROS NÚMEROS
-              </span>
-            </button>
+            {/* Botón refrescar - solo mostrar si hay más de 4 boletas disponibles */}
+            {tickets.length > 4 && (
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center justify-center gap-2 text-muted hover:text-cream py-3 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="text-sm tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
+                  VER OTROS NÚMEROS
+                </span>
+              </button>
+            )}
 
             {/* Spacer */}
             <div className="flex-1" />
