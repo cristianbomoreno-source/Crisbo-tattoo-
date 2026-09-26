@@ -112,33 +112,39 @@ export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
           <div className="w-10" />
         </div>
 
-        {/* Progress bar con pasos */}
+        {/* Progress bar con pasos y etiquetas */}
         {step < 4 && (
           <div className="px-4 pb-4">
-            <div className="flex items-center justify-between mb-2">
-              {[1, 2, 3].map((s) => (
-                <div
-                  key={s}
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors
-                    ${step === s ? 'bg-orange text-bg' : step > s ? 'bg-green-500 text-white' : 'bg-surface text-muted'}
-                  `}
-                >
-                  {step > s ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    s
-                  )}
+            <div className="flex items-center justify-between">
+              {[
+                { num: 1, label: 'DATOS' },
+                { num: 2, label: 'PAGO' },
+                { num: 3, label: 'CONFIRMACIÓN' }
+              ].map((s, i) => (
+                <div key={s.num} className="flex flex-col items-center flex-1">
+                  <div className="flex items-center w-full">
+                    {i > 0 && (
+                      <div className={`flex-1 h-0.5 ${step > i ? 'bg-green-500' : step === s.num ? 'bg-gold' : 'bg-surface'}`} />
+                    )}
+                    <div
+                      className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold transition-colors border-2
+                        ${step === s.num ? 'bg-gold/20 border-gold text-gold' : step > s.num ? 'bg-green-500 border-green-500 text-white' : 'bg-surface border-surface text-muted'}
+                      `}
+                    >
+                      {step > s.num ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        s.num
+                      )}
+                    </div>
+                    {i < 2 && (
+                      <div className={`flex-1 h-0.5 ${step > s.num ? 'bg-green-500' : 'bg-surface'}`} />
+                    )}
+                  </div>
+                  <span className={`text-[10px] mt-1 tracking-wider ${step === s.num ? 'text-gold' : step > s.num ? 'text-green-500' : 'text-muted'}`}>
+                    {s.label}
+                  </span>
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {[1, 2, 3].map((s) => (
-                <div
-                  key={s}
-                  className={`flex-1 h-1 rounded-full transition-colors ${
-                    step >= s ? 'bg-orange' : 'bg-surface'
-                  }`}
-                />
               ))}
             </div>
           </div>
@@ -262,132 +268,131 @@ export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
         {/* Step 2: Pago */}
         {step === 2 && (
           <>
-            <div className="mb-4">
-              <h2
-                className="text-cream text-2xl mb-1"
-                style={{ fontFamily: 'var(--font-headline)' }}
-              >
-                PAGA TU BOLETA
-              </h2>
-              <p className="text-muted text-sm">
-                Escanea el QR o usa la llave Bre-B
-              </p>
-            </div>
-
-            <div className="flex-1 space-y-4 overflow-y-auto">
-              {/* Monto */}
-              <div className="bg-orange rounded-2xl p-5 text-center">
-                <p className="text-cream/80 text-xs mb-1">VALOR A PAGAR</p>
-                <p
-                  className="text-cream text-5xl font-bold"
-                  style={{ fontFamily: 'var(--font-headline)' }}
-                >
-                  ${totalAmount.toLocaleString('es-CO')}
-                </p>
-                <p className="text-cream/60 text-xs mt-1">
-                  {ticketNumbers.length === 1 ? '1 boleta' : `${ticketNumbers.length} boletas × $30.000`}
-                </p>
-              </div>
-
-              {/* Instrucciones */}
-              <div className="bg-surface rounded-2xl p-4">
-                <p className="text-gold text-xs font-semibold tracking-wider mb-4">SIGUE ESTOS PASOS:</p>
-
-                <div className="space-y-4">
-                  <div className="flex gap-4 items-start">
-                    <div className="w-10 h-10 bg-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Smartphone className="w-5 h-5 text-orange" />
-                    </div>
-                    <div>
-                      <p className="text-cream font-medium">1. Abre tu app del banco</p>
-                      <p className="text-muted text-xs">Bancolombia, Davivienda, Nequi, etc.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 items-start">
-                    <div className="w-10 h-10 bg-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Camera className="w-5 h-5 text-orange" />
-                    </div>
-                    <div>
-                      <p className="text-cream font-medium">2. Escanea este código QR</p>
-                      <p className="text-muted text-xs">Busca "Pagar con QR" o "Transfiya"</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 items-start">
-                    <div className="w-10 h-10 bg-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Send className="w-5 h-5 text-orange" />
-                    </div>
-                    <div>
-                      <p className="text-cream font-medium">3. Envía ${totalAmount.toLocaleString('es-CO')}</p>
-                      <p className="text-muted text-xs">
-                        En descripción escribe: <span className="text-orange font-bold">RIFA #{ticketNumbers.join(', #')}</span>
-                      </p>
-                    </div>
-                  </div>
+            <div className="flex-1 overflow-y-auto">
+              {/* Tarjeta principal de pago */}
+              <div className="bg-surface rounded-3xl p-5 border border-line relative overflow-hidden">
+                {/* Decoración de fondo */}
+                <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
+                  <svg viewBox="0 0 100 100" className="w-full h-full text-gold">
+                    <path d="M50 0 L100 50 L50 100 L0 50 Z" fill="currentColor" />
+                  </svg>
                 </div>
-              </div>
 
-              {/* QR y Llave */}
-              <div className="bg-surface rounded-3xl p-5 space-y-4">
-                {/* QR grande */}
-                <div className="bg-white rounded-2xl p-4">
-                  <div className="relative w-full aspect-square">
-                    <Image
-                      src="/images/qr-pago.jpg"
-                      alt="Código QR para pago"
-                      fill
-                      className="object-contain rounded-xl"
-                    />
+                {/* PAGA CON título */}
+                <div className="text-center mb-4">
+                  <span
+                    className="text-gold text-2xl italic font-bold px-4 py-1 relative"
+                    style={{ fontFamily: 'var(--font-headline)' }}
+                  >
+                    PAGA CON
+                  </span>
+                </div>
+
+                {/* Logo Bre-B */}
+                <div className="flex items-center justify-center gap-4 mb-5">
+                  <span className="text-white text-3xl font-black tracking-tight" style={{ fontFamily: 'var(--font-headline)' }}>
+                    Bre-B
+                  </span>
+                  <div className="w-px h-8 bg-line" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">$</span>
+                    </div>
+                    <span className="text-muted text-sm">Transfiya</span>
                   </div>
                 </div>
 
-                {/* Separador */}
-                <div className="flex items-center gap-3">
+                {/* Monto a pagar */}
+                <div className="bg-gold/10 border border-gold/30 rounded-2xl p-3 mb-5 text-center">
+                  <p className="text-gold/70 text-xs mb-0.5">VALOR A PAGAR</p>
+                  <p className="text-gold text-4xl font-bold" style={{ fontFamily: 'var(--font-headline)' }}>
+                    ${totalAmount.toLocaleString('es-CO')}
+                  </p>
+                  {ticketNumbers.length > 1 && (
+                    <p className="text-gold/60 text-xs mt-0.5">{ticketNumbers.length} boletas × $30.000</p>
+                  )}
+                </div>
+
+                {/* QR con marco decorativo */}
+                <div className="relative mb-5">
+                  {/* Esquinas decorativas */}
+                  <div className="absolute -top-1 -left-1 w-6 h-6 border-l-2 border-t-2 border-gold rounded-tl-lg" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 border-r-2 border-t-2 border-gold rounded-tr-lg" />
+                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-l-2 border-b-2 border-gold rounded-bl-lg" />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-r-2 border-b-2 border-gold rounded-br-lg" />
+
+                  {/* QR */}
+                  <div className="bg-white rounded-2xl p-4 mx-2">
+                    <div className="relative w-full aspect-square">
+                      <Image
+                        src="/images/qr-pago.jpg"
+                        alt="Código QR para pago"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Texto debajo del QR */}
+                <div className="text-center mb-5">
+                  <p className="text-cream text-sm font-semibold tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
+                    ESCANEA EL CÓDIGO QR
+                  </p>
+                  <p className="text-muted text-xs mt-1">
+                    Y ENVÍA EL DINERO DESDE CUALQUIER BANCO
+                  </p>
+                </div>
+
+                {/* Separador O USA LA LLAVE */}
+                <div className="flex items-center gap-3 mb-5">
                   <div className="flex-1 h-px bg-line" />
-                  <span className="text-muted text-xs">o usa la llave</span>
+                  <span className="text-muted text-xs tracking-wider">O USA LA LLAVE</span>
                   <div className="flex-1 h-px bg-line" />
                 </div>
 
-                {/* Llave Bre-B */}
+                {/* Botón Llave Bre-B */}
                 <button
                   onClick={() => copyToClipboard("@bfms892177")}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform"
+                  className="w-full bg-green-600 hover:bg-green-500 rounded-2xl p-4 flex items-center justify-between active:scale-[0.98] transition-all border-2 border-green-500"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-2xl">B</span>
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                      <span className="text-green-600 font-black text-2xl">B</span>
                     </div>
                     <div className="text-left">
-                      <p className="text-white/70 text-xs">Llave Bre-B (Transfiya)</p>
-                      <p className="text-white text-2xl font-bold" style={{ fontFamily: 'var(--font-headline)' }}>
-                        @bfms892177
+                      <p className="text-white/70 text-[10px] tracking-wider">LLAVE BRE-B (TRANSFIYA)</p>
+                      <p className="text-white text-xl font-bold tracking-wide" style={{ fontFamily: 'var(--font-headline)' }}>
+                        @BFMS892177
                       </p>
                     </div>
                   </div>
                   {copied ? (
-                    <div className="bg-white rounded-full p-2">
+                    <div className="bg-white rounded-xl p-2.5">
                       <Check className="w-6 h-6 text-green-600" />
                     </div>
                   ) : (
-                    <div className="bg-white/20 rounded-full p-2">
+                    <div className="bg-white/20 rounded-xl p-2.5">
                       <Copy className="w-6 h-6 text-white" />
                     </div>
                   )}
                 </button>
-              </div>
 
-              {/* Recordatorio */}
-              <div className="bg-orange/10 border-2 border-orange/30 rounded-2xl p-4">
-                <p className="text-orange text-sm text-center font-medium">
-                  ⚠️ Escribe <strong>RIFA #{ticketNumbers.join(', #')}</strong> en la descripción del pago
-                </p>
+                {/* Nota importante */}
+                <div className="mt-4 flex items-start gap-3 bg-orange/10 rounded-xl p-3">
+                  <div className="w-6 h-6 bg-orange rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-bg text-sm font-bold">!</span>
+                  </div>
+                  <p className="text-cream/80 text-xs leading-relaxed">
+                    En la descripción del pago escribe: <strong className="text-orange">RIFA #{ticketNumbers.join(', #')}</strong>
+                  </p>
+                </div>
               </div>
             </div>
 
             <button
               onClick={() => setStep(3)}
-              className="w-full bg-orange text-cream py-5 rounded-full font-bold text-lg tracking-wider flex items-center justify-center gap-3 active:scale-[0.98] transition-transform mt-4 shadow-lg shadow-orange/30"
+              className="w-full bg-gold text-bg py-5 rounded-full font-bold text-lg tracking-wider flex items-center justify-center gap-3 active:scale-[0.98] transition-transform mt-4 shadow-lg shadow-gold/30"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               YA PAGUÉ
