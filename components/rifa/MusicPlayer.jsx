@@ -87,16 +87,16 @@ export default function MusicPlayer() {
   return (
     <button
       onClick={togglePlay}
-      className={`fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 ${
+      className={`fixed top-3 right-3 z-50 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95 ${
         isPlaying
-          ? 'bg-orange/80 text-cream'
-          : 'bg-surface/80 text-muted border border-line'
+          ? 'bg-orange/70 text-cream'
+          : 'bg-surface/70 text-muted'
       }`}
     >
       {isPlaying ? (
-        <Volume2 className="w-4 h-4" />
+        <Volume2 className="w-3.5 h-3.5" />
       ) : (
-        <VolumeX className="w-4 h-4" />
+        <VolumeX className="w-3.5 h-3.5" />
       )}
     </button>
   );
