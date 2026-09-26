@@ -127,6 +127,16 @@ export default function RifaLanding() {
             </svg>
           </button>
         </div>
+
+        {/* Link Términos y Condiciones */}
+        <div className="pb-4 text-center">
+          <a
+            href="/terminos"
+            className="text-muted text-xs hover:text-cream transition-colors underline"
+          >
+            Términos y Condiciones
+          </a>
+        </div>
       </div>
 
       {/* Selector de boletas */}

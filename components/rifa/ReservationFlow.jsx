@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X, Upload, Check, Loader2, ArrowLeft, ArrowRight, Copy } from "lucide-react";
+import Image from "next/image";
+import { X, Upload, Check, Loader2, ArrowLeft, ArrowRight, Copy, Smartphone, Camera, Send } from "lucide-react";
 
 export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
   const [step, setStep] = useState(1);
@@ -80,9 +81,9 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg">
+    <div className="fixed inset-0 z-50 bg-bg overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-line">
+      <div className="sticky top-0 bg-bg z-10 flex items-center justify-between p-4 border-b border-line">
         <button
           onClick={step === 1 ? onClose : () => setStep(step - 1)}
           className="p-2 text-muted hover:text-cream transition-colors"
@@ -114,7 +115,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
       </div>
 
       {/* Contenido */}
-      <div className="flex flex-col h-[calc(100vh-120px)] p-4">
+      <div className="flex flex-col min-h-[calc(100vh-120px)] p-4">
         {/* Step 1: Datos */}
         {step === 1 && (
           <>
@@ -198,7 +199,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
         {/* Step 2: Pago */}
         {step === 2 && (
           <>
-            <div className="mb-6">
+            <div className="mb-4">
               <h3
                 className="text-cream text-2xl mb-1"
                 style={{ fontFamily: 'var(--font-headline)' }}
@@ -206,59 +207,101 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                 REALIZA EL PAGO
               </h3>
               <p className="text-muted text-sm">
-                Transfiere a la siguiente cuenta
+                Sigue estos pasos para completar tu pago
               </p>
             </div>
 
-            <div className="flex-1">
-              <div className="bg-surface rounded-2xl p-6 space-y-6">
-                {/* Monto */}
-                <div className="text-center pb-4 border-b border-line">
-                  <p className="text-muted text-xs mb-1">VALOR A PAGAR</p>
-                  <p
-                    className="text-orange text-4xl font-bold"
-                    style={{ fontFamily: 'var(--font-headline)' }}
-                  >
-                    $30.000
-                  </p>
+            <div className="flex-1 space-y-4">
+              {/* Monto a pagar */}
+              <div className="bg-orange/20 border border-orange rounded-2xl p-4 text-center">
+                <p className="text-cream/70 text-xs mb-1">VALOR A PAGAR</p>
+                <p
+                  className="text-orange text-4xl font-bold"
+                  style={{ fontFamily: 'var(--font-headline)' }}
+                >
+                  $30.000 COP
+                </p>
+              </div>
+
+              {/* Paso a paso */}
+              <div className="bg-surface rounded-2xl p-4 space-y-4">
+                <p className="text-gold text-xs font-semibold tracking-wider">PASO A PASO</p>
+
+                {/* Paso 1 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Smartphone className="w-4 h-4 text-orange" />
+                  </div>
+                  <div>
+                    <p className="text-cream font-medium text-sm">1. Abre tu app bancaria</p>
+                    <p className="text-muted text-xs">Bancolombia, Davivienda, Nequi, o cualquier banco</p>
+                  </div>
                 </div>
 
-                {/* Llave Bre-B */}
-                <div className="space-y-4">
+                {/* Paso 2 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Camera className="w-4 h-4 text-orange" />
+                  </div>
+                  <div>
+                    <p className="text-cream font-medium text-sm">2. Escanea el código QR</p>
+                    <p className="text-muted text-xs">O busca la opción "Pagar con QR" / "Transfiya"</p>
+                  </div>
+                </div>
+
+                {/* Paso 3 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Send className="w-4 h-4 text-orange" />
+                  </div>
+                  <div>
+                    <p className="text-cream font-medium text-sm">3. Envía $30.000</p>
+                    <p className="text-muted text-xs">En la descripción escribe: <span className="text-orange font-semibold">RIFA #{ticketNumber}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Código QR */}
+              <div className="bg-white rounded-2xl p-4">
+                <div className="relative w-full aspect-square max-w-[250px] mx-auto">
+                  <Image
+                    src="/images/qr-pago.jpg"
+                    alt="Código QR para pago"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Llave alternativa */}
+              <div className="bg-surface rounded-2xl p-4">
+                <p className="text-muted text-xs mb-3 text-center">¿No puedes escanear? Usa la llave:</p>
+                <button
+                  onClick={() => copyToClipboard("@bfms892177")}
+                  className="w-full bg-surface-light rounded-xl p-3 flex items-center justify-between active:scale-[0.98] transition-transform"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">B</span>
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">B</span>
                     </div>
-                    <div>
-                      <p className="text-cream font-semibold">LLAVE BRE-B</p>
-                      <p className="text-muted text-sm">Transfiere desde cualquier banco</p>
+                    <div className="text-left">
+                      <p className="text-cream font-semibold text-sm">Llave Bre-B</p>
+                      <p className="text-gold text-lg" style={{ fontFamily: 'var(--font-headline)' }}>@bfms892177</p>
                     </div>
                   </div>
+                  {copied ? (
+                    <Check className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Copy className="w-5 h-5 text-muted" />
+                  )}
+                </button>
+              </div>
 
-                  <button
-                    onClick={() => copyToClipboard("@bfms892177")}
-                    className="w-full bg-surface-light rounded-xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform"
-                  >
-                    <span
-                      className="text-cream text-2xl tracking-wider"
-                      style={{ fontFamily: 'var(--font-headline)' }}
-                    >
-                      @bfms892177
-                    </span>
-                    {copied ? (
-                      <Check className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <Copy className="w-5 h-5 text-muted" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Nota */}
-                <div className="bg-orange/10 border border-orange/30 rounded-xl p-4">
-                  <p className="text-orange text-sm text-center">
-                    Incluye en la descripción: <strong>RIFA #{ticketNumber}</strong>
-                  </p>
-                </div>
+              {/* Recordatorio */}
+              <div className="bg-orange/10 border border-orange/30 rounded-xl p-3">
+                <p className="text-orange text-xs text-center">
+                  <strong>Importante:</strong> En la descripción del pago escribe <strong>RIFA #{ticketNumber}</strong>
+                </p>
               </div>
             </div>
 
@@ -284,7 +327,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                 SUBE TU COMPROBANTE
               </h3>
               <p className="text-muted text-sm">
-                Captura o foto del pago realizado
+                Toma una captura de pantalla o foto del comprobante de pago
               </p>
             </div>
 
@@ -305,7 +348,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                       />
                       <div className="flex items-center justify-center gap-2 text-orange">
                         <Check className="w-5 h-5" />
-                        <span className="text-sm">Imagen cargada</span>
+                        <span className="text-sm">Imagen cargada - Toca para cambiar</span>
                       </div>
                     </div>
                   ) : (
@@ -323,6 +366,25 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                   className="hidden"
                 />
               </label>
+
+              {/* Qué debe mostrar el comprobante */}
+              <div className="mt-4 bg-surface rounded-xl p-4">
+                <p className="text-cream/70 text-xs mb-2">El comprobante debe mostrar:</p>
+                <ul className="space-y-1 text-muted text-xs">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3 h-3 text-green-500" />
+                    Fecha y hora del pago
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3 h-3 text-green-500" />
+                    Monto: $30.000
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3 h-3 text-green-500" />
+                    Destinatario o llave
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {error && (
@@ -373,7 +435,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
 
             <div className="bg-surface rounded-2xl p-6 w-full mb-8">
               <p className="text-cream/70 text-sm mb-4">
-                Te contactaremos por WhatsApp para confirmar tu pago.
+                Revisaremos tu pago y te confirmaremos por WhatsApp en las próximas horas.
               </p>
               <div className="flex items-center gap-2 justify-center text-gold">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
