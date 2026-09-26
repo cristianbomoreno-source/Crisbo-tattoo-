@@ -100,7 +100,7 @@ export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
           </button>
 
           {/* Logo */}
-          <div className="relative w-36 h-20">
+          <div className="relative w-48 h-28">
             <Image
               src="/images/logo-crisbo.png"
               alt="Crisbo Tattoo"
