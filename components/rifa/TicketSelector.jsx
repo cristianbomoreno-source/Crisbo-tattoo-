@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { RefreshCw, X, ArrowRight, Loader2 } from "lucide-react";
 import ReservationFlow from "./ReservationFlow";
 
@@ -12,7 +13,6 @@ export default function TicketSelector({ onClose }) {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [showReservation, setShowReservation] = useState(false);
 
-  // Cargar todos los tickets
   const fetchTickets = async () => {
     try {
       const response = await fetch("/api/tickets");
@@ -27,13 +27,11 @@ export default function TicketSelector({ onClose }) {
     }
   };
 
-  // Elegir hasta 4 tickets aleatorios (o menos si no hay suficientes)
   const pickRandomTickets = (availableTickets) => {
     const shuffled = [...availableTickets].sort(() => Math.random() - 0.5);
     setRandomTickets(shuffled.slice(0, Math.min(4, shuffled.length)));
   };
 
-  // Refrescar boletas
   const handleRefresh = () => {
     setRefreshing(true);
     setSelectedTicket(null);
@@ -72,55 +70,70 @@ export default function TicketSelector({ onClose }) {
     );
   }
 
-  // Determinar el grid según cantidad de boletas
   const getGridClass = () => {
     const count = randomTickets.length;
-    if (count === 1) return 'grid-cols-1 max-w-[200px] mx-auto';
-    if (count === 2) return 'grid-cols-2 max-w-[400px] mx-auto';
-    if (count === 3) return 'grid-cols-2 max-w-[400px] mx-auto';
+    if (count === 1) return 'grid-cols-1 max-w-[180px] mx-auto';
+    if (count === 2) return 'grid-cols-2 max-w-[380px] mx-auto';
+    if (count === 3) return 'grid-cols-2 max-w-[380px] mx-auto';
     return 'grid-cols-2';
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-line">
-        <button
-          onClick={onClose}
-          className="p-2 text-muted hover:text-cream transition-colors"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        <h2
-          className="text-cream text-lg tracking-wider"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          ESCOGE TU NÚMERO
-        </h2>
-        <div className="w-10" />
+    <div className="fixed inset-0 z-50 bg-bg overflow-y-auto">
+      {/* Header con logo */}
+      <div className="sticky top-0 bg-bg/95 backdrop-blur-sm z-10 border-b border-line">
+        <div className="flex items-center justify-between p-4">
+          <button
+            onClick={onClose}
+            className="w-10 h-10 flex items-center justify-center text-muted hover:text-cream transition-colors rounded-full hover:bg-surface"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Logo */}
+          <div className="relative w-12 h-12">
+            <Image
+              src="/images/logo-crisbo.png"
+              alt="Crisbo Tattoo"
+              fill
+              className="object-contain brightness-0 invert"
+            />
+          </div>
+
+          <div className="w-10" />
+        </div>
       </div>
 
       {/* Contenido */}
-      <div className="flex flex-col h-[calc(100vh-70px)] p-4">
+      <div className="flex flex-col min-h-[calc(100vh-80px)] p-5">
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-orange animate-spin" />
+            <Loader2 className="w-10 h-10 text-orange animate-spin" />
           </div>
         ) : randomTickets.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <p className="text-cream text-xl mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+            <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center mb-6">
+              <span className="text-4xl">😢</span>
+            </div>
+            <p className="text-cream text-2xl mb-2" style={{ fontFamily: 'var(--font-headline)' }}>
               ¡BOLETAS AGOTADAS!
             </p>
             <p className="text-muted text-sm">
-              Todas las boletas han sido vendidas
+              Todas las boletas han sido vendidas. Síguenos en Instagram para futuras rifas.
             </p>
           </div>
         ) : (
           <>
-            {/* Subtítulo */}
-            <div className="text-center mb-6">
+            {/* Título y descripción */}
+            <div className="text-center mb-8">
+              <h1
+                className="text-cream text-3xl mb-2"
+                style={{ fontFamily: 'var(--font-headline)' }}
+              >
+                ESCOGE TU NÚMERO
+              </h1>
               <p className="text-muted text-sm">
-                Selecciona tu número de la suerte
+                Toca el número que quieres para tu boleta
               </p>
             </div>
 
@@ -131,26 +144,24 @@ export default function TicketSelector({ onClose }) {
                   key={ticket.number}
                   onClick={() => handleSelectTicket(ticket.number)}
                   className={`
-                    relative aspect-[4/3] rounded-2xl border-2 transition-all duration-200
+                    relative aspect-square rounded-3xl border-3 transition-all duration-300
                     flex flex-col items-center justify-center
                     ${selectedTicket === ticket.number
-                      ? 'border-orange bg-orange/20 scale-[1.02]'
-                      : 'border-line bg-surface hover:border-orange/50'
+                      ? 'border-orange bg-orange text-bg scale-105 shadow-lg shadow-orange/30'
+                      : 'border-line bg-surface hover:border-orange/50 hover:bg-surface-light'
                     }
                   `}
                 >
-                  {/* Número grande */}
                   <span
-                    className={`text-5xl font-bold ${selectedTicket === ticket.number ? 'text-orange' : 'text-cream'}`}
+                    className={`text-6xl font-bold ${selectedTicket === ticket.number ? 'text-bg' : 'text-cream'}`}
                     style={{ fontFamily: 'var(--font-headline)' }}
                   >
                     {ticket.number}
                   </span>
 
-                  {/* Check si está seleccionado */}
                   {selectedTicket === ticket.number && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-orange rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-cream" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -159,33 +170,39 @@ export default function TicketSelector({ onClose }) {
               ))}
             </div>
 
-            {/* Botón refrescar - solo mostrar si hay más de 4 boletas disponibles */}
+            {/* Botón refrescar */}
             {tickets.length > 4 && (
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center justify-center gap-2 text-muted hover:text-cream py-3 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 text-orange hover:text-orange-light py-4 transition-colors disabled:opacity-50 mx-auto"
               >
                 <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-                <span className="text-sm tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
+                <span className="text-sm font-semibold tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
                   VER OTROS NÚMEROS
                 </span>
               </button>
             )}
 
             {/* Spacer */}
-            <div className="flex-1" />
+            <div className="flex-1 min-h-8" />
 
-            {/* Número seleccionado y botón continuar */}
+            {/* Footer con selección y botón */}
             <div className="space-y-4 pb-4">
-              {selectedTicket && (
-                <div className="text-center animate-fade-up">
-                  <p className="text-muted text-xs mb-1">Número seleccionado</p>
+              {selectedTicket ? (
+                <div className="bg-surface rounded-2xl p-4 text-center">
+                  <p className="text-muted text-xs mb-1">Tu número seleccionado</p>
                   <p
-                    className="text-orange text-4xl font-bold"
+                    className="text-orange text-5xl font-bold"
                     style={{ fontFamily: 'var(--font-headline)' }}
                   >
                     #{selectedTicket}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-surface/50 rounded-2xl p-4 text-center border border-dashed border-line">
+                  <p className="text-muted text-sm">
+                    👆 Toca un número para seleccionarlo
                   </p>
                 </div>
               )}
@@ -194,10 +211,10 @@ export default function TicketSelector({ onClose }) {
                 onClick={handleContinue}
                 disabled={!selectedTicket}
                 className={`
-                  w-full py-4 rounded-full font-bold text-lg tracking-wider
+                  w-full py-5 rounded-full font-bold text-lg tracking-wider
                   flex items-center justify-center gap-3 transition-all
                   ${selectedTicket
-                    ? 'bg-orange text-cream active:scale-[0.98]'
+                    ? 'bg-orange text-cream active:scale-[0.98] shadow-lg shadow-orange/30'
                     : 'bg-surface text-muted cursor-not-allowed'
                   }
                 `}
