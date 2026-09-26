@@ -328,43 +328,50 @@ export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
                 </div>
               </div>
 
-              {/* QR */}
-              <div className="bg-white rounded-2xl p-3">
-                <div className="relative w-full aspect-square max-w-[220px] mx-auto">
-                  <Image
-                    src="/images/qr-pago.jpg"
-                    alt="Código QR para pago"
-                    fill
-                    className="object-contain"
-                  />
+              {/* QR y Llave */}
+              <div className="bg-surface rounded-3xl p-5 space-y-4">
+                {/* QR grande */}
+                <div className="bg-white rounded-2xl p-4">
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src="/images/qr-pago.jpg"
+                      alt="Código QR para pago"
+                      fill
+                      className="object-contain rounded-xl"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Llave alternativa */}
-              <div className="bg-surface rounded-2xl p-4">
-                <p className="text-muted text-xs mb-3 text-center">¿No puedes escanear? Copia la llave:</p>
+                {/* Separador */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-line" />
+                  <span className="text-muted text-xs">o usa la llave</span>
+                  <div className="flex-1 h-px bg-line" />
+                </div>
+
+                {/* Llave Bre-B */}
                 <button
                   onClick={() => copyToClipboard("@bfms892177")}
-                  className="w-full bg-surface-light rounded-xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform border-2 border-transparent hover:border-orange/30"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">B</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-2xl">B</span>
                     </div>
                     <div className="text-left">
-                      <p className="text-cream/60 text-xs">Llave Bre-B</p>
-                      <p className="text-cream text-xl font-bold" style={{ fontFamily: 'var(--font-headline)' }}>
+                      <p className="text-white/70 text-xs">Llave Bre-B (Transfiya)</p>
+                      <p className="text-white text-2xl font-bold" style={{ fontFamily: 'var(--font-headline)' }}>
                         @bfms892177
                       </p>
                     </div>
                   </div>
                   {copied ? (
-                    <div className="bg-green-500 rounded-full p-2">
-                      <Check className="w-5 h-5 text-white" />
+                    <div className="bg-white rounded-full p-2">
+                      <Check className="w-6 h-6 text-green-600" />
                     </div>
                   ) : (
-                    <div className="bg-surface rounded-full p-2">
-                      <Copy className="w-5 h-5 text-muted" />
+                    <div className="bg-white/20 rounded-full p-2">
+                      <Copy className="w-6 h-6 text-white" />
                     </div>
                   )}
                 </button>
