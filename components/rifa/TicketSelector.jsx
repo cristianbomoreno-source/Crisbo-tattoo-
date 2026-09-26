@@ -10,7 +10,7 @@ export default function TicketSelector({ onClose }) {
   const [randomTickets, setRandomTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTickets, setSelectedTickets] = useState([]);
   const [showReservation, setShowReservation] = useState(false);
 
   const fetchTickets = async () => {
@@ -34,7 +34,6 @@ export default function TicketSelector({ onClose }) {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    setSelectedTicket(null);
     setTimeout(() => {
       pickRandomTickets(tickets);
       setRefreshing(false);
@@ -46,11 +45,17 @@ export default function TicketSelector({ onClose }) {
   }, []);
 
   const handleSelectTicket = (number) => {
-    setSelectedTicket(number);
+    setSelectedTickets(prev => {
+      if (prev.includes(number)) {
+        return prev.filter(n => n !== number);
+      } else {
+        return [...prev, number].sort((a, b) => Number(a) - Number(b));
+      }
+    });
   };
 
   const handleContinue = () => {
-    if (selectedTicket) {
+    if (selectedTickets.length > 0) {
       setShowReservation(true);
     }
   };
@@ -60,10 +65,10 @@ export default function TicketSelector({ onClose }) {
     onClose();
   };
 
-  if (showReservation && selectedTicket) {
+  if (showReservation && selectedTickets.length > 0) {
     return (
       <ReservationFlow
-        ticketNumber={selectedTicket}
+        ticketNumbers={selectedTickets}
         onClose={() => setShowReservation(false)}
         onSuccess={handleReservationSuccess}
       />
@@ -139,35 +144,38 @@ export default function TicketSelector({ onClose }) {
 
             {/* Grid de boletas */}
             <div className={`grid ${getGridClass()} gap-4 mb-6 ${refreshing ? 'opacity-50' : ''}`}>
-              {randomTickets.map((ticket) => (
-                <button
-                  key={ticket.number}
-                  onClick={() => handleSelectTicket(ticket.number)}
-                  className={`
-                    relative aspect-square rounded-3xl border-3 transition-all duration-300
-                    flex flex-col items-center justify-center
-                    ${selectedTicket === ticket.number
-                      ? 'border-orange bg-orange text-bg scale-105 shadow-lg shadow-orange/30'
-                      : 'border-line bg-surface hover:border-orange/50 hover:bg-surface-light'
-                    }
-                  `}
-                >
-                  <span
-                    className={`text-6xl font-bold ${selectedTicket === ticket.number ? 'text-bg' : 'text-cream'}`}
-                    style={{ fontFamily: 'var(--font-headline)' }}
+              {randomTickets.map((ticket) => {
+                const isSelected = selectedTickets.includes(ticket.number);
+                return (
+                  <button
+                    key={ticket.number}
+                    onClick={() => handleSelectTicket(ticket.number)}
+                    className={`
+                      relative aspect-square rounded-3xl border-3 transition-all duration-300
+                      flex flex-col items-center justify-center
+                      ${isSelected
+                        ? 'border-orange bg-orange text-bg scale-105 shadow-lg shadow-orange/30'
+                        : 'border-line bg-surface hover:border-orange/50 hover:bg-surface-light'
+                      }
+                    `}
                   >
-                    {ticket.number}
-                  </span>
+                    <span
+                      className={`text-6xl font-bold ${isSelected ? 'text-bg' : 'text-cream'}`}
+                      style={{ fontFamily: 'var(--font-headline)' }}
+                    >
+                      {ticket.number}
+                    </span>
 
-                  {selectedTicket === ticket.number && (
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
+                    {isSelected && (
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Botón refrescar */}
@@ -189,31 +197,43 @@ export default function TicketSelector({ onClose }) {
 
             {/* Footer con selección y botón */}
             <div className="space-y-4 pb-4">
-              {selectedTicket ? (
-                <div className="bg-surface rounded-2xl p-4 text-center">
-                  <p className="text-muted text-xs mb-1">Tu número seleccionado</p>
-                  <p
-                    className="text-orange text-5xl font-bold"
-                    style={{ fontFamily: 'var(--font-headline)' }}
-                  >
-                    #{selectedTicket}
-                  </p>
+              {selectedTickets.length > 0 ? (
+                <div className="bg-surface rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-muted text-xs">
+                      {selectedTickets.length === 1 ? 'Tu número seleccionado' : `${selectedTickets.length} números seleccionados`}
+                    </p>
+                    <p className="text-gold text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+                      ${(selectedTickets.length * 30000).toLocaleString('es-CO')}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {selectedTickets.map(num => (
+                      <span
+                        key={num}
+                        className="bg-orange text-bg px-3 py-1 rounded-full text-lg font-bold"
+                        style={{ fontFamily: 'var(--font-headline)' }}
+                      >
+                        #{num}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-surface/50 rounded-2xl p-4 text-center border border-dashed border-line">
                   <p className="text-muted text-sm">
-                    👆 Toca un número para seleccionarlo
+                    👆 Toca los números que quieras seleccionar
                   </p>
                 </div>
               )}
 
               <button
                 onClick={handleContinue}
-                disabled={!selectedTicket}
+                disabled={selectedTickets.length === 0}
                 className={`
                   w-full py-5 rounded-full font-bold text-lg tracking-wider
                   flex items-center justify-center gap-3 transition-all
-                  ${selectedTicket
+                  ${selectedTickets.length > 0
                     ? 'bg-orange text-cream active:scale-[0.98] shadow-lg shadow-orange/30'
                     : 'bg-surface text-muted cursor-not-allowed'
                   }

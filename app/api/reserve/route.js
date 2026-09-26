@@ -10,44 +10,64 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
 
-    const ticketNumber = formData.get("ticketNumber");
+    const ticketNumbersJson = formData.get("ticketNumbers");
     const name = formData.get("name");
     const whatsapp = formData.get("whatsapp");
     const email = formData.get("email");
     const paymentProof = formData.get("paymentProof");
 
+    // Parsear los números de boleta
+    let ticketNumbers;
+    try {
+      ticketNumbers = JSON.parse(ticketNumbersJson);
+    } catch {
+      return NextResponse.json(
+        { error: "Formato de boletas inválido" },
+        { status: 400 }
+      );
+    }
+
     // Validaciones
-    if (!ticketNumber || !name || !whatsapp || !paymentProof) {
+    if (!ticketNumbers || ticketNumbers.length === 0 || !name || !whatsapp || !paymentProof) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
         { status: 400 }
       );
     }
 
-    // Verificar que el ticket esté disponible
-    const { data: ticket, error: ticketError } = await supabase
+    // Verificar que TODOS los tickets estén disponibles
+    const { data: tickets, error: ticketError } = await supabase
       .from("raffle_tickets")
-      .select("status")
-      .eq("number", ticketNumber)
-      .single();
+      .select("number, status")
+      .in("number", ticketNumbers);
 
     if (ticketError) {
       return NextResponse.json(
-        { error: "Numero de boleta no valido" },
+        { error: "Error verificando boletas" },
         { status: 400 }
       );
     }
 
-    if (ticket.status !== "available") {
+    // Verificar que se encontraron todos los tickets
+    if (tickets.length !== ticketNumbers.length) {
       return NextResponse.json(
-        { error: "Esta boleta ya no esta disponible" },
+        { error: "Algunas boletas no existen" },
         { status: 400 }
       );
     }
 
-    // Subir comprobante de pago
+    // Verificar que todos estén disponibles
+    const unavailable = tickets.filter(t => t.status !== "available");
+    if (unavailable.length > 0) {
+      return NextResponse.json(
+        { error: `Las boletas ${unavailable.map(t => '#' + t.number).join(', ')} ya no están disponibles` },
+        { status: 400 }
+      );
+    }
+
+    // Subir comprobante de pago (uno solo para todas las boletas)
     const fileExt = paymentProof.name.split(".").pop();
-    const fileName = `${ticketNumber}-${Date.now()}.${fileExt}`;
+    const fileName = `${ticketNumbers.join('-')}-${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("payment-proofs")
@@ -66,40 +86,42 @@ export async function POST(request) {
       .from("payment-proofs")
       .getPublicUrl(fileName);
 
-    // Crear la reservación
-    const { data: reservation, error: reservationError } = await supabase
+    // Crear reservaciones para cada boleta
+    const reservationsData = ticketNumbers.map(number => ({
+      ticket_number: number,
+      buyer_name: name,
+      buyer_whatsapp: whatsapp,
+      buyer_email: email || null,
+      payment_proof_url: urlData.publicUrl,
+    }));
+
+    const { data: reservations, error: reservationError } = await supabase
       .from("raffle_reservations")
-      .insert({
-        ticket_number: ticketNumber,
-        buyer_name: name,
-        buyer_whatsapp: whatsapp,
-        buyer_email: email || null,
-        payment_proof_url: urlData.publicUrl,
-      })
-      .select()
-      .single();
+      .insert(reservationsData)
+      .select();
 
     if (reservationError) {
-      console.error("Error creando reservacion:", reservationError);
+      console.error("Error creando reservaciones:", reservationError);
       return NextResponse.json(
-        { error: "Error al crear la reservacion" },
+        { error: "Error al crear las reservaciones" },
         { status: 500 }
       );
     }
 
-    // Actualizar el estado del ticket a reservado
+    // Actualizar el estado de todos los tickets a reservado
     const { error: updateError } = await supabase
       .from("raffle_tickets")
       .update({
         status: "reserved",
         reserved_at: new Date().toISOString(),
       })
-      .eq("number", ticketNumber);
+      .in("number", ticketNumbers);
 
     if (updateError) {
-      console.error("Error actualizando ticket:", updateError);
-      // Intentar revertir la reservación
-      await supabase.from("raffle_reservations").delete().eq("id", reservation.id);
+      console.error("Error actualizando tickets:", updateError);
+      // Intentar revertir las reservaciones
+      const reservationIds = reservations.map(r => r.id);
+      await supabase.from("raffle_reservations").delete().in("id", reservationIds);
       return NextResponse.json(
         { error: "Error al procesar la reserva" },
         { status: 500 }
@@ -108,8 +130,10 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      reservation,
-      message: "Reserva creada exitosamente",
+      reservations,
+      ticketCount: ticketNumbers.length,
+      totalAmount: ticketNumbers.length * 30000,
+      message: `${ticketNumbers.length} boleta(s) reservada(s) exitosamente`,
     });
   } catch (error) {
     console.error("Error en reserva:", error);

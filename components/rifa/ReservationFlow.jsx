@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { X, Upload, Check, Loader2, ArrowLeft, ArrowRight, Copy, Smartphone, Camera, Send, User, Phone, Mail } from "lucide-react";
 
-export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
+export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
+  const totalAmount = ticketNumbers.length * 30000;
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -55,7 +56,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
 
     try {
       const submitData = new FormData();
-      submitData.append("ticketNumber", ticketNumber);
+      submitData.append("ticketNumbers", JSON.stringify(ticketNumbers));
       submitData.append("name", formData.name);
       submitData.append("whatsapp", formData.whatsapp);
       submitData.append("email", formData.email);
@@ -144,16 +145,28 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
         )}
       </div>
 
-      {/* Boleta seleccionada */}
+      {/* Boletas seleccionadas */}
       {step < 4 && (
-        <div className="mx-4 mt-4 bg-surface rounded-2xl p-3 flex items-center justify-between">
-          <span className="text-muted text-sm">Tu boleta:</span>
-          <span
-            className="text-orange text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-headline)' }}
-          >
-            #{ticketNumber}
-          </span>
+        <div className="mx-4 mt-4 bg-surface rounded-2xl p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-muted text-sm">
+              {ticketNumbers.length === 1 ? 'Tu boleta:' : `Tus ${ticketNumbers.length} boletas:`}
+            </span>
+            <span className="text-gold text-lg font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+              ${totalAmount.toLocaleString('es-CO')}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {ticketNumbers.map(num => (
+              <span
+                key={num}
+                className="bg-orange/20 text-orange px-2 py-0.5 rounded-full text-sm font-bold"
+                style={{ fontFamily: 'var(--font-headline)' }}
+              >
+                #{num}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
@@ -269,9 +282,11 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                   className="text-cream text-5xl font-bold"
                   style={{ fontFamily: 'var(--font-headline)' }}
                 >
-                  $30.000
+                  ${totalAmount.toLocaleString('es-CO')}
                 </p>
-                <p className="text-cream/60 text-xs mt-1">COP</p>
+                <p className="text-cream/60 text-xs mt-1">
+                  {ticketNumbers.length === 1 ? '1 boleta' : `${ticketNumbers.length} boletas × $30.000`}
+                </p>
               </div>
 
               {/* Instrucciones */}
@@ -304,9 +319,9 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
                       <Send className="w-5 h-5 text-orange" />
                     </div>
                     <div>
-                      <p className="text-cream font-medium">3. Envía $30.000</p>
+                      <p className="text-cream font-medium">3. Envía ${totalAmount.toLocaleString('es-CO')}</p>
                       <p className="text-muted text-xs">
-                        En descripción escribe: <span className="text-orange font-bold">RIFA #{ticketNumber}</span>
+                        En descripción escribe: <span className="text-orange font-bold">RIFA #{ticketNumbers.join(', #')}</span>
                       </p>
                     </div>
                   </div>
@@ -358,7 +373,7 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
               {/* Recordatorio */}
               <div className="bg-orange/10 border-2 border-orange/30 rounded-2xl p-4">
                 <p className="text-orange text-sm text-center font-medium">
-                  ⚠️ Escribe <strong>RIFA #{ticketNumber}</strong> en la descripción del pago
+                  ⚠️ Escribe <strong>RIFA #{ticketNumbers.join(', #')}</strong> en la descripción del pago
                 </p>
               </div>
             </div>
@@ -494,8 +509,25 @@ export default function ReservationFlow({ ticketNumber, onClose, onSuccess }) {
             </h2>
 
             <p className="text-muted text-lg mb-6">
-              Tu boleta <span className="text-orange font-bold">#{ticketNumber}</span> está reservada
+              {ticketNumbers.length === 1
+                ? <>Tu boleta <span className="text-orange font-bold">#{ticketNumbers[0]}</span> está reservada</>
+                : <>Tus {ticketNumbers.length} boletas están reservadas</>
+              }
             </p>
+
+            {ticketNumbers.length > 1 && (
+              <div className="flex flex-wrap gap-2 justify-center mb-6">
+                {ticketNumbers.map(num => (
+                  <span
+                    key={num}
+                    className="bg-orange text-bg px-3 py-1 rounded-full text-lg font-bold"
+                    style={{ fontFamily: 'var(--font-headline)' }}
+                  >
+                    #{num}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="bg-surface rounded-2xl p-6 w-full mb-8">
               <div className="flex items-center gap-3 mb-4">
