@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Volume2, VolumeX, Music } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 
 export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -22,18 +21,43 @@ export default function MusicPlayer() {
         audio.currentTime = 35;
         await audio.play();
         setIsPlaying(true);
-        setHasInteracted(true);
+        setIsReady(true);
       } catch (error) {
-        // Autoplay bloqueado, mostrar botón
-        console.log("Autoplay bloqueado, esperando interacción del usuario");
-        setShowPrompt(true);
+        // Autoplay bloqueado - esperar interacción del usuario
+        console.log("Esperando interacción del usuario para reproducir música");
+        setIsReady(true);
       }
     };
 
     tryAutoplay();
 
+    // Si no se pudo reproducir automáticamente, reproducir al primer toque/click
+    const playOnInteraction = async () => {
+      if (audioRef.current && !isPlaying) {
+        try {
+          audioRef.current.currentTime = 35;
+          await audioRef.current.play();
+          setIsPlaying(true);
+          // Remover los listeners después de reproducir
+          document.removeEventListener("click", playOnInteraction);
+          document.removeEventListener("touchstart", playOnInteraction);
+          document.removeEventListener("scroll", playOnInteraction);
+        } catch (error) {
+          console.error("Error playing:", error);
+        }
+      }
+    };
+
+    // Agregar listeners para reproducir al primer toque
+    document.addEventListener("click", playOnInteraction);
+    document.addEventListener("touchstart", playOnInteraction);
+    document.addEventListener("scroll", playOnInteraction);
+
     // Cleanup
     return () => {
+      document.removeEventListener("click", playOnInteraction);
+      document.removeEventListener("touchstart", playOnInteraction);
+      document.removeEventListener("scroll", playOnInteraction);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -49,77 +73,31 @@ export default function MusicPlayer() {
       setIsPlaying(false);
     } else {
       try {
-        if (!hasInteracted) {
-          audioRef.current.currentTime = 35;
-        }
         await audioRef.current.play();
         setIsPlaying(true);
-        setHasInteracted(true);
-        setShowPrompt(false);
       } catch (error) {
         console.error("Error playing audio:", error);
       }
     }
   };
 
-  // Botón flotante para activar/desactivar música
-  return (
-    <>
-      {/* Prompt inicial para activar música */}
-      {showPrompt && !hasInteracted && (
-        <div className="fixed inset-0 z-[100] bg-bg/95 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-3xl p-8 max-w-sm text-center border border-line">
-            <div className="w-20 h-20 bg-orange/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Music className="w-10 h-10 text-orange" />
-            </div>
-            <h2
-              className="text-cream text-2xl mb-2"
-              style={{ fontFamily: 'var(--font-headline)' }}
-            >
-              LA VILLA
-            </h2>
-            <p className="text-gold text-sm mb-1">Ryan Castro, Kapo, Gangsta</p>
-            <p className="text-muted text-xs mb-6">
-              Activa el sonido para vivir la experiencia completa
-            </p>
-            <button
-              onClick={togglePlay}
-              className="w-full bg-orange text-cream py-4 rounded-full font-bold text-lg tracking-wider flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              <Volume2 className="w-6 h-6" />
-              ACTIVAR MÚSICA
-            </button>
-            <button
-              onClick={() => {
-                setShowPrompt(false);
-                setHasInteracted(true);
-              }}
-              className="mt-4 text-muted text-sm hover:text-cream transition-colors"
-            >
-              Continuar sin música
-            </button>
-          </div>
-        </div>
-      )}
+  // Solo mostrar el botón flotante cuando esté listo
+  if (!isReady) return null;
 
-      {/* Botón flotante */}
-      {hasInteracted && (
-        <button
-          onClick={togglePlay}
-          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 ${
-            isPlaying
-              ? 'bg-orange text-cream shadow-orange/30'
-              : 'bg-surface text-muted border border-line hover:border-orange'
-          }`}
-        >
-          {isPlaying ? (
-            <Volume2 className="w-6 h-6" />
-          ) : (
-            <VolumeX className="w-6 h-6" />
-          )}
-        </button>
+  return (
+    <button
+      onClick={togglePlay}
+      className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 ${
+        isPlaying
+          ? 'bg-orange text-cream shadow-orange/30'
+          : 'bg-surface text-muted border border-line hover:border-orange'
+      }`}
+    >
+      {isPlaying ? (
+        <Volume2 className="w-6 h-6" />
+      ) : (
+        <VolumeX className="w-6 h-6" />
       )}
-    </>
+    </button>
   );
 }
