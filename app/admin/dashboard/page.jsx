@@ -63,7 +63,6 @@ export default function AdminDashboard() {
   }, [filter]);
 
   const handleAction = async (reservationId, ticketNumber, action) => {
-    setProcessing(reservationId);
     try {
       const response = await fetch("/api/admin/reservations", {
         method: "PUT",
@@ -75,11 +74,24 @@ export default function AdminDashboard() {
         }),
       });
 
-      if (response.ok) {
-        fetchData();
+      if (!response.ok) {
+        console.error("Error en respuesta:", await response.text());
       }
+      return response.ok;
     } catch (error) {
       console.error("Error:", error);
+      return false;
+    }
+  };
+
+  const handleMultipleActions = async (ticketIdMap, tickets, action) => {
+    setProcessing(tickets[0]);
+    try {
+      for (const ticket of tickets) {
+        const reservationId = ticketIdMap[ticket];
+        await handleAction(reservationId, ticket, action);
+      }
+      fetchData();
     } finally {
       setProcessing(null);
     }
@@ -408,21 +420,19 @@ export default function AdminDashboard() {
                       {res.status === "pending" && (
                         <>
                           <button
-                            onClick={() => {
-                              res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "approve"));
-                            }}
-                            disabled={processing === res.id}
+                            onClick={() => handleMultipleActions(res.ticketIdMap, res.tickets, "approve")}
+                            disabled={processing}
                             className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-50"
                           >
                             <Check className="w-5 h-5" />
                             Aprobar
                           </button>
                           <button
-                            onClick={() => {
-                              res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "reject"));
+                            onClick={async () => {
+                              await handleMultipleActions(res.ticketIdMap, res.tickets, "reject");
                               openWhatsAppReject(res.buyer_whatsapp, res.buyer_name, res.tickets);
                             }}
-                            disabled={processing === res.id}
+                            disabled={processing}
                             className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-500 transition-colors disabled:opacity-50"
                           >
                             <X className="w-5 h-5" />
@@ -443,10 +453,10 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               if (confirm('¿Seguro que deseas cancelar esta reservación? La boleta volverá a estar disponible.')) {
-                                res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "cancel"));
+                                handleMultipleActions(res.ticketIdMap, res.tickets, "cancel");
                               }
                             }}
-                            disabled={processing === res.id}
+                            disabled={processing}
                             className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-500 transition-colors disabled:opacity-50"
                           >
                             <X className="w-5 h-5" />
