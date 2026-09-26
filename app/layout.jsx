@@ -1,38 +1,34 @@
 import "./globals.css";
-import { ExperienceProvider } from "@/context/ExperienceContext";
 
 export const metadata = {
-  title: "Crisbo Tattoo | Tatuador en Bogotá - Black & Grey, Realismo, Custom Projects",
+  title: "RIFA Crisbo Tattoo | Gana un Tatuaje de $1M + Boleta Ryan Castro",
   description:
-    "Crisbo Tattoo - Tatuador profesional en Bogotá especializado en Black & Grey, Realismo y proyectos personalizados. Más de 9 años de experiencia creando diseños exclusivos que cuentan tu historia.",
+    "Participa en la rifa de Crisbo Tattoo. Gana un tatuaje valorado en $1,000,000 COP + una boleta para el concierto de Ryan Castro. Solo 200 cupos a $30,000 cada uno. Sorteo 24 de octubre 2026.",
   keywords: [
-    "tatuador Bogotá",
-    "tatuajes Bogotá",
-    "Crisbo Tattoo",
-    "black and grey Bogotá",
-    "realismo tatuaje Bogotá",
-    "tatuajes realismo",
-    "mangas tatuaje Bogotá",
-    "tatuador profesional Bogotá",
-    "tatuajes personalizados",
-    "custom tattoo Bogotá",
-    "Colina Campestre tatuajes",
+    "rifa tatuaje Bogota",
+    "rifa Crisbo Tattoo",
+    "ganar tatuaje gratis",
+    "sorteo tatuaje Colombia",
+    "Ryan Castro concierto",
+    "tatuaje black and grey",
+    "rifa Colombia",
+    "tatuador Bogota",
   ],
   authors: [{ name: "Crisbo Tattoo" }],
   creator: "Crisbo Tattoo",
   openGraph: {
-    title: "Crisbo Tattoo | Tatuador en Bogotá",
+    title: "RIFA Crisbo Tattoo | Tatuaje $1M + Boleta Ryan Castro",
     description:
-      "Diseños exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogotá, Colombia.",
+      "200 cupos, $30,000 cada uno. Gana un tatuaje de $1M + boleta para Ryan Castro. Sorteo 24 de octubre 2026 con la Loteria de Colombia.",
     locale: "es_CO",
     type: "website",
     siteName: "Crisbo Tattoo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Crisbo Tattoo | Tatuador en Bogotá",
+    title: "RIFA Crisbo Tattoo | Tatuaje $1M + Boleta Ryan Castro",
     description:
-      "Diseños exclusivos que cuentan tu historia. Black & Grey, Realismo y proyectos personalizados en Bogotá, Colombia.",
+      "200 cupos, $30,000 cada uno. Gana un tatuaje de $1M + boleta para Ryan Castro. Sorteo 24 de octubre 2026.",
   },
   robots: {
     index: true,
@@ -77,9 +73,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="antialiased">
-        <ExperienceProvider>
-          {children}
-        </ExperienceProvider>
+        {children}
       </body>
     </html>
   );
