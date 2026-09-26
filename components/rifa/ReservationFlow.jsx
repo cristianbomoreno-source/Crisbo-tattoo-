@@ -4,8 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { X, Upload, Check, Loader2, ArrowLeft, ArrowRight, Copy, Smartphone, Camera, Send, User, Phone, Mail } from "lucide-react";
 
-export default function ReservationFlow({ ticketNumbers, onClose, onSuccess }) {
-  const totalAmount = ticketNumbers.length * 30000;
+export default function ReservationFlow({ ticketNumbers, totalPrice, onClose, onSuccess }) {
+  const totalAmount = totalPrice || ticketNumbers.length * 30000;
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);

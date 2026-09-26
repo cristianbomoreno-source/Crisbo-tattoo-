@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import TicketSelector from "./TicketSelector";
+import PackageSelector from "./PackageSelector";
 import MusicPlayer from "./MusicPlayer";
 
 export default function RifaLanding() {
@@ -37,9 +37,9 @@ export default function RifaLanding() {
         </a>
       </div>
 
-      {/* Selector de boletas */}
+      {/* Selector de paquetes */}
       {showSelector && (
-        <TicketSelector onClose={() => setShowSelector(false)} />
+        <PackageSelector onClose={() => setShowSelector(false)} />
       )}
     </div>
   );
