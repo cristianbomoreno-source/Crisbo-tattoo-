@@ -96,7 +96,7 @@ export default function TicketSelector({ onClose }) {
           </button>
 
           {/* Logo */}
-          <div className="relative w-24 h-16">
+          <div className="relative w-36 h-20">
             <Image
               src="/images/logo-crisbo.png"
               alt="Crisbo Tattoo"
