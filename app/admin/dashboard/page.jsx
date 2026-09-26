@@ -97,10 +97,12 @@ export default function AdminDashboard() {
       acc[key] = {
         ...res,
         tickets: [res.ticket_number],
+        ticketIdMap: { [res.ticket_number]: res.id },
         totalAmount: 30000,
       };
     } else {
       acc[key].tickets.push(res.ticket_number);
+      acc[key].ticketIdMap[res.ticket_number] = res.id;
       acc[key].totalAmount += 30000;
     }
     return acc;
@@ -407,7 +409,7 @@ export default function AdminDashboard() {
                         <>
                           <button
                             onClick={() => {
-                              res.tickets.forEach(t => handleAction(res.id, t, "approve"));
+                              res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "approve"));
                             }}
                             disabled={processing === res.id}
                             className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-50"
@@ -417,7 +419,7 @@ export default function AdminDashboard() {
                           </button>
                           <button
                             onClick={() => {
-                              res.tickets.forEach(t => handleAction(res.id, t, "reject"));
+                              res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "reject"));
                               openWhatsAppReject(res.buyer_whatsapp, res.buyer_name, res.tickets);
                             }}
                             disabled={processing === res.id}
@@ -441,7 +443,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               if (confirm('¿Seguro que deseas cancelar esta reservación? La boleta volverá a estar disponible.')) {
-                                res.tickets.forEach(t => handleAction(res.id, t, "cancel"));
+                                res.tickets.forEach(t => handleAction(res.ticketIdMap[t], t, "cancel"));
                               }
                             }}
                             disabled={processing === res.id}
