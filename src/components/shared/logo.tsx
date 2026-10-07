@@ -17,12 +17,12 @@ export function Logo({
   return (
     <div className={cn('select-none', className)}>
       {full ? (
-        // Logo completo con texto
+        // Logo completo con texto (invertido a blanco)
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src="/brand/cb-logo-full.png"
           alt="Crisbo Tattoo Studio"
-          className="h-[4em] w-auto"
+          className="h-[4em] w-auto brightness-0 invert"
         />
       ) : (
         // Solo icono CB
