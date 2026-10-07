@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { err, type Result } from '@/lib/errors/types'
 import { normalizeUsername, isValidUsername, usernameToEmail } from '@/lib/auth/username'
@@ -25,7 +24,7 @@ export async function logout(): Promise<void> {
   redirect('/login')
 }
 
-export async function signUpWithUsername(rawUsername: string, password: string): Promise<Result<void>> {
+export async function signUpWithUsername(rawUsername: string, password: string): Promise<Result<string>> {
   const username = normalizeUsername(rawUsername)
   if (!isValidUsername(username)) {
     return err('VALIDATION_ERROR', 'Usuario: 3-20 caracteres, solo letras, números, punto o guion bajo')
@@ -68,10 +67,10 @@ export async function signUpWithUsername(rawUsername: string, password: string):
   })
 
   const path = await resolvePostAuthPath()
-  redirect(path)
+  return { success: true, data: path }
 }
 
-export async function loginWithUsername(rawUsername: string, password: string): Promise<Result<void>> {
+export async function loginWithUsername(rawUsername: string, password: string): Promise<Result<string>> {
   const username = normalizeUsername(rawUsername)
   if (!username || !password) return err('VALIDATION_ERROR', 'Ingresa usuario y contraseña')
 
@@ -90,5 +89,5 @@ export async function loginWithUsername(rawUsername: string, password: string): 
   }
 
   const path = await resolvePostAuthPath()
-  redirect(path)
+  return { success: true, data: path }
 }

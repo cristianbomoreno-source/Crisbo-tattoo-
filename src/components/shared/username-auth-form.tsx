@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { signUpWithUsername, loginWithUsername } from '@/actions/auth'
 
 export function UsernameAuthForm({ mode }: { mode: 'login' | 'register' }) {
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +17,12 @@ export function UsernameAuthForm({ mode }: { mode: 'login' | 'register' }) {
     startTransition(async () => {
       const action = mode === 'register' ? signUpWithUsername : loginWithUsername
       const result = await action(username, password)
-      if (!result.success) setError(result.error.message)
+      if (result.success) {
+        router.push(result.data)
+        router.refresh()
+      } else {
+        setError(result.error.message)
+      }
     })
   }
 
