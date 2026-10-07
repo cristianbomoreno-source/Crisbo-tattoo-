@@ -10,18 +10,14 @@ import { resolvePostAuthPath } from '@/lib/auth/post-auth-redirect'
 import { recordPlatformSignup } from '@/lib/auth/record-signup'
 import { isRateLimited, recordFailedAttempt, getClientIp } from '@/lib/auth/rate-limit'
 
-// Google (ver GoogleAuthButton) sigue siendo el método principal. Usuario +
-// contraseña es una segunda puerta: por dentro crea una cuenta de Supabase
-// Auth con un correo sintético `usuario@user.ofink.app` (nunca se envía
-// nada ahí), creada ya confirmada con el service role, así el username
-// hace de identificador único real. Una misma cuenta de Google puede tener
-// hasta 2 cuentas OFINK (una 'tatuador' y otra 'estudio') — ver
-// src/actions/accounts.ts (listMyAccounts/setActiveAccount) y el selector
-// en /onboarding/select-account. Usuario+contraseña sigue el mismo camino.
+// Crisbo Tattoo: Auth solo por usuario + contraseña. Crea una cuenta de
+// Supabase Auth con un correo sintético `usuario@user.ofink.app` (nunca se
+// envía nada ahí), creada ya confirmada con el service role, así el username
+// hace de identificador único real.
 //
 // Rate limit (ver lib/auth/rate-limit.ts): tras 8 intentos fallidos en 15
 // minutos para el mismo usuario+IP, se bloquea aunque la contraseña sea
-// correcta — mitiga fuerza bruta, que Google ya resuelve por su cuenta.
+// correcta — mitiga fuerza bruta.
 
 export async function logout(): Promise<void> {
   const supabase = await createClient()

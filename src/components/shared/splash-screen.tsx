@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-const SESSION_KEY = 'ofink-splash-shown'
+const SESSION_KEY = 'crisbo-splash-shown'
 /** Duración total del splash (animación del pulpo + fade de salida). */
 const TOTAL_MS = 1400
 
@@ -51,19 +51,14 @@ export function SplashScreen() {
       className="fixed inset-0 z-[100] grid place-items-center bg-black transition-opacity duration-350 ease-out"
       style={{ opacity: phase === 'leaving' ? 0 : 1, pointerEvents: 'none' }}
     >
-      <span
-        className="ofink-splash-mark block size-24 bg-primary"
-        style={{
-          WebkitMaskImage: 'url(/brand/pulpo-negro.png)',
-          maskImage: 'url(/brand/pulpo-negro.png)',
-          WebkitMaskSize: 'contain',
-          maskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          maskPosition: 'center',
-        }}
-      />
+      <div className="crisbo-splash-mark flex flex-col items-center">
+        <span className="font-title text-5xl uppercase tracking-wide text-foreground">
+          Crisbo
+        </span>
+        <span className="text-lg font-medium uppercase tracking-[0.3em] text-primary">
+          Tattoo
+        </span>
+      </div>
       {/* Versión del build corriendo AHORA MISMO — verificación instantánea de
           que un deploy llegó al dispositivo (clave con PWA + service worker,
           donde el teléfono puede quedarse sirviendo un build viejo). */}

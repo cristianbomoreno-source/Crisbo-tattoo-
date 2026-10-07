@@ -1,7 +1,7 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { isPlatformAdmin, hasAnyPlatformAdmin } from '@/actions/platform-admin'
-import { GoogleAuthButton } from '@/components/shared/google-auth-button'
 import { BootstrapAdminButton } from '@/components/admin/bootstrap-admin-button'
 import { Logo } from '@/components/shared/logo'
 
@@ -11,11 +11,10 @@ export const metadata = {
 
 
 /**
- * /admin es la administración GENERAL de OFINK para el equipo creador —
- * separada por completo del dashboard de los tatuadores/estudios (otro
- * layout, sin bottom nav ni pulpo). El acceso se controla con la tabla
- * `platform_admins` (sin policies para clientes — ver actions/platform-admin.ts),
- * no con las cuentas normales de artists/studios.
+ * /admin es la administración de Crisbo Tattoo para el equipo creador —
+ * separada por completo del dashboard de los tatuadores (otro layout,
+ * sin bottom nav ni pulpo). El acceso se controla con la tabla
+ * `platform_admins` (sin policies para clientes — ver actions/platform-admin.ts).
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -24,18 +23,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-4 text-center">
-        <Logo full className="text-3xl" />
-        <div>
-          <h1 className="font-title text-2xl uppercase">Administración OFINK</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Inicia sesión para continuar.</p>
-        </div>
-        <div className="w-full max-w-xs">
-          <GoogleAuthButton />
-        </div>
-      </div>
-    )
+    // Redirigir a login si no hay sesión
+    redirect('/login')
   }
 
   const isAdmin = await isPlatformAdmin()
@@ -63,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </>
         )}
         <Link href="/dashboard" className="text-xs text-muted-foreground underline">
-          Volver a OFINK
+          Volver al dashboard
         </Link>
       </div>
     )
@@ -80,7 +69,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
           </div>
           <Link href="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">
-            Volver a OFINK →
+            Volver al dashboard →
           </Link>
         </div>
       </header>

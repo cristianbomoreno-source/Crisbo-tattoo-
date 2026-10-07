@@ -4,11 +4,8 @@ import { resolvePostAuthPath } from '@/lib/auth/post-auth-redirect'
 import { recordPlatformSignup } from '@/lib/auth/record-signup'
 
 /**
- * Destino del redirect de Google tras `signInWithOAuth` (ver botón
- * "Continuar con Google" en login/register — el otro método es
- * usuario+contraseña, ver src/actions/auth.ts). Intercambia el `code` por
- * una sesión y usa `resolvePostAuthPath` (compartida con usuario+contraseña)
- * para decidir a dónde mandar al usuario.
+ * Callback de autenticación de Supabase. Usado para confirmación de email
+ * y otros flujos de auth que requieren redirect.
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)

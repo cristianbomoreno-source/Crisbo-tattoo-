@@ -33,14 +33,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OFINK — Gestión de proyectos de tatuaje",
+  title: "Crisbo Tattoo — Gestión del estudio",
   description:
-    "Gestiona tus proyectos de tatuaje, de la cotización a la última sesión. Hecho para artistas.",
-  applicationName: "OFINK",
+    "Gestiona proyectos de tatuaje, de la cotización a la última sesión.",
+  applicationName: "Crisbo Tattoo",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "OFINK",
+    title: "Crisbo Tattoo",
     statusBarStyle: "black-translucent",
   },
   icons: {
