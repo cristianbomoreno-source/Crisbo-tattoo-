@@ -3,27 +3,33 @@ import { createAdminClient } from '@/lib/supabase/admin'
 const WINDOW_MINUTES = 15
 const MAX_ATTEMPTS = 8
 
-/** Protección anti fuerza bruta para login/registro por usuario+contraseña
- * (Google no lo necesita: la contraseña la valida Google, no nosotros).
+/** Protección anti fuerza bruta para login/registro por usuario+contraseña.
  * Cuenta intentos fallidos por `identifier` (usuario normalizado + IP) en
- * los últimos 15 minutos; si supera 8, bloquea aunque la contraseña sea
- * correcta. Guardado en Postgres (no en memoria) porque Vercel corre cada
- * invocación en una función serverless distinta. */
+ * los últimos 15 minutos; si supera 8, bloquea. */
 export async function isRateLimited(identifier: string): Promise<boolean> {
-  const admin = createAdminClient()
-  const since = new Date(Date.now() - WINDOW_MINUTES * 60_000).toISOString()
-  const { count } = await admin
-    .from('auth_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('identifier', identifier)
-    .gte('created_at', since)
+  try {
+    const admin = createAdminClient()
+    const since = new Date(Date.now() - WINDOW_MINUTES * 60_000).toISOString()
+    const { count } = await admin
+      .from('auth_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('identifier', identifier)
+      .gte('created_at', since)
 
-  return (count ?? 0) >= MAX_ATTEMPTS
+    return (count ?? 0) >= MAX_ATTEMPTS
+  } catch {
+    // Si la tabla no existe, no bloquear
+    return false
+  }
 }
 
 export async function recordFailedAttempt(identifier: string): Promise<void> {
-  const admin = createAdminClient()
-  await admin.from('auth_attempts').insert({ identifier })
+  try {
+    const admin = createAdminClient()
+    await admin.from('auth_attempts').insert({ identifier })
+  } catch {
+    // Ignorar si la tabla no existe
+  }
 }
 
 /** IP real del cliente, considerando el proxy de Vercel. */
