@@ -1,15 +1,29 @@
+import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shared/app-shell'
 import { getCurrentStudio } from '@/queries/studio'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Verificar autenticación
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
   const studio = await getCurrentStudio()
-  const brand = studio
-    ? {
-        name: studio.name,
-        logoUrl: studio.logoUrl,
-        isStudioOwner: studio.accountKind === 'estudio' && studio.role === 'owner',
-      }
-    : null
+
+  // Si no hay estudio asociado, también redirigir
+  if (!studio) {
+    redirect('/login')
+  }
+
+  const brand = {
+    name: studio.name,
+    logoUrl: studio.logoUrl,
+    isStudioOwner: studio.accountKind === 'estudio' && studio.role === 'owner',
+  }
 
   return (
     <AppShell studio={brand}>
