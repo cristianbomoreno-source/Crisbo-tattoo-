@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         userAgent: request.headers.get('user-agent'),
       })
 
-      const path = await resolvePostAuthPath(supabase, data.user.id, data.user.email ?? null)
+      const path = await resolvePostAuthPath()
       return NextResponse.redirect(`${origin}${path}`)
     }
   }

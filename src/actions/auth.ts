@@ -67,7 +67,7 @@ export async function signUpWithUsername(rawUsername: string, password: string):
     userAgent,
   })
 
-  const path = await resolvePostAuthPath(supabase, created.user.id, email)
+  const path = await resolvePostAuthPath()
   redirect(path)
 }
 
@@ -89,6 +89,6 @@ export async function loginWithUsername(rawUsername: string, password: string): 
     return err('AUTH_ERROR', 'Usuario o contraseña incorrectos')
   }
 
-  const path = await resolvePostAuthPath(supabase, data.user.id, email)
+  const path = await resolvePostAuthPath()
   redirect(path)
 }
