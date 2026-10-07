@@ -1,0 +1,76 @@
+name: CI
+
+# Antes de esto no había ninguna compuerta automática: `npm test` y `npm run lint`
+# existían como scripts pero nadie los corría, y Vercel desplegaba directo desde
+# `main`. Así fue como ESLint 10 rompió el lint el 31-jul y nadie lo notó por días.
+#
+# ESTADO DE LA DEUDA (medido el 2026-08-04, actualizado tras saldarla):
+#   build      → pasa       → BLOQUEANTE
+#   typecheck  → 0 errores  → BLOQUEANTE (ya se saldaron los 92; el build tmb lo exige)
+#   tests      → 212/212    → BLOQUEANTE (se arreglaron los 4 tests viejos)
+#   lint       → 41 avisos  → informativo (todos del cluster react-hooks para React
+#                             Compiler, que NO está activado — cosméticos a propósito)
+#   audit prod → 2 avisos   → informativo (postcss anidado en next, sin fix aguas arriba)
+#
+# Los pasos informativos usan `continue-on-error` A PROPÓSITO: un CI rojo desde el
+# primer día se ignora y deja de servir. A medida que se salde cada deuda, quitar
+# su `continue-on-error` para que pase a bloquear de verdad.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Mínimo indispensable: este workflow solo necesita leer el código.
+permissions:
+  contents: read
+
+jobs:
+  verificacion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Acciones fijadas por SHA completo, no por tag: un tag se puede reapuntar
+      # a otro commit y ejecutaría código distinto sin que cambie nada acá.
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Node 22
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` (no `npm install`): respeta el lockfile exacto y falla si está
+      # desincronizado con package.json, en vez de resolver versiones nuevas.
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Verificado el 2026-08-04: el build pasa sin variables de Supabase (no se
+      # llama a la base en tiempo de build). Se pasan valores de relleno igual,
+      # por si una página futura las exige en import y rompe el CI sin razón real.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+
+      # Bloqueante: la deuda se saldó (0 errores) y el build ya lo exige.
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # Bloqueante: 212/212. Los 4 tests viejos se actualizaron.
+      - name: Tests
+        run: npm test
+
+      - name: Lint (informativo)
+        run: npm run lint
+        continue-on-error: true
+
+      # Solo el árbol de producción: las vulnerabilidades de herramientas de
+      # desarrollo no se despachan al usuario y ensucian la señal.
+      - name: Auditoría de dependencias de producción (informativo)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true

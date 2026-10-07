@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Next.js build output
+# Next.js
 .next/
 out/
 
@@ -9,6 +9,10 @@ out/
 .env
 .env.local
 .env.*.local
+.env.local.save
+
+# Build
+next-env.d.ts
 
 # Debug
 npm-debug.log*
@@ -25,3 +29,19 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Supabase CLI (estado local del link, no versionar)
+supabase/.temp/
+tsconfig.tsbuildinfo
+
+# Material criptografico y credenciales: nunca versionar (preventivo)
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+.npmrc

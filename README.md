@@ -1,66 +1,45 @@
-# Crisbo Tattoo — Landing Page
+# OFINK 
 
-Landing page premium para el estudio de tatuajes **Crisbo Tattoo** (Bogotá, Colombia),
-construida con Next.js 14 (App Router), Tailwind CSS, Framer Motion y Lucide Icons.
+Esta es una **maqueta** de la app OFINK: tiene todas las pantallas y el diseño real,
+pero **sin base de datos ni backend**. Todo lo que ves en pantalla son datos de ejemplo.
+Sirve para **ver el diseño y editarlo** con libertad, sin miedo a dañar nada.
 
-## Cómo correrlo
+> No hay login, no hay internet, no se guarda nada. Los botones "funcionan" (se ven las
+> pantallas y los mensajes) pero no guardan información, porque es solo una maqueta visual.
+
+## Cómo abrirla
+
+Necesitas tener **Node.js** instalado (descárgalo gratis en https://nodejs.org — la versión LTS).
+
+Luego, en una terminal, dentro de esta carpeta:
 
 ```bash
-npm install
-npm run dev
+npm install      # instala todo (solo la primera vez, tarda unos minutos)
+npm run dev      # arranca la maqueta
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Cuando termine, abre en tu navegador: **http://localhost:3000**
 
-Para producción:
+Para detenerla, vuelve a la terminal y presiona `Ctrl + C`.
 
-```bash
-npm run build
-npm run start
-```
+## Cómo editar el diseño
 
-## Estructura
+Todo el código está en la carpeta `src/`. Al guardar un archivo, la página se actualiza
+sola en el navegador. Los lugares más útiles para tocar el diseño:
 
-```
-app/
-  layout.jsx      -> metadata SEO, fuentes
-  page.jsx         -> ensambla todas las secciones
-  globals.css       -> paleta, grid blueprint, texturas
-components/
-  Navbar.jsx        -> sticky, blur al hacer scroll, menú móvil
-  Hero.jsx           -> foto real del tatuador + animaciones de entrada
-  Benefits.jsx        -> 4 tarjetas de beneficios
-  About.jsx            -> sección "Sobre mí"
-  Specialties.jsx       -> grid de 6 especialidades (placeholders)
-  Process.jsx            -> 5 pasos del proceso de trabajo
-  Testimonials.jsx        -> 3 testimonios
-  FAQ.jsx                  -> acordeón
-  CTA.jsx                   -> bloque final + FAQ
-  Footer.jsx                 -> contacto, ubicación, horario, redes
-public/images/
-  hero-tattoo.jpg            -> foto real usada en el Hero
-```
+- **Colores, fondos, tipografías generales** → `src/app/globals.css`
+  (ahí están los colores del tema oscuro y claro).
+- **Pantallas** → `src/app/(dashboard)/dashboard/…` (Inicio, Calendario, Proyectos, etc.).
+- **Componentes reutilizables** (tarjetas, botones, barra de navegación, etc.) →
+  `src/components/…`.
+- **Datos de ejemplo** (nombres, proyectos, citas, precios que se muestran) →
+  `src/lib/mock/data.ts`. Cámbialos para ver la interfaz con otra información.
 
-## Pendientes para dejarlo 100% listo
+Los estilos usan **Tailwind CSS** (clases como `bg-primary`, `text-lg`, `rounded-xl`
+directamente en el código de cada pantalla).
 
-1. **Testimonios**: reemplaza los nombres/textos de ejemplo en
-   `Testimonials.jsx` por reseñas reales de clientes.
-2. **Video "Sobre mí"**: el botón de play en `About.jsx` es decorativo; puedes
-   conectarlo a un modal de video o a un embed de YouTube/Vimeo.
-3. **Dominio / SEO**: agrega tu dominio en `openGraph` dentro de `app/layout.jsx`
-   y una imagen `og:image` si quieres previsualización enriquecida al compartir.
+## Nota
 
-Ya están integrados: tu logo real, la foto del hero, la foto de "Sobre mí",
-las 6 fotos de la galería de especialidades, tu número de WhatsApp
-(+57 320 210 7769), tu dirección (Cl. 137b #57b - 39, piso 2, Bogotá) y el
-enlace a tu perfil de Google Maps en el footer.
-
-## Notas técnicas
-
-- Todas las animaciones usan Framer Motion con `whileInView` (reveal al hacer
-  scroll) y `prefers-reduced-motion` respetado globalmente en `globals.css`.
-- La paleta de color vive en `tailwind.config.js` (`bg`, `bg-secondary`,
-  `bg-grey`, `ink`, `gold`, `gold-2`, `line`) — cámbiala ahí si necesitas
-  ajustar tonos.
-- Tipografías: Bebas Neue (display), Permanent Marker (brush/"Tattoo"), Jost
-  (cuerpo) — cargadas vía Google Fonts en `app/layout.jsx`.
+Como es una maqueta, no hay que configurar nada (ni claves, ni cuentas, ni `.env`).
+Si algo no guarda o "no hace nada" al enviar, es normal: es el comportamiento esperado
+de la maqueta. La app real sí tiene backend; esto es solo para trabajar el diseño.

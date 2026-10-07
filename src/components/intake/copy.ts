@@ -1,0 +1,46 @@
+/** Todos los textos del bot. Voz OFINK: cercana, de oficio, español LatAm. */
+export const COPY = {
+  welcome: (studio: string) =>
+    `¡Hola! Soy el asistente de ${studio}. Te haré unas preguntas rápidas sobre tu idea para poder enviarla directo al tatuador y darte una cotización más precisa. Te tomará menos de 2 minutos y tu información está segura.`,
+  askPhone: '¿Cuál es tu WhatsApp?',
+  askName: '¿Cómo te llamas?',
+  askGender: '¿Sos hombre o mujer?',
+  askAge: '¿Cuántos años tienes?',
+  askService: (name: string) => `${name}, ¿qué quieres hacerte?`,
+  askOther:
+    'Cuéntame el motivo de tu consulta y todos los datos que creas relevantes.',
+  askSize: '¿De qué tamaño lo imaginas?',
+  askZone: '¿En qué zona te lo harías?',
+  askSubzone: '¿En qué parte exactamente?',
+  askColor: '¿Lo quieres a color o en negro?',
+  askSkin: '¿Qué tono de piel se acerca más al tuyo?',
+  askStyle: '¿Qué estilo tienes en mente?',
+  askPhotos:
+    'Adjunta imágenes de referencia si tienes — es lo que más ayuda a entender tu idea.',
+  askDescription: 'Descríbeme la idea de lo que quieres tatuarte.',
+  descriptionPlaceholder: 'Ej. Quiero un león con destellos en el antebrazo',
+  askContact: 'Déjame tu email para enviarte la cotización.',
+  askAvailability: '¿Qué día se acomoda mejor a tu tiempo?',
+  summaryTitle: 'Revisa tu solicitud y si todo está bien, envíala.',
+  terms: (studio: string) =>
+    `Autorizo a ${studio} a usar mis datos para contactarme sobre esta solicitud`,
+  termsBody: (studio: string) =>
+    `${studio} usará tu nombre, contacto y la información de esta solicitud únicamente para responderte y coordinar tu tatuaje. No compartimos tus datos con terceros. Puedes pedir su eliminación escribiendo al estudio.`,
+  send: 'Enviar solicitud de tatuaje',
+  sending: 'Enviando…',
+  errorSubmit: 'No pudimos enviar tu solicitud. Intenta de nuevo.',
+  retry: 'Reintentar',
+  sentTitle: '¡Solicitud enviada!',
+  sentBody: 'El tatuador revisará tu información y te responderá muy pronto por WhatsApp.',
+  sentStep1: 'Revisaremos tu idea',
+  sentStep2: 'Estimaremos el tiempo y precio',
+  sentStep3: 'Te contactaremos por WhatsApp',
+  openWhatsapp: 'Abrir WhatsApp',
+  openInstagram: 'Ver Instagram',
+  unavailableTitle: 'Este estudio aún no recibe solicitudes por aquí',
+  unavailableBody: 'Escríbele directamente por sus redes.',
+  noPhotos: 'No tengo imágenes',
+  addPhotos: 'Añadir imagen (máx. 3)',
+  otherSend: 'Enviar por WhatsApp',
+  footer: 'Hecho con OFINK · De la idea a la piel',
+} as const
