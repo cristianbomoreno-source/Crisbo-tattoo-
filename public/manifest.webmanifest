@@ -1,7 +1,7 @@
 {
-  "name": "OFINK — Gestión de proyectos de tatuaje",
-  "short_name": "OFINK",
-  "description": "De la idea a la piel. Gestiona tus proyectos de tatuaje, de la cotización a la última sesión.",
+  "name": "Crisbo Tattoo Studio",
+  "short_name": "Crisbo",
+  "description": "Gestión del estudio de tatuajes Crisbo Tattoo.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
