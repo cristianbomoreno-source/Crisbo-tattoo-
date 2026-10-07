@@ -51,14 +51,12 @@ export function SplashScreen() {
       className="fixed inset-0 z-[100] grid place-items-center bg-black transition-opacity duration-350 ease-out"
       style={{ opacity: phase === 'leaving' ? 0 : 1, pointerEvents: 'none' }}
     >
-      <div className="crisbo-splash-mark flex flex-col items-center">
-        <span className="font-title text-5xl uppercase tracking-wide text-foreground">
-          Crisbo
-        </span>
-        <span className="text-lg font-medium uppercase tracking-[0.3em] text-primary">
-          Tattoo
-        </span>
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/cb-icon.png"
+        alt="Crisbo Tattoo"
+        className="crisbo-splash-mark size-28 rounded-2xl"
+      />
       {/* Versión del build corriendo AHORA MISMO — verificación instantánea de
           que un deploy llegó al dispositivo (clave con PWA + service worker,
           donde el teléfono puede quedarse sirviendo un build viejo). */}
