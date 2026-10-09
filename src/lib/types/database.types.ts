@@ -182,12 +182,18 @@ export type Database = {
           document_number: string | null
           document_type: string | null
           email: string | null
+          external_reservation_id: string | null
+          first_session_date: string | null
           id: string
           instagram: string | null
+          last_session_date: string | null
           name: string
           notes: string | null
           phone: string | null
+          preferred_services: string[] | null
+          source: string | null
           studio_id: string | null
+          total_sessions: number
           updated_at: string
         }
         Insert: {
@@ -198,12 +204,18 @@ export type Database = {
           document_number?: string | null
           document_type?: string | null
           email?: string | null
+          external_reservation_id?: string | null
+          first_session_date?: string | null
           id?: string
           instagram?: string | null
+          last_session_date?: string | null
           name: string
           notes?: string | null
           phone?: string | null
+          preferred_services?: string[] | null
+          source?: string | null
           studio_id?: string | null
+          total_sessions?: number
           updated_at?: string
         }
         Update: {
@@ -214,12 +226,18 @@ export type Database = {
           document_number?: string | null
           document_type?: string | null
           email?: string | null
+          external_reservation_id?: string | null
+          first_session_date?: string | null
           id?: string
           instagram?: string | null
+          last_session_date?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
+          preferred_services?: string[] | null
+          source?: string | null
           studio_id?: string | null
+          total_sessions?: number
           updated_at?: string
         }
         Relationships: [
