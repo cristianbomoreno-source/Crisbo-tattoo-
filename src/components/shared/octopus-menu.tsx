@@ -391,38 +391,18 @@ function TriggerButton({
         className="pointer-events-none absolute inset-1 rounded-full"
         style={{ border: `1px solid ${CRISBO_BLUE}55` }}
       />
-      <span className="relative flex size-12 items-center justify-center">
-        {/* Isotipo de Crisbo Tattoo (CB) sin fondo.
-            El crossfade es SECUENCIAL: el isotipo desaparece por completo
-            (scale 0) antes de que entre la foto — nunca se ven las dos
-            capas superpuestas ("doble"). */}
+      <span className="relative flex size-16 items-center justify-center">
+        {/* Isotipo de Crisbo Tattoo (CB) sin fondo — siempre visible */}
         <motion.span
           aria-hidden="true"
-          className="absolute size-10"
+          className="absolute size-14"
           initial={false}
-          animate={{ opacity: open ? 0 : 1, scale: open ? 0.5 : 1 }}
-          transition={{ duration: 0.14, delay: open ? 0 : 0.14 }}
+          animate={{ scale: open ? 1.1 : 1 }}
+          transition={{ duration: 0.2 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/cb-isotipo.png" alt="" className="size-full object-contain" />
         </motion.span>
-        {avatarUrl && (
-          <motion.span
-            className="absolute flex items-center justify-center overflow-hidden rounded-full border-2"
-            style={{ borderColor: `${CRISBO_BLUE}66` }}
-            initial={false}
-            animate={{
-              opacity: open ? 1 : 0,
-              scale: open ? 1 : 0.5,
-              width: open ? 64 : 44,
-              height: open ? 64 : 44,
-            }}
-            transition={{ duration: 0.18, delay: open ? 0.14 : 0 }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={avatarUrl} alt="" className="size-full object-cover" />
-          </motion.span>
-        )}
       </span>
     </motion.button>
   )
