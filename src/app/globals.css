@@ -206,6 +206,52 @@
   }
 }
 
+/* MINIMAL — tema claro minimalista (blanco + azul oscuro). Diseño ultra limpio
+   inspirado en Notion/Linear modo claro. Sin sombras, bordes sutiles, espacios
+   amplios. El azul oscuro (#1e3a5f) es el único acento — profesional y sobrio. */
+.minimal {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #fafafa;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #1e3a5f;
+  --primary-hover: #2a4a73;
+  --primary-pressed: #152c4a;
+  --primary-glow: rgba(30, 58, 95, 0.12);
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f0f4f8;
+  --accent-foreground: #1a1a1a;
+  --destructive: #dc2626;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #1a1a1a;
+  --info: #1e3a5f;
+  --info-foreground: #ffffff;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #1e3a5f;
+  --chart-1: #1e3a5f;
+  --chart-2: #3b82f6;
+  --chart-3: #6366f1;
+  --chart-4: #8b5cf6;
+  --chart-5: #a855f7;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #737373;
+  --sidebar-primary: #1e3a5f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f4f8;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #1e3a5f;
+}
+
 /* ===== Superficies flotantes premium sobre #090909. Ver design-system.md §5. ===== */
 
 /* Tarjetas: degradado sutil (más claras arriba) + luz de canto + sombra suave
@@ -216,6 +262,20 @@
     inset 0 1px 0 0 oklch(1 0 0 / 0.06),
     0 1px 2px 0 rgb(0 0 0 / 0.4),
     0 16px 40px -24px rgb(0 0 0 / 0.85);
+}
+
+/* Tarjetas en tema Minimal: ultra limpias, solo borde sutil, sin sombras */
+.minimal .bg-card {
+  background-image: none;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+/* Glow en tema Minimal: más sutil, azul oscuro */
+.minimal .glow-primary {
+  box-shadow:
+    0 0 16px -4px var(--primary-glow, rgba(30, 58, 95, 0.12)),
+    0 4px 12px -6px rgb(0 0 0 / 0.08);
 }
 
 /* Glow rojo reutilizable para el FAB y acentos primarios: el único lugar
@@ -302,15 +362,24 @@
 .alert-badge-urgent {
   @apply bg-red-500/15 text-red-400 border border-red-500/30;
 }
+.minimal .alert-badge-urgent {
+  @apply bg-red-50 text-red-600 border-red-200;
+}
 
 /* Alerta warning: amarillo/naranja */
 .alert-badge-warning {
   @apply bg-amber-500/15 text-amber-400 border border-amber-500/30;
 }
+.minimal .alert-badge-warning {
+  @apply bg-amber-50 text-amber-600 border-amber-200;
+}
 
 /* Alerta ok: verde suave */
 .alert-badge-ok {
   @apply bg-emerald-500/15 text-emerald-400 border border-emerald-500/30;
+}
+.minimal .alert-badge-ok {
+  @apply bg-emerald-50 text-emerald-600 border-emerald-200;
 }
 
 /* Tarjetas de recomendación con borde de prioridad */
@@ -322,4 +391,50 @@
 }
 .recommendation-card-low {
   @apply border-l-4 border-l-emerald-500;
+}
+
+/* ===== Ajustes específicos para tema Minimal ===== */
+
+/* Splash en tema Minimal: sin glow verde, más sutil */
+.minimal .ofink-splash-mark {
+  animation: ofink-splash-spin-minimal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ofink-splash-spin-minimal {
+  0% {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0.4);
+    filter: none;
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(8deg) scale(1.06);
+  }
+  75% {
+    transform: rotate(-2deg) scale(0.99);
+    filter: drop-shadow(0 0 12px rgba(30, 58, 95, 0.25));
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+    filter: drop-shadow(0 0 8px rgba(30, 58, 95, 0.15));
+  }
+}
+
+/* Scrollbar sutil para tema Minimal en navegadores que lo soportan */
+.minimal {
+  scrollbar-color: #e5e5e5 transparent;
+}
+.minimal::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.minimal::-webkit-scrollbar-track {
+  background: transparent;
+}
+.minimal::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+.minimal::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
 }

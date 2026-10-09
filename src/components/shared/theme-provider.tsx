@@ -10,12 +10,21 @@ import type { ComponentProps } from 'react'
  * Server Component y `ThemeProvider` necesita ser cliente.
  *
  * `attribute="class"` coincide con el mecanismo que ya usa globals.css
- * (`:root` = claro, `.dark` = oscuro). `enableSystem={false}`: el toggle de
- * Ajustes es manual (Claro/Oscuro), no sigue la preferencia del sistema.
+ * (`:root` = claro, `.dark` = oscuro, `.minimal` = minimalista).
+ * `enableSystem={false}`: el toggle de Ajustes es manual, no sigue la
+ * preferencia del sistema.
+ *
+ * Temas disponibles: dark, light, minimal
  */
 export function ThemeProvider({ children, ...props }: ComponentProps<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false} {...props}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      themes={['dark', 'light', 'minimal']}
+      {...props}
+    >
       {children}
     </NextThemesProvider>
   )
