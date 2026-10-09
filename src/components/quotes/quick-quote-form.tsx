@@ -804,12 +804,12 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
         </DialogContent>
       </Dialog>
 
-      {/* Transición rápida de vuelta a Inicio: el pulpo blanco aparece con
+      {/* Transición rápida de vuelta a Inicio: el logo aparece con
           fade y desaparece casi de inmediato (180ms) mientras navega. */}
       {transitioning && (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-background animate-fade-in">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/pulpo-blanco.png" alt="" className="size-16 opacity-90" />
+          <img src="/brand/cb-icon.png" alt="" className="size-16 rounded-xl opacity-90" />
         </div>
       )}
     </div>

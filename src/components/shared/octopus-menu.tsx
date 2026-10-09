@@ -375,28 +375,20 @@ function TriggerButton({
         className="pointer-events-none absolute inset-1 rounded-full border border-primary/55"
       />
       <span className="relative flex size-12 items-center justify-center">
-        {/* Isotipo OFICIAL de OFINK: `pulpo-negro.png` como máscara CSS
-            pintada con el verde de marca (mismo mecanismo que <Logo/>).
-            El crossfade es SECUENCIAL: el isotipo desaparece por completo
+        {/* Logo de Crisbo Tattoo en el centro del menú.
+            El crossfade es SECUENCIAL: el logo desaparece por completo
             (scale 0) antes de que entre la foto — nunca se ven las dos
             capas superpuestas ("doble"). */}
         <motion.span
           aria-hidden="true"
-          className="absolute size-10 bg-primary"
-          style={{
-            WebkitMaskImage: 'url(/brand/pulpo-negro.png)',
-            maskImage: 'url(/brand/pulpo-negro.png)',
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskPosition: 'center',
-            maskPosition: 'center',
-          }}
+          className="absolute size-10 overflow-hidden rounded-lg"
           initial={false}
           animate={{ opacity: open ? 0 : 1, scale: open ? 0.5 : 1 }}
           transition={{ duration: 0.14, delay: open ? 0 : 0.14 }}
-        />
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/cb-icon.png" alt="" className="size-full object-contain" />
+        </motion.span>
         {avatarUrl && (
           <motion.span
             className="absolute flex items-center justify-center overflow-hidden rounded-full border-2 border-primary/40"

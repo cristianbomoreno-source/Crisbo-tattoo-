@@ -35,7 +35,8 @@ export function QuickQuoteTopBar({
         </Link>
 
         <div className="flex items-center gap-2">
-          <span className="font-title text-base uppercase tracking-[0.08em] text-primary">OFINK</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/cb-icon.png" alt="Crisbo Tattoo" className="size-8 rounded-md" />
           <span className="hidden font-display text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground sm:inline">
             Cotización rápida
           </span>

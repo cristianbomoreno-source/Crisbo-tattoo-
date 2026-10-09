@@ -87,7 +87,7 @@ export function StepShell({
           </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/ofink-wordmark.png" alt="OFINK" className="h-5 w-auto" />
+          <img src="/brand/cb-icon.png" alt="Crisbo Tattoo" className="h-8 w-auto rounded-md" />
 
           <div className="w-10 text-right">
             <span className="font-display text-[clamp(0.65rem,2.8vw,0.75rem)] uppercase tracking-wider text-muted-foreground">

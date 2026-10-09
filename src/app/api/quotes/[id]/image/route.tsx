@@ -35,7 +35,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     .map(publicUrl)
 
   const data = buildQuoteTemplateData(q, studio, photoUrl, referencePhotos)
-  const platformMarkUrl = new URL('/brand/pulpo-blanco.png', req.url).toString()
+  const platformMarkUrl = new URL('/brand/cb-logo.png', req.url).toString()
   const qrDataUrl = await generateQr(data.waLink, data.templateColor)
 
   // Todas las validaciones en paralelo — cada una es un HEAD liviano.

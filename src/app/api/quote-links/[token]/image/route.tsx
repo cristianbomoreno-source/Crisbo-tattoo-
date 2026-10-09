@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   if (!result.success) return new Response('No encontrado', { status: 404 })
   const data = result.data.quote
 
-  const platformMarkUrl = new URL('/brand/pulpo-blanco.png', req.url).toString()
+  const platformMarkUrl = new URL('/brand/cb-logo.png', req.url).toString()
   const qrDataUrl = await generateQr(data.waLink, data.templateColor)
 
   const [safePhotoUrl, safeReferencePhotos, safeLogoUrl] = await Promise.all([
