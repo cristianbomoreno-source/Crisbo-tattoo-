@@ -187,6 +187,7 @@ export function HomeCalendarDialog({
           setConfirmSession(null)
           goToProject(s)
         }}
+        onDeleted={refetch}
       />
     </Dialog>
   )
