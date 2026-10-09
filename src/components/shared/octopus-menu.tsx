@@ -177,7 +177,7 @@ const BTN_SIZE = 76
 const ARM_SPRING = { type: 'spring', stiffness: 210, damping: 22 } as const
 const BUTTON_SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const
 
-/** Resplandor verde muy difuso detrás de todo — la única puesta en
+/** Resplandor azul muy difuso detrás de todo — la única puesta en
  * escena permitida, aparte del volumen sutil de cada brazo. */
 function Glow({ open }: { open: boolean }) {
   return (
@@ -189,11 +189,11 @@ function Glow({ open }: { open: boolean }) {
         width: 140,
         height: 100,
         borderRadius: '50%',
-        background: 'radial-gradient(closest-side, var(--primary), transparent 72%)',
+        background: 'radial-gradient(closest-side, #1e3a5f, transparent 72%)',
         filter: 'blur(18px)',
       }}
       initial={false}
-      animate={{ opacity: open ? 0.3 : 0 }}
+      animate={{ opacity: open ? 0.4 : 0 }}
       transition={{ duration: 0.4 }}
     />
   )
@@ -269,7 +269,7 @@ function TentacleShape({ t, i, open }: { t: TentacleConfig; i: number; open: boo
         }
       >
         <defs>
-          {/* Volumen por luminosidad, mismo tono de marca: base más
+          {/* Volumen por luminosidad, tonos azules: base más
               luminosa → punta más profunda (3 paradas). En los brazos
               decorativos el degradado corre HORIZONTAL, siguiendo su
               anatomía (la base pegada al núcleo es el lado interior). */}
@@ -280,9 +280,9 @@ function TentacleShape({ t, i, open }: { t: TentacleConfig; i: number; open: boo
             x2={isDeco ? (curlDir === 1 ? '0%' : '100%') : '0%'}
             y2="0%"
           >
-            <stop offset="0%" stopColor="#CDFF5E" />
-            <stop offset="55%" stopColor="#B4EF1C" />
-            <stop offset="100%" stopColor="#9CD100" />
+            <stop offset="0%" stopColor="#5a9fd4" />
+            <stop offset="55%" stopColor="#3a7fc4" />
+            <stop offset="100%" stopColor="#1e5a9f" />
           </linearGradient>
         </defs>
         {/* Sin borde: el brazo se recorta solo con su relleno + sombra
@@ -295,8 +295,8 @@ function TentacleShape({ t, i, open }: { t: TentacleConfig; i: number; open: boo
   )
 }
 
-/** El botón que cada tentáculo sostiene: negro, circular, borde verde
- * fino, ícono verde, texto blanco. El tramo final del brazo queda oculto
+/** El botón que cada tentáculo sostiene: negro, circular, borde azul
+ * fino, ícono azul, texto blanco. El tramo final del brazo queda oculto
  * detrás (el botón se dibuja encima), dando la sensación de que entra al
  * círculo en vez de quedar pegado sobre él. */
 function ActionButton({
@@ -331,18 +331,27 @@ function ActionButton({
         href={action.href}
         aria-label={action.label}
         tabIndex={open ? 0 : -1}
-        className="flex flex-col items-center justify-center gap-1.5 rounded-full border-2 border-primary bg-[#0d0d0d] shadow-[0_0_18px_rgba(184,244,0,0.22),0_6px_18px_rgba(0,0,0,0.55)]"
-        style={{ width: BTN_SIZE, height: BTN_SIZE }}
+        className="flex flex-col items-center justify-center gap-1.5 rounded-full border-2 bg-[#0d0d0d]"
+        style={{
+          width: BTN_SIZE,
+          height: BTN_SIZE,
+          borderColor: '#1e3a5f',
+          boxShadow: '0 0 18px rgba(30,58,95,0.28), 0 6px 18px rgba(0,0,0,0.55)',
+        }}
       >
-        <Icon className="size-6 text-primary" strokeWidth={2} />
+        <Icon className="size-6" style={{ color: '#4a90d9' }} strokeWidth={2} />
         <span className="text-[11px] font-medium leading-none text-white">{action.label}</span>
       </Link>
     </motion.div>
   )
 }
 
-/** El botón disparador ES la cabeza del pulpo — no hay una segunda forma
- * compitiendo con él. Siempre el mismo círculo verde; al abrir, su ícono
+/** Color azul para el menú de Crisbo Tattoo */
+const CRISBO_BLUE = '#1e3a5f'
+const CRISBO_BLUE_GLOW = 'rgba(30, 58, 95, 0.35)'
+
+/** El botón disparador ES el centro del menú — no hay una segunda forma
+ * compitiendo con él. Siempre el mismo círculo azul; al abrir, su ícono
  * se desvanece y aparece la foto del tatuador en el mismo lugar
  * (crossfade). Los tentáculos nacen de detrás suyo. */
 function TriggerButton({
@@ -366,32 +375,41 @@ function TriggerButton({
       animate={{ scale: open ? 1.08 : 1 }}
       transition={{ type: 'spring', stiffness: 340, damping: 20 }}
       whileTap={{ scale: 0.94 }}
-      className="pointer-events-auto fixed left-1/2 z-40 flex items-center justify-center rounded-full border-[2.5px] border-primary bg-[#0a0a0a] shadow-[0_0_26px_rgba(184,244,0,0.32),0_8px_22px_rgba(0,0,0,0.5)] lg:hidden"
-      style={{ bottom: TRIGGER_BOTTOM, marginLeft: -TRIGGER_SIZE / 2, width: TRIGGER_SIZE, height: TRIGGER_SIZE }}
+      className="pointer-events-auto fixed left-1/2 z-40 flex items-center justify-center rounded-full border-[2.5px] bg-[#0a0a0a] lg:hidden"
+      style={{
+        bottom: TRIGGER_BOTTOM,
+        marginLeft: -TRIGGER_SIZE / 2,
+        width: TRIGGER_SIZE,
+        height: TRIGGER_SIZE,
+        borderColor: CRISBO_BLUE,
+        boxShadow: `0 0 26px ${CRISBO_BLUE_GLOW}, 0 8px 22px rgba(0,0,0,0.5)`,
+      }}
     >
       {/* Segundo aro interior — el "núcleo" de la referencia. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-1 rounded-full border border-primary/55"
+        className="pointer-events-none absolute inset-1 rounded-full"
+        style={{ border: `1px solid ${CRISBO_BLUE}55` }}
       />
       <span className="relative flex size-12 items-center justify-center">
-        {/* Logo de Crisbo Tattoo en el centro del menú.
-            El crossfade es SECUENCIAL: el logo desaparece por completo
+        {/* Isotipo de Crisbo Tattoo (CB) sin fondo.
+            El crossfade es SECUENCIAL: el isotipo desaparece por completo
             (scale 0) antes de que entre la foto — nunca se ven las dos
             capas superpuestas ("doble"). */}
         <motion.span
           aria-hidden="true"
-          className="absolute size-10 overflow-hidden rounded-lg"
+          className="absolute size-10"
           initial={false}
           animate={{ opacity: open ? 0 : 1, scale: open ? 0.5 : 1 }}
           transition={{ duration: 0.14, delay: open ? 0 : 0.14 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/cb-icon.png" alt="" className="size-full object-contain" />
+          <img src="/brand/cb-isotipo.png" alt="" className="size-full object-contain" />
         </motion.span>
         {avatarUrl && (
           <motion.span
-            className="absolute flex items-center justify-center overflow-hidden rounded-full border-2 border-primary/40"
+            className="absolute flex items-center justify-center overflow-hidden rounded-full border-2"
+            style={{ borderColor: `${CRISBO_BLUE}66` }}
             initial={false}
             animate={{
               opacity: open ? 1 : 0,
