@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { err, type Result } from '@/lib/errors/types'
 import { normalizeUsername, isValidUsername, usernameToEmail } from '@/lib/auth/username'
 import { resolvePostAuthPath } from '@/lib/auth/post-auth-redirect'
