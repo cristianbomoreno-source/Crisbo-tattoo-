@@ -32,6 +32,7 @@ import type { WaConversation, WaMessage, WaQuickReply } from '@/queries/whatsapp
 import { Button } from '@/components/ui/button'
 import { ClientLinkDialog } from './client-link-dialog'
 import { QuickRepliesMenu } from './quick-replies-menu'
+import { QUICK_REPLY_ICONS } from './quick-reply-icons'
 import {
   formatDayLabel,
   formatMessageTime,
@@ -134,6 +135,21 @@ export function ChatView({
       textareaRef.current?.focus()
     })
   }
+
+  /** Respuesta rápida: se envía tal cual, sin pasar por el borrador. */
+  function sendQuickReply(body: string) {
+    if (sending) return
+    startSending(async () => {
+      const result = await sendWhatsAppMessage({ conversationId: conversation.id, body })
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
+    })
+  }
+
+  const replyButtons = quickReplies.filter((r) => r.icon && QUICK_REPLY_ICONS[r.icon])
 
   function sendForm() {
     startSendingForm(async () => {
@@ -242,14 +258,7 @@ export function ChatView({
         {windowOpen ? (
           <>
             <div className="flex items-end gap-2">
-              <QuickRepliesMenu
-                replies={quickReplies}
-                onPick={(body) => {
-                  setDraft((d) => (d.trim() ? `${d.trimEnd()}
-${body}` : body))
-                  textareaRef.current?.focus()
-                }}
-              />
+              <QuickRepliesMenu replies={quickReplies} onPick={sendQuickReply} disabled={sending} />
               <textarea
                 ref={textareaRef}
                 value={draft}
@@ -269,12 +278,25 @@ ${body}` : body))
                 <Send />
               </Button>
             </div>
-            <div className="mt-1.5 flex items-center justify-between gap-2 px-1">
-              <p className="text-[11px] text-muted-foreground">
-                {remaining ? `Puedes responder libremente durante ${remaining} más.` : ''}
+            {(replyButtons.length > 0 || formButton) && (
+              <div className="mt-2 flex flex-wrap justify-end gap-2">
+                {replyButtons.map((r) => {
+                  const Icon = QUICK_REPLY_ICONS[r.icon!]!.icon
+                  return (
+                    <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r.body)} disabled={sending}>
+                      <Icon />
+                      {r.title}
+                    </Button>
+                  )
+                })}
+                {formButton}
+              </div>
+            )}
+            {remaining && (
+              <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
+                Puedes responder libremente durante {remaining} más.
               </p>
-              {formButton}
-            </div>
+            )}
           </>
         ) : (
           <div className="space-y-2">

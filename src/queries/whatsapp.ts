@@ -123,14 +123,14 @@ export async function getConversationIdForClient(clientId: string): Promise<stri
   return (data?.id as string | undefined) ?? null
 }
 
-export type WaQuickReply = { id: string; title: string; body: string; position: number }
+export type WaQuickReply = { id: string; title: string; body: string; position: number; icon: string | null }
 
 /** Respuestas rápidas del estudio (RLS: solo las del estudio activo). */
 export async function getQuickReplies(): Promise<WaQuickReply[]> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('wa_quick_replies')
-    .select('id, title, body, position')
+    .select('id, title, body, position, icon')
     .order('position')
     .order('created_at')
   return (data as WaQuickReply[] | null) ?? []

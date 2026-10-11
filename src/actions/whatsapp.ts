@@ -490,6 +490,8 @@ const quickReplySchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(1, 'Ponle un nombre corto').max(60, 'Máximo 60 caracteres'),
   body: z.string().trim().min(1, 'Escribe el mensaje').max(4096, 'Máximo 4096 caracteres'),
+  // Con ícono, la respuesta aparece como botón en el chat (envío con un toque).
+  icon: z.enum(['payment', 'receipt', 'calendar', 'location']).nullable().optional(),
 })
 
 export async function saveQuickReply(input: unknown): Promise<Result<null>> {
@@ -500,9 +502,12 @@ export async function saveQuickReply(input: unknown): Promise<Result<null>> {
 
   const supabase = await createClient()
   const { id, title, body } = parsed.data
+  const icon = parsed.data.icon ?? null
   const { error } = id
-    ? await supabase.from('wa_quick_replies').update({ title, body }).eq('id', id)
-    : await supabase.from('wa_quick_replies').insert({ studio_id: studio.id, title, body, position: Date.now() % 1e9 })
+    ? await supabase.from('wa_quick_replies').update({ title, body, icon }).eq('id', id)
+    : await supabase
+        .from('wa_quick_replies')
+        .insert({ studio_id: studio.id, title, body, icon, position: Date.now() % 1e9 })
   if (error) return dbError(error)
 
   revalidatePath('/dashboard/settings/whatsapp')

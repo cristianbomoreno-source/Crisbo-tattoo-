@@ -9,8 +9,10 @@ import type { WaQuickReply } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import { QUICK_REPLY_ICONS } from '@/components/inbox/quick-reply-icons'
 
-type Draft = { id?: string; title: string; body: string }
+type Draft = { id?: string; title: string; body: string; icon: string | null }
 
 export function QuickRepliesCard({ replies }: { replies: WaQuickReply[] }) {
   const router = useRouter()
@@ -50,16 +52,22 @@ export function QuickRepliesCard({ replies }: { replies: WaQuickReply[] }) {
         <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em]">Respuestas rápidas</h2>
       </div>
       <p className="text-muted-foreground">
-        Mensajes que usas seguido. En cualquier chat de Mensajes toca el botón <Zap className="inline size-3.5" /> y
-        se escriben solos en el cuadro de texto. Son gratis, pero solo se pueden enviar dentro de las 24 h desde el
-        último mensaje del cliente.
+        Mensajes que usas seguido: se envían con un toque desde el botón <Zap className="inline size-3.5" /> del chat.
+        Si les pones ícono, aparecen además como botón junto a &quot;Enviar formulario&quot;. Son gratis, pero solo se
+        pueden enviar dentro de las 24 h desde el último mensaje del cliente.
       </p>
 
       <ul className="space-y-2">
         {replies.map((r) => (
           <li key={r.id} className="flex items-start gap-2 rounded-xl bg-muted/60 p-3">
             <div className="min-w-0 flex-1">
-              <p className="font-medium">{r.title}</p>
+              <p className="flex items-center gap-1.5 font-medium">
+                {r.icon && QUICK_REPLY_ICONS[r.icon] && (() => {
+                  const Icon = QUICK_REPLY_ICONS[r.icon]!.icon
+                  return <Icon className="size-3.5 text-primary" />
+                })()}
+                {r.title}
+              </p>
               <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">{r.body}</p>
             </div>
             <Button
@@ -67,7 +75,7 @@ export function QuickRepliesCard({ replies }: { replies: WaQuickReply[] }) {
               variant="ghost"
               aria-label="Editar"
               disabled={pending}
-              onClick={() => setEditing({ id: r.id, title: r.title, body: r.body })}
+              onClick={() => setEditing({ id: r.id, title: r.title, body: r.body, icon: r.icon })}
             >
               <Pencil />
             </Button>
@@ -95,8 +103,37 @@ export function QuickRepliesCard({ replies }: { replies: WaQuickReply[] }) {
             rows={4}
             value={editing.body}
             onChange={(e) => setEditing({ ...editing, body: e.target.value })}
-            placeholder="Mensaje que se escribirá en el chat"
+            placeholder="Mensaje que se enviará al cliente"
           />
+          <div>
+            <p className="mb-1.5 text-xs text-muted-foreground">Botón en el chat</p>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setEditing({ ...editing, icon: null })}
+                className={cn(
+                  'rounded-lg px-2.5 py-1.5 text-xs',
+                  editing.icon === null ? 'bg-primary/15 text-primary ring-1 ring-primary/40' : 'bg-muted text-muted-foreground'
+                )}
+              >
+                Solo en el menú
+              </button>
+              {Object.entries(QUICK_REPLY_ICONS).map(([key, { icon: Icon, label }]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setEditing({ ...editing, icon: key })}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs',
+                    editing.icon === key ? 'bg-primary/15 text-primary ring-1 ring-primary/40' : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setEditing(null)} disabled={pending}>
               Cancelar
@@ -107,7 +144,7 @@ export function QuickRepliesCard({ replies }: { replies: WaQuickReply[] }) {
           </div>
         </div>
       ) : (
-        <Button variant="outline" onClick={() => setEditing({ title: '', body: '' })}>
+        <Button variant="outline" onClick={() => setEditing({ title: '', body: '', icon: null })}>
           <Plus />
           Nueva respuesta rápida
         </Button>

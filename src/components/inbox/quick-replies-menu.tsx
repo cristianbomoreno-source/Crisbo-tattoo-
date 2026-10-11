@@ -11,19 +11,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-/** Botón ⚡ del chat: inserta una respuesta guardada en el cuadro de texto
- * (no la envía sola, para poder ajustarla antes). */
+/** Botón ⚡ del chat: elegir una respuesta guardada la envía de inmediato. */
 export function QuickRepliesMenu({
   replies,
   onPick,
+  disabled,
 }: {
   replies: WaQuickReply[]
   onPick: (body: string) => void
+  disabled?: boolean
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Respuestas rápidas"
+        disabled={disabled}
         className="grid size-10 shrink-0 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent/60 hover:text-primary"
       >
         <Zap className="size-5" />

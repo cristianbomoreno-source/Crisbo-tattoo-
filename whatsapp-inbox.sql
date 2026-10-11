@@ -116,3 +116,6 @@ CREATE POLICY "Studio can view its quick replies" ON wa_quick_replies
   FOR SELECT USING (studio_id = get_studio_id());
 CREATE POLICY "Studio can manage its quick replies" ON wa_quick_replies
   FOR ALL USING (studio_id = get_studio_id()) WITH CHECK (studio_id = get_studio_id());
+-- Ícono opcional: la respuesta aparece como botón en el chat y se envía con un toque.
+ALTER TABLE wa_quick_replies ADD COLUMN IF NOT EXISTS icon text
+  CHECK (icon IN ('payment', 'receipt', 'calendar', 'location'));
