@@ -50,9 +50,9 @@ ALTER TABLE wa_conversations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Studio can view its conversations" ON wa_conversations;
 DROP POLICY IF EXISTS "Studio can update its conversations" ON wa_conversations;
 CREATE POLICY "Studio can view its conversations" ON wa_conversations
-  FOR SELECT USING (studio_id = current_studio_id());
+  FOR SELECT USING (studio_id = get_studio_id());
 CREATE POLICY "Studio can update its conversations" ON wa_conversations
-  FOR UPDATE USING (studio_id = current_studio_id()) WITH CHECK (studio_id = current_studio_id());
+  FOR UPDATE USING (studio_id = get_studio_id()) WITH CHECK (studio_id = get_studio_id());
 
 -- 3. Mensajes ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS wa_messages (
@@ -77,7 +77,7 @@ CREATE INDEX IF NOT EXISTS wa_messages_conversation_idx ON wa_messages (conversa
 ALTER TABLE wa_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Studio can view its messages" ON wa_messages;
 CREATE POLICY "Studio can view its messages" ON wa_messages
-  FOR SELECT USING (studio_id = current_studio_id());
+  FOR SELECT USING (studio_id = get_studio_id());
 
 -- 4. Realtime: la bandeja se actualiza sola al llegar mensajes ------------------
 DO $$

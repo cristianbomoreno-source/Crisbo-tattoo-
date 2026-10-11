@@ -66,7 +66,7 @@ export type WaMessage = {
 
 const CONVERSATION_SELECT = '*, client:clients(id, name)'
 
-/** RLS (`studio_id = current_studio_id()`) limita a las del estudio activo. */
+/** RLS (`studio_id = get_studio_id()`) limita a las del estudio activo. */
 export async function getConversations(): Promise<Result<WaConversation[]>> {
   const supabase = await createClient()
   const { data, error } = await supabase
