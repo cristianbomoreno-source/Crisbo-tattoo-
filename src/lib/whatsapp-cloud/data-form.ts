@@ -10,8 +10,11 @@ export const FORM_BUTTON_TEXT = 'Llenar formulario'
 
 export const FORM_TEMPLATE_LANGUAGE = 'es'
 
+/** Se envía cuando el cliente ya confirmó su pago: redactado como
+ * seguimiento de esa transacción para que Meta lo clasifique como Utilidad
+ * (≈ COP 3, y gratis dentro de la ventana de 24 h) y no como Marketing. */
 export function formTemplateBody(studioName: string) {
-  return `¡Hola! Te escribimos de ${studioName}. Para registrarte y agendar tu cita necesitamos algunos datos: toca el botón y completa el formulario, toma menos de un minuto.`
+  return `Confirmamos tu pago en ${studioName}. Para completar tu reserva, por favor envíanos tus datos en el siguiente formulario.`
 }
 
 export function formFlowJson() {
