@@ -28,13 +28,13 @@ export function EditQuoteButton({
     <FormSheet
       title={title}
       description={subtitle}
-      popupClassName="!bg-[#0D0D0D] sm:!max-w-md"
-      closeButtonClassName="rounded-full border border-[#2B2B2B] text-primary hover:bg-primary/10"
+      popupClassName="!bg-foreground/5 sm:!max-w-md"
+      closeButtonClassName="rounded-full border border-foreground/15 text-primary hover:bg-primary/10"
       header={
         <div className="mb-1 flex items-start gap-3 pr-10">
           <TattooMachineIcon className="size-14 shrink-0 text-primary" />
           <div>
-            <h2 className="font-title text-2xl leading-tight text-white">{title}</h2>
+            <h2 className="font-title text-2xl leading-tight text-foreground">{title}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
           </div>
         </div>

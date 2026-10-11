@@ -91,7 +91,7 @@ export function QuotesList({
                 'relative isolate flex aspect-[16/7.5] w-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl p-4',
                 isGreen
                   ? 'ring-1 ring-primary/40 shadow-[0_0_28px_-6px_var(--primary-glow,_rgba(184,244,0,0.18))]'
-                  : 'ring-1 ring-white/10'
+                  : 'ring-1 ring-foreground/10'
               )}
             >
               {q.photoUrl ? (
@@ -115,7 +115,7 @@ export function QuotesList({
               />
               {q.style && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden select-none">
-                  <span className="block w-full max-w-full truncate text-center font-title text-7xl leading-none tracking-tight text-white uppercase opacity-[0.13] sm:text-8xl">
+                  <span className="block w-full max-w-full truncate text-center font-title text-7xl leading-none tracking-tight text-foreground uppercase opacity-[0.13] sm:text-8xl">
                     {q.style}
                   </span>
                 </div>
@@ -135,19 +135,19 @@ export function QuotesList({
               </div>
 
               <div className="relative z-10 min-w-0 pr-14">
-                <h3 className="truncate font-title text-4xl leading-none tracking-tight text-white uppercase sm:text-5xl">
+                <h3 className="truncate font-title text-4xl leading-none tracking-tight text-foreground uppercase sm:text-5xl">
                   {q.clients?.name ?? 'Cliente'}
                 </h3>
-                <p className="mt-2 text-sm text-white/70">
+                <p className="mt-2 text-sm text-foreground/70">
                   {timeAgo(q.created_at)} • {formatHour(q.created_at)}
                 </p>
-                {meta && <p className="mt-0.5 truncate text-sm text-white/85">{meta}</p>}
+                {meta && <p className="mt-0.5 truncate text-sm text-foreground/85">{meta}</p>}
               </div>
 
               <div className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                 <div className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-black/70">
                   <ChevronRight
-                    className="size-5 text-white"
+                    className="size-5 text-foreground"
                     strokeWidth={2}
                   />
                 </div>

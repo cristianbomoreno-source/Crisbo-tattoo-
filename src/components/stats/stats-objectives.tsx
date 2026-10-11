@@ -14,11 +14,11 @@ function GoalBar({ goal }: { goal: Goal }) {
   const pct = Math.min(100, Math.round((goal.current / goal.goal) * 100))
   return (
     <div>
-      <p className="text-xs text-white/80">
+      <p className="text-xs text-foreground/80">
         {goal.label} {goal.format(goal.goal)}
       </p>
       <div className="mt-1.5 flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/10">
           <div
             className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
             style={{ width: `${pct}%` }}
@@ -60,7 +60,7 @@ export function StatsObjectives({
           <Target className="size-5 text-primary" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-title text-lg text-white">Objetivo del mes</p>
+          <p className="font-title text-lg text-foreground">Objetivo del mes</p>
           {anyGoal ? (
             <p className="text-xs text-muted-foreground">Sigue así, vas en buen camino para alcanzar tu meta.</p>
           ) : (
@@ -83,7 +83,7 @@ export function StatsObjectives({
           </div>
           <Link
             href="/dashboard/settings/metas"
-            className="mt-5 inline-flex items-center gap-1 font-heading text-xs font-semibold uppercase tracking-wide text-white/80 transition-colors hover:text-white"
+            className="mt-5 inline-flex items-center gap-1 font-heading text-xs font-semibold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground"
           >
             Ver objetivos completos <ChevronRight className="size-3.5" aria-hidden />
           </Link>

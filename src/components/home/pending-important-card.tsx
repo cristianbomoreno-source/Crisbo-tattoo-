@@ -60,7 +60,7 @@ export function PendingImportantCard({
             <Link
               key={item.href + item.title}
               href={item.href}
-              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
                 <item.icon className="size-4" strokeWidth={2} aria-hidden="true" />

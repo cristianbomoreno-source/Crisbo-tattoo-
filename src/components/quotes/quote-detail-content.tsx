@@ -109,11 +109,11 @@ export function QuoteDetailContent({
         </div>
 
         <div className="relative z-10 min-w-0">
-          <h2 className="truncate font-title text-5xl leading-[0.95] tracking-tight text-white uppercase sm:text-6xl">
+          <h2 className="truncate font-title text-5xl leading-[0.95] tracking-tight text-foreground uppercase sm:text-6xl">
             {clientName}
           </h2>
           {q.style && (
-            <p className="truncate font-title text-3xl leading-[0.95] tracking-tight text-white/80 uppercase sm:text-4xl">
+            <p className="truncate font-title text-3xl leading-[0.95] tracking-tight text-foreground/80 uppercase sm:text-4xl">
               {q.style}
             </p>
           )}

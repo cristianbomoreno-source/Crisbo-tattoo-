@@ -49,7 +49,7 @@ export function StatsSummaryStrip({
 
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-white">{approvedCount}</p>
+            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{approvedCount}</p>
             <Briefcase className="size-4 text-muted-foreground" aria-hidden />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Proyectos aprobados</p>
@@ -58,7 +58,7 @@ export function StatsSummaryStrip({
 
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-white">{scheduledSessions}</p>
+            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{scheduledSessions}</p>
             <CalendarCheck className="size-4 text-muted-foreground" aria-hidden />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Sesiones agendadas</p>
@@ -68,7 +68,7 @@ export function StatsSummaryStrip({
         <div className="flex items-center gap-3">
           <OccupancyRing pct={occupancyPct} compact />
           <div>
-            <p className="font-title text-[clamp(1.1rem,4vw,1.6rem)] tabular-nums text-white">
+            <p className="font-title text-[clamp(1.1rem,4vw,1.6rem)] tabular-nums text-foreground">
               {daysWithSessionOpen} / {workableDays}
             </p>
             <p className="text-xs text-muted-foreground">Ocupación del mes</p>

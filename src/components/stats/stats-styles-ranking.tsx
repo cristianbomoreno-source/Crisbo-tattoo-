@@ -14,10 +14,10 @@ export function StatsStylesRanking({ rows }: { rows: RankingRow[] }) {
           {rows.map((row) => (
             <div key={row.label}>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/90">{row.label}</span>
+                <span className="text-foreground/90">{row.label}</span>
                 <span className="tabular-nums text-muted-foreground">{row.count}</span>
               </div>
-              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-foreground/8">
                 <div
                   className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
                   style={{ width: `${Math.max(6, (row.count / max) * 100)}%` }}

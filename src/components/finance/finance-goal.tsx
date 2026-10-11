@@ -10,13 +10,13 @@ export function FinanceGoalCard({ goal, revenue }: { goal: number; revenue: numb
   const reached = pct >= 100
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-card p-6">
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-6">
       <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Meta mensual
       </p>
-      <p className="mt-1.5 font-title text-3xl tracking-tight text-white tabular-nums">{cop(goal)}</p>
+      <p className="mt-1.5 font-title text-3xl tracking-tight text-foreground tabular-nums">{cop(goal)}</p>
 
-      <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-foreground/10">
         <div
           className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
           style={{ width: `${pct}%`, boxShadow: '0 0 10px var(--primary)' }}
@@ -31,7 +31,7 @@ export function FinanceGoalCard({ goal, revenue }: { goal: number; revenue: numb
         </div>
       ) : (
         <p className="mt-3 text-sm text-muted-foreground">
-          Solo faltan <span className="font-semibold text-white">{cop(remaining)}</span> para alcanzar tu objetivo.
+          Solo faltan <span className="font-semibold text-foreground">{cop(remaining)}</span> para alcanzar tu objetivo.
         </p>
       )}
     </div>

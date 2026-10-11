@@ -162,7 +162,7 @@ export default async function FinanzasPage({
 
         <FinanceReportSummary data={reportData} />
 
-        <div className="pt-4 border-t border-white/10">
+        <div className="pt-4 border-t border-foreground/10">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Vista del mes actual</p>
         </div>
 

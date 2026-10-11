@@ -24,8 +24,8 @@ function Card({
       <span className="grid size-9 place-items-center rounded-full bg-primary/10">
         <Icon className="size-4 text-primary" aria-hidden />
       </span>
-      <p className="mt-3 font-title text-2xl tabular-nums text-white">{value}</p>
-      <p className="mt-0.5 text-sm text-white/80">{label}</p>
+      <p className="mt-3 font-title text-2xl tabular-nums text-foreground">{value}</p>
+      <p className="mt-0.5 text-sm text-foreground/80">{label}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
     </div>
   )

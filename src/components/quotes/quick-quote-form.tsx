@@ -313,13 +313,13 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
   const sizeRangeLabel = precisionSize?.match(/\(([^)]+)\)/)?.[1] ?? null
 
   return (
-    <div className="-mx-4 -mt-[4.5rem] -mb-[calc(5.5rem+env(safe-area-inset-bottom))] min-h-dvh bg-[#050505] sm:-mx-6 lg:mx-0 lg:mt-0 lg:mb-0 lg:rounded-[1.75rem]">
+    <div className="-mx-4 -mt-[4.5rem] -mb-[calc(5.5rem+env(safe-area-inset-bottom))] min-h-dvh bg-background sm:-mx-6 lg:mx-0 lg:mt-0 lg:mb-0 lg:rounded-[1.75rem]">
       <div className="mx-auto flex min-h-dvh max-w-5xl flex-col lg:min-h-0 lg:py-6">
         {!result ? (
           <>
             <QuickQuoteTopBar completed={completedCount} total={TOTAL_SECTIONS} />
 
-            <div className="grid flex-1 grid-cols-1 gap-4 px-4 py-4 sm:px-6 lg:grid-cols-2 lg:gap-5 lg:border lg:border-t-0 lg:border-white/8 lg:px-6 lg:pb-5">
+            <div className="grid flex-1 grid-cols-1 gap-4 px-4 py-4 sm:px-6 lg:grid-cols-2 lg:gap-5 lg:border lg:border-t-0 lg:border-foreground/8 lg:px-6 lg:pb-5">
               {/* 1 — Cliente */}
               <QuickSection n={1} title="Cliente" spanFull done={sectionsDone[0]}>
                 {clientMode === null ? (
@@ -373,7 +373,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                       </p>
                     )}
                     {!searchingClient && clientNotFound && (
-                      <div className="rounded-lg border border-dashed border-white/15 px-3 py-2.5 text-xs text-muted-foreground">
+                      <div className="rounded-lg border border-dashed border-foreground/15 px-3 py-2.5 text-xs text-muted-foreground">
                         No encontramos ningún cliente con ese teléfono.{' '}
                         <button
                           type="button"
@@ -406,7 +406,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="Nombre completo"
                       disabled={locked}
-                      className="h-11 w-full flex-1 rounded-xl border border-white/12 bg-white/[0.02] px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
+                      className="h-11 w-full flex-1 rounded-xl border border-foreground/12 bg-foreground/[0.02] px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
                     />
                     <div className="flex-1">
                       <PhoneInput value={clientPhone} onChange={setClientPhone} />
@@ -442,7 +442,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     className={cn(
                       'flex min-h-[168px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed px-4 py-8 text-center transition-colors duration-200',
                       locked && 'pointer-events-none opacity-50',
-                      photoDragOver ? 'border-primary bg-primary/[0.06]' : 'border-white/15 hover:border-primary/40'
+                      photoDragOver ? 'border-primary bg-primary/[0.06]' : 'border-foreground/15 hover:border-primary/40'
                     )}
                   >
                     <span className="mb-1 grid size-11 place-items-center rounded-full border border-primary/30 text-primary">
@@ -479,7 +479,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                       {photos.map((file, i) => (
                         <div
                           key={`${file.name}-${i}`}
-                          className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-2.5"
+                          className="flex items-center gap-3 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-2.5"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={photoPreviews[i]} alt="Referencia elegida" className="size-12 shrink-0 rounded-lg object-cover" />
@@ -497,7 +497,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                             disabled={locked}
                             onClick={() => removePhoto(i)}
                             aria-label="Quitar imagen"
-                            className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground disabled:opacity-40"
+                            className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground disabled:opacity-40"
                           >
                             <XIcon className="size-4" strokeWidth={1.8} />
                           </button>
@@ -517,7 +517,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     disabled={locked}
                     rows={5}
                     placeholder="Describe tu idea, concepto o significado…"
-                    className="w-full resize-none rounded-2xl border border-white/12 bg-white/[0.02] px-4 py-3.5 pr-14 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
+                    className="w-full resize-none rounded-2xl border border-foreground/12 bg-foreground/[0.02] px-4 py-3.5 pr-14 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
                   />
                   <button
                     type="button"
@@ -529,7 +529,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     aria-label={recording ? 'Suelta para terminar de dictar' : 'Mantén presionado para dictar'}
                     className={cn(
                       'absolute bottom-3 right-3 flex size-9 touch-none select-none items-center justify-center rounded-full transition-colors duration-200',
-                      recording ? 'bg-primary text-primary-foreground' : 'bg-white/8 text-muted-foreground hover:text-foreground'
+                      recording ? 'bg-primary text-primary-foreground' : 'bg-foreground/8 text-muted-foreground hover:text-foreground'
                     )}
                   >
                     {recording ? <Square className="size-3.5" strokeWidth={2.5} /> : <Mic className="size-4" strokeWidth={1.8} />}
@@ -605,10 +605,10 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   onClick={() => setPrecisionOpen(true)}
                   className={cn(
                     'flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                    precisionZone || precisionSize ? 'border-primary/50 bg-primary/[0.05]' : 'border-white/12 hover:border-primary/40'
+                    precisionZone || precisionSize ? 'border-primary/50 bg-primary/[0.05]' : 'border-foreground/12 hover:border-primary/40'
                   )}
                 >
-                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/5 text-primary">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-foreground/5 text-primary">
                     <MapPin className="size-5" strokeWidth={1.8} aria-hidden="true" />
                   </span>
                   {precisionZone || precisionSize ? (
@@ -625,7 +625,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   ) : (
                     <span className="min-w-0 flex-1 text-sm text-muted-foreground">Elegir en el mapa del cuerpo</span>
                   )}
-                  <span className="shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  <span className="shrink-0 rounded-lg border border-foreground/15 px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                     Editar
                   </span>
                 </button>
@@ -649,7 +649,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     El valor final puede variar según el diseño.
                   </TinyTip>
                 </div>
-                <div className="space-y-1.5 border-t border-white/8 pt-3">
+                <div className="space-y-1.5 border-t border-foreground/8 pt-3">
                   <label className="text-[11px] uppercase tracking-wide text-muted-foreground">
                     Ajustar precio manualmente
                   </label>
@@ -662,7 +662,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     }}
                     disabled={locked}
                     placeholder="0"
-                    className="h-10 w-full rounded-xl border border-white/12 bg-white/[0.02] px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
+                    className="h-10 w-full rounded-xl border border-foreground/12 bg-foreground/[0.02] px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:ring-3 focus-visible:ring-primary/20"
                   />
                 </div>
               </QuickSection>
@@ -679,7 +679,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                 type="button"
                 onClick={handleCreateQuote}
                 disabled={locked}
-                className="w-full rounded-xl border border-white/12 py-2.5 text-center text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                className="w-full rounded-xl border border-foreground/12 py-2.5 text-center text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {loading && !saved ? 'Creando…' : 'O solo crear la cotización y enviarla por WhatsApp'}
               </button>
@@ -728,7 +728,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
               <button
                 type="button"
                 onClick={() => router.push(`/dashboard/projects/${result.projectId}`)}
-                className="w-full rounded-xl border border-white/12 px-4 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-white/5"
+                className="w-full rounded-xl border border-foreground/12 px-4 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/5"
               >
                 Ver proyecto
               </button>

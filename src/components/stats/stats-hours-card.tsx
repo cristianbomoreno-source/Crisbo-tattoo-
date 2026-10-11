@@ -13,8 +13,8 @@ export function StatsHoursCard({ hours, avgPerSession }: { hours: number; avgPer
         <Flame className="size-4 text-primary/70" aria-hidden />
       </div>
       <p className="mt-0.5 text-xs text-muted-foreground">Horas este mes</p>
-      <div className="mt-4 border-t border-white/8 pt-3">
-        <p className="font-title text-lg tabular-nums text-white">{avgPerSession.toFixed(1)} h</p>
+      <div className="mt-4 border-t border-foreground/8 pt-3">
+        <p className="font-title text-lg tabular-nums text-foreground">{avgPerSession.toFixed(1)} h</p>
         <p className="text-xs text-muted-foreground">Promedio por sesión</p>
       </div>
     </div>

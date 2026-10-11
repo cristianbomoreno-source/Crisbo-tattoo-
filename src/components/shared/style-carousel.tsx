@@ -71,7 +71,7 @@ export function StyleCarousel({
             aria-pressed={active}
             className={cn(
               'group relative flex w-[calc((100%-1.25rem)/3)] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border bg-card text-left transition-all active:scale-[0.97]',
-              active ? 'border-primary ring-2 ring-primary/40' : 'border-white/8 hover:border-primary/40'
+              active ? 'border-primary ring-2 ring-primary/40' : 'border-foreground/8 hover:border-primary/40'
             )}
           >
             <span className="relative block aspect-square w-full overflow-hidden bg-black">
@@ -94,7 +94,7 @@ export function StyleCarousel({
                 </span>
               )}
             </span>
-            <span className="line-clamp-2 block px-1 py-1.5 text-center font-heading text-[10px] font-semibold leading-tight uppercase tracking-wide text-white">
+            <span className="line-clamp-2 block px-1 py-1.5 text-center font-heading text-[10px] font-semibold leading-tight uppercase tracking-wide text-foreground">
               {style}
             </span>
           </button>

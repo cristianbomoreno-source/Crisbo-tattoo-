@@ -118,7 +118,7 @@ export function StepDetails({ draft, patch }: StepDetailsProps) {
               >
                 {active && (
                   <Check
-                    className="size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]"
+                    className="size-4 text-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]"
                     strokeWidth={3}
                     aria-hidden="true"
                   />

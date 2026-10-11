@@ -234,14 +234,14 @@ export function InventarioPanel({
         <Link
           href="/dashboard/settings"
           aria-label="Volver"
-          className="relative grid size-10 place-items-center rounded-full bg-card/80 text-white/80 backdrop-blur transition-colors hover:text-white"
+          className="relative grid size-10 place-items-center rounded-full bg-card/80 text-foreground/80 backdrop-blur transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
         </Link>
 
         <div className="relative mt-5 max-w-[80%] sm:max-w-[70%]">
           <p className="font-heading text-xs font-semibold uppercase tracking-widest text-primary">Nuevo insumo</p>
-          <h1 className="mt-1 font-title text-[2.75rem] leading-[0.95] text-white sm:text-6xl">INVENTARIO</h1>
+          <h1 className="mt-1 font-title text-[2.75rem] leading-[0.95] text-foreground sm:text-6xl">INVENTARIO</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
             Organiza tus insumos y mantén tu estudio{' '}
             <span className="text-primary">siempre listo</span>.
@@ -250,13 +250,13 @@ export function InventarioPanel({
       </div>
 
       <div className="mx-auto max-w-xl space-y-5 px-5 sm:px-8">
-        <div className="-mt-4 space-y-5 rounded-[1.75rem] border border-white/8 bg-card p-5 shadow-[0_0_40px_-15px_rgba(184,244,0,0.15)] sm:p-6">
+        <div className="-mt-4 space-y-5 rounded-[1.75rem] border border-foreground/8 bg-card p-5 shadow-[0_0_40px_-15px_rgba(184,244,0,0.15)] sm:p-6">
           <FieldShell icon={Boxes} label="Nombre del insumo">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej. Tinta negra, Agujas RL 1203…"
-              className="w-full bg-transparent text-[15px] text-white placeholder:text-muted-foreground/50 focus:outline-none"
+              className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
           </FieldShell>
 
@@ -272,14 +272,14 @@ export function InventarioPanel({
               }
             >
               <button type="button" onClick={() => setCategoryPickerOpen((v) => !v)} className="w-full text-left">
-                <span className={categoryName ? 'text-[15px] text-white' : 'text-[15px] text-muted-foreground/50'}>
+                <span className={categoryName ? 'text-[15px] text-foreground' : 'text-[15px] text-muted-foreground/50'}>
                   {categoryName || 'Ej. Tintas, Agujas, Cartuchos, Otros…'}
                 </span>
               </button>
             </FieldShell>
 
             {categoryPickerOpen && (
-              <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-2xl border border-white/10 bg-background p-3 shadow-2xl">
+              <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-2xl border border-foreground/10 bg-background p-3 shadow-2xl">
                 <div className="grid grid-cols-4 gap-2">
                   {[
                     ...categories.map((c) => ({ name: c.name, icon: c.icon, color: c.color })),
@@ -291,7 +291,7 @@ export function InventarioPanel({
                       onClick={() => handlePickCategory(preset)}
                       className={cn(
                         'flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 transition-colors',
-                        categoryName === preset.name ? 'border-primary bg-primary/10' : 'border-white/8 hover:border-white/20'
+                        categoryName === preset.name ? 'border-primary bg-primary/10' : 'border-foreground/8 hover:border-foreground/20'
                       )}
                     >
                       <span className="text-lg leading-none" style={{ filter: `drop-shadow(0 0 6px ${preset.color}55)` }}>
@@ -303,7 +303,7 @@ export function InventarioPanel({
                   <button
                     type="button"
                     onClick={() => setNewCategoryOpen(true)}
-                    className="flex flex-col items-center gap-1 rounded-xl border border-dashed border-white/15 px-2 py-2.5 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+                    className="flex flex-col items-center gap-1 rounded-xl border border-dashed border-foreground/15 px-2 py-2.5 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
                   >
                     <Plus className="size-4" aria-hidden />
                     <span className="text-[10px]">Crear</span>
@@ -311,20 +311,20 @@ export function InventarioPanel({
                 </div>
 
                 {newCategoryOpen && (
-                  <div className="mt-3 space-y-2.5 border-t border-white/8 pt-3">
+                  <div className="mt-3 space-y-2.5 border-t border-foreground/8 pt-3">
                     <div className="flex gap-2">
                       <input
                         value={newCategoryIcon}
                         onChange={(e) => setNewCategoryIcon(e.target.value)}
                         maxLength={4}
-                        className="w-12 shrink-0 rounded-lg border border-white/10 bg-card px-2 py-2 text-center text-lg"
+                        className="w-12 shrink-0 rounded-lg border border-foreground/10 bg-card px-2 py-2 text-center text-lg"
                         aria-label="Emoji del ícono"
                       />
                       <input
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Nombre de la categoría"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-card px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none"
+                        className="min-w-0 flex-1 rounded-lg border border-foreground/10 bg-card px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -336,7 +336,7 @@ export function InventarioPanel({
                           aria-label={`Color ${c}`}
                           className={cn(
                             'size-6 rounded-full transition-transform',
-                            newCategoryColor === c ? 'scale-110 ring-2 ring-white' : 'hover:scale-105'
+                            newCategoryColor === c ? 'scale-110 ring-2 ring-foreground' : 'hover:scale-105'
                           )}
                           style={{ backgroundColor: c }}
                         />
@@ -363,18 +363,18 @@ export function InventarioPanel({
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(0, q - 1))}
                   aria-label="Restar"
-                  className="grid size-8 place-items-center rounded-full text-white/70 transition-all hover:bg-white/5 active:scale-90"
+                  className="grid size-8 place-items-center rounded-full text-foreground/70 transition-all hover:bg-foreground/5 active:scale-90"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span key={quantity} className="animate-fade-in text-lg font-semibold tabular-nums text-white">
+                <span key={quantity} className="animate-fade-in text-lg font-semibold tabular-nums text-foreground">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => q + 1)}
                   aria-label="Sumar"
-                  className="grid size-8 place-items-center rounded-full text-white/70 transition-all hover:bg-white/5 active:scale-90"
+                  className="grid size-8 place-items-center rounded-full text-foreground/70 transition-all hover:bg-foreground/5 active:scale-90"
                 >
                   <Plus className="size-4" />
                 </button>
@@ -393,7 +393,7 @@ export function InventarioPanel({
               label="Unidades"
             >
               <Select value={unit} onValueChange={(v) => v !== null && setUnit(v)}>
-                <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[15px] text-white shadow-none focus-visible:ring-0">
+                <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[15px] text-foreground shadow-none focus-visible:ring-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -413,11 +413,11 @@ export function InventarioPanel({
               onChange={(e) => setMinStock(e.target.value.replace(/[^0-9]/g, ''))}
               inputMode="numeric"
               placeholder="Ej. 5 unidades"
-              className="w-full bg-transparent text-[15px] text-white placeholder:text-muted-foreground/50 focus:outline-none"
+              className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
           </FieldShell>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-background/60 p-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-foreground/8 bg-background/60 p-4">
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="size-4" aria-hidden />
             </span>
@@ -446,7 +446,7 @@ export function InventarioPanel({
               <PackageCheck className="size-10" strokeWidth={1.2} />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">Todavía no has agregado insumos.</p>
+              <p className="text-sm font-medium text-foreground/80">Todavía no has agregado insumos.</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Agrega tu primer material para empezar a controlar tu inventario.
               </p>
@@ -463,7 +463,7 @@ export function InventarioPanel({
               return (
                 <div
                   key={item.id}
-                  className="rounded-[1.5rem] border border-white/8 bg-card p-4 transition-shadow hover:shadow-[0_0_30px_-12px_rgba(184,244,0,0.2)]"
+                  className="rounded-[1.5rem] border border-foreground/8 bg-card p-4 transition-shadow hover:shadow-[0_0_30px_-12px_rgba(184,244,0,0.2)]"
                 >
                   <div className="flex items-center gap-3">
                     <span
@@ -473,14 +473,14 @@ export function InventarioPanel({
                       {meta?.icon ?? '📦'}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">{item.name}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">{item.name}</p>
                       <p className="truncate text-xs text-muted-foreground">
                         {item.category ?? 'Sin categoría'} · {item.quantity} {item.unit}
                       </p>
                     </div>
                     <span
                       className={cn(
-                        'flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-medium',
+                        'flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[11px] font-medium',
                         status.text
                       )}
                     >
@@ -489,7 +489,7 @@ export function InventarioPanel({
                     </span>
                   </div>
 
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-foreground/5">
                     <div className={cn('h-full rounded-full transition-all', status.dot)} style={{ width: `${pct}%` }} />
                   </div>
 
@@ -500,7 +500,7 @@ export function InventarioPanel({
                         onClick={() => adjust(item, -1)}
                         disabled={pending}
                         aria-label="Restar"
-                        className="grid size-7 place-items-center rounded-full border border-white/10 text-muted-foreground transition-all hover:bg-white/5 active:scale-90"
+                        className="grid size-7 place-items-center rounded-full border border-foreground/10 text-muted-foreground transition-all hover:bg-foreground/5 active:scale-90"
                       >
                         <Minus className="size-3.5" />
                       </button>
@@ -509,7 +509,7 @@ export function InventarioPanel({
                         onClick={() => adjust(item, 1)}
                         disabled={pending}
                         aria-label="Sumar"
-                        className="grid size-7 place-items-center rounded-full border border-white/10 text-muted-foreground transition-all hover:bg-white/5 active:scale-90"
+                        className="grid size-7 place-items-center rounded-full border border-foreground/10 text-muted-foreground transition-all hover:bg-foreground/5 active:scale-90"
                       >
                         <Plus className="size-3.5" />
                       </button>
@@ -519,7 +519,7 @@ export function InventarioPanel({
                         type="button"
                         onClick={() => openDefaults(item)}
                         className={cn(
-                          'flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs transition-colors hover:bg-white/5',
+                          'flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs transition-colors hover:bg-foreground/5',
                           expandedId === item.id ? 'text-primary' : 'text-muted-foreground'
                         )}
                       >
@@ -537,7 +537,7 @@ export function InventarioPanel({
                   </div>
 
                   {expandedId === item.id && (
-                    <div className="mt-3 space-y-2.5 border-t border-white/8 pt-3">
+                    <div className="mt-3 space-y-2.5 border-t border-foreground/8 pt-3">
                       <p className="text-xs text-muted-foreground">
                         Mínimo que gastas por sesión — precarga el popup de materiales al iniciar una cita.
                       </p>
@@ -597,8 +597,8 @@ function FieldShell({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-2xl border border-white/8 bg-background/40 px-4 py-3 transition-colors',
-        onClick && 'cursor-pointer hover:border-white/20'
+        'flex items-center gap-3 rounded-2xl border border-foreground/8 bg-background/40 px-4 py-3 transition-colors',
+        onClick && 'cursor-pointer hover:border-foreground/20'
       )}
       onClick={onClick}
     >

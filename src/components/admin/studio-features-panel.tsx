@@ -60,7 +60,7 @@ export function StudioFeaturesPanel({ studios }: { studios: StudioOption[] }) {
                 onClick={() => handleToggle(t.key, !t.enabled)}
                 className={cn(
                   'relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50',
-                  t.enabled ? 'bg-primary' : 'bg-white/15'
+                  t.enabled ? 'bg-primary' : 'bg-foreground/15'
                 )}
               >
                 <span

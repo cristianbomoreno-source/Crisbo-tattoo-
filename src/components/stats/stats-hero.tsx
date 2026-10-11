@@ -79,11 +79,11 @@ export function StatsHero({
           </div>
 
           <div>
-            <h1 className="font-title text-[clamp(1.9rem,7vw,3rem)] uppercase leading-[0.98] text-white">
+            <h1 className="font-title text-[clamp(1.9rem,7vw,3rem)] uppercase leading-[0.98] text-foreground">
               Tu estudio va{' '}
               <span style={{ color: accentColor }}>{highlight}</span>.
             </h1>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-white/70">{body}</p>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-foreground/70">{body}</p>
           </div>
         </div>
       </div>
@@ -94,9 +94,9 @@ export function StatsHero({
             <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Meta mensual
             </p>
-            <p className="font-title text-sm tabular-nums text-white">{cop(monthlyGoal)}</p>
+            <p className="font-title text-sm tabular-nums text-foreground">{cop(monthlyGoal)}</p>
           </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
             <div
               className="h-full rounded-full transition-[width] duration-700 ease-out"
               style={{ width: `${goalPct}%`, backgroundColor: accentColor }}

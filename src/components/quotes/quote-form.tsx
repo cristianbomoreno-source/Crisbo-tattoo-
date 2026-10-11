@@ -256,10 +256,10 @@ export function QuoteForm({
   // mismos campos, mismos nombres, mismo `onSubmit`/`form.control` de
   // siempre. El flujo de creación (más abajo) no se toca.
   if (isEdit) {
-    const fieldCardClass = 'flex items-center gap-3 space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4 transition-colors duration-200'
+    const fieldCardClass = 'flex items-center gap-3 space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4 transition-colors duration-200'
     const iconWrapClass = 'grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary'
     const fieldLabelClass = 'font-display text-[11px] font-semibold uppercase tracking-wide text-muted-foreground'
-    const bareInputClass = 'h-auto border-0 bg-transparent p-0 text-base font-medium text-white shadow-none outline-none focus-visible:ring-0'
+    const bareInputClass = 'h-auto border-0 bg-transparent p-0 text-base font-medium text-foreground shadow-none outline-none focus-visible:ring-0'
 
     return (
       <Form {...form}>
@@ -271,7 +271,7 @@ export function QuoteForm({
             </span>
             <div className="min-w-0 flex-1">
               <p className={fieldLabelClass}>Cliente</p>
-              <p className="truncate text-base font-medium text-white">{quote!.clients?.name ?? 'Cliente'}</p>
+              <p className="truncate text-base font-medium text-foreground">{quote!.clients?.name ?? 'Cliente'}</p>
             </div>
           </div>
 
@@ -335,7 +335,7 @@ export function QuoteForm({
             control={form.control}
             name="description"
             render={({ field }) => (
-              <FormItem className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+              <FormItem className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
                 <div className="mb-3 flex items-center gap-3">
                   <span className={iconWrapClass}>
                     <FileText className="size-5" strokeWidth={1.75} aria-hidden />
@@ -348,7 +348,7 @@ export function QuoteForm({
                     placeholder="Qué quiere tatuarse el cliente…"
                     {...field}
                     value={field.value ?? ''}
-                    className="border-0 bg-[#0D0D0D] p-3.5 text-sm text-white shadow-none outline-none focus-visible:ring-0"
+                    className="border-0 bg-foreground/5 p-3.5 text-sm text-foreground shadow-none outline-none focus-visible:ring-0"
                   />
                 </FormControl>
                 <FormMessage />
@@ -357,7 +357,7 @@ export function QuoteForm({
           />
 
           {/* Referencias */}
-          <div className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+          <div className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className={iconWrapClass}>
@@ -387,7 +387,7 @@ export function QuoteForm({
             ) : (
               <div className="flex flex-wrap gap-2.5">
                 {existingPhotos.map((p) => (
-                  <div key={p.url} className="group relative size-20 shrink-0 overflow-hidden rounded-xl border border-[#2B2B2B]">
+                  <div key={p.url} className="group relative size-20 shrink-0 overflow-hidden rounded-xl border border-foreground/15">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.url} alt="Referencia" className="size-full object-cover" />
                     <button
@@ -401,7 +401,7 @@ export function QuoteForm({
                   </div>
                 ))}
                 {photoPreviews.map((src, i) => (
-                  <div key={src} className="group relative size-20 shrink-0 overflow-hidden rounded-xl border border-[#2B2B2B]">
+                  <div key={src} className="group relative size-20 shrink-0 overflow-hidden rounded-xl border border-foreground/15">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="Referencia nueva" className="size-full object-cover" />
                     <button
@@ -431,10 +431,10 @@ export function QuoteForm({
                       field.onChange(Boolean(v))
                       if (v) form.setValue('price', 0)
                     }}
-                    className="size-5 rounded-md border-[#2B2B2B] data-checked:border-primary data-checked:bg-primary"
+                    className="size-5 rounded-md border-foreground/15 data-checked:border-primary data-checked:bg-primary"
                   />
                 </FormControl>
-                <FormLabel className="!mt-0 text-sm font-medium text-white">Es cortesía</FormLabel>
+                <FormLabel className="!mt-0 text-sm font-medium text-foreground">Es cortesía</FormLabel>
               </FormItem>
             )}
           />
@@ -445,7 +445,7 @@ export function QuoteForm({
               control={form.control}
               name="price"
               render={({ field }) => (
-                <FormItem className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+                <FormItem className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
                   <FormLabel className={fieldLabelClass}>Precio (COP)</FormLabel>
                   <div className="mt-2 flex items-center gap-2.5">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -474,7 +474,7 @@ export function QuoteForm({
               control={form.control}
               name="session_count"
               render={({ field }) => (
-                <FormItem className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+                <FormItem className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
                   <FormLabel className={fieldLabelClass}>Número de sesiones</FormLabel>
                   <div className="mt-2 flex items-center gap-2.5">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -519,7 +519,7 @@ export function QuoteForm({
             control={form.control}
             name="deposit_percentage"
             render={({ field }) => (
-              <FormItem className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+              <FormItem className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
                 <div className="mb-3 flex items-center gap-3">
                   <span className={iconWrapClass}>
                     <Percent className="size-5" strokeWidth={1.75} aria-hidden />
@@ -541,7 +541,7 @@ export function QuoteForm({
                   }}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full border-[#2B2B2B] bg-[#0D0D0D]">
+                    <SelectTrigger className="w-full border-foreground/15 bg-foreground/5">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
@@ -556,7 +556,7 @@ export function QuoteForm({
                   <Input
                     type="number"
                     inputMode="numeric"
-                    className="mt-2.5 border-[#2B2B2B] bg-[#0D0D0D]"
+                    className="mt-2.5 border-foreground/15 bg-foreground/5"
                     placeholder="% personalizado"
                     value={field.value ?? ''}
                     onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
@@ -572,7 +572,7 @@ export function QuoteForm({
             control={form.control}
             name="notes"
             render={({ field }) => (
-              <FormItem className="space-y-0 rounded-3xl border border-[#2B2B2B] bg-[#171717] p-4">
+              <FormItem className="space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4">
                 <div className="mb-3 flex items-center gap-3">
                   <span className={iconWrapClass}>
                     <MessageSquare className="size-5" strokeWidth={1.75} aria-hidden />
@@ -585,7 +585,7 @@ export function QuoteForm({
                     placeholder="Notas internas…"
                     {...field}
                     value={field.value ?? ''}
-                    className="border-0 bg-[#0D0D0D] p-3.5 text-sm text-white shadow-none outline-none focus-visible:ring-0"
+                    className="border-0 bg-foreground/5 p-3.5 text-sm text-foreground shadow-none outline-none focus-visible:ring-0"
                   />
                 </FormControl>
                 <FormMessage />
@@ -605,7 +605,7 @@ export function QuoteForm({
             <Button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="h-12 flex-1 rounded-[20px] bg-primary text-sm font-semibold text-black transition-colors duration-200 hover:bg-primary/90"
+              className="h-12 flex-1 rounded-[20px] bg-primary text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
             >
               {form.formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}
             </Button>

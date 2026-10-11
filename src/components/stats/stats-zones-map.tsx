@@ -35,7 +35,7 @@ export function StatsZonesMap({ rows }: { rows: RankingRow[] }) {
           <div className="min-w-0 flex-1 space-y-1.5">
             {rows.map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-2 text-xs">
-                <span className="truncate text-white/90">{row.label}</span>
+                <span className="truncate text-foreground/90">{row.label}</span>
                 <span className="shrink-0 tabular-nums text-primary">{row.pct}%</span>
               </div>
             ))}

@@ -53,7 +53,7 @@ export function QuickSection({
   return (
     <section
       className={cn(
-        'space-y-3 rounded-[1.75rem] border border-white/8 bg-card/60 p-4 sm:p-5',
+        'space-y-3 rounded-[1.75rem] border border-foreground/8 bg-card/60 p-4 sm:p-5',
         spanFull && 'lg:col-span-2',
         className
       )}
@@ -99,7 +99,7 @@ export function BigOptionCard({
         'flex flex-1 flex-col items-center gap-2 rounded-2xl border px-4 py-6 text-center transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         selected
           ? 'border-primary bg-primary/[0.07] shadow-[0_0_0_1px_rgba(184,244,0,0.25),0_8px_24px_-8px_rgba(184,244,0,0.35)]'
-          : 'border-white/10 hover:border-primary/40 hover:bg-white/[0.02]'
+          : 'border-foreground/10 hover:border-primary/40 hover:bg-foreground/[0.02]'
       )}
     >
       <Icon className={cn('size-6', selected ? 'text-primary' : 'text-muted-foreground')} strokeWidth={1.8} aria-hidden="true" />
@@ -137,7 +137,7 @@ export function BigChip({
         'flex h-12 flex-1 items-center justify-center rounded-xl border font-display text-sm font-bold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         selected
           ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-white/10 bg-white/[0.02] text-foreground hover:border-primary/40'
+          : 'border-foreground/10 bg-foreground/[0.02] text-foreground hover:border-primary/40'
       )}
     >
       {label}
@@ -171,13 +171,13 @@ export function PresetCard({
       aria-pressed={selected}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-        selected ? 'border-primary bg-primary/[0.08]' : 'border-white/10 hover:border-primary/30'
+        selected ? 'border-primary bg-primary/[0.08]' : 'border-foreground/10 hover:border-primary/30'
       )}
     >
       <span
         className={cn(
           'grid size-5 shrink-0 place-items-center rounded-[6px] border transition-colors duration-200',
-          selected ? 'border-primary bg-primary text-primary-foreground' : 'border-white/25 text-transparent'
+          selected ? 'border-primary bg-primary text-primary-foreground' : 'border-foreground/25 text-transparent'
         )}
       >
         <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />

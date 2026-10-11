@@ -81,7 +81,7 @@ export function StyleGridPicker({
             type="button"
             onClick={() => setSeeAllOpen(true)}
             disabled={disabled}
-            className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/15 text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+            className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-foreground/15 text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
           >
             <Grid3x3 className="size-5" strokeWidth={1.8} aria-hidden="true" />
             <span className="font-display text-[11px] font-semibold uppercase tracking-wide">Ver más</span>
@@ -131,7 +131,7 @@ function StyleTile({
         'group relative flex aspect-square flex-col overflow-hidden rounded-2xl border bg-black text-left transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         active
           ? 'border-primary shadow-[0_0_0_1px_rgba(184,244,0,0.3),0_10px_28px_-10px_rgba(184,244,0,0.45)]'
-          : 'border-white/10 hover:border-primary/40'
+          : 'border-foreground/10 hover:border-primary/40'
       )}
     >
       {render ? (
@@ -189,7 +189,7 @@ export function QuickQuoteSummaryBar({
   onCta: () => void
 }) {
   return (
-    <div className="sticky bottom-0 z-20 -mx-4 border-t border-white/8 bg-[#050505]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:rounded-[1.75rem] lg:border">
+    <div className="sticky bottom-0 z-20 -mx-4 border-t border-foreground/8 bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:rounded-[1.75rem] lg:border">
       <div className="flex items-center gap-3">
         <div className="hidden min-w-0 flex-1 items-center gap-4 sm:flex">
           <SummaryChip label="Estilo" value={data.styleLabel ?? '—'} thumb={data.styleThumb} />

@@ -33,7 +33,7 @@ export function UsernameAuthForm({ mode }: { mode: 'login' | 'register' }) {
         autoCapitalize="none"
         autoCorrect="off"
         required
-        className="w-full rounded-xl border border-white/10 bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full rounded-xl border border-foreground/10 bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <input
         type="password"
@@ -42,7 +42,7 @@ export function UsernameAuthForm({ mode }: { mode: 'login' | 'register' }) {
         placeholder="Contraseña"
         required
         minLength={8}
-        className="w-full rounded-xl border border-white/10 bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full rounded-xl border border-foreground/10 bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       {error && <p className="text-xs text-destructive">{error}</p>}
       <button

@@ -8,7 +8,7 @@ export function FinanceCajaCard({ summary }: { summary: CajaTicketsSummary }) {
   if (summary.count === 0) return null
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-card p-5">
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
       <h3 className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <Wallet className="size-4 text-primary" strokeWidth={1.8} aria-hidden />
         Resumen de caja — este mes

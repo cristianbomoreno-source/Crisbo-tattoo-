@@ -127,7 +127,7 @@ export function MensajesForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
           {TEMPLATES.map((tpl) => (
-            <div key={tpl.name} className="rounded-2xl border border-white/8 bg-card p-4">
+            <div key={tpl.name} className="rounded-2xl border border-foreground/8 bg-card p-4">
               <FormField
                 control={form.control}
                 name={tpl.name}
@@ -135,7 +135,7 @@ export function MensajesForm({
                   <FormItem>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <FormLabel className="text-sm font-semibold text-white">{tpl.label}</FormLabel>
+                        <FormLabel className="text-sm font-semibold text-foreground">{tpl.label}</FormLabel>
                         <p className="mt-0.5 text-xs text-muted-foreground">{tpl.where}</p>
                       </div>
                       <Button
@@ -151,7 +151,7 @@ export function MensajesForm({
                       Placeholders disponibles:{' '}
                       {tpl.placeholders.map((p, i) => (
                         <span key={p}>
-                          <code className="rounded bg-white/10 px-1 py-0.5 text-primary">{`{${p}}`}</code>
+                          <code className="rounded bg-foreground/10 px-1 py-0.5 text-primary">{`{${p}}`}</code>
                           {i < tpl.placeholders.length - 1 ? ', ' : ''}
                         </span>
                       ))}

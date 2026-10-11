@@ -19,11 +19,11 @@ export function StatsFunnel({ stages }: { stages: FunnelStage[] }) {
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10">
                   <Icon className="size-4 text-primary" aria-hidden />
                 </span>
-                <span className="font-title text-xl tabular-nums text-white">{stage.count}</span>
-                <span className="text-sm text-white/70">{stage.label}</span>
+                <span className="font-title text-xl tabular-nums text-foreground">{stage.count}</span>
+                <span className="text-sm text-foreground/70">{stage.label}</span>
               </div>
               {i < stages.length - 1 && (
-                <div className="ml-[1.05rem] h-4 w-px bg-white/10" aria-hidden />
+                <div className="ml-[1.05rem] h-4 w-px bg-foreground/10" aria-hidden />
               )}
             </div>
           )

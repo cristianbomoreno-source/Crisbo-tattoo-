@@ -33,7 +33,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
         <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Cotizaciones y valor cotizado
         </p>
-        <span className="rounded-full border border-border px-3 py-1 text-xs text-white/80">
+        <span className="rounded-full border border-border px-3 py-1 text-xs text-foreground/80">
           {capitalize(monthLabel(monthKey))}
         </span>
       </div>
@@ -43,7 +43,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
           <span className="size-2 rounded-full bg-primary" aria-hidden /> Cotizaciones
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-px w-3 bg-white/50" aria-hidden /> Valor cotizado
+          <span className="h-px w-3 bg-foreground/50" aria-hidden /> Valor cotizado
         </span>
       </div>
 
@@ -61,7 +61,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
                 width={barWidth}
                 height={barH}
                 rx={1.5}
-                fill={d.quotes > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.08)'}
+                fill={d.quotes > 0 ? 'var(--primary)' : 'color-mix(in oklab, var(--foreground) 8%, transparent)'}
                 opacity={d.quotes > 0 ? 0.5 : 1}
               />
             )
@@ -71,7 +71,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
             <polyline
               points={linePoints}
               fill="none"
-              stroke="rgba(255,255,255,0.75)"
+              stroke="color-mix(in oklab, var(--foreground) 75%, transparent)"
               strokeWidth={1.75}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -97,7 +97,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
                   y={height - 6}
                   fontSize={9}
                   textAnchor="middle"
-                  fill="rgba(255,255,255,0.35)"
+                  fill="color-mix(in oklab, var(--foreground) 35%, transparent)"
                 >
                   {d.day}
                 </text>

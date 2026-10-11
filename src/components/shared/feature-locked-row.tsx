@@ -19,7 +19,7 @@ export function FeatureLockedRow({ label }: { label: string }) {
       >
         <span
           aria-hidden="true"
-          className="grid size-4.5 shrink-0 place-items-center rounded-full bg-white/10 text-muted-foreground"
+          className="grid size-4.5 shrink-0 place-items-center rounded-full bg-foreground/10 text-muted-foreground"
         >
           <Lock className="size-2.5" strokeWidth={2.2} />
         </span>

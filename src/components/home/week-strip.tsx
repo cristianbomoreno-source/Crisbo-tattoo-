@@ -111,7 +111,7 @@ export function WeekStrip({
               blocked
                 ? {
                     backgroundImage:
-                      'repeating-linear-gradient(135deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 3px, transparent 3px, transparent 7px)',
+                      'repeating-linear-gradient(135deg, color-mix(in oklab, var(--foreground) 8%, transparent) 0px, color-mix(in oklab, var(--foreground) 8%, transparent) 3px, transparent 3px, transparent 7px)',
                   }
                 : undefined
             }

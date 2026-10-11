@@ -74,7 +74,7 @@ export function FinanceDateFilter({
   }
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-card p-4">
+    <div className="rounded-2xl border border-foreground/8 bg-card p-4">
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
         <Calendar className="size-4" />
         <span>Periodo del reporte</span>
@@ -111,7 +111,7 @@ export function FinanceDateFilter({
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="block h-9 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white"
+              className="block h-9 rounded-lg border border-foreground/10 bg-foreground/5 px-3 text-sm text-foreground"
               required
             />
           </div>
@@ -121,7 +121,7 @@ export function FinanceDateFilter({
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="block h-9 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white"
+              className="block h-9 rounded-lg border border-foreground/10 bg-foreground/5 px-3 text-sm text-foreground"
               required
             />
           </div>
@@ -132,7 +132,7 @@ export function FinanceDateFilter({
       )}
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Mostrando: <span className="text-white font-medium">{label}</span>
+        Mostrando: <span className="text-foreground font-medium">{label}</span>
       </p>
     </div>
   )

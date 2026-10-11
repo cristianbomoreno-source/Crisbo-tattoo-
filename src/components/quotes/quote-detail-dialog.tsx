@@ -37,7 +37,7 @@ function DragToClose({ onClose, children }: { onClose: () => void; children: Rea
         className="absolute inset-x-0 top-0 z-10 flex touch-none justify-center py-2.5"
         aria-hidden="true"
       >
-        <span className="h-1.5 w-10 rounded-full bg-white/40" />
+        <span className="h-1.5 w-10 rounded-full bg-foreground/40" />
       </div>
       {children}
     </motion.div>

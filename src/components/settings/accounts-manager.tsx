@@ -74,7 +74,7 @@ export function AccountsManager({ accounts }: { accounts: MyAccount[] }) {
                   type="button"
                   onClick={() => handleSwitch(account.artistId)}
                   disabled={pending}
-                  className="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="shrink-0 rounded-lg border border-foreground/10 px-3 py-2 text-xs font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pending && switching === account.artistId ? 'Cambiando…' : 'Usar esta'}
                 </button>
@@ -102,7 +102,7 @@ export function AccountsManager({ accounts }: { accounts: MyAccount[] }) {
             {canCreateTatuador && (
               <Link
                 href="/onboarding"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-card px-4 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-foreground/10 bg-card px-4 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
               >
                 Crear cuenta de Tatuador
                 <ArrowRight className="size-4" strokeWidth={2.2} aria-hidden="true" />

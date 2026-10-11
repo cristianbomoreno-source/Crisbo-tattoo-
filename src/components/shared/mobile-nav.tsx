@@ -52,14 +52,14 @@ export function MobileNav() {
             <Icon
               className={cn(
                 'size-5 transition-colors duration-200',
-                active ? 'text-primary' : 'text-neutral-400'
+                active ? 'text-primary' : 'text-muted-foreground'
               )}
               strokeWidth={active ? 2 : 1.6}
             />
             <span
               className={cn(
                 'text-[11px] font-medium transition-colors duration-200',
-                active ? 'text-primary' : 'text-neutral-400'
+                active ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               {item.label}
@@ -91,14 +91,14 @@ export function MobileNav() {
             <Icon
               className={cn(
                 'size-5 transition-colors duration-200',
-                active ? 'text-primary' : 'text-neutral-400'
+                active ? 'text-primary' : 'text-muted-foreground'
               )}
               strokeWidth={active ? 2 : 1.6}
             />
             <span
               className={cn(
                 'text-[11px] font-medium transition-colors duration-200',
-                active ? 'text-primary' : 'text-neutral-400'
+                active ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               {item.label}
@@ -122,14 +122,14 @@ export function MobileNav() {
         <LayoutGrid
           className={cn(
             'size-5 transition-colors duration-200',
-            settingsActive ? 'text-primary' : 'text-neutral-400'
+            settingsActive ? 'text-primary' : 'text-muted-foreground'
           )}
           strokeWidth={settingsActive ? 2 : 1.6}
         />
         <span
           className={cn(
             'text-[11px] font-medium transition-colors duration-200',
-            settingsActive ? 'text-primary' : 'text-neutral-400'
+            settingsActive ? 'text-primary' : 'text-muted-foreground'
           )}
         >
           Estudio

@@ -24,7 +24,7 @@ export function FinancePendingCard({ rows, template }: { rows: PendingRow[]; tem
   if (rows.length === 0) return null
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-card p-5">
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
       <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Pendientes por cobrar
       </h3>
@@ -36,19 +36,19 @@ export function FinancePendingCard({ rows, template }: { rows: PendingRow[]; tem
           })
           const link = waLink(r.clientPhone, message)
           return (
-            <div key={r.projectId} className="flex items-center gap-3 rounded-2xl bg-white/[0.03] p-3.5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/10 font-heading text-xs text-white">
+            <div key={r.projectId} className="flex items-center gap-3 rounded-2xl bg-foreground/[0.03] p-3.5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground/10 font-heading text-xs text-foreground">
                 {initials(r.clientName)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">{r.clientName}</p>
+                <p className="truncate text-sm font-medium text-foreground">{r.clientName}</p>
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className={cn('size-1.5 rounded-full', STATUS_DOT[r.status])} aria-hidden />
                   {STATUS_LABEL[r.status]}
                   {r.dueDate && ` · ${r.dueDate.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}`}
                 </p>
               </div>
-              <p className="shrink-0 font-display text-sm font-semibold tabular-nums text-white">{cop(r.balance)}</p>
+              <p className="shrink-0 font-display text-sm font-semibold tabular-nums text-foreground">{cop(r.balance)}</p>
               {link && (
                 <a
                   href={link}

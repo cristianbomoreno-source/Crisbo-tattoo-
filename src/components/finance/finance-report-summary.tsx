@@ -65,7 +65,7 @@ function StatCard({
   variant?: 'default' | 'success' | 'warning' | 'primary'
 }) {
   const bgClasses = {
-    default: 'bg-white/[0.03]',
+    default: 'bg-foreground/[0.03]',
     success: 'bg-emerald-500/10',
     warning: 'bg-amber-500/10',
     primary: 'bg-primary/10',
@@ -83,7 +83,7 @@ function StatCard({
         <Icon className={`size-4 ${iconClasses[variant]}`} />
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
-      <p className="font-display text-xl font-semibold tabular-nums text-white">{value}</p>
+      <p className="font-display text-xl font-semibold tabular-nums text-foreground">{value}</p>
       {subvalue && <p className="text-xs text-muted-foreground mt-0.5">{subvalue}</p>}
     </div>
   )
@@ -110,10 +110,10 @@ export function FinanceReportSummary({ data }: { data: ReportData }) {
   })
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-card p-6 space-y-6">
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-lg font-semibold text-white">Reporte Financiero</h2>
+          <h2 className="font-display text-lg font-semibold text-foreground">Reporte Financiero</h2>
           <p className="text-sm text-muted-foreground">
             {fromLabel} — {toLabel}
           </p>

@@ -32,11 +32,11 @@ export function FinanceProductionGrid({
       </h3>
       <div className="grid grid-cols-2 gap-2.5">
         {stats.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="rounded-2xl border border-white/8 bg-card p-4">
+          <div key={label} className="rounded-2xl border border-foreground/8 bg-card p-4">
             <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
               <Icon className="size-4.5" strokeWidth={1.8} />
             </span>
-            <p className="mt-3 font-title text-lg leading-none tabular-nums text-white">{value}</p>
+            <p className="mt-3 font-title text-lg leading-none tabular-nums text-foreground">{value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{label}</p>
           </div>
         ))}

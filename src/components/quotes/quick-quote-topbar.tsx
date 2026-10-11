@@ -24,12 +24,12 @@ export function QuickQuoteTopBar({
   const pct = Math.round((completed / total) * 100)
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 bg-[#050505]/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:static lg:rounded-t-[1.75rem] lg:border lg:border-b-0 lg:border-white/8 lg:pt-5">
+    <div className="sticky top-0 z-20 -mx-4 bg-background/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:static lg:rounded-t-[1.75rem] lg:border lg:border-b-0 lg:border-foreground/8 lg:pt-5">
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
           aria-label="Volver"
-          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft className="size-5" strokeWidth={1.8} aria-hidden="true" />
         </Link>
@@ -46,7 +46,7 @@ export function QuickQuoteTopBar({
           type="button"
           onClick={onHelp}
           aria-label="Ayuda"
-          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <HelpCircle className="size-[18px]" strokeWidth={1.8} aria-hidden="true" />
         </button>
@@ -56,7 +56,7 @@ export function QuickQuoteTopBar({
         <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
           Paso {Math.min(completed + 1, total)} de {total}
         </span>
-        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/8">
+        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-foreground/8">
           <motion.div
             className={cn('h-full rounded-full bg-primary')}
             initial={false}

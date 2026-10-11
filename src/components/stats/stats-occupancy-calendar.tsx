@@ -41,8 +41,8 @@ export function StatsOccupancyCalendar({
                   : isOccupied
                     ? 'var(--primary)'
                     : cell?.state === 'blocked'
-                      ? 'rgba(255,255,255,0.06)'
-                      : 'rgba(255,255,255,0.1)',
+                      ? 'color-mix(in oklab, var(--foreground) 6%, transparent)'
+                      : 'color-mix(in oklab, var(--foreground) 10%, transparent)',
                 opacity: !inMonth ? 0 : cell?.state === 'closed' ? 0.25 : 1,
               }}
               aria-hidden
@@ -51,13 +51,13 @@ export function StatsOccupancyCalendar({
         })}
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-white/8 pt-3">
+      <div className="mt-4 flex items-center justify-between border-t border-foreground/8 pt-3">
         <div>
           <p className="font-title text-lg tabular-nums text-primary">{occupied}</p>
           <p className="text-[11px] text-muted-foreground">Días ocupados</p>
         </div>
         <div className="text-right">
-          <p className="font-title text-lg tabular-nums text-white">{free}</p>
+          <p className="font-title text-lg tabular-nums text-foreground">{free}</p>
           <p className="text-[11px] text-muted-foreground">Días libres</p>
         </div>
       </div>

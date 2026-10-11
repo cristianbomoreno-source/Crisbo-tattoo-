@@ -135,11 +135,11 @@ export function DurationAccordion({
   const knob = pointOnCircle(knobAngle, R)
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-[#2B2B2B] bg-[#171717]">
+    <div className="overflow-hidden rounded-3xl border border-foreground/15 bg-foreground/[0.09]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-3 p-4 text-left transition-colors duration-200 hover:bg-white/[0.02]"
+        className="flex w-full items-center gap-3 p-4 text-left transition-colors duration-200 hover:bg-foreground/[0.02]"
       >
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
           <Clock className="size-5" strokeWidth={1.75} aria-hidden />
@@ -148,7 +148,7 @@ export function DurationAccordion({
           <span className="block font-display text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Duración aproximada por sesión
           </span>
-          <span className="mt-0.5 block truncate text-base font-medium text-white">
+          <span className="mt-0.5 block truncate text-base font-medium text-foreground">
             {value || 'Sin definir'}
           </span>
         </span>
@@ -165,7 +165,7 @@ export function DurationAccordion({
         )}
       >
         <div className="overflow-hidden">
-          <div className="space-y-5 border-t border-[#2B2B2B] p-4 pt-5">
+          <div className="space-y-5 border-t border-foreground/15 p-4 pt-5">
             <div>
               <p className="mb-2.5 text-xs font-medium text-muted-foreground">Selección rápida</p>
               <div className="flex flex-wrap gap-2">
@@ -185,8 +185,8 @@ export function DurationAccordion({
                       className={cn(
                         'rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-200',
                         active
-                          ? 'border-primary bg-primary text-black'
-                          : 'border-[#2B2B2B] bg-[#0D0D0D] text-white/80 hover:border-primary/40'
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-foreground/15 bg-foreground/5 text-foreground/80 hover:border-primary/40'
                       )}
                     >
                       {chip.label}
@@ -203,7 +203,7 @@ export function DurationAccordion({
                   type="button"
                   aria-label="Restar 5 minutos"
                   onClick={() => commit(minutes - 5)}
-                  className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[#2B2B2B] text-white/70 transition-colors duration-200 hover:border-primary/50 hover:text-primary"
+                  className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-foreground/15 text-foreground/70 transition-colors duration-200 hover:border-primary/50 hover:text-primary"
                 >
                   <Minus className="size-4" aria-hidden />
                 </button>
@@ -218,7 +218,7 @@ export function DurationAccordion({
                   onPointerMove={onPointerMove}
                   onPointerUp={onPointerUp}
                 >
-                  <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="#2B2B2B" strokeWidth={10} />
+                  <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="color-mix(in oklab, var(--foreground) 15%, transparent)" strokeWidth={10} />
                   <path d={describeArc(0, knobAngle)} fill="none" stroke="var(--primary)" strokeWidth={10} strokeLinecap="round" />
                   {TICKS.map((t) => {
                     const p = pointOnCircle(angleForMinutes(t), R + 20)
@@ -241,7 +241,7 @@ export function DurationAccordion({
                   type="button"
                   aria-label="Sumar 5 minutos"
                   onClick={() => commit(minutes + 5)}
-                  className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[#2B2B2B] text-white/70 transition-colors duration-200 hover:border-primary/50 hover:text-primary"
+                  className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-foreground/15 text-foreground/70 transition-colors duration-200 hover:border-primary/50 hover:text-primary"
                 >
                   <Plus className="size-4" aria-hidden />
                 </button>

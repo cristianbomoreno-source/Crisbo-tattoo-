@@ -11,7 +11,7 @@ function initials(name: string): string {
 function Avatar({ name }: { name: string }) {
   return (
     <span
-      className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-card bg-secondary text-[10px] font-semibold text-white"
+      className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-card bg-secondary text-[10px] font-semibold text-foreground"
       title={name}
     >
       {initials(name)}
@@ -75,9 +75,9 @@ export function StatsInsightCards({
         <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Clientes
         </p>
-        <p className="mt-2 font-title text-2xl tabular-nums text-white">{newClients.length}</p>
+        <p className="mt-2 font-title text-2xl tabular-nums text-foreground">{newClients.length}</p>
         <p className="text-xs text-muted-foreground">Nuevos este mes</p>
-        <p className="mt-2 font-title text-xl tabular-nums text-white">{recurringClients.length}</p>
+        <p className="mt-2 font-title text-xl tabular-nums text-foreground">{recurringClients.length}</p>
         <p className="text-xs text-muted-foreground">Recurrentes</p>
         {shownClients.length > 0 && (
           <div className="mt-3 flex items-center">
@@ -98,7 +98,7 @@ export function StatsInsightCards({
         <span className="grid size-9 place-items-center rounded-full bg-primary/10">
           <ShoppingBag className="size-4 text-primary" aria-hidden />
         </span>
-        <p className="mt-3 font-title text-2xl tabular-nums text-white">{cop(averageTicket)}</p>
+        <p className="mt-3 font-title text-2xl tabular-nums text-foreground">{cop(averageTicket)}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">Valor promedio por proyecto</p>
         {ticketDelta !== null && (
           <p

@@ -68,7 +68,7 @@ export function TemplateColorPicker({ initialColor }: { initialColor: string | n
             >
               <span
                 aria-hidden="true"
-                className="size-6 shrink-0 rounded-full border border-white/15"
+                className="size-6 shrink-0 rounded-full border border-foreground/15"
                 style={{ backgroundColor: hex }}
               />
               <span className="text-[10px] leading-none text-muted-foreground">{opt.label}</span>

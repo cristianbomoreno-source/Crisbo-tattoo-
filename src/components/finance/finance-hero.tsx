@@ -10,7 +10,7 @@ function CollectedRing({ pct }: { pct: number }) {
   return (
     <div className="relative grid size-32 shrink-0 place-items-center">
       <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90">
-        <circle cx="60" cy="60" r={R} fill="none" strokeWidth="9" className="stroke-white/10" />
+        <circle cx="60" cy="60" r={R} fill="none" strokeWidth="9" className="stroke-foreground/10" />
         <circle
           cx="60"
           cy="60"
@@ -24,7 +24,7 @@ function CollectedRing({ pct }: { pct: number }) {
           style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }}
         />
       </svg>
-      <span className="font-title text-2xl tabular-nums text-white">
+      <span className="font-title text-2xl tabular-nums text-foreground">
         {pct}
         <span className="text-sm text-muted-foreground">%</span>
       </span>
@@ -52,25 +52,25 @@ export function FinanceHero({
   const collectedPct = revenue > 0 ? Math.round((collected / revenue) * 100) : 0
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-card p-6">
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-6">
       <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         Facturación del mes
       </p>
       <div className="mt-2 flex items-start justify-between gap-4">
-        <p className="font-title text-[2.6rem] leading-[0.95] tracking-tight text-white tabular-nums">
+        <p className="font-title text-[2.6rem] leading-[0.95] tracking-tight text-foreground tabular-nums">
           {cop(revenue)}
         </p>
         <CollectedRing pct={collectedPct} />
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-white/[0.03] p-4">
+        <div className="rounded-2xl bg-foreground/[0.03] p-4">
           <p className="text-xs text-muted-foreground">Cobrado</p>
-          <p className="mt-1 font-display text-xl font-semibold tabular-nums text-white">{cop(collected)}</p>
+          <p className="mt-1 font-display text-xl font-semibold tabular-nums text-foreground">{cop(collected)}</p>
         </div>
-        <div className="rounded-2xl bg-white/[0.03] p-4">
+        <div className="rounded-2xl bg-foreground/[0.03] p-4">
           <p className="text-xs text-muted-foreground">Pendiente</p>
-          <p className="mt-1 font-display text-xl font-semibold tabular-nums text-white">{cop(pending)}</p>
+          <p className="mt-1 font-display text-xl font-semibold tabular-nums text-foreground">{cop(pending)}</p>
         </div>
         {profit !== null && (
           <div className="col-span-2 rounded-2xl bg-primary/10 p-4">
