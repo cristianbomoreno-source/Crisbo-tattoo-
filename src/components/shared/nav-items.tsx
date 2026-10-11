@@ -31,10 +31,9 @@ export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/dashboard/gallery', label: 'Galería', icon: Images },
 ]
 
-/** Pestañas laterales de la barra inferior móvil (Inicio, Cotizaciones a la izquierda del FAB; Proyectos a la derecha) — como el mockup. El FAB pulpo central lo renderiza mobile-nav; la pestaña "Estudio" navega directo a /dashboard/settings. */
-export const MOBILE_TAB_ITEMS = NAV_ITEMS.filter((i) =>
-  ['/dashboard', '/dashboard/quotes', '/dashboard/projects'].includes(i.href)
-)
+/** Pestañas laterales de la barra inferior móvil (Inicio y Proyectos a la izquierda del FAB; Mensajes a la derecha, en el lugar que antes tenía Cotizaciones — sigue a mano en el pulpo y en el menú). El FAB pulpo central lo renderiza mobile-nav; la pestaña "Estudio" navega directo a /dashboard/settings. */
+const MOBILE_TAB_HREFS = ['/dashboard', '/dashboard/projects', '/dashboard/inbox']
+export const MOBILE_TAB_ITEMS = MOBILE_TAB_HREFS.map((href) => NAV_ITEMS.find((i) => i.href === href)!)
 
 /**
  * Lista de enlaces de navegación. `onNavigate` permite al drawer móvil cerrarse
