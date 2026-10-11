@@ -16,6 +16,7 @@ import {
   Clock,
   FileText,
   Link2,
+  MapPin,
   Send,
   UserPlus,
   UserRound,
@@ -27,6 +28,7 @@ import {
   markConversationRead,
   sendBookingConfirmationToChat,
   sendDataForm,
+  sendStudioLocation,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
@@ -143,6 +145,18 @@ export function ChatView({
       setDraft('')
       setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
       textareaRef.current?.focus()
+    })
+  }
+
+  function sendLocation() {
+    if (sending) return
+    startSending(async () => {
+      const result = await sendStudioLocation(conversation.id)
+      if (!result.success) {
+        toast.error(result.error.message, { duration: 8000 })
+        return
+      }
+      setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
     })
   }
 
@@ -308,20 +322,22 @@ export function ChatView({
                 <Send />
               </Button>
             </div>
-            {(replyButtons.length > 0 || formButton) && (
-              <div className="mt-2 flex flex-wrap justify-end gap-2">
-                {replyButtons.map((r) => {
-                  const Icon = QUICK_REPLY_ICONS[r.icon!]!.icon
-                  return (
-                    <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r.body)} disabled={sending}>
-                      <Icon />
-                      {r.title}
-                    </Button>
-                  )
-                })}
-                {formButton}
-              </div>
-            )}
+            <div className="mt-2 flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={sendLocation} disabled={sending}>
+                <MapPin />
+                Ubicación
+              </Button>
+              {replyButtons.map((r) => {
+                const Icon = QUICK_REPLY_ICONS[r.icon!]!.icon
+                return (
+                  <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r.body)} disabled={sending}>
+                    <Icon />
+                    {r.title}
+                  </Button>
+                )
+              })}
+              {formButton}
+            </div>
             {remaining && (
               <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
                 Puedes responder libremente durante {remaining} más.

@@ -16,6 +16,7 @@ import {
   fetchTemplateStatus,
   markMessageRead,
   sendFlowTemplate,
+  sendLocationMessage,
   sendTextMessage,
   setPhoneWebhookOverride,
   subscribeAppToWaba,
@@ -29,6 +30,7 @@ import {
 } from '@/lib/whatsapp-cloud/data-form'
 import type { WaMessage } from '@/queries/whatsapp'
 import { buildBookingConfirmation } from '@/actions/sessions'
+import { locationText, resolveMapsCoords } from '@/lib/whatsapp-cloud/location'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
 
@@ -534,4 +536,75 @@ export async function sendBookingConfirmationToChat(
   const confirmation = await buildBookingConfirmation(sessionId)
   if (!confirmation.success) return confirmation
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
+}
+
+/** Ubicación del estudio (pin + dirección escrita), desde Ajustes → Perfil.
+ * Las coordenadas salen del enlace de Google Maps. Gratis dentro de 24 h. */
+export async function sendStudioLocation(conversationId: string): Promise<Result<WaMessage>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (!studio.mapsUrl) {
+    return err('VALIDATION_ERROR', 'Agrega el enlace de Google Maps del estudio en Ajustes → Perfil')
+  }
+
+  const supabase = await createClient()
+  const { data: conv } = await supabase
+    .from('wa_conversations')
+    .select('id, studio_id, wa_id, last_inbound_at')
+    .eq('id', conversationId)
+    .maybeSingle()
+  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
+  if (!isServiceWindowOpen(conv.last_inbound_at)) {
+    return err('VALIDATION_ERROR', 'Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite enviar la ubicación.')
+  }
+
+  const coords = await resolveMapsCoords(studio.mapsUrl).catch(() => null)
+  if (!coords) {
+    return err(
+      'VALIDATION_ERROR',
+      'No pude leer las coordenadas del enlace de Maps. En Ajustes → Perfil pega el enlace del lugar (botón Compartir de Google Maps).'
+    )
+  }
+
+  const account = await loadAccount(conv.studio_id)
+  if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
+
+  const address = [studio.address, studio.city].filter(Boolean).join(', ') || null
+  let waMessageId: string
+  try {
+    waMessageId = await sendLocationMessage(account, conv.wa_id, { ...coords, name: studio.name, address })
+  } catch (e) {
+    return err('UNKNOWN_ERROR', `WhatsApp no envió la ubicación: ${(e as Error).message}`)
+  }
+
+  const now = new Date().toISOString()
+  const admin = createAdminClient()
+  const { data: message, error } = await admin
+    .from('wa_messages')
+    .insert({
+      conversation_id: conv.id,
+      studio_id: conv.studio_id,
+      wa_message_id: waMessageId,
+      direction: 'out',
+      type: 'location',
+      body: locationText(studio.name, address, coords.latitude, coords.longitude),
+      status: 'sent',
+      sent_by: studio.artistId,
+      created_at: now,
+    })
+    .select()
+    .single()
+  if (error) return dbError(error)
+
+  await admin
+    .from('wa_conversations')
+    .update({
+      last_message_at: now,
+      last_message_preview: messagePreview('location', null),
+      last_message_direction: 'out',
+      unread_count: 0,
+    })
+    .eq('id', conv.id)
+
+  return ok(message as WaMessage)
 }
