@@ -10,6 +10,7 @@ import {
   BarChart3,
   FileSignature,
   Images,
+  MessageCircle,
   Settings,
   type LucideIcon,
 } from 'lucide-react'
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils'
  */
 export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
+  { href: '/dashboard/inbox', label: 'Mensajes', icon: MessageCircle },
   { href: '/dashboard/projects', label: 'Proyectos', icon: Layers },
   { href: '/dashboard/quotes', label: 'Cotizaciones', icon: ClipboardList },
   { href: '/dashboard/stats', label: 'Estadísticas', icon: BarChart3 },
@@ -47,7 +49,8 @@ export function NavLinks({ onNavigate, collapsed = false }: { onNavigate?: () =>
     <>
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon
-        const active = pathname === item.href
+        const active =
+          pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`))
         const tourTag =
           item.href === '/dashboard' ? 'nav-home' : item.href === '/dashboard/quotes' ? 'nav-quotes' : undefined
         return (

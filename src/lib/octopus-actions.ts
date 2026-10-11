@@ -9,6 +9,7 @@ import {
   Settings,
   ClipboardList,
   UserPlus,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -29,6 +30,7 @@ export type OctopusAction = {
 
 export const OCTOPUS_ACTIONS: OctopusAction[] = [
   { id: 'clientes', label: 'Clientes', href: '/dashboard/clients', icon: Users },
+  { id: 'mensajes', label: 'Mensajes', href: '/dashboard/inbox', icon: MessageCircle },
   { id: 'agenda', label: 'Agenda', href: '/dashboard?openAgenda=1', icon: CalendarDays },
   { id: 'rapida', label: 'Rápida', href: '/dashboard/quotes/quick', icon: Zap },
   { id: 'formal', label: 'Formal', href: '/dashboard/quotes/new', icon: FileText },

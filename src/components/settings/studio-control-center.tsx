@@ -11,6 +11,7 @@ import {
   Link2,
   ChevronRight,
   HelpCircle,
+  MessageCircle,
 } from 'lucide-react'
 
 import type { CurrentStudio } from '@/queries/studio'
@@ -187,6 +188,7 @@ export function StudioControlCenter({
   pendingRequests = 0,
   teamSize = 1,
   disabledFeatures = new Set(),
+  whatsappConnected = false,
 }: {
   studio: CurrentStudio
   status: StudioStatus
@@ -198,6 +200,8 @@ export function StudioControlCenter({
   teamSize?: number
   /** Módulos apagados por un admin de Crisbo Tattoo (ver /admin → Módulos por cuenta). */
   disabledFeatures?: Set<FeatureKey>
+  /** Si el estudio ya conectó su número de la API de WhatsApp (Ajustes → WhatsApp). */
+  whatsappConnected?: boolean
 }) {
   const { checks } = status
   const isEstudio = studio.accountKind === 'estudio'
@@ -283,6 +287,10 @@ export function StudioControlCenter({
             <StatusChip ok label="Activo" />
             {checks.whatsapp && <StatusChip ok label="WhatsApp" />}
           </div>
+        </CompactCard>
+
+        <CompactCard href="/dashboard/settings/whatsapp" icon={MessageCircle} title="WhatsApp Business">
+          <StatusChip ok={whatsappConnected} label={whatsappConnected ? 'Conectado' : 'Sin conectar'} />
         </CompactCard>
 
         <CompactCard href="/dashboard/settings/cotizaciones" icon={Wallet} title="Cotizaciones">

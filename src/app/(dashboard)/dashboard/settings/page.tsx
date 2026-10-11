@@ -14,6 +14,7 @@ import { StudioBrand } from '@/components/shared/studio-brand'
 import { listJoinRequests, listTeam } from '@/actions/team'
 import { getDisabledFeatures } from '@/queries/features'
 import { getSettingsMetrics } from '@/queries/settings-metrics'
+import { getWhatsAppAccountStatus } from '@/queries/whatsapp'
 
 /**
  * Ajustes = Centro de control del estudio (ver studio-control-center.tsx):
@@ -70,11 +71,12 @@ export default async function SettingsPage() {
 
   const status = computeStudioStatus(studio, blockedDays.length)
 
-  const [requestsResult, teamResult, disabledFeatures, metrics] = await Promise.all([
+  const [requestsResult, teamResult, disabledFeatures, metrics, whatsappAccount] = await Promise.all([
     listJoinRequests(),
     listTeam(),
     getDisabledFeatures(studio.id),
     getSettingsMetrics(),
+    getWhatsAppAccountStatus(),
   ])
   const pendingRequests = requestsResult.success ? requestsResult.data.length : 0
   const teamSize = teamResult.success ? teamResult.data.length : 1
@@ -90,6 +92,7 @@ export default async function SettingsPage() {
         pendingRequests={pendingRequests}
         teamSize={teamSize}
         disabledFeatures={disabledFeatures}
+        whatsappConnected={Boolean(whatsappAccount)}
       />
     </div>
   )

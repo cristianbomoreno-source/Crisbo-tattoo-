@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { User, Phone, CalendarClock, FileSignature, Layers } from 'lucide-react'
+import { User, Phone, CalendarClock, FileSignature, Layers, MessageCircle } from 'lucide-react'
 // lucide-react 1.21 NO trae `Instagram` (verificado) — glyph inline, patrón de step-socials.tsx.
 
 import { getClient } from '@/queries/clients'
 import { getProjectsByClient } from '@/queries/projects'
 import { getSignedConsentsByClient } from '@/queries/consents'
+import { getConversationIdForClient } from '@/queries/whatsapp'
 import { clientTotals, clientAppointments } from '@/lib/clients/dossier'
 import { calculateBalance, getSessionStats, cop, formatSessionDate } from '@/lib/projects/metrics'
 import { formatTime, nowAsWallClock } from '@/lib/calendar/utils'
@@ -85,9 +86,10 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   if (!clientResult.success) notFound()
   const client = clientResult.data
 
-  const [projectsResult, consentsResult] = await Promise.all([
+  const [projectsResult, consentsResult, conversationId] = await Promise.all([
     getProjectsByClient(id),
     getSignedConsentsByClient(id),
+    getConversationIdForClient(id),
   ])
   const projects = projectsResult.success ? projectsResult.data : []
   const consents = consentsResult.success ? consentsResult.data : []
@@ -126,6 +128,15 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <IgGlyph className="size-3.5 text-muted-foreground" />
             {client.instagram}
           </span>
+        )}
+        {conversationId && (
+          <Link
+            href={`/dashboard/inbox/${conversationId}`}
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary/15 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <MessageCircle className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+            Ver chat
+          </Link>
         )}
         {wa && (
           <a
