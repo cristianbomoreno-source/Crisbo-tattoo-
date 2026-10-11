@@ -101,3 +101,6 @@ ALTER TABLE whatsapp_accounts
 
 -- 5. Respuestas rápidas: se retiraron (el botón "Pedir comprobante" quedó fijo en el código).
 DROP TABLE IF EXISTS wa_quick_replies;
+
+-- 6. Coexistencia: el estudio respondió desde la app del celular (smb_message_echoes).
+ALTER TABLE wa_conversations ADD COLUMN IF NOT EXISTS answered_from_phone boolean NOT NULL DEFAULT false;
