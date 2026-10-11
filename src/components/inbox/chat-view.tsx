@@ -17,6 +17,7 @@ import {
   Clock,
   FileText,
   Link2,
+  MapPin,
   Send,
   UserPlus,
   UserRound,
@@ -28,6 +29,7 @@ import {
   markConversationRead,
   sendBookingConfirmationToChat,
   sendDataForm,
+  sendStudioLocation,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
@@ -143,6 +145,18 @@ export function ChatView({
       setDraft('')
       setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
       textareaRef.current?.focus()
+    })
+  }
+
+  function sendLocation() {
+    if (sending) return
+    startSending(async () => {
+      const result = await sendStudioLocation(conversation.id)
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
     })
   }
 
@@ -306,6 +320,10 @@ export function ChatView({
               </Button>
             </div>
             <div className="mt-2 flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={sendLocation} disabled={sending}>
+                <MapPin />
+                Ubicación
+              </Button>
               <Button size="sm" variant="outline" onClick={askPaymentProof} disabled={sending}>
                 <Banknote />
                 Pedir comprobante

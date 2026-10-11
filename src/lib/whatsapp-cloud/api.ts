@@ -198,3 +198,23 @@ export async function sendFlowTemplate(
   if (!id) throw new Error('Meta no devolvió el id del mensaje')
   return id
 }
+
+/** Mensaje de ubicación nativo (mapa con pin + nombre y dirección). No es
+ * plantilla: solo dentro de la ventana de 24 h, sin costo. */
+export async function sendLocationMessage(
+  account: WaAccountCredentials,
+  to: string,
+  loc: { latitude: number; longitude: number; name: string; address: string }
+) {
+  const json = await graph<{ messages?: { id: string }[] }>(
+    `/${encodeURIComponent(account.phone_number_id)}/messages`,
+    account.access_token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'location', location: loc }),
+    }
+  )
+  const id = json.messages?.[0]?.id
+  if (!id) throw new Error('Meta no devolvió el id del mensaje')
+  return id
+}
