@@ -21,6 +21,9 @@ export type Session = {
 export type SessionWithProject = Session & {
   projects: {
     name: string
+    /** Para marcar en el calendario las sesiones de proyectos ya pagados. */
+    total_value?: number | null
+    payments?: { amount: number | null }[] | null
     clients: { id: string; name: string; phone: string | null } | null
   } | null
 }
@@ -33,7 +36,7 @@ export async function getSessions(from?: string, to?: string): Promise<Result<Se
   const supabase = await createClient()
   let query = supabase
     .from('sessions')
-    .select('*, projects(name, clients(id, name, phone))')
+    .select('*, projects(name, total_value, payments(amount), clients(id, name, phone))')
     .order('scheduled_at')
 
   if (from) query = query.gte('scheduled_at', from)
@@ -57,7 +60,7 @@ export async function getStudioSessions(
   const supabase = await createClient()
   let query = supabase
     .from('sessions')
-    .select('*, projects(name, clients(id, name, phone)), artists(id, name)')
+    .select('*, projects(name, total_value, payments(amount), clients(id, name, phone)), artists(id, name)')
     .order('scheduled_at')
 
   if (from) query = query.gte('scheduled_at', from)

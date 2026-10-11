@@ -5,6 +5,8 @@ import { Clock3 } from 'lucide-react'
 import type { SessionWithProject } from '@/queries/sessions'
 import type { TeamMember } from '@/actions/team'
 import { cn } from '@/lib/utils'
+import { isProjectFullyPaid } from '@/lib/sessions/paid'
+import { PaidBadge } from '@/components/calendar/calendar-nav'
 
 type StudioSession = SessionWithProject & { artists: { id: string; name: string } | null }
 
@@ -100,8 +102,15 @@ export function StudioCalendar({
               .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
               .map((s) => {
                 const color = s.artist_id ? colorFor(s.artist_id, order) : COLORS[0]!
+                const paid = s.status !== 'cancelled' && isProjectFullyPaid(s.projects)
                 return (
-                  <div key={s.id} className="flex items-center gap-3 rounded-xl bg-background px-3.5 py-2.5">
+                  <div
+                    key={s.id}
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl px-3.5 py-2.5',
+                      paid ? 'bg-emerald-500/15 ring-1 ring-emerald-500/40' : 'bg-background'
+                    )}
+                  >
                     <span className={cn('size-2 shrink-0 rounded-full', color.dot)} />
                     <span className="flex shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground">
                       <Clock3 className="size-3" /> {timeLabel(s.scheduled_at)}
@@ -112,6 +121,7 @@ export function StudioCalendar({
                       </p>
                       <p className={cn('truncate text-xs', color.text)}>{s.artists?.name ?? 'Sin asignar'}</p>
                     </div>
+                    {paid && <PaidBadge />}
                   </div>
                 )
               })}

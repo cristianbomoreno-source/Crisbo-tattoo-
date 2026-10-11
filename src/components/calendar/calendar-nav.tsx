@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import {
   getMonthKeys,
   getWeekKeys,
@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { SessionWithProject } from '@/queries/sessions'
+import { isProjectFullyPaid } from '@/lib/sessions/paid'
 
 const WEEKDAYS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 const HOUR_PX = 56
@@ -104,6 +105,7 @@ export function CalendarNav({
     const blocked = blockedSet.has(dKey)
     const isToday = dKey === today
     const selected = dKey === selectedDay
+    const paid = busy && !blocked && allSessionsPaid(byDay[dKey])
     return (
       <button
         type="button"
@@ -111,12 +113,13 @@ export function CalendarNav({
           onSelectedDayChange(() => dKey)
           onViewChange('day')
         }}
-        title={blocked ? 'Día bloqueado' : undefined}
+        title={blocked ? 'Día bloqueado' : paid ? 'Citas pagadas' : undefined}
         className={cn(
-          'flex aspect-square items-center justify-center rounded-xl text-sm font-medium tabular-nums transition-colors',
+          'relative flex aspect-square items-center justify-center rounded-xl text-sm font-medium tabular-nums transition-colors',
           !busy && !blocked && !selected && 'text-foreground hover:bg-accent',
           blocked && !selected && 'bg-muted-foreground/15 text-muted-foreground',
-          busy && !blocked && !selected && 'bg-primary/20 text-foreground',
+          busy && !blocked && !selected && !paid && 'bg-primary/20 text-foreground',
+          paid && !selected && 'bg-emerald-500/25 text-foreground',
           selected && 'bg-primary text-primary-foreground',
           isToday && !selected && 'ring-1 ring-primary/50'
         )}
@@ -130,7 +133,13 @@ export function CalendarNav({
         }
       >
         {day}
+        {paid && (
+          <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-emerald-600 text-white">
+            <Check className="size-2.5" strokeWidth={3.5} aria-hidden="true" />
+          </span>
+        )}
         {blocked && <span className="sr-only"> (día bloqueado)</span>}
+        {paid && <span className="sr-only"> (pagado)</span>}
       </button>
     )
   }
@@ -243,11 +252,19 @@ export function CalendarNav({
                     </p>
                   )}
                 </div>
-                {items.length > 0 && (
-                  <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                    {items.length}
-                  </span>
-                )}
+                {items.length > 0 &&
+                  (allSessionsPaid(items) ? (
+                    <span className="flex shrink-0 items-center gap-1">
+                      <PaidBadge />
+                      <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold">
+                        {items.length}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                      {items.length}
+                    </span>
+                  ))}
               </button>
             )
           })}
@@ -389,6 +406,22 @@ const LONG_PRESS_MS = 450
 const DRAG_THRESHOLD = 8
 /** Arrastrar verticalmente ajusta la hora en saltos de 15 minutos. */
 const SNAP_MINUTES = 15
+
+/** Chip verde "Pagado" para las citas cuyo proyecto ya se pagó completo. */
+export function PaidBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-px text-[10px] font-semibold text-white">
+      <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+      Pagado
+    </span>
+  )
+}
+
+/** Hay citas activas ese día y TODAS son de proyectos ya pagados. */
+function allSessionsPaid(sessions: SessionWithProject[] | undefined): boolean {
+  const active = (sessions ?? []).filter((s) => s.status !== 'cancelled')
+  return active.length > 0 && active.every((s) => isProjectFullyPaid(s.projects))
+}
 
 function minutesToHHmm(total: number): string {
   const clamped = Math.max(0, Math.min(23 * 60 + 59, total))
@@ -553,6 +586,7 @@ function DayTimeline({
           const top = ((m - startMin) / 60) * HOUR_PX
           const height = Math.max(28, ((s.duration_minutes ?? 60) / 60) * HOUR_PX)
           const isDragging = drag?.session.id === s.id
+          const paid = s.status !== 'cancelled' && isProjectFullyPaid(s.projects)
           return (
             <button
               key={s.id}
@@ -588,13 +622,20 @@ function DayTimeline({
               }}
               className={cn(
                 'absolute right-1 left-14 overflow-hidden rounded-lg border px-2 py-1 text-left transition-colors hover:border-primary/50',
-                s.status === 'cancelled' ? 'bg-muted/40 opacity-60' : 'bg-primary/15',
+                s.status === 'cancelled'
+                  ? 'bg-muted/40 opacity-60'
+                  : paid
+                    ? 'border-emerald-500/60 bg-emerald-500/20'
+                    : 'bg-primary/15',
                 isDragging && 'border-primary opacity-90'
               )}
             >
-              <p className="truncate text-xs font-semibold">
-                {s.projects?.clients?.name ?? s.projects?.name ?? 'Sesión'}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="min-w-0 flex-1 truncate text-xs font-semibold">
+                  {s.projects?.clients?.name ?? s.projects?.name ?? 'Sesión'}
+                </p>
+                {paid && <PaidBadge />}
+              </div>
               <p className="truncate text-[11px] text-muted-foreground">
                 {formatTime(s.scheduled_at)} · {s.projects?.name ?? ''}
               </p>
