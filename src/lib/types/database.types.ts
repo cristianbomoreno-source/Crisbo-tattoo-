@@ -752,7 +752,6 @@ export type Database = {
           project_id: string | null
           session_id: string | null
           studio_id: string | null
-          type: string | null
         }
         Insert: {
           amount: number
@@ -764,7 +763,6 @@ export type Database = {
           project_id?: string | null
           session_id?: string | null
           studio_id?: string | null
-          type?: string | null
         }
         Update: {
           amount?: number
@@ -776,7 +774,6 @@ export type Database = {
           project_id?: string | null
           session_id?: string | null
           studio_id?: string | null
-          type?: string | null
         }
         Relationships: [
           {

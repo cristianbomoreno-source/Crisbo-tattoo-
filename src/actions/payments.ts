@@ -23,7 +23,8 @@ async function getStudioId(): Promise<string | null> {
   return data?.studio_id ?? null
 }
 
-/** Registra un pago (parcial o final, según el saldo restante). */
+/** Registra un pago. La tabla `payments` no tiene columna `type` — enviarla
+ * hacía fallar TODOS los inserts; parcial/final se deduce del saldo al leer. */
 export async function createPaymentAction(input: unknown): Promise<Result<void>> {
   const parsed = createPaymentSchema.safeParse(input)
   if (!parsed.success) return err('VALIDATION_ERROR', 'Datos inválidos', parsed.error)
@@ -57,9 +58,6 @@ export async function createPaymentAction(input: unknown): Promise<Result<void>>
       `El pago supera el saldo pendiente (${cop(Math.max(remaining, 0))}).`
     )
 
-  const type =
-    remaining > 0 && parsed.data.amount >= remaining ? 'final' : 'partial'
-
   // Si el pago se liga a una sesión, verificar que sea del mismo proyecto (RLS
   // ya aísla por estudio; esto evita ligar un pago a una sesión de otro proyecto).
   if (parsed.data.session_id) {
@@ -77,7 +75,6 @@ export async function createPaymentAction(input: unknown): Promise<Result<void>>
     project_id: parsed.data.project_id,
     session_id: parsed.data.session_id ?? null,
     amount: parsed.data.amount,
-    type,
     payment_method: parsed.data.payment_method ?? null,
     notes: parsed.data.notes ?? null,
   })

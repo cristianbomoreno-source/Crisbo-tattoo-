@@ -247,13 +247,13 @@ export async function convertQuoteToProjectAction(
   // El abono acordado en la cotización se registra como pago hecho, para que el
   // saldo pendiente del proyecto ya lo reste (feedback de Crisbo).
   if (depositAmount > 0) {
-    await supabase.from('payments').insert({
+    const { error: depositErr } = await supabase.from('payments').insert({
       studio_id: artist.studio_id,
       project_id: project.id,
       amount: depositAmount,
-      type: 'deposit',
       notes: 'Abono de la cotización',
     })
+    if (depositErr) console.error('[quotes] no se pudo registrar el abono', depositErr)
   }
 
   await supabase.from('quotes').update({ status: 'approved' }).eq('id', quoteId)
