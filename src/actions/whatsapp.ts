@@ -16,7 +16,6 @@ import {
   fetchTemplateStatus,
   markMessageRead,
   sendFlowTemplate,
-  sendLocationMessage,
   sendTextMessage,
   setPhoneWebhookOverride,
   subscribeAppToWaba,
@@ -30,7 +29,6 @@ import {
 } from '@/lib/whatsapp-cloud/data-form'
 import type { WaMessage } from '@/queries/whatsapp'
 import { buildBookingConfirmation } from '@/actions/sessions'
-import { locationText, resolveMapsCoords } from '@/lib/whatsapp-cloud/location'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
 
@@ -487,62 +485,6 @@ export async function sendDataForm(conversationId: string): Promise<Result<WaMes
   return ok(message as WaMessage)
 }
 
-/* ─────────────────────────── Respuestas rápidas ─────────────────────────── */
-
-const quickReplySchema = z.object({
-  id: z.string().uuid().optional(),
-  title: z.string().trim().min(1, 'Ponle un nombre corto').max(60, 'Máximo 60 caracteres'),
-  body: z.string().trim().min(1, 'Escribe el mensaje').max(4096, 'Máximo 4096 caracteres'),
-  // Con ícono, la respuesta aparece como botón en el chat (envío con un toque).
-  icon: z.enum(['payment', 'receipt', 'calendar', 'location']).nullable().optional(),
-  kind: z.enum(['text', 'location']).default('text'),
-  location_name: z.string().trim().max(100).optional(),
-  maps_url: z.string().trim().max(2000).optional(),
-})
-
-export async function saveQuickReply(input: unknown): Promise<Result<null>> {
-  const parsed = quickReplySchema.safeParse(input)
-  if (!parsed.success) return err('VALIDATION_ERROR', parsed.error.issues[0]?.message ?? 'Datos inválidos')
-  const studio = await getCurrentStudio()
-  if (!studio) return err('AUTH_ERROR', 'No autenticado')
-
-  const supabase = await createClient()
-  const { id, title, body, kind } = parsed.data
-  const icon = parsed.data.icon ?? null
-
-  // Ubicación: las coordenadas del pin se sacan del enlace de Maps al guardar.
-  let location: { location_name: string | null; maps_url: string | null; latitude: number | null; longitude: number | null } =
-    { location_name: null, maps_url: null, latitude: null, longitude: null }
-  if (kind === 'location') {
-    const mapsUrl = parsed.data.maps_url
-    if (!mapsUrl) return err('VALIDATION_ERROR', 'Pega el enlace de Google Maps del lugar')
-    const coords = await resolveMapsCoords(mapsUrl).catch(() => null)
-    if (!coords) {
-      return err('VALIDATION_ERROR', 'No pude leer la ubicación de ese enlace. Cópialo desde Google Maps → Compartir.')
-    }
-    location = { location_name: parsed.data.location_name || studio.name, maps_url: mapsUrl, ...coords }
-  }
-
-  const fields = { title, body, icon, kind, ...location }
-  const { error } = id
-    ? await supabase.from('wa_quick_replies').update(fields).eq('id', id)
-    : await supabase.from('wa_quick_replies').insert({ studio_id: studio.id, ...fields, position: Date.now() % 1e9 })
-  if (error) return dbError(error)
-
-  revalidatePath('/dashboard/settings/whatsapp')
-  revalidatePath('/dashboard/inbox', 'layout')
-  return ok(null)
-}
-
-export async function deleteQuickReply(id: string): Promise<Result<null>> {
-  const supabase = await createClient()
-  const { error } = await supabase.from('wa_quick_replies').delete().eq('id', id)
-  if (error) return dbError(error)
-  revalidatePath('/dashboard/settings/whatsapp')
-  revalidatePath('/dashboard/inbox', 'layout')
-  return ok(null)
-}
-
 /** Tras agendar desde el chat: manda la confirmación de la cita por la API
  * (texto libre: solo dentro de la ventana de 24 h). */
 export async function sendBookingConfirmationToChat(
@@ -552,76 +494,4 @@ export async function sendBookingConfirmationToChat(
   const confirmation = await buildBookingConfirmation(sessionId)
   if (!confirmation.success) return confirmation
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
-}
-
-/** Envía una respuesta rápida al chat: texto, o ubicación (pin en el mapa +
- * dirección escrita). Ambas son mensajes normales: gratis, solo dentro de 24 h. */
-export async function sendQuickReplyToChat(conversationId: string, replyId: string): Promise<Result<WaMessage>> {
-  const studio = await getCurrentStudio()
-  if (!studio) return err('AUTH_ERROR', 'No autenticado')
-
-  const supabase = await createClient()
-  const { data: reply } = await supabase
-    .from('wa_quick_replies')
-    .select('body, kind, location_name, latitude, longitude')
-    .eq('id', replyId)
-    .maybeSingle()
-  if (!reply) return err('NOT_FOUND', 'Respuesta rápida no encontrada')
-  if (reply.kind !== 'location') return sendWhatsAppMessage({ conversationId, body: reply.body })
-
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, studio_id, wa_id, last_inbound_at')
-    .eq('id', conversationId)
-    .maybeSingle()
-  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
-  if (!isServiceWindowOpen(conv.last_inbound_at)) {
-    return err('VALIDATION_ERROR', 'Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite enviar la ubicación.')
-  }
-  const account = await loadAccount(conv.studio_id)
-  if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
-
-  const loc = {
-    latitude: reply.latitude as number,
-    longitude: reply.longitude as number,
-    name: (reply.location_name as string | null) || studio.name,
-    address: reply.body as string,
-  }
-  let waMessageId: string
-  try {
-    waMessageId = await sendLocationMessage(account, conv.wa_id, loc)
-  } catch (e) {
-    return err('UNKNOWN_ERROR', `WhatsApp no envió la ubicación: ${(e as Error).message}`)
-  }
-
-  const now = new Date().toISOString()
-  const admin = createAdminClient()
-  const { data: message, error } = await admin
-    .from('wa_messages')
-    .insert({
-      conversation_id: conv.id,
-      studio_id: conv.studio_id,
-      wa_message_id: waMessageId,
-      direction: 'out',
-      type: 'location',
-      body: locationText(loc.name, loc.address, loc.latitude, loc.longitude),
-      status: 'sent',
-      sent_by: studio.artistId,
-      created_at: now,
-    })
-    .select()
-    .single()
-  if (error) return dbError(error)
-
-  await admin
-    .from('wa_conversations')
-    .update({
-      last_message_at: now,
-      last_message_preview: messagePreview('location', null),
-      last_message_direction: 'out',
-      unread_count: 0,
-    })
-    .eq('id', conv.id)
-
-  return ok(message as WaMessage)
 }

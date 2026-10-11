@@ -198,29 +198,3 @@ export async function sendFlowTemplate(
   if (!id) throw new Error('Meta no devolvió el id del mensaje')
   return id
 }
-
-/** Ubicación con pin en el mapa + nombre y dirección escrita. Mensaje
- * normal (no plantilla): solo dentro de la ventana de 24 h, sin costo. */
-export async function sendLocationMessage(
-  account: WaAccountCredentials,
-  to: string,
-  loc: { latitude: number; longitude: number; name: string; address: string | null }
-) {
-  const json = await graph<{ messages?: { id: string }[] }>(
-    `/${encodeURIComponent(account.phone_number_id)}/messages`,
-    account.access_token,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to,
-        type: 'location',
-        location: { latitude: loc.latitude, longitude: loc.longitude, name: loc.name, ...(loc.address ? { address: loc.address } : {}) },
-      }),
-    }
-  )
-  const id = json.messages?.[0]?.id
-  if (!id) throw new Error('Meta no devolvió el id del mensaje')
-  return id
-}

@@ -1,16 +1,15 @@
 import { notFound } from 'next/navigation'
-import { getConversation, getMessages, getQuickReplies, getWhatsAppAccountStatus } from '@/queries/whatsapp'
+import { getConversation, getMessages, getWhatsAppAccountStatus } from '@/queries/whatsapp'
 import { getClients } from '@/queries/clients'
 import { ChatView } from '@/components/inbox/chat-view'
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [conversationResult, messagesResult, clientsResult, account, quickReplies] = await Promise.all([
+  const [conversationResult, messagesResult, clientsResult, account] = await Promise.all([
     getConversation(id),
     getMessages(id),
     getClients(),
     getWhatsAppAccountStatus(),
-    getQuickReplies(),
   ])
   if (!conversationResult.success) notFound()
 
@@ -26,7 +25,6 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       initialMessages={messagesResult.success ? messagesResult.data : []}
       clients={clients}
       formTemplateStatus={account?.formTemplateStatus ?? null}
-      quickReplies={quickReplies}
     />
   )
 }

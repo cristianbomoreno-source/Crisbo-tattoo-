@@ -99,33 +99,5 @@ ALTER TABLE whatsapp_accounts
   ADD COLUMN IF NOT EXISTS form_template_status text,   -- PENDING | APPROVED | REJECTED | PAUSED | DISABLED
   ADD COLUMN IF NOT EXISTS form_template_reason text;
 
--- 5. Respuestas rápidas (texto libre, dentro de la ventana de 24 h) ------------
-CREATE TABLE IF NOT EXISTS wa_quick_replies (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  studio_id uuid NOT NULL REFERENCES studios(id) ON DELETE CASCADE,
-  title text NOT NULL CHECK (char_length(title) BETWEEN 1 AND 60),
-  body text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 4096),
-  position integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS wa_quick_replies_studio_idx ON wa_quick_replies (studio_id, position);
-ALTER TABLE wa_quick_replies ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Studio can view its quick replies" ON wa_quick_replies;
-DROP POLICY IF EXISTS "Studio can manage its quick replies" ON wa_quick_replies;
-CREATE POLICY "Studio can view its quick replies" ON wa_quick_replies
-  FOR SELECT USING (studio_id = get_studio_id());
-CREATE POLICY "Studio can manage its quick replies" ON wa_quick_replies
-  FOR ALL USING (studio_id = get_studio_id()) WITH CHECK (studio_id = get_studio_id());
--- Ícono opcional: la respuesta aparece como botón en el chat y se envía con un toque.
-ALTER TABLE wa_quick_replies ADD COLUMN IF NOT EXISTS icon text
-  CHECK (icon IN ('payment', 'receipt', 'calendar', 'location'));
--- Tipo de respuesta: texto, o ubicación (pin en el mapa + dirección escrita en `body`).
-ALTER TABLE wa_quick_replies
-  ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'text' CHECK (kind IN ('text', 'location')),
-  ADD COLUMN IF NOT EXISTS location_name text,
-  ADD COLUMN IF NOT EXISTS maps_url text,
-  ADD COLUMN IF NOT EXISTS latitude double precision,
-  ADD COLUMN IF NOT EXISTS longitude double precision;
-ALTER TABLE wa_quick_replies DROP CONSTRAINT IF EXISTS wa_quick_replies_location_coords;
-ALTER TABLE wa_quick_replies ADD CONSTRAINT wa_quick_replies_location_coords
-  CHECK (kind = 'text' OR (latitude IS NOT NULL AND longitude IS NOT NULL));
+-- 5. Respuestas rápidas: se retiraron (el botón "Pedir comprobante" quedó fijo en el código).
+DROP TABLE IF EXISTS wa_quick_replies;

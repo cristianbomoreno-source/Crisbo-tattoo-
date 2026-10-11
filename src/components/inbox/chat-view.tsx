@@ -9,6 +9,7 @@ import {
   Archive,
   ArchiveRestore,
   ArrowLeft,
+  Banknote,
   CalendarPlus,
   Check,
   CheckCheck,
@@ -27,17 +28,14 @@ import {
   markConversationRead,
   sendBookingConfirmationToChat,
   sendDataForm,
-  sendQuickReplyToChat,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
-import type { WaConversation, WaMessage, WaQuickReply } from '@/queries/whatsapp'
+import type { WaConversation, WaMessage } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { todayKey } from '@/lib/calendar/utils'
 import { ClientLinkDialog } from './client-link-dialog'
-import { QuickRepliesMenu } from './quick-replies-menu'
-import { QUICK_REPLY_ICONS } from './quick-reply-icons'
 import {
   formatDayLabel,
   formatMessageTime,
@@ -46,6 +44,9 @@ import {
   sameDay,
 } from './format'
 
+/** Lo que envía el botón "Pedir comprobante" (texto exacto del estudio). */
+const PAYMENT_PROOF_MESSAGE = 'Una vez efectuado el abono, envía el comprobante'
+
 type ClientOption = { id: string; name: string; phone: string | null }
 
 export function ChatView({
@@ -53,14 +54,12 @@ export function ChatView({
   initialMessages,
   clients,
   formTemplateStatus,
-  quickReplies,
 }: {
   conversation: WaConversation
   initialMessages: WaMessage[]
   clients: ClientOption[]
   /** Estado en Meta de la plantilla del formulario de datos (null = no creada). */
   formTemplateStatus: string | null
-  quickReplies: WaQuickReply[]
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
@@ -147,11 +146,11 @@ export function ChatView({
     })
   }
 
-  /** Respuesta rápida (texto o ubicación): se envía tal cual, sin pasar por el borrador. */
-  function sendQuickReply(reply: WaQuickReply) {
+  /** Botón "Pedir comprobante": envía el texto tal cual, sin pasar por el borrador. */
+  function askPaymentProof() {
     if (sending) return
     startSending(async () => {
-      const result = await sendQuickReplyToChat(conversation.id, reply.id)
+      const result = await sendWhatsAppMessage({ conversationId: conversation.id, body: PAYMENT_PROOF_MESSAGE })
       if (!result.success) {
         toast.error(result.error.message)
         return
@@ -159,8 +158,6 @@ export function ChatView({
       setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
     })
   }
-
-  const replyButtons = quickReplies.filter((r) => r.icon && QUICK_REPLY_ICONS[r.icon])
 
   function sendForm() {
     startSendingForm(async () => {
@@ -289,7 +286,6 @@ export function ChatView({
         {windowOpen ? (
           <>
             <div className="flex items-end gap-2">
-              <QuickRepliesMenu replies={quickReplies} onPick={sendQuickReply} disabled={sending} />
               <textarea
                 ref={textareaRef}
                 value={draft}
@@ -310,15 +306,10 @@ export function ChatView({
               </Button>
             </div>
             <div className="mt-2 flex flex-wrap justify-end gap-2">
-              {replyButtons.map((r) => {
-                const Icon = QUICK_REPLY_ICONS[r.icon!]!.icon
-                return (
-                  <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r)} disabled={sending}>
-                    <Icon />
-                    {r.title}
-                  </Button>
-                )
-              })}
+              <Button size="sm" variant="outline" onClick={askPaymentProof} disabled={sending}>
+                <Banknote />
+                Pedir comprobante
+              </Button>
               {formButton}
             </div>
             {remaining && (

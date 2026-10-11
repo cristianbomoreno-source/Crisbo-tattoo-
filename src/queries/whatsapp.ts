@@ -122,28 +122,3 @@ export async function getConversationIdForClient(clientId: string): Promise<stri
     .maybeSingle()
   return (data?.id as string | undefined) ?? null
 }
-
-export type WaQuickReply = {
-  id: string
-  title: string
-  /** Texto del mensaje; en las de ubicación, la dirección escrita. */
-  body: string
-  position: number
-  icon: string | null
-  kind: 'text' | 'location'
-  location_name: string | null
-  maps_url: string | null
-  latitude: number | null
-  longitude: number | null
-}
-
-/** Respuestas rápidas del estudio (RLS: solo las del estudio activo). */
-export async function getQuickReplies(): Promise<WaQuickReply[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('wa_quick_replies')
-    .select('id, title, body, position, icon, kind, location_name, maps_url, latitude, longitude')
-    .order('position')
-    .order('created_at')
-  return (data as WaQuickReply[] | null) ?? []
-}
