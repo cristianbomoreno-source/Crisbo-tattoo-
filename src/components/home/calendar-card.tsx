@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ChevronRight, CalendarDays } from 'lucide-react'
-import { WeekStrip } from '@/components/home/week-strip'
+import { MonthGrid } from '@/components/home/month-grid'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { AgendaListDialog } from '@/components/home/agenda-list-dialog'
 import type { ProjectBalance } from '@/components/home/today-appointments'
 import type { SessionWithProject } from '@/queries/sessions'
 
 /**
- * Tarjeta "Calendario" del Inicio: tira de días arriba (hoy destacado, días
+ * Tarjeta "Calendario" del Inicio: mes completo arriba (hoy destacado, días
  * con cita/bloqueados marcados) + conteo de sesiones de hoy. Tocar un día
  * abre el popup de calendario (Día/Semana/Mes) sin salir de Inicio — es el
  * ÚNICO calendario de la app (ya no existe la página `/dashboard/calendar`).
@@ -26,7 +26,7 @@ export function CalendarCard({
   todaySessions,
   blockedDays = [],
 }: {
-  days: { key: string; count: number }[]
+  days: { key: string; count: number; paid?: boolean }[]
   today: string
   todaySessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
@@ -79,7 +79,7 @@ export function CalendarCard({
       </div>
 
       <div data-tour="calendar-week-strip">
-        <WeekStrip
+        <MonthGrid
           days={days}
           today={today}
           blockedDays={blockedDays}
