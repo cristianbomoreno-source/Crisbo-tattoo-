@@ -1,6 +1,6 @@
 import { cop } from '@/lib/projects/metrics'
 
-/** Comparación simple ingresos/gastos/utilidad del mes — solo verde OFINK
+/** Comparación simple ingresos/gastos/utilidad del mes — solo verde Crisbo Tattoo
  * y grises, sin colores agresivos, como pidió el spec original. */
 export function FinanceIncomeVsExpensesCard({
   income,

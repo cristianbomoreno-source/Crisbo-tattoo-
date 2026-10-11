@@ -1,4 +1,4 @@
-# OFINK — Design System
+# Crisbo Tattoo — Design System
 
 Identidad visual premium, minimalista y neutra, inspirada en Apple / Linear /
 Arc / Stripe / Revolut, adaptada para tatuadores. El rojo de marca se reserva
@@ -38,7 +38,7 @@ Ya cargada en `layout.tsx` (no se tocó):
 | `--font-sans` | Inter | Texto de UI general (cuerpo, labels, inputs). |
 | `--font-display` | Oswald | Encabezados de sección, títulos de tarjetas (condensada, mayúsculas). |
 | `--font-title` | Anton | Títulos grandes / hero (Inicio, splash). |
-| `--font-wordmark` | Orbitron | Solo el logotipo "OFINK". |
+| `--font-wordmark` | Orbitron | Solo el logotipo "Crisbo Tattoo". |
 | `--font-mono` | Geist Mono | Cifras tabulares en contextos técnicos (opcional). |
 
 Reglas globales nuevas (`@layer base`):

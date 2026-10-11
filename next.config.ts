@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   // tipos (de 92 a 0) y se reactivó la verificación — no volver a apagarla sin
   // dejar el typecheck en cero primero.
   typescript: { ignoreBuildErrors: false },
-  // Versión visible en Ajustes → Acerca de OFINK (settings-hub). Sube sola con
+  // Versión visible en Ajustes → Acerca de Crisbo Tattoo (settings-hub). Sube sola con
   // cada deploy en Vercel: la versión sale de package.json y el build SHA lo
   // inyecta Vercel automáticamente (VERCEL_GIT_COMMIT_SHA) — no se edita a mano.
   env: {
@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
   // puede tardar horas en notarse aunque el archivo ya cambió.
   async headers() {
     return [
-      // Seguridad global (dominio propio ofink.co): mitiga clickjacking,
+      // Seguridad global (dominio propio crisbotattoo.com): mitiga clickjacking,
       // MIME-sniffing y fuga de referrer; fuerza HTTPS en el navegador.
       {
         source: '/:path*',

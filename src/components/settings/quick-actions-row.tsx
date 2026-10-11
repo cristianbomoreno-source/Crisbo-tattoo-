@@ -22,7 +22,7 @@ export function QuickActionsRow({ slug, whatsappConnected }: { slug: string; wha
   function share() {
     const url = publicUrl()
     if (navigator.share) {
-      navigator.share({ title: 'Mi link de OFINK', url }).catch(() => {})
+      navigator.share({ title: 'Mi link de Crisbo Tattoo', url }).catch(() => {})
     } else {
       navigator.clipboard.writeText(url)
     }

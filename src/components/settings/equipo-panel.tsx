@@ -105,15 +105,15 @@ export function EquipoPanel({
   }
 
   const activeCount = team.filter((m) => m.status === 'active').length
-  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://ofink.app'
-  const inviteText = `Únete a nuestro estudio en OFINK con el código ${joinCode} — regístrate en ${appUrl} y elige "Trabajo en un estudio".`
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://crisbotattoo.com'
+  const inviteText = `Únete a nuestro estudio en Crisbo Tattoo con el código ${joinCode} — regístrate en ${appUrl} y elige "Trabajo en un estudio".`
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <section className="rounded-2xl bg-card p-5" data-tour="team-invite-section">
         <h2 className="font-title text-lg uppercase">Invitar colaborador</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Si esa persona ya tiene cuenta de OFINK, verá la invitación apenas entre y se une con
+          Si esa persona ya tiene cuenta de Crisbo Tattoo, verá la invitación apenas entre y se une con
           un toque — automático, sin código.
         </p>
         <form onSubmit={handleInvite} className="mt-3 flex gap-2">
@@ -196,7 +196,7 @@ export function EquipoPanel({
             <MessageCircle className="size-3.5" /> WhatsApp
           </a>
           <a
-            href={`mailto:?subject=${encodeURIComponent('Invitación a nuestro estudio en OFINK')}&body=${encodeURIComponent(inviteText)}`}
+            href={`mailto:?subject=${encodeURIComponent('Invitación a nuestro estudio en Crisbo Tattoo')}&body=${encodeURIComponent(inviteText)}`}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-background py-2.5 text-xs font-semibold"
           >
             <Mail className="size-3.5" /> Correo

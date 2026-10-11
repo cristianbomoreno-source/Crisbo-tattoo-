@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 
 /**
- * Fuente única de verdad de la navegación de OFINK.
+ * Fuente única de verdad de la navegación de Crisbo Tattoo.
  * La consumen el sidebar de escritorio y el drawer móvil (ver DESIGN.md §5, §7).
  */
 export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [

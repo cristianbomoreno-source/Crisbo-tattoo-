@@ -34,7 +34,7 @@ const ICONS: Record<PreviewKind, React.ElementType> = {
 }
 
 /** Mockup mini genérico: unas líneas + el ícono de la sección, con el
- * mismo lenguaje visual de OFINK (fondo negro, tarjeta, acento lima).
+ * mismo lenguaje visual de Crisbo Tattoo (fondo negro, tarjeta, acento lima).
  * Ayuda a identificar la función sin ser una captura literal de pantalla. */
 export function FeaturePreview({ kind, screenshot }: { kind: PreviewKind; screenshot?: string }) {
   if (screenshot) {

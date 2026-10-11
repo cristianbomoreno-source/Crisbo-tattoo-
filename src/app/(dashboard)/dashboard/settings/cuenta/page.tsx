@@ -31,7 +31,7 @@ export default async function CuentaHubPage() {
           </span>
         </div>
         <div className="mt-1 border-t border-border/60 pt-1">
-          <StatusRow href="/dashboard/settings/cuentas" ok label="Cuentas OFINK" />
+          <StatusRow href="/dashboard/settings/cuentas" ok label="Cuentas Crisbo Tattoo" />
         </div>
       </div>
     </SettingsSubpage>

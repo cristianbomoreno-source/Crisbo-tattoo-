@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 
 /**
- * Navegación móvil de OFINK (<lg): barra inferior opaca pegada al borde
+ * Navegación móvil de Crisbo Tattoo (<lg): barra inferior opaca pegada al borde
  * (estilo Instagram) de 5 posiciones (Inicio, Proyectos, hueco central para
  * el pulpo de octopus-menu.tsx, Cotizaciones, Estudio). En escritorio (lg+)
  * se oculta; ahí manda el sidebar. Ver DESIGN.md §5, §7.

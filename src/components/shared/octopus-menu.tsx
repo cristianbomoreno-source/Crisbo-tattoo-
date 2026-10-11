@@ -15,7 +15,7 @@ import {
 } from '@/lib/octopus-actions'
 
 /**
- * OctopusMenu — la interfaz-pulpo de OFINK.
+ * OctopusMenu — la interfaz-pulpo de Crisbo Tattoo.
  *
  * REDISEÑO (premium, flat, sin ilustración): el pulpo ya no es un círculo
  * de cabeza separado del botón — el propio botón disparador (siempre el

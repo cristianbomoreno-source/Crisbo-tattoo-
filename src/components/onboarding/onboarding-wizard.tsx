@@ -77,7 +77,7 @@ const STEP_CONTENT: Record<OnboardingStepKey, { titleLine1: string; titleLine2: 
   profile: {
     titleLine1: 'CUÉNTANOS',
     titleLine2: 'quién eres',
-    subtitle: 'Así te van a conocer tus clientes en OFINK.',
+    subtitle: 'Así te van a conocer tus clientes en Crisbo Tattoo.',
   },
   specialty: {
     titleLine1: 'TU',

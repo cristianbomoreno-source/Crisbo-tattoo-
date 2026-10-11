@@ -22,7 +22,7 @@ export default async function PersonalizacionHubPage() {
   const status = computeStudioStatus(studio, blockedDays.length)
 
   return (
-    <SettingsSubpage title="Personalización" description="Tu marca dentro de OFINK: logo, colores y tema.">
+    <SettingsSubpage title="Personalización" description="Tu marca dentro de Crisbo Tattoo: logo, colores y tema.">
       <div className="flex items-center gap-3">
         <Link
           href="/dashboard/settings/perfil"

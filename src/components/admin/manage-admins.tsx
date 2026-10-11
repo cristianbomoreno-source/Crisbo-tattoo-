@@ -39,7 +39,7 @@ export function ManageAdmins({ admins, myUserId }: { admins: PlatformAdminRow[];
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="correo@ofink.app"
+          placeholder="correo@crisbotattoo.com"
           required
           className="min-w-0 flex-1 rounded-xl bg-background px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />

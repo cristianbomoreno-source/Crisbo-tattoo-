@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { subscribeToPush } from '@/lib/push/client'
 
 /**
- * Registra el service worker de OFINK y detecta actualizaciones lo más
+ * Registra el service worker de Crisbo Tattoo y detecta actualizaciones lo más
  * rápido posible (spec §3 + pedido explícito de Crisbo):
  *
  * - `updateViaCache: 'none'`: el navegador nunca sirve sw.js desde su caché
@@ -34,7 +34,7 @@ export function RegisterSW() {
     let reg: ServiceWorkerRegistration | null = null
 
     function applyUpdate(worker: ServiceWorker) {
-      toast.success('Nueva versión de OFINK disponible, actualizando…')
+      toast.success('Nueva versión de Crisbo Tattoo disponible, actualizando…')
       worker.postMessage({ type: 'SKIP_WAITING' })
     }
 

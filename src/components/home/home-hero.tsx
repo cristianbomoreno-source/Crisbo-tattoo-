@@ -31,7 +31,7 @@ export function HomeHero({
   coverPhotoUrl: string | null
   activeShift: { id: string; startedAt: string } | null
 }) {
-  const who = name ? firstName(name) : 'OFINK'
+  const who = name ? firstName(name) : 'Crisbo Tattoo'
   const phrase = PHRASES[new Date().getDate() % PHRASES.length]
 
   return (

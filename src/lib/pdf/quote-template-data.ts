@@ -174,7 +174,7 @@ export function buildQuoteTemplateData(
     availability: q.availability,
     photoUrl,
     referencePhotos,
-    studioName: studio?.name || 'OFINK',
+    studioName: studio?.name || 'Crisbo Tattoo',
     studioLogoUrl: studio?.logoUrl ?? null,
     templateColor: accentColorFor(studio?.quoteTemplateColor),
     whatsapp: studio?.whatsappPhone ?? null,

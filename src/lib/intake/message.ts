@@ -27,8 +27,8 @@ export function buildIntakeMessage(
 ): string {
   const closing =
     photoCount > 0
-      ? `Ya te dejé la solicitud completa con ${photoCount === 1 ? 'mi foto' : 'mis fotos'} de referencia en tu panel de OFINK.`
-      : 'Ya te dejé la solicitud completa en tu panel de OFINK.'
+      ? `Ya te dejé la solicitud completa con ${photoCount === 1 ? 'mi foto' : 'mis fotos'} de referencia en tu panel de Crisbo Tattoo.`
+      : 'Ya te dejé la solicitud completa en tu panel de Crisbo Tattoo.'
   return buildMessage(template || DEFAULT_BOT_CONTACT_TEMPLATE, {
     nombre_estudio: studioName,
     nombre_cliente: input.name,

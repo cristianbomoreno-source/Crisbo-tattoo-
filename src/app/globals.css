@@ -59,7 +59,7 @@
   --radius-4xl: 2rem;      /* 32px — splash/hero */
 }
 
-/* OFINK — tema CLARO (sin uso actual: la app fuerza .dark). Se mantiene
+/* Crisbo Tattoo — tema CLARO (sin uso actual: la app fuerza .dark). Se mantiene
    sincronizado por si se activa en el futuro. */
 :root {
   --background: oklch(0.985 0.002 67);
@@ -104,7 +104,7 @@
   --sidebar-ring: #b8f400;
 }
 
-/* OFINK — tema OSCURO (por defecto). Identidad verde lima premium (17 jul,
+/* Crisbo Tattoo — tema OSCURO (por defecto). Identidad verde lima premium (17 jul,
    3ª pasada): #B8F400 inspirado en el ícono — transmite calma, control y
    flujo de trabajo, no "gamer". Fondo negro puro, superficies gris oscuro
    parejo (poco contraste entre sí), bordes hairline muy sutiles. El verde es

@@ -122,7 +122,7 @@ export function MensajesForm({
   return (
     <SettingsSubpage
       title="Plantillas de WhatsApp"
-      description="Así se redactan los mensajes que salen desde OFINK hacia WhatsApp. Edítalos a tu manera — cada placeholder entre llaves se reemplaza solo con el dato real."
+      description="Así se redactan los mensajes que salen desde Crisbo Tattoo hacia WhatsApp. Edítalos a tu manera — cada placeholder entre llaves se reemplaza solo con el dato real."
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">

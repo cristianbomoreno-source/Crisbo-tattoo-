@@ -14,7 +14,7 @@ import { IncomeCard } from '@/components/home/estudio/income-card'
 
 /**
  * Dashboard "Inicio" exclusivo para cuentas de Estudio (accountKind ===
- * 'estudio' && role === 'owner') — spec `OFINK — REDISEÑO COMPLETO DEL
+ * 'estudio' && role === 'owner') — spec `Crisbo Tattoo — REDISEÑO COMPLETO DEL
  * DASHBOARD "INICIO" PARA CUENTA DE ESTUDIO DE TATUAJES`. Es una
  * herramienta de operación (qué está pasando HOY en todo el estudio), no
  * una adaptación del Home del tatuador independiente — ese sigue exacto

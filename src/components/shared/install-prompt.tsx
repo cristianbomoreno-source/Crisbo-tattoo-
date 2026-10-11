@@ -6,7 +6,7 @@ import { Download, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 /**
- * Prompt chulo de "Instalar OFINK" (DESIGN.md §1, carbón + rojo).
+ * Prompt chulo de "Instalar Crisbo Tattoo" (DESIGN.md §1, carbón + rojo).
  * Captura `beforeinstallprompt` (Chrome/Edge/Android), muestra una tarjeta
  * dismissible y dispara la instalación nativa. Respeta un flag de descarte en
  * localStorage para no insistir. En navegadores sin soporte simplemente no aparece.
@@ -77,7 +77,7 @@ export function InstallPrompt() {
 
         <div className="min-w-0 flex-1">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
-            Instalá OFINK
+            Instalá Crisbo Tattoo
           </p>
           <p className="truncate text-[13px] text-muted-foreground">
             De la idea a la piel, desde tu pantalla de inicio.

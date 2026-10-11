@@ -113,7 +113,7 @@ function computeCardStyle(
 }
 
 /**
- * Tutorial guiado interactivo de OFINK. Recorrido distinto según el tipo
+ * Tutorial guiado interactivo de Crisbo Tattoo. Recorrido distinto según el tipo
  * de cuenta (`tour-config.ts`): oscurece la pantalla, resalta con un
  * spotlight real el elemento `data-tour` del paso actual, navega solo
  * entre pantallas cuando el paso lo requiere, y guarda el progreso en
@@ -401,7 +401,7 @@ export function GuidedTour() {
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label={`Tutorial de OFINK, paso ${stepIndex + 1} de ${total}: ${step.title}`}
+        aria-label={`Tutorial de Crisbo Tattoo, paso ${stepIndex + 1} de ${total}: ${step.title}`}
         className={cn(
           'fixed w-[calc(100vw-2rem)] max-w-sm rounded-[1.75rem] border border-border/60 bg-card p-5 shadow-2xl outline-none sm:p-6',
           !reduced && 'transition-[top,left] duration-300 ease-out',
@@ -454,7 +454,7 @@ export function GuidedTour() {
               disabled={loadingStep}
               className="flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
             >
-              {isLast ? 'Empezar a usar OFINK' : 'Siguiente'}
+              {isLast ? 'Empezar a usar Crisbo Tattoo' : 'Siguiente'}
               {!isLast && <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden="true" />}
             </button>
           </div>

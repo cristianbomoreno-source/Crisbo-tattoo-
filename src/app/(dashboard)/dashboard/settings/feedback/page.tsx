@@ -19,7 +19,7 @@ export default async function FeedbackPage() {
   return (
     <div>
       <PageHeader
-        kicker="Mensaje de OFINK"
+        kicker="Mensaje de Crisbo Tattoo"
         title="Califica cada función"
         description={`Ya calificaste ${rated} de ${TOTAL_FEATURES}. Cada estrella se guarda sola, no hay que enviar nada al final.`}
       />

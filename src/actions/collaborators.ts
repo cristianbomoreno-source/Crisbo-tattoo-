@@ -33,7 +33,7 @@ const DEFAULT_MEMBER_PERMISSIONS = {
 
 /**
  * Botón del pulpo → "Añadir colaborador": invita por correo. Si ese
- * correo ya tiene una cuenta OFINK, queda vinculada de una vez
+ * correo ya tiene una cuenta Crisbo Tattoo, queda vinculada de una vez
  * (`invited_user_id`) y la persona ve la invitación apenas entra —
  * ver `listMyPendingInvitations`/`respondToInvitation`. Si no tiene
  * cuenta todavía, la invitación queda esperando por correo — se resuelve
@@ -65,7 +65,7 @@ export async function inviteCollaboratorByEmail(emailInput: string): Promise<Res
     .maybeSingle()
   if (existingInvite) return err('VALIDATION_ERROR', 'Ya invitaste a ese correo, está pendiente de respuesta')
 
-  // ¿Ese correo ya tiene cuenta de OFINK? Si sí, vinculamos la invitación
+  // ¿Ese correo ya tiene cuenta de Crisbo Tattoo? Si sí, vinculamos la invitación
   // a su user_id de una vez (así la ve apenas entra, sin depender de que
   // vuelva a pasar por /auth/callback).
   const { data: usersPage, error: listError } = await admin.auth.admin.listUsers({
@@ -93,7 +93,7 @@ export async function inviteCollaboratorByEmail(emailInput: string): Promise<Res
         'Esa persona ya tiene una cuenta de estudio (propia o de otro equipo) y no puede unirse a otra'
       )
     if ((existingAccounts?.length ?? 0) >= 2)
-      return err('VALIDATION_ERROR', 'Esa persona ya tiene el máximo de 2 cuentas OFINK')
+      return err('VALIDATION_ERROR', 'Esa persona ya tiene el máximo de 2 cuentas Crisbo Tattoo')
   }
 
   const { error } = await admin.from('studio_invitations').insert({
@@ -191,7 +191,7 @@ export async function listMyPendingInvitations(): Promise<Result<MyInvitation[]>
 }
 
 /** Acepta o rechaza una invitación. Al aceptar: crea la cuenta 'member'
- * en ese estudio (respetando el tope de 2 cuentas OFINK / 1 cuenta
+ * en ese estudio (respetando el tope de 2 cuentas Crisbo Tattoo / 1 cuenta
  * 'estudio' por usuario, igual que el resto del sistema multi-cuenta) y
  * la activa — la persona entra directo a su nuevo equipo. */
 export async function respondToInvitation(
@@ -242,7 +242,7 @@ export async function respondToInvitation(
       'Ya tienes una cuenta de estudio (propia o de otro equipo) — no puedes unirte a otra'
     )
   if ((existingAccounts?.length ?? 0) >= 2)
-    return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas OFINK')
+    return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas Crisbo Tattoo')
 
   const { count } = await admin
     .from('artists')

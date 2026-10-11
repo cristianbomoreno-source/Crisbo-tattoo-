@@ -196,7 +196,7 @@ export function StudioControlCenter({
   pendingRequests?: number
   /** Tatuadores activos del estudio (incluye al dueño). */
   teamSize?: number
-  /** Módulos apagados por un admin de OFINK (ver /admin → Módulos por cuenta). */
+  /** Módulos apagados por un admin de Crisbo Tattoo (ver /admin → Módulos por cuenta). */
   disabledFeatures?: Set<FeatureKey>
 }) {
   const { checks } = status
@@ -247,7 +247,7 @@ export function StudioControlCenter({
                 className="mt-1.5 inline-flex max-w-full items-center gap-1 truncate text-xs text-primary hover:underline"
               >
                 <Link2 className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
-                ofink.co/t/{studio.slug}
+                crisbotattoo.com/t/{studio.slug}
               </Link>
             </div>
           </div>

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select'
 
 /** Indicativos de países de Latinoamérica (+ España, por si algún cliente
- * escribe desde ahí). Colombia va primero: es el mercado principal de OFINK. */
+ * escribe desde ahí). Colombia va primero: es el mercado principal de Crisbo Tattoo. */
 export const LATAM_COUNTRY_CODES = [
   { code: '+57', country: 'CO', flag: '🇨🇴', name: 'Colombia' },
   { code: '+52', country: 'MX', flag: '🇲🇽', name: 'México' },

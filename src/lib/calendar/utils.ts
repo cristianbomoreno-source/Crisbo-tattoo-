@@ -11,7 +11,7 @@ export function capitalize(s: string): string {
 const pad = (n: number) => String(n).padStart(2, '0')
 
 /**
- * Convención de tiempo de OFINK: la hora que el usuario escribe en
+ * Convención de tiempo de Crisbo Tattoo: la hora que el usuario escribe en
  * <input type="datetime-local"> se guarda como "hora de pared" (los componentes
  * UTC del timestamptz). Por eso, para MOSTRAR una sesión se leen de vuelta los
  * componentes UTC — NO se convierte a Bogotá, o la hora se correría 5h.

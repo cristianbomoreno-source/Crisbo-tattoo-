@@ -11,10 +11,10 @@ export default async function OnboardingListoPage() {
 
   return (
     <CelebrationScreen
-      title="¡Bienvenido a OFINK!"
+      title="¡Bienvenido a Crisbo Tattoo!"
       subtitle="Tu estudio digital ya está listo."
       items={['Perfil creado', 'Agenda configurada', 'Especialidades guardadas', 'Políticas guardadas']}
-      cta="Entrar a OFINK"
+      cta="Entrar a Crisbo Tattoo"
       href="/dashboard"
     />
   )

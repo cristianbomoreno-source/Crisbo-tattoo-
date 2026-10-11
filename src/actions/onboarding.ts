@@ -162,7 +162,7 @@ export async function completeProfileStep(
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
     if ((accountCount ?? 0) >= 2)
-      return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas OFINK')
+      return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas Crisbo Tattoo')
 
     const metaWhatsapp = (user.user_metadata['whatsapp'] as string | undefined) ?? null
     const created = await createStudioAndArtist(admin, {

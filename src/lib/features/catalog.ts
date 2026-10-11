@@ -1,4 +1,4 @@
-/** Módulos que el admin de OFINK puede activar/desactivar por estudio,
+/** Módulos que el admin de Crisbo Tattoo puede activar/desactivar por estudio,
  * de cara a futuras suscripciones. Todo estudio nuevo empieza con todo
  * encendido — solo se restringe si un admin lo apaga a mano en /admin.
  * Al agregar un módulo nuevo aquí, protegerlo con `FeatureGate` en la

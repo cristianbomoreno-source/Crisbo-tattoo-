@@ -19,12 +19,12 @@ describe('buildIntakeMessage', () => {
     expect(msg).toContain('· Tamaño: Mediano (10 a 15 cm)')
     expect(msg).toContain('· Color: Negro')
     expect(msg).toContain('· Idea: Quiero un león con destellos')
-    expect(msg).toContain('fotos de referencia en tu panel de OFINK')
+    expect(msg).toContain('fotos de referencia en tu panel de Crisbo Tattoo')
   })
   it('sin fotos no promete fotos', () => {
     const msg = buildIntakeMessage('Crisbo Tattoo', input, 0)
     expect(msg).not.toContain('fotos de referencia')
-    expect(msg).toContain('en tu panel de OFINK')
+    expect(msg).toContain('en tu panel de Crisbo Tattoo')
   })
   it('con una sola foto usa singular', () => {
     const msg = buildIntakeMessage('Crisbo Tattoo', input, 1)

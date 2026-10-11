@@ -57,7 +57,7 @@ export default async function AdminPage() {
       <div>
         <h1 className="font-title text-3xl uppercase leading-none">Feedback de tatuadores</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Calificaciones que dejaron los tatuadores/estudios en Ajustes → Mensaje de OFINK.
+          Calificaciones que dejaron los tatuadores/estudios en Ajustes → Mensaje de Crisbo Tattoo.
         </p>
       </div>
 
@@ -121,7 +121,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Clientes de OFINK</h2>
+        <h2 className="mb-4 font-title text-lg uppercase leading-none">Clientes de Crisbo Tattoo</h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Historial de cuentas creadas: correo/usuario, método y dispositivo.
         </p>

@@ -1,4 +1,4 @@
-/** Todos los textos del bot. Voz OFINK: cercana, de oficio, español LatAm. */
+/** Todos los textos del bot. Voz Crisbo Tattoo: cercana, de oficio, español LatAm. */
 export const COPY = {
   welcome: (studio: string) =>
     `¡Hola! Soy el asistente de ${studio}. Te haré unas preguntas rápidas sobre tu idea para poder enviarla directo al tatuador y darte una cotización más precisa. Te tomará menos de 2 minutos y tu información está segura.`,
@@ -42,5 +42,5 @@ export const COPY = {
   noPhotos: 'No tengo imágenes',
   addPhotos: 'Añadir imagen (máx. 3)',
   otherSend: 'Enviar por WhatsApp',
-  footer: 'Hecho con OFINK · De la idea a la piel',
+  footer: 'Hecho con Crisbo Tattoo · De la idea a la piel',
 } as const

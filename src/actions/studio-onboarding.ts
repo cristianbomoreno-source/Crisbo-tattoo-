@@ -62,7 +62,7 @@ export async function createStudioOnboarding(input: {
     .from('artists')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
-  if ((accountCount ?? 0) >= 2) return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas OFINK')
+  if ((accountCount ?? 0) >= 2) return err('VALIDATION_ERROR', 'Ya tienes el máximo de 2 cuentas Crisbo Tattoo')
 
   const metaName = (user.user_metadata['name'] as string | undefined) ?? user.email?.split('@')[0] ?? 'Propietario'
   const metaWhatsapp = (user.user_metadata['whatsapp'] as string | undefined) ?? null

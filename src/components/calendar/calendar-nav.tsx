@@ -22,7 +22,7 @@ const HOUR_PX = 56
 export type CalendarView = 'day' | 'week' | 'month'
 
 /**
- * EL calendario de OFINK — Día / Semana / Mes. Un solo componente, usado tal
+ * EL calendario de Crisbo Tattoo — Día / Semana / Mes. Un solo componente, usado tal
  * cual tanto en el popup de Inicio (`home-calendar-dialog.tsx`) como en la
  * página completa (`calendar-view.tsx`); antes eran dos implementaciones
  * visualmente distintas (la página tenía su propio grid de mes con puntos

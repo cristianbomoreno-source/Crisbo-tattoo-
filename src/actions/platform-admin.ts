@@ -80,7 +80,7 @@ export async function addPlatformAdminByEmail(email: string): Promise<Result<voi
   if (listError) return err('DB_ERROR', 'No se pudo buscar la cuenta')
 
   const found = usersPage.users.find((u) => u.email?.toLowerCase() === target)
-  if (!found) return err('NOT_FOUND', 'No encontramos ninguna cuenta de OFINK con ese correo')
+  if (!found) return err('NOT_FOUND', 'No encontramos ninguna cuenta de Crisbo Tattoo con ese correo')
 
   const { error } = await admin
     .from('platform_admins')
@@ -111,7 +111,7 @@ export type PlatformSignupRow = {
   createdAt: string
 }
 
-/** Historial de creación de cuentas OFINK: correo/usuario, si entró por
+/** Historial de creación de cuentas Crisbo Tattoo: correo/usuario, si entró por
  * Google o por usuario+contraseña, y si fue desde móvil o escritorio
  * (por user-agent). Ver record-signup.ts (se guarda al momento del alta). */
 export async function listPlatformSignups(): Promise<Result<PlatformSignupRow[]>> {
@@ -214,7 +214,7 @@ export type FeedbackOverview = {
  * qué mejorar primero) y los comentarios sueltos con contexto de quién los
  * dejó. Cruza `feature_feedback` con `artists`/`studios` a mano (con el
  * cliente admin) porque son consultas de solo-lectura para el equipo de
- * OFINK, no para el tatuador. */
+ * Crisbo Tattoo, no para el tatuador. */
 export async function getFeedbackOverview(): Promise<Result<FeedbackOverview>> {
   if (!(await isPlatformAdmin())) return err('FORBIDDEN', 'No tienes acceso')
 

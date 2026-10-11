@@ -371,7 +371,7 @@ export function QuoteOgImage({
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={platformMarkUrl} alt="" width={30} height={30} style={{ display: 'flex' }} />
-                <div style={{ display: 'flex', fontSize: 15, fontWeight: 700, color: BRAND.white, letterSpacing: 1 }}>OFINK</div>
+                <div style={{ display: 'flex', fontSize: 15, fontWeight: 700, color: BRAND.white, letterSpacing: 1 }}>CRISBO TATTOO</div>
               </div>
             )
           )}

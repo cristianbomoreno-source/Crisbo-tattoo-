@@ -4,7 +4,7 @@
 
 # Proyecto: Crisbo Tattoo (crisbotattoo.com)
 
-> La marca ya no es OFINK: ahora es **crisbotattoo.com**. Aún quedan referencias a "OFINK" en el código (sidebar, footer, PWA, etc.).
+> La marca ya no es OFINK: ahora es **crisbotattoo.com**. Los textos visibles ya dicen "Crisbo Tattoo"; solo quedan identificadores internos `ofink` (claves de localStorage, eventos, clases CSS y el dominio sintético `user.ofink.app` del login — NO cambiarlo o se rompe el inicio de sesión).
 
 ## Contexto General
 

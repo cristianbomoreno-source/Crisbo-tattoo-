@@ -6,7 +6,7 @@ import { getCurrentStudio } from '@/queries/studio'
 import { ok, err, type Result } from '@/lib/errors/types'
 
 /**
- * Elimina la cuenta OFINK activa (ver src/actions/accounts.ts — cada
+ * Elimina la cuenta Crisbo Tattoo activa (ver src/actions/accounts.ts — cada
  * usuario puede tener hasta 2: 'tatuador' y 'estudio').
  *
  * - Dueño de estudio: borra el estudio completo. Todas las tablas
@@ -19,7 +19,7 @@ import { ok, err, type Result } from '@/lib/errors/types'
  *   desde `artists`, a propósito, para no perder el trabajo del estudio) —
  *   se le pide entonces que el dueño lo quite desde Equipo.
  *
- * Si tras esto la persona se queda sin ninguna cuenta OFINK, también se
+ * Si tras esto la persona se queda sin ninguna cuenta Crisbo Tattoo, también se
  * borra su usuario de Supabase Auth por completo (ya no le queda nada que
  * proteger con ese login) y se cierra la sesión.
  */

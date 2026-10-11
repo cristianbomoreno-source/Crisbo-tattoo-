@@ -1,5 +1,5 @@
 /*
- * Service Worker de OFINK — offline shell, sin dependencias (spec §3).
+ * Service Worker de Crisbo Tattoo — offline shell, sin dependencias (spec §3).
  * Estrategia:
  *  - install: precache de la cáscara mínima (/login, /offline, manifest, íconos).
  *  - navegaciones y datos GET same-origin: network-first → cae a caché → /offline.
@@ -59,7 +59,7 @@ self.addEventListener('push', (event) => {
   } catch {
     data = {}
   }
-  const title = data.title || 'OFINK'
+  const title = data.title || 'Crisbo Tattoo'
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',
@@ -72,7 +72,7 @@ self.addEventListener('push', (event) => {
 
 // Click en la notificación: siempre lleva al link que vino en el push (el
 // proyecto/cotización correspondiente) — reusa una pestaña ya abierta de
-// OFINK si existe, si no abre una nueva.
+// Crisbo Tattoo si existe, si no abre una nueva.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const link = event.notification.data?.link || '/dashboard'

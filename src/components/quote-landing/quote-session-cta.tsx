@@ -34,9 +34,9 @@ export function QuoteSessionCta({ quote, artistName, session }: Props) {
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//OFINK//Sesion//ES',
+      'PRODID:-//CrisboTattoo//Sesion//ES',
       'BEGIN:VEVENT',
-      `UID:${session.scheduledAt}-${quote.studioName}@ofink`,
+      `UID:${session.scheduledAt}-${quote.studioName}@crisbotattoo`,
       `DTSTAMP:${toICSDate(new Date().toISOString())}`,
       `DTSTART:${toICSDate(start.toISOString())}`,
       `DTEND:${toICSDate(end.toISOString())}`,

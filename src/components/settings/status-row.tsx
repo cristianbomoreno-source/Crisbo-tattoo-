@@ -20,7 +20,7 @@ export function StatusRow({
   value?: string
   /** `data-tour` opcional — solo en las filas que el tutorial guiado señala. */
   tourTag?: string
-  /** Si el admin de OFINK apagó esta función para la cuenta (ver
+  /** Si el admin de Crisbo Tattoo apagó esta función para la cuenta (ver
    *  /admin → Módulos por cuenta): muestra el popup de suscripción en vez
    *  de navegar. */
   locked?: boolean

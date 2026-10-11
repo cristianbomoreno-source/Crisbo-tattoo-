@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
 
-/** Reemplaza a un `StatusRow`/enlace de módulo cuando el admin de OFINK
+/** Reemplaza a un `StatusRow`/enlace de módulo cuando el admin de Crisbo Tattoo
  * apagó esa función para la cuenta (ver /admin → Módulos por cuenta).
  * Al tocarlo, avisa que estará disponible más adelante por suscripción —
  * no navega a ningún lado. */

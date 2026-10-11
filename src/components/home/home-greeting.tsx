@@ -21,7 +21,7 @@ export function HomeGreeting({
       <div className="min-w-0">
         <p className="text-base text-muted-foreground">{greeting}</p>
         <h1 className="-mt-1 truncate font-title text-4xl leading-[0.95] tracking-[0.005em] text-primary sm:text-5xl">
-          {who ?? 'OFINK'}
+          {who ?? 'Crisbo Tattoo'}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">{dateLabel}</p>
       </div>

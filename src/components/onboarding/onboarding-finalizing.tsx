@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
  * `finishOnboarding()` ya respondió con éxito (`ready`) — nunca miente
  * diciendo que algo está listo antes de que en verdad lo esté.
  *
- * Al terminar, YA NO avanza solo: aparece un botón "Entrar a OFINK" y la
+ * Al terminar, YA NO avanza solo: aparece un botón "Entrar a Crisbo Tattoo" y la
  * pantalla solo cambia cuando el usuario lo toca (a pedido — simula mejor
  * que de verdad se está configurando todo, sin sentirse apurado). */
 const FINALIZING_ITEMS = [
@@ -92,7 +92,7 @@ export function OnboardingFinalizing({ ready, onDone }: { ready: boolean; onDone
               onClick={onDone}
               className="flex w-full animate-in fade-in items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-display text-sm font-bold uppercase tracking-wide text-primary-foreground"
             >
-              Entrar a OFINK
+              Entrar a Crisbo Tattoo
               <ArrowRight className="size-4" strokeWidth={2.2} aria-hidden="true" />
             </button>
           )}

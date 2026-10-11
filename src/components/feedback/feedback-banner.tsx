@@ -3,7 +3,7 @@ import { Star, ArrowRight } from 'lucide-react'
 import { getMyFeedbackProgress } from '@/actions/feedback'
 
 /**
- * Mensaje "de parte de OFINK" en la parte superior de Ajustes, invitando a
+ * Mensaje "de parte de Crisbo Tattoo" en la parte superior de Ajustes, invitando a
  * calificar cada función de la app. Desaparece solo cuando ya calificó
  * TODAS las funciones — mientras tanto muestra cuántas le faltan.
  */
@@ -24,7 +24,7 @@ export async function FeedbackBanner() {
         <Star className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Mensaje de OFINK</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Mensaje de Crisbo Tattoo</p>
         <p className="mt-0.5 text-sm">
           {rated === 0
             ? 'Ayúdanos a mejorar: califica cada función de la app.'

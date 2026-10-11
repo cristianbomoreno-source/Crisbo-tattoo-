@@ -7,7 +7,7 @@
  * Cada paso apunta a un elemento real de la interfaz vía `data-tour="..."`
  * (ver ese atributo repartido por los componentes reales — nunca clases
  * CSS, que cambian con el rediseño). `target` es una lista de candidatos
- * en orden de preferencia: OFINK tiene versiones móvil/escritorio
+ * en orden de preferencia: Crisbo Tattoo tiene versiones móvil/escritorio
  * distintas para la misma función (p. ej. el pulpo central es solo móvil,
  * escritorio tiene un botón "Nueva cotización" aparte) — el motor prueba
  * cada `data-tour` de la lista y usa el primero que esté realmente
@@ -43,7 +43,7 @@ export type TourKey = 'tatuador' | 'estudio'
 export const TATUADOR_TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bienvenido a OFINK',
+    title: 'Bienvenido a Crisbo Tattoo',
     body: 'Un recorrido de 2 minutos por lo esencial: tu agenda, tus cotizaciones y cómo crear cosas rápido. Puedes omitirlo cuando quieras y retomarlo después desde Ajustes → Ayuda.',
     route: '/dashboard',
     target: null,
@@ -159,7 +159,7 @@ export const TATUADOR_TOUR_STEPS: TourStep[] = [
 export const ESTUDIO_TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bienvenido a OFINK',
+    title: 'Bienvenido a Crisbo Tattoo',
     body: 'Un recorrido de 2 minutos por el panel de tu estudio: la agenda de todo el equipo, cómo sumar tatuadores y dónde ver las finanzas. Puedes retomarlo luego desde Ajustes → Ayuda.',
     route: '/dashboard',
     target: null,
@@ -188,7 +188,7 @@ export const ESTUDIO_TOUR_STEPS: TourStep[] = [
   {
     id: 'add-tatuador',
     title: 'Añadir tatuador',
-    body: 'Escribe el correo de la persona que quieres invitar — si ya tiene cuenta de OFINK, la invitación le llega de una vez.',
+    body: 'Escribe el correo de la persona que quieres invitar — si ya tiene cuenta de Crisbo Tattoo, la invitación le llega de una vez.',
     route: '/dashboard/settings/equipo',
     target: { keys: ['team-invite-section'], placement: 'bottom' },
   },

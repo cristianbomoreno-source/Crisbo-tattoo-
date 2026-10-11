@@ -6,7 +6,7 @@ import { FeedbackBanner } from '@/components/feedback/feedback-banner'
 import { DeleteAccountSection } from '@/components/settings/delete-account-section'
 
 /**
- * Ajustes → Cuentas OFINK: lista las cuentas del usuario (hasta 2, una
+ * Ajustes → Cuentas Crisbo Tattoo: lista las cuentas del usuario (hasta 2, una
  * 'tatuador' y otra 'estudio' — mismo login de Google), permite cambiar
  * cuál está activa, y ofrece crear la que falte si aún no llega al tope.
  */
@@ -16,7 +16,7 @@ export default async function AccountsSettingsPage() {
 
   return (
     <div>
-      <PageHeader kicker="Cuenta" title="Cuentas OFINK" />
+      <PageHeader kicker="Cuenta" title="Cuentas Crisbo Tattoo" />
       <div className="mx-auto max-w-lg">
         <FeedbackBanner />
         <AccountsManager accounts={accounts} />

@@ -275,7 +275,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
     toast.success('Cotización creada')
     const link = waLink(
       clientPhone,
-      `Hola${clientName ? ` ${clientName.trim()}` : ''}, te comparto tu cotización de OFINK:\n\n${
+      `Hola${clientName ? ` ${clientName.trim()}` : ''}, te comparto tu cotización de Crisbo Tattoo:\n\n${
         styles_.length > 0 ? `Estilo: ${styles_.join(', ')}\n` : ''
       }${description.trim() ? `Idea: ${description.trim()}\n` : ''}Precio: ${cop(effectivePrice)}`
     )

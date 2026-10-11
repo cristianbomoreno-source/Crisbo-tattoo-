@@ -53,7 +53,7 @@ export default async function SettingsPage() {
             href="/dashboard/settings/cuentas"
             className="flex items-center justify-between rounded-2xl bg-card p-4 text-sm font-medium transition-colors hover:bg-accent/60"
           >
-            Cuentas OFINK
+            Cuentas Crisbo Tattoo
             <ArrowRight className="size-4 text-muted-foreground" strokeWidth={2} />
           </Link>
         </div>

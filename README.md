@@ -1,6 +1,6 @@
-# OFINK 
+# Crisbo Tattoo 
 
-Esta es una **maqueta** de la app OFINK: tiene todas las pantallas y el diseño real,
+Esta es una **maqueta** de la app Crisbo Tattoo: tiene todas las pantallas y el diseño real,
 pero **sin base de datos ni backend**. Todo lo que ves en pantalla son datos de ejemplo.
 Sirve para **ver el diseño y editarlo** con libertad, sin miedo a dañar nada.
 

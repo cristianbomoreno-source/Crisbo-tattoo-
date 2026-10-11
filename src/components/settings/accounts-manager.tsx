@@ -36,7 +36,7 @@ export function AccountsManager({ accounts }: { accounts: MyAccount[] }) {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Con tu mismo login de Google puedes tener hasta 2 cuentas OFINK: una como tatuador
+        Con tu mismo login de Google puedes tener hasta 2 cuentas Crisbo Tattoo: una como tatuador
         independiente y otra como dueño de un estudio.
       </p>
 

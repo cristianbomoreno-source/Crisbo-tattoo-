@@ -37,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <>
             <h1 className="font-title text-2xl uppercase">Sin acceso</h1>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Tu cuenta no es administradora de OFINK. Pide a un administrador que te agregue
+              Tu cuenta no es administradora de Crisbo Tattoo. Pide a un administrador que te agregue
               desde esta misma pantalla, con el correo {user.email}.
             </p>
           </>

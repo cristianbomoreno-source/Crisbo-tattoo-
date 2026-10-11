@@ -44,7 +44,7 @@ function ensureConfigured(): boolean {
       privateKeyLength: privateKey.length,
     })
     webpush.setVapidDetails(
-      sanitizeVapidSubject(process.env.VAPID_SUBJECT) ?? 'mailto:soporte@ofink.app',
+      sanitizeVapidSubject(process.env.VAPID_SUBJECT) ?? 'mailto:soporte@crisbotattoo.com',
       publicKey,
       privateKey
     )

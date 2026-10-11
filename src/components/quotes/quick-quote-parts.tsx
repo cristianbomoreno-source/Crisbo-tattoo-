@@ -111,7 +111,7 @@ export function BigOptionCard({
   )
 }
 
-/** Chip rápido (número de sesiones): pastilla grande, verde OFINK al
+/** Chip rápido (número de sesiones): pastilla grande, verde Crisbo Tattoo al
  * seleccionar con un leve rebote. */
 export function BigChip({
   label,

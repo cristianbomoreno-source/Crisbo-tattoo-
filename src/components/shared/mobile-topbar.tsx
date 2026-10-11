@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 
 /**
- * Topbar móvil. A pedido, ya no muestra el isotipo de OFINK (ni ninguna
+ * Topbar móvil. A pedido, ya no muestra el isotipo de Crisbo Tattoo (ni ninguna
  * marca) arriba en ninguna página — al quedar vacío, no se renderiza.
  * Se conserva el componente (y su prop) para no tocar app-shell ni la
  * lógica de quien lo monta.

@@ -24,7 +24,7 @@ type ListMyAccountsRow = {
   is_active: boolean
 }
 
-/** Todas las cuentas OFINK (filas de `artists`) del usuario autenticado —
+/** Todas las cuentas Crisbo Tattoo (filas de `artists`) del usuario autenticado —
  * como máximo 2: una ligada a un studio 'tatuador' y otra a uno 'estudio'.
  * Usa el RPC `list_my_accounts()` (security definer) porque la policy de
  * SELECT de `artists` solo deja ver la cuenta ACTIVA, no todas. */

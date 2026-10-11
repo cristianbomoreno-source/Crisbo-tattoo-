@@ -9,7 +9,7 @@ const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'
 const BUILD_SHA = process.env.NEXT_PUBLIC_BUILD_SHA ?? 'local'
 
 /**
- * Tarjeta "Acerca de OFINK" (Ajustes): muestra la versión desplegada y un
+ * Tarjeta "Acerca de Crisbo Tattoo" (Ajustes): muestra la versión desplegada y un
  * botón para forzar la actualización.
  *
  * BUG REAL corregido: la versión anterior llamaba `reg.update()` y, en el
@@ -47,7 +47,7 @@ export function VersionInfo() {
 
       // Ya había una versión nueva esperando de una revisión anterior.
       if (reg.waiting) {
-        toast.success('Actualizando OFINK…')
+        toast.success('Actualizando Crisbo Tattoo…')
         reg.waiting.postMessage({ type: 'SKIP_WAITING' })
         return
       }
@@ -56,7 +56,7 @@ export function VersionInfo() {
 
       const worker = reg.installing
       if (!worker) {
-        toast.success('Ya tienes la última versión de OFINK')
+        toast.success('Ya tienes la última versión de Crisbo Tattoo')
         return
       }
 
@@ -77,7 +77,7 @@ export function VersionInfo() {
       } else {
         // El worker terminó de instalar pero no quedó "waiting" (primera
         // instalación, sin controller previo) — no hay nada que activar.
-        toast.success('OFINK ya está actualizado')
+        toast.success('Crisbo Tattoo ya está actualizado')
       }
     } catch {
       // best-effort: si algo falla, al menos recargamos.
@@ -90,7 +90,7 @@ export function VersionInfo() {
   return (
     <div className="flex items-center justify-between gap-3 px-2 py-1.5">
       <div className="min-w-0">
-        <p className="font-display text-sm font-semibold uppercase tracking-wide">Acerca de OFINK</p>
+        <p className="font-display text-sm font-semibold uppercase tracking-wide">Acerca de Crisbo Tattoo</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Versión {APP_VERSION} · build {BUILD_SHA}
         </p>
