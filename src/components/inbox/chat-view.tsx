@@ -9,6 +9,7 @@ import {
   Archive,
   ArchiveRestore,
   ArrowLeft,
+  CalendarPlus,
   Check,
   CheckCheck,
   ClipboardList,
@@ -24,12 +25,15 @@ import { cn } from '@/lib/utils'
 import { isServiceWindowOpen } from '@/lib/whatsapp-cloud/parse'
 import {
   markConversationRead,
+  sendBookingConfirmationToChat,
   sendDataForm,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
 import type { WaConversation, WaMessage, WaQuickReply } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
+import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
+import { todayKey } from '@/lib/calendar/utils'
 import { ClientLinkDialog } from './client-link-dialog'
 import { QuickRepliesMenu } from './quick-replies-menu'
 import { QUICK_REPLY_ICONS } from './quick-reply-icons'
@@ -62,6 +66,7 @@ export function ChatView({
   const [draft, setDraft] = useState('')
   const [lastInboundAt, setLastInboundAt] = useState(conversation.last_inbound_at)
   const [linkOpen, setLinkOpen] = useState(false)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
   const [sending, startSending] = useTransition()
   const [archiving, startArchiving] = useTransition()
   const [sendingForm, startSendingForm] = useTransition()
@@ -71,6 +76,9 @@ export function ChatView({
   const name = conversation.client?.name || conversation.contact_name || formatWaPhone(conversation.wa_id)
   const windowOpen = isServiceWindowOpen(lastInboundAt)
   const remaining = lastInboundAt ? formatWindowRemaining(lastInboundAt) : null
+  // "Agendar cita" se habilita cuando el cliente ya llenó el formulario de datos.
+  const formFilled = messages.some((m) => m.type === 'form' && m.direction === 'in')
+  const client = conversation.client
 
   // Mensajes nuevos y cambios de estado (✓ → ✓✓ → azul) en vivo.
   useEffect(() => {
@@ -90,6 +98,8 @@ export function ChatView({
             if (m.direction === 'in') {
               setLastInboundAt(m.created_at)
               markConversationRead(conversation.id)
+              // El webhook acaba de crear/vincular el cliente con sus datos.
+              if (m.type === 'form') router.refresh()
             }
           }
         )
@@ -108,7 +118,7 @@ export function ChatView({
       cancelled = true
       supabase.removeChannel(channel)
     }
-  }, [conversation.id])
+  }, [conversation.id, router])
 
   // Al abrir: contador a 0 (la lista se actualiza sola por Realtime).
   useEffect(() => {
@@ -170,6 +180,16 @@ export function ChatView({
     </Button>
   ) : null
 
+  /** Cita creada desde el chat: la confirmación sale por este mismo chat. */
+  async function confirmBooking(sessionId: string) {
+    const result = await sendBookingConfirmationToChat(conversation.id, sessionId)
+    if (!result.success) {
+      toast.error(`Cita agendada, pero no se envió la confirmación: ${result.error.message}`)
+      return
+    }
+    setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
+  }
+
   function toggleArchive() {
     startArchiving(async () => {
       const result = await setConversationArchived(conversation.id, !conversation.archived)
@@ -202,6 +222,16 @@ export function ChatView({
               ? ` · ${conversation.contact_name}`
               : ''}
           </p>
+          {formFilled && client && (
+            <button
+              type="button"
+              onClick={() => setScheduleOpen(true)}
+              className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <CalendarPlus className="size-3.5" />
+              Agendar cita
+            </button>
+          )}
         </div>
         {conversation.client ? (
           <Link
@@ -314,6 +344,20 @@ export function ChatView({
           </div>
         )}
       </footer>
+
+      {client && (
+        <HomeCalendarDialog
+          open={scheduleOpen}
+          onOpenChange={setScheduleOpen}
+          initialDay={todayKey()}
+          presetClientName={client.name}
+          presetPhone={client.phone ?? `+${conversation.wa_id}`}
+          onBooked={(sessionId) => {
+            setScheduleOpen(false)
+            confirmBooking(sessionId)
+          }}
+        />
+      )}
 
       <ClientLinkDialog
         open={linkOpen}

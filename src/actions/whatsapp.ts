@@ -28,6 +28,7 @@ import {
   formTemplateBody,
 } from '@/lib/whatsapp-cloud/data-form'
 import type { WaMessage } from '@/queries/whatsapp'
+import { buildBookingConfirmation } from '@/actions/sessions'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
 
@@ -522,4 +523,15 @@ export async function deleteQuickReply(id: string): Promise<Result<null>> {
   revalidatePath('/dashboard/settings/whatsapp')
   revalidatePath('/dashboard/inbox', 'layout')
   return ok(null)
+}
+
+/** Tras agendar desde el chat: manda la confirmación de la cita por la API
+ * (texto libre: solo dentro de la ventana de 24 h). */
+export async function sendBookingConfirmationToChat(
+  conversationId: string,
+  sessionId: string
+): Promise<Result<WaMessage>> {
+  const confirmation = await buildBookingConfirmation(sessionId)
+  if (!confirmation.success) return confirmation
+  return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
 }

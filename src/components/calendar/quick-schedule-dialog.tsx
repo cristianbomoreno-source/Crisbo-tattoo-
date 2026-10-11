@@ -42,6 +42,7 @@ export function QuickScheduleDialog({
   presetPhone,
   presetDurationMinutes,
   onScheduled,
+  onBooked,
 }: {
   dayKey: string
   defaultTime: string
@@ -57,6 +58,9 @@ export function QuickScheduleDialog({
    * min) — precarga el dial en vez de quedar siempre en 60 min. */
   presetDurationMinutes?: number
   onScheduled?: () => void
+  /** Si se pasa, la confirmación la manda quien llama (ej. la bandeja de
+   * Mensajes, por la API) y NO se abre la pestaña de wa.me. */
+  onBooked?: (sessionId: string) => void
 }) {
   const router = useRouter()
   const [name, setName] = useState(presetClientName ?? '')
@@ -78,6 +82,13 @@ export function QuickScheduleDialog({
   useEffect(() => {
     if (open) setTime(defaultTime)
   }, [open, defaultTime])
+
+  // Teléfono precargado (ej. desde un chat): buscar el cliente de una vez,
+  // sin esperar el blur — si no, se crearía un cliente duplicado.
+  useEffect(() => {
+    if (open && presetPhone && !presetProjectId) handlePhoneBlur()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, presetPhone, presetProjectId])
 
   async function handlePhoneBlur() {
     const digits = phone.replace(/\D/g, '')
@@ -112,7 +123,7 @@ export function QuickScheduleDialog({
     // Se abre YA (síncrono con el tap del botón) para que Safari/iOS no
     // bloquee el popup -- se redirige más abajo cuando ya se tiene el link
     // real, o se cierra sola si algo falla o el cliente no tiene teléfono.
-    const waTab = openWhatsAppTab()
+    const waTab = onBooked ? null : openWhatsAppTab()
 
     let projectId = presetProjectId ?? null
 
@@ -167,6 +178,10 @@ export function QuickScheduleDialog({
     onScheduled?.()
     router.refresh()
 
+    if (onBooked) {
+      onBooked(sessionRes.data.id)
+      return
+    }
     const linkRes = await getBookingConfirmationLinkAction(sessionRes.data.id)
     redirectWhatsAppTab(waTab, linkRes.success ? linkRes.data.link : null)
   }

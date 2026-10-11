@@ -307,6 +307,17 @@ function formatBookingTime(iso: string): string {
 export async function getBookingConfirmationLinkAction(
   sessionId: string
 ): Promise<Result<{ link: string | null }>> {
+  const res = await buildBookingConfirmation(sessionId)
+  if (!res.success) return res
+  return ok({ link: waLink(res.data.phone, res.data.message) })
+}
+
+/** Texto de confirmación de la cita (plantilla del estudio) + teléfono del
+ * cliente. Lo usan el link wa.me de arriba y el envío por la API desde la
+ * bandeja de Mensajes (`sendBookingConfirmationToChat`). */
+export async function buildBookingConfirmation(
+  sessionId: string
+): Promise<Result<{ message: string; phone: string | null }>> {
   const supabase = await createClient()
 
   const { data: session } = await supabase
@@ -343,5 +354,5 @@ export async function getBookingConfirmationLinkAction(
     nombre_tatuador: row.artists?.name ?? '',
   })
 
-  return ok({ link: waLink(client?.phone, message) })
+  return ok({ message, phone: client?.phone ?? null })
 }

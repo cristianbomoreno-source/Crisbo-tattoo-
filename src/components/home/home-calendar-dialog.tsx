@@ -29,6 +29,7 @@ export function HomeCalendarDialog({
   presetClientName,
   presetPhone,
   onScheduled,
+  onBooked,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -40,6 +41,8 @@ export function HomeCalendarDialog({
   presetClientName?: string
   presetPhone?: string
   onScheduled?: () => void
+  /** Ver `QuickScheduleDialog.onBooked`. */
+  onBooked?: (sessionId: string) => void
 }) {
   const router = useRouter()
   const [view, setView] = useState<CalendarView>(initialView)
@@ -166,6 +169,7 @@ export function HomeCalendarDialog({
         presetClientName={presetClientName}
         presetPhone={presetPhone}
         onScheduled={onScheduled}
+        onBooked={onBooked}
       />
 
       <SessionActionsDialog

@@ -51,7 +51,7 @@ export type WaConversation = {
   unread_count: number
   archived: boolean
   created_at: string
-  client: { id: string; name: string } | null
+  client: { id: string; name: string; phone: string | null } | null
 }
 
 export type WaMessage = {
@@ -71,7 +71,7 @@ export type WaMessage = {
   created_at: string
 }
 
-const CONVERSATION_SELECT = '*, client:clients(id, name)'
+const CONVERSATION_SELECT = '*, client:clients(id, name, phone)'
 
 /** RLS (`studio_id = get_studio_id()`) limita a las del estudio activo. */
 export async function getConversations(): Promise<Result<WaConversation[]>> {
