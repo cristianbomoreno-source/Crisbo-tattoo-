@@ -2,7 +2,9 @@
   <img src="cb-logo.png" width="120" alt="Crisbo Tattoo Logo">
 </p>
 
-# Proyecto: Crisbo Tattoo (OFINK)
+# Proyecto: Crisbo Tattoo (crisbotattoo.com)
+
+> La marca ya no es OFINK: ahora es **crisbotattoo.com**. Aún quedan referencias a "OFINK" en el código (sidebar, footer, PWA, etc.).
 
 ## Contexto General
 
