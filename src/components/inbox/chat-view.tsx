@@ -28,9 +28,10 @@ import {
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
-import type { WaConversation, WaMessage } from '@/queries/whatsapp'
+import type { WaConversation, WaMessage, WaQuickReply } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
 import { ClientLinkDialog } from './client-link-dialog'
+import { QuickRepliesMenu } from './quick-replies-menu'
 import {
   formatDayLabel,
   formatMessageTime,
@@ -46,12 +47,14 @@ export function ChatView({
   initialMessages,
   clients,
   formTemplateStatus,
+  quickReplies,
 }: {
   conversation: WaConversation
   initialMessages: WaMessage[]
   clients: ClientOption[]
   /** Estado en Meta de la plantilla del formulario de datos (null = no creada). */
   formTemplateStatus: string | null
+  quickReplies: WaQuickReply[]
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
@@ -239,6 +242,14 @@ export function ChatView({
         {windowOpen ? (
           <>
             <div className="flex items-end gap-2">
+              <QuickRepliesMenu
+                replies={quickReplies}
+                onPick={(body) => {
+                  setDraft((d) => (d.trim() ? `${d.trimEnd()}
+${body}` : body))
+                  textareaRef.current?.focus()
+                }}
+              />
               <textarea
                 ref={textareaRef}
                 value={draft}

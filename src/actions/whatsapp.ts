@@ -483,3 +483,38 @@ export async function sendDataForm(conversationId: string): Promise<Result<WaMes
 
   return ok(message as WaMessage)
 }
+
+/* ─────────────────────────── Respuestas rápidas ─────────────────────────── */
+
+const quickReplySchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().trim().min(1, 'Ponle un nombre corto').max(60, 'Máximo 60 caracteres'),
+  body: z.string().trim().min(1, 'Escribe el mensaje').max(4096, 'Máximo 4096 caracteres'),
+})
+
+export async function saveQuickReply(input: unknown): Promise<Result<null>> {
+  const parsed = quickReplySchema.safeParse(input)
+  if (!parsed.success) return err('VALIDATION_ERROR', parsed.error.issues[0]?.message ?? 'Datos inválidos')
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+
+  const supabase = await createClient()
+  const { id, title, body } = parsed.data
+  const { error } = id
+    ? await supabase.from('wa_quick_replies').update({ title, body }).eq('id', id)
+    : await supabase.from('wa_quick_replies').insert({ studio_id: studio.id, title, body, position: Date.now() % 1e9 })
+  if (error) return dbError(error)
+
+  revalidatePath('/dashboard/settings/whatsapp')
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok(null)
+}
+
+export async function deleteQuickReply(id: string): Promise<Result<null>> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('wa_quick_replies').delete().eq('id', id)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard/settings/whatsapp')
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok(null)
+}

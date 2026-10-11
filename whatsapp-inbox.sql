@@ -98,3 +98,21 @@ ALTER TABLE whatsapp_accounts
   ADD COLUMN IF NOT EXISTS form_template_name text,
   ADD COLUMN IF NOT EXISTS form_template_status text,   -- PENDING | APPROVED | REJECTED | PAUSED | DISABLED
   ADD COLUMN IF NOT EXISTS form_template_reason text;
+
+-- 5. Respuestas rápidas (texto libre, dentro de la ventana de 24 h) ------------
+CREATE TABLE IF NOT EXISTS wa_quick_replies (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  studio_id uuid NOT NULL REFERENCES studios(id) ON DELETE CASCADE,
+  title text NOT NULL CHECK (char_length(title) BETWEEN 1 AND 60),
+  body text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 4096),
+  position integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS wa_quick_replies_studio_idx ON wa_quick_replies (studio_id, position);
+ALTER TABLE wa_quick_replies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Studio can view its quick replies" ON wa_quick_replies;
+DROP POLICY IF EXISTS "Studio can manage its quick replies" ON wa_quick_replies;
+CREATE POLICY "Studio can view its quick replies" ON wa_quick_replies
+  FOR SELECT USING (studio_id = get_studio_id());
+CREATE POLICY "Studio can manage its quick replies" ON wa_quick_replies
+  FOR ALL USING (studio_id = get_studio_id()) WITH CHECK (studio_id = get_studio_id());
