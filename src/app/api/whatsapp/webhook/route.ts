@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseWebhook } from '@/lib/whatsapp-cloud/parse'
-import { ingestInbound, ingestStatuses } from '@/lib/whatsapp-cloud/ingest'
+import { ingestEchoes, ingestInbound, ingestStatuses } from '@/lib/whatsapp-cloud/ingest'
 
 /**
  * Webhook de la WhatsApp Cloud API (una sola app de Meta para toda la
@@ -53,10 +53,11 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Bad request', { status: 400 })
   }
 
-  const { messages, statuses } = parseWebhook(payload)
+  const { messages, statuses, echoes } = parseWebhook(payload)
   try {
     const admin = createAdminClient()
     await ingestInbound(admin, messages)
+    await ingestEchoes(admin, echoes)
     await ingestStatuses(admin, statuses)
   } catch (e) {
     // 500 → Meta reintenta; los duplicados se descartan por wa_message_id.

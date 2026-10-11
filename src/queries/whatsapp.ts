@@ -50,6 +50,8 @@ export type WaConversation = {
   last_inbound_at: string | null
   unread_count: number
   archived: boolean
+  /** El estudio ya respondió este chat desde la app del celular: no es un posible cliente. */
+  answered_from_phone: boolean
   created_at: string
   client: { id: string; name: string; phone: string | null } | null
 }

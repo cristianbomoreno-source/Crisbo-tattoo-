@@ -96,10 +96,11 @@ describe('parseWebhook', () => {
   })
 
   it('tolera payloads vacíos o raros', () => {
-    expect(parseWebhook(null)).toEqual({ messages: [], statuses: [] })
+    expect(parseWebhook(null)).toEqual({ messages: [], statuses: [], echoes: [] })
     expect(parseWebhook({ entry: [{ changes: [{ field: 'account_update', value: {} }] }] })).toEqual({
       messages: [],
       statuses: [],
+      echoes: [],
     })
   })
 })
@@ -119,5 +120,29 @@ describe('shouldAdvanceStatus', () => {
     expect(shouldAdvanceStatus('read', 'delivered')).toBe(false)
     expect(shouldAdvanceStatus('sent', 'failed')).toBe(true)
     expect(shouldAdvanceStatus('failed', 'delivered')).toBe(false)
+  })
+})
+
+describe('parseWebhook con smb_message_echoes (coexistencia)', () => {
+  it('devuelve las respuestas enviadas desde el celular como ecos', () => {
+    const { messages, echoes } = parseWebhook({
+      entry: [
+        {
+          changes: [
+            {
+              field: 'smb_message_echoes',
+              value: {
+                metadata: { phone_number_id: '111' },
+                message_echoes: [
+                  { from: '573202107769', to: '573001234567', id: 'wamid.echo', timestamp: '1760000000', type: 'text', text: { body: 'Hola!' } },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    })
+    expect(messages).toHaveLength(0)
+    expect(echoes[0]).toMatchObject({ waId: '573001234567', waMessageId: 'wamid.echo', type: 'text', body: 'Hola!' })
   })
 })

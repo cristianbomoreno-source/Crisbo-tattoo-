@@ -47,6 +47,8 @@ const MEDIA_TYPES = ['image', 'audio', 'video', 'document', 'sticker'] as const
 type WaMedia = { id?: string; mime_type?: string; caption?: string; filename?: string }
 type WaMessage = {
   from?: string
+  /** Solo en ecos (`smb_message_echoes`): número del cliente. */
+  to?: string
   id?: string
   timestamp?: string
   type?: string
@@ -66,6 +68,8 @@ type WaValue = {
   metadata?: { phone_number_id?: string }
   contacts?: { wa_id?: string; profile?: { name?: string } }[]
   messages?: WaMessage[]
+  /** Coexistencia: lo que el estudio envía desde la app WhatsApp Business del celular. */
+  message_echoes?: WaMessage[]
   statuses?: { id?: string; status?: string; errors?: { title?: string; message?: string }[] }[]
 }
 
@@ -96,15 +100,46 @@ function messageText(m: WaMessage): string | null {
   }
 }
 
-/** Aplana el webhook de Meta en mensajes entrantes y cambios de estado. */
-export function parseWebhook(payload: unknown): { messages: ParsedInbound[]; statuses: ParsedStatus[] } {
+function toParsed(phoneNumberId: string, waId: string, contactName: string | null, m: WaMessage & { id: string }): ParsedInbound {
+  const isMedia = MEDIA_TYPES.includes(m.type as (typeof MEDIA_TYPES)[number])
+  const media = isMedia ? m[m.type as (typeof MEDIA_TYPES)[number]] : undefined
+  const knownTypes = ['text', 'button', 'interactive', 'location', 'reaction', ...MEDIA_TYPES]
+  const nfm = m.type === 'interactive' ? m.interactive?.nfm_reply : undefined
+  return {
+    phoneNumberId,
+    waId,
+    contactName,
+    waMessageId: m.id,
+    timestamp: m.timestamp ? new Date(Number(m.timestamp) * 1000).toISOString() : new Date().toISOString(),
+    type: nfm
+      ? 'form'
+      : m.type === 'button' || m.type === 'interactive'
+        ? 'text'
+        : knownTypes.includes(m.type ?? '') ? m.type! : 'unsupported',
+    body: nfm ? null : messageText(m),
+    mediaId: media?.id ?? null,
+    mediaMime: media?.mime_type ?? null,
+    mediaFilename: media?.filename ?? null,
+    flowResponse: nfm?.response_json ?? null,
+  }
+}
+
+/** Aplana el webhook de Meta en mensajes entrantes, cambios de estado y
+ * ecos (respuestas que el estudio envió desde la app del celular, en modo
+ * coexistencia: campo `smb_message_echoes`). */
+export function parseWebhook(payload: unknown): {
+  messages: ParsedInbound[]
+  statuses: ParsedStatus[]
+  echoes: ParsedInbound[]
+} {
   const messages: ParsedInbound[] = []
   const statuses: ParsedStatus[] = []
+  const echoes: ParsedInbound[] = []
   const body = payload as WaWebhook
 
   for (const entry of body?.entry ?? []) {
     for (const change of entry.changes ?? []) {
-      if (change.field && change.field !== 'messages') continue
+      if (change.field && change.field !== 'messages' && change.field !== 'smb_message_echoes') continue
       const value = change.value
       const phoneNumberId = value?.metadata?.phone_number_id
       if (!value || !phoneNumberId) continue
@@ -112,29 +147,12 @@ export function parseWebhook(payload: unknown): { messages: ParsedInbound[]; sta
       for (const m of value.messages ?? []) {
         if (!m.from || !m.id) continue
         const contact = value.contacts?.find((c) => c.wa_id === m.from) ?? value.contacts?.[0]
-        const isMedia = MEDIA_TYPES.includes(m.type as (typeof MEDIA_TYPES)[number])
-        const media = isMedia ? m[m.type as (typeof MEDIA_TYPES)[number]] : undefined
-        const knownTypes = ['text', 'button', 'interactive', 'location', 'reaction', ...MEDIA_TYPES]
-        const nfm = m.type === 'interactive' ? m.interactive?.nfm_reply : undefined
-        messages.push({
-          phoneNumberId,
-          waId: m.from,
-          contactName: contact?.profile?.name ?? null,
-          waMessageId: m.id,
-          timestamp: m.timestamp
-            ? new Date(Number(m.timestamp) * 1000).toISOString()
-            : new Date().toISOString(),
-          type: nfm
-            ? 'form'
-            : m.type === 'button' || m.type === 'interactive'
-              ? 'text'
-              : knownTypes.includes(m.type ?? '') ? m.type! : 'unsupported',
-          body: nfm ? null : messageText(m),
-          mediaId: media?.id ?? null,
-          mediaMime: media?.mime_type ?? null,
-          mediaFilename: media?.filename ?? null,
-          flowResponse: nfm?.response_json ?? null,
-        })
+        messages.push(toParsed(phoneNumberId, m.from, contact?.profile?.name ?? null, { ...m, id: m.id }))
+      }
+
+      for (const m of value.message_echoes ?? []) {
+        if (!m.to || !m.id) continue
+        echoes.push(toParsed(phoneNumberId, m.to.replace(/\D/g, ''), null, { ...m, id: m.id }))
       }
 
       for (const s of value.statuses ?? []) {
@@ -149,7 +167,7 @@ export function parseWebhook(payload: unknown): { messages: ParsedInbound[]; sta
       }
     }
   }
-  return { messages, statuses }
+  return { messages, statuses, echoes }
 }
 
 /** Texto corto para la lista de chats. */

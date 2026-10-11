@@ -180,6 +180,47 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
   )
 }
 
+/** Respuestas que el estudio mandó desde la app WhatsApp Business del
+ * celular (coexistencia). Se guardan como salientes y el chat deja de
+ * contarse como posible cliente ("Nuevo contacto") y como no leído. */
+export async function ingestEchoes(admin: Admin, echoes: ParsedInbound[]) {
+  const cache = new Map<string, string | null>()
+  for (const m of echoes) {
+    const studioId = await studioForPhoneNumber(admin, cache, m.phoneNumberId)
+    if (!studioId) continue
+    const conv = await getOrCreateConversation(admin, studioId, m.waId, null)
+
+    const { error: insertError } = await admin.from('wa_messages').insert({
+      conversation_id: conv.id,
+      studio_id: studioId,
+      wa_message_id: m.waMessageId,
+      direction: 'out',
+      type: m.type,
+      body: m.body,
+      media_id: m.mediaId,
+      media_mime: m.mediaMime,
+      media_filename: m.mediaFilename,
+      status: 'sent',
+      created_at: m.timestamp,
+    })
+    if (insertError) {
+      if (insertError.code === '23505') continue
+      throw insertError
+    }
+
+    await admin
+      .from('wa_conversations')
+      .update({
+        last_message_at: m.timestamp,
+        last_message_preview: messagePreview(m.type, m.body),
+        last_message_direction: 'out',
+        unread_count: 0,
+        answered_from_phone: true,
+      })
+      .eq('id', conv.id)
+  }
+}
+
 export async function ingestStatuses(admin: Admin, statuses: ParsedStatus[]) {
   for (const s of statuses) {
     const { data } = await admin

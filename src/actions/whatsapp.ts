@@ -493,6 +493,19 @@ export async function sendBookingConfirmationToChat(
   conversationId: string,
   sessionId: string
 ): Promise<Result<WaMessage>> {
+  // Si el chat aún no tenía cliente, queda vinculado al de la cita.
+  const supabase = await createClient()
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('projects(client_id)')
+    .eq('id', sessionId)
+    .maybeSingle()
+  const clientId = (session as { projects: { client_id: string | null } | null } | null)?.projects?.client_id
+  if (clientId) {
+    await supabase.from('wa_conversations').update({ client_id: clientId }).eq('id', conversationId).is('client_id', null)
+    revalidatePath(`/dashboard/inbox/${conversationId}`)
+  }
+
   const confirmation = await buildBookingConfirmation(sessionId)
   if (!confirmation.success) return confirmation
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })

@@ -78,8 +78,6 @@ export function ChatView({
   const name = conversation.client?.name || conversation.contact_name || formatWaPhone(conversation.wa_id)
   const windowOpen = isServiceWindowOpen(lastInboundAt)
   const remaining = lastInboundAt ? formatWindowRemaining(lastInboundAt) : null
-  // "Agendar cita" se habilita cuando el cliente ya llenó el formulario de datos.
-  const formFilled = messages.some((m) => m.type === 'form' && m.direction === 'in')
   const client = conversation.client
 
   // Mensajes nuevos y cambios de estado (✓ → ✓✓ → azul) en vivo.
@@ -195,6 +193,7 @@ export function ChatView({
   /** Cita creada desde el chat: la confirmación sale por este mismo chat. */
   async function confirmBooking(sessionId: string) {
     const result = await sendBookingConfirmationToChat(conversation.id, sessionId)
+    router.refresh()
     if (!result.success) {
       toast.error(`Cita agendada, pero no se envió la confirmación: ${result.error.message}`)
       return
@@ -227,23 +226,23 @@ export function ChatView({
           <ArrowLeft className="size-5" />
         </Link>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{name}</p>
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate text-sm font-semibold">{name}</p>
+            <button
+              type="button"
+              onClick={() => setScheduleOpen(true)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <CalendarPlus className="size-3.5" />
+              Agendar cita
+            </button>
+          </div>
           <p className="truncate text-xs text-muted-foreground">
             {formatWaPhone(conversation.wa_id)}
             {conversation.contact_name && conversation.client && conversation.contact_name !== conversation.client.name
               ? ` · ${conversation.contact_name}`
               : ''}
           </p>
-          {formFilled && client && (
-            <button
-              type="button"
-              onClick={() => setScheduleOpen(true)}
-              className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              <CalendarPlus className="size-3.5" />
-              Agendar cita
-            </button>
-          )}
         </div>
         {conversation.client ? (
           <Link
@@ -353,19 +352,20 @@ export function ChatView({
         )}
       </footer>
 
-      {client && (
-        <HomeCalendarDialog
-          open={scheduleOpen}
-          onOpenChange={setScheduleOpen}
-          initialDay={todayKey()}
-          presetClientName={client.name}
-          presetPhone={client.phone ?? `+${conversation.wa_id}`}
-          onBooked={(sessionId) => {
-            setScheduleOpen(false)
-            confirmBooking(sessionId)
-          }}
-        />
-      )}
+      {/* Sin cliente vinculado se precarga el número del chat: el diálogo
+          busca un cliente con ese teléfono o lo crea, y al agendar el chat
+          queda vinculado a él (sendBookingConfirmationToChat). */}
+      <HomeCalendarDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        initialDay={todayKey()}
+        presetClientName={client?.name ?? conversation.contact_name ?? ''}
+        presetPhone={client?.phone ?? `+${conversation.wa_id}`}
+        onBooked={(sessionId) => {
+          setScheduleOpen(false)
+          confirmBooking(sessionId)
+        }}
+      />
 
       <ClientLinkDialog
         open={linkOpen}

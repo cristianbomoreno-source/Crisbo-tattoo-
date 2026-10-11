@@ -155,7 +155,7 @@ export function InboxShell({
                           </span>
                         )}
                       </span>
-                      {!c.client && (
+                      {!c.client && !c.answered_from_phone && (
                         <span className="mt-1 inline-block rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-400">
                           Nuevo contacto
                         </span>
