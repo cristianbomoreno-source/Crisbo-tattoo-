@@ -31,6 +31,8 @@ export type ParsedInbound = {
   mediaId: string | null
   mediaMime: string | null
   mediaFilename: string | null
+  /** `response_json` de un WhatsApp Flow completado (type 'form'). */
+  flowResponse: string | null
 }
 
 export type ParsedStatus = {
@@ -50,7 +52,12 @@ type WaMessage = {
   type?: string
   text?: { body?: string }
   button?: { text?: string }
-  interactive?: { button_reply?: { title?: string }; list_reply?: { title?: string } }
+  interactive?: {
+    type?: string
+    button_reply?: { title?: string }
+    list_reply?: { title?: string }
+    nfm_reply?: { response_json?: string; body?: string }
+  }
   location?: { latitude?: number; longitude?: number; name?: string; address?: string }
   reaction?: { emoji?: string }
 } & Partial<Record<(typeof MEDIA_TYPES)[number], WaMedia>>
@@ -108,6 +115,7 @@ export function parseWebhook(payload: unknown): { messages: ParsedInbound[]; sta
         const isMedia = MEDIA_TYPES.includes(m.type as (typeof MEDIA_TYPES)[number])
         const media = isMedia ? m[m.type as (typeof MEDIA_TYPES)[number]] : undefined
         const knownTypes = ['text', 'button', 'interactive', 'location', 'reaction', ...MEDIA_TYPES]
+        const nfm = m.type === 'interactive' ? m.interactive?.nfm_reply : undefined
         messages.push({
           phoneNumberId,
           waId: m.from,
@@ -116,13 +124,16 @@ export function parseWebhook(payload: unknown): { messages: ParsedInbound[]; sta
           timestamp: m.timestamp
             ? new Date(Number(m.timestamp) * 1000).toISOString()
             : new Date().toISOString(),
-          type: m.type === 'button' || m.type === 'interactive'
-            ? 'text'
-            : knownTypes.includes(m.type ?? '') ? m.type! : 'unsupported',
-          body: messageText(m),
+          type: nfm
+            ? 'form'
+            : m.type === 'button' || m.type === 'interactive'
+              ? 'text'
+              : knownTypes.includes(m.type ?? '') ? m.type! : 'unsupported',
+          body: nfm ? null : messageText(m),
           mediaId: media?.id ?? null,
           mediaMime: media?.mime_type ?? null,
           mediaFilename: media?.filename ?? null,
+          flowResponse: nfm?.response_json ?? null,
         })
       }
 
@@ -150,12 +161,13 @@ export function messagePreview(type: string, body: string | null): string {
     document: '📄 Documento',
     sticker: 'Sticker',
     location: '📍 Ubicación',
+    form: '📋 Formulario de datos',
     unsupported: 'Mensaje no soportado',
   }
   const text = body?.trim()
   if (type === 'text' || type === 'reaction' || type === 'template') return (text || '').slice(0, 120)
   const label = labels[type] ?? 'Mensaje'
-  return text && type !== 'location' ? `${label}: ${text}`.slice(0, 120) : label
+  return text && type !== 'location' && type !== 'form' ? `${label}: ${text}`.slice(0, 120) : label
 }
 
 /** Orden de los estados: nunca bajar (Meta puede mandar "delivered" después de "read"). */

@@ -89,3 +89,12 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE wa_messages;
   END IF;
 END $$;
+
+-- 4. Formulario de datos (WhatsApp Flow + plantilla) — fase 2 -----------------
+-- El Flow pide nombre completo, celular, correo y fecha de nacimiento; la
+-- plantilla (aprobada por Meta) lo envía con un botón, incluso fuera de 24 h.
+ALTER TABLE whatsapp_accounts
+  ADD COLUMN IF NOT EXISTS form_flow_id text,
+  ADD COLUMN IF NOT EXISTS form_template_name text,
+  ADD COLUMN IF NOT EXISTS form_template_status text,   -- PENDING | APPROVED | REJECTED | PAUSED | DISABLED
+  ADD COLUMN IF NOT EXISTS form_template_reason text;

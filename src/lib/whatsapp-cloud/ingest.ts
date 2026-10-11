@@ -7,6 +7,7 @@ import {
   type ParsedInbound,
   type ParsedStatus,
 } from './parse'
+import { formAnswersText, parseFormResponse, type FormAnswers } from './data-form'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -67,6 +68,56 @@ async function getOrCreateConversation(admin: Admin, studioId: string, waId: str
   return data as { id: string; unread_count: number; client_id: string | null }
 }
 
+/** Vuelca el formulario de datos en la ficha del cliente: actualiza el
+ * vinculado al chat, o busca por teléfono, o lo crea — y deja el chat
+ * vinculado. Solo pisa campos con valor (un dato vacío no borra el que había). */
+async function applyFormToClient(
+  admin: Admin,
+  studioId: string,
+  conv: { id: string; client_id: string | null },
+  waId: string,
+  a: FormAnswers
+) {
+  const fields = {
+    ...(a.nombre ? { name: a.nombre } : {}),
+    ...(a.correo ? { email: a.correo } : {}),
+    ...(a.nacimiento ? { birthdate: a.nacimiento } : {}),
+    ...(a.celular ? { phone: a.celular } : {}),
+  }
+
+  let clientId = conv.client_id
+  if (!clientId) {
+    const formPhone = normalizeWaPhone(a.celular)
+    clientId =
+      (formPhone && formPhone !== waId ? await findClientByPhone(admin, studioId, formPhone) : null) ??
+      (await findClientByPhone(admin, studioId, waId))
+  }
+
+  if (clientId) {
+    if (Object.keys(fields).length) {
+      await admin
+        .from('clients')
+        .update({ ...fields, updated_at: new Date().toISOString() })
+        .eq('id', clientId)
+        .eq('studio_id', studioId)
+    }
+  } else {
+    if (!a.nombre) return
+    const { data, error } = await admin
+      .from('clients')
+      .insert({ studio_id: studioId, artist_id: null, phone: `+${waId}`, source: 'WhatsApp (formulario)', ...fields })
+      .select('id')
+      .single()
+    if (error) throw error
+    clientId = data.id as string
+  }
+
+  if (clientId !== conv.client_id) {
+    await admin.from('wa_conversations').update({ client_id: clientId }).eq('id', conv.id)
+    conv.client_id = clientId
+  }
+}
+
 export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
   const cache = new Map<string, string | null>()
   // Un push por conversación, no uno por mensaje (fotos en ráfaga).
@@ -77,6 +128,8 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
     if (!studioId) continue
 
     const conv = await getOrCreateConversation(admin, studioId, m.waId, m.contactName)
+    const answers = m.type === 'form' ? parseFormResponse(m.flowResponse) : null
+    if (answers) m.body = formAnswersText(answers)
 
     const { error: insertError } = await admin.from('wa_messages').insert({
       conversation_id: conv.id,
@@ -96,6 +149,8 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
       if (insertError.code === '23505') continue
       throw insertError
     }
+
+    if (answers) await applyFormToClient(admin, studioId, conv, m.waId, answers)
 
     const preview = messagePreview(m.type, m.body)
     await admin

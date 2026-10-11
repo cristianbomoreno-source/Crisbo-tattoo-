@@ -12,6 +12,10 @@ export type WhatsAppAccountStatus = {
   wabaId: string
   displayPhone: string | null
   verifiedName: string | null
+  /** Formulario de datos (WhatsApp Flow): estado de la plantilla en Meta. */
+  formTemplateName: string | null
+  formTemplateStatus: string | null
+  formTemplateReason: string | null
 }
 
 export async function getWhatsAppAccountStatus(): Promise<WhatsAppAccountStatus | null> {
@@ -19,7 +23,7 @@ export async function getWhatsAppAccountStatus(): Promise<WhatsAppAccountStatus 
   if (!studio) return null
   const { data } = await createAdminClient()
     .from('whatsapp_accounts')
-    .select('phone_number_id, waba_id, display_phone, verified_name')
+    .select('phone_number_id, waba_id, display_phone, verified_name, form_template_name, form_template_status, form_template_reason')
     .eq('studio_id', studio.id)
     .maybeSingle()
   if (!data) return null
@@ -28,6 +32,9 @@ export async function getWhatsAppAccountStatus(): Promise<WhatsAppAccountStatus 
     wabaId: data.waba_id,
     displayPhone: data.display_phone,
     verifiedName: data.verified_name,
+    formTemplateName: data.form_template_name,
+    formTemplateStatus: data.form_template_status,
+    formTemplateReason: data.form_template_reason,
   }
 }
 

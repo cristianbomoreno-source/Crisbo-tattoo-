@@ -101,3 +101,100 @@ export async function downloadMedia(mediaId: string, token: string) {
   if (!res.ok || !res.body) throw new Error(`No se pudo descargar el archivo (${res.status})`)
   return { body: res.body, mime: meta.mime_type || res.headers.get('content-type') || 'application/octet-stream' }
 }
+
+/* ───────────── Formulario de datos (WhatsApp Flow + plantilla) ───────────── */
+
+type FlowValidationError = { error?: string; message?: string }
+
+/** Crea el Flow y lo publica en un solo paso (Meta valida el JSON al crear). */
+export async function createPublishedFlow(wabaId: string, token: string, name: string, flowJson: object) {
+  const json = await graph<{ id?: string; validation_errors?: FlowValidationError[] }>(
+    `/${encodeURIComponent(wabaId)}/flows`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ name, categories: ['SIGN_UP'], flow_json: JSON.stringify(flowJson), publish: true }),
+    }
+  )
+  const problems = json.validation_errors ?? []
+  if (!json.id || problems.length) {
+    throw new Error(problems.map((p) => p.message || p.error).filter(Boolean).join(' · ') || 'Meta no creó el Flow')
+  }
+  return json.id
+}
+
+/** Envía la plantilla a revisión de Meta: texto + botón que abre el Flow. */
+export async function createFlowTemplate(
+  wabaId: string,
+  token: string,
+  t: { name: string; language: string; body: string; buttonText: string; flowId: string; firstScreen: string }
+) {
+  return graph<{ id: string; status?: string; category?: string }>(
+    `/${encodeURIComponent(wabaId)}/message_templates`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name: t.name,
+        language: t.language,
+        category: 'UTILITY',
+        components: [
+          { type: 'BODY', text: t.body },
+          {
+            type: 'BUTTONS',
+            buttons: [
+              { type: 'FLOW', text: t.buttonText, flow_id: t.flowId, flow_action: 'navigate', navigate_screen: t.firstScreen },
+            ],
+          },
+        ],
+      }),
+    }
+  )
+}
+
+/** Estado de revisión de una plantilla (PENDING, APPROVED, REJECTED…). */
+export async function fetchTemplateStatus(wabaId: string, token: string, name: string) {
+  const json = await graph<{ data?: { name: string; status: string; rejected_reason?: string }[] }>(
+    `/${encodeURIComponent(wabaId)}/message_templates?name=${encodeURIComponent(name)}&fields=name,status,rejected_reason`,
+    token
+  )
+  const t = json.data?.find((d) => d.name === name)
+  if (!t) throw new Error('La plantilla ya no existe en Meta')
+  return { status: t.status, reason: t.rejected_reason && t.rejected_reason !== 'NONE' ? t.rejected_reason : null }
+}
+
+/** Envía la plantilla del formulario. `flowToken` vuelve en la respuesta. */
+export async function sendFlowTemplate(
+  account: WaAccountCredentials,
+  to: string,
+  t: { name: string; language: string; flowToken: string }
+) {
+  const json = await graph<{ messages?: { id: string }[] }>(
+    `/${encodeURIComponent(account.phone_number_id)}/messages`,
+    account.access_token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'template',
+        template: {
+          name: t.name,
+          language: { code: t.language },
+          components: [
+            {
+              type: 'button',
+              sub_type: 'flow',
+              index: '0',
+              parameters: [{ type: 'action', action: { flow_token: t.flowToken } }],
+            },
+          ],
+        },
+      }),
+    }
+  )
+  const id = json.messages?.[0]?.id
+  if (!id) throw new Error('Meta no devolvió el id del mensaje')
+  return id
+}

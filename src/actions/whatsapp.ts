@@ -10,13 +10,23 @@ import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCurrentPermissions } from '@/queries/permissions'
 import {
+  createFlowTemplate,
+  createPublishedFlow,
   fetchPhoneNumberInfo,
+  fetchTemplateStatus,
   markMessageRead,
+  sendFlowTemplate,
   sendTextMessage,
   setPhoneWebhookOverride,
   subscribeAppToWaba,
 } from '@/lib/whatsapp-cloud/api'
 import { isServiceWindowOpen, messagePreview } from '@/lib/whatsapp-cloud/parse'
+import {
+  FORM_BUTTON_TEXT,
+  FORM_TEMPLATE_LANGUAGE,
+  formFlowJson,
+  formTemplateBody,
+} from '@/lib/whatsapp-cloud/data-form'
 import type { WaMessage } from '@/queries/whatsapp'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
@@ -308,4 +318,168 @@ export async function createClientFromConversation(
   revalidatePath('/dashboard/clients')
   revalidatePath(`/dashboard/inbox/${conversationId}`)
   return ok({ clientId: client.id as string })
+}
+
+/* ───────────── Formulario de datos (WhatsApp Flow + plantilla) ───────────── */
+
+export type DataFormStatus = { status: string; reason: string | null }
+
+/** Crea el Flow (nombre, celular, correo, nacimiento), lo publica y manda a
+ * revisión de Meta la plantilla con el botón que lo abre. Cada intento usa
+ * nombres nuevos: Meta no deja reutilizar el nombre de una plantilla borrada
+ * o rechazada. */
+export async function setupDataForm(): Promise<Result<DataFormStatus>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (studio.role !== 'owner') return err('FORBIDDEN', 'Solo el dueño del estudio puede configurar plantillas')
+
+  const admin = createAdminClient()
+  const { data: acc } = await admin
+    .from('whatsapp_accounts')
+    .select('waba_id, access_token, verified_name')
+    .eq('studio_id', studio.id)
+    .maybeSingle()
+  if (!acc) return err('VALIDATION_ERROR', 'Primero conecta tu número de WhatsApp')
+
+  const suffix = Date.now().toString(36)
+  const name = `formulario_datos_${suffix}`
+  let flowId: string
+  try {
+    flowId = await createPublishedFlow(acc.waba_id, acc.access_token, `Formulario de datos ${suffix}`, formFlowJson())
+  } catch (e) {
+    return err('UNKNOWN_ERROR', `Meta no aceptó el formulario: ${(e as Error).message}`)
+  }
+
+  let status = 'PENDING'
+  try {
+    const t = await createFlowTemplate(acc.waba_id, acc.access_token, {
+      name,
+      language: FORM_TEMPLATE_LANGUAGE,
+      body: formTemplateBody(acc.verified_name || studio.name),
+      buttonText: FORM_BUTTON_TEXT,
+      flowId,
+      firstScreen: 'DATOS',
+    })
+    status = t.status ?? 'PENDING'
+  } catch (e) {
+    return err('UNKNOWN_ERROR', `Formulario creado, pero Meta no aceptó la plantilla: ${(e as Error).message}`)
+  }
+
+  const { error } = await admin
+    .from('whatsapp_accounts')
+    .update({ form_flow_id: flowId, form_template_name: name, form_template_status: status, form_template_reason: null })
+    .eq('studio_id', studio.id)
+  if (error) return dbError(error)
+
+  revalidatePath('/dashboard/settings/whatsapp')
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok({ status, reason: null })
+}
+
+/** Pregunta a Meta cómo va la revisión y guarda el resultado. */
+async function syncDataFormStatus(studioId: string) {
+  const admin = createAdminClient()
+  const { data: acc } = await admin
+    .from('whatsapp_accounts')
+    .select('waba_id, access_token, form_template_name')
+    .eq('studio_id', studioId)
+    .maybeSingle()
+  if (!acc?.form_template_name) return null
+  const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, acc.form_template_name)
+  await admin
+    .from('whatsapp_accounts')
+    .update({ form_template_status: t.status, form_template_reason: t.reason })
+    .eq('studio_id', studioId)
+  return t
+}
+
+export async function refreshDataFormStatus(): Promise<Result<DataFormStatus>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  try {
+    const t = await syncDataFormStatus(studio.id)
+    if (!t) return err('NOT_FOUND', 'Todavía no has creado el formulario')
+    revalidatePath('/dashboard/settings/whatsapp')
+    revalidatePath('/dashboard/inbox', 'layout')
+    return ok(t)
+  } catch (e) {
+    return err('UNKNOWN_ERROR', `No se pudo consultar a Meta: ${(e as Error).message}`)
+  }
+}
+
+/** Envía el formulario de datos al chat. Al ser plantilla aprobada, funciona
+ * también fuera de la ventana de 24 h. */
+export async function sendDataForm(conversationId: string): Promise<Result<WaMessage>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+
+  const supabase = await createClient()
+  const { data: conv } = await supabase
+    .from('wa_conversations')
+    .select('id, studio_id, wa_id')
+    .eq('id', conversationId)
+    .maybeSingle()
+  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
+
+  const admin = createAdminClient()
+  const { data: acc } = await admin
+    .from('whatsapp_accounts')
+    .select('phone_number_id, access_token, verified_name, form_template_name, form_template_status')
+    .eq('studio_id', conv.studio_id)
+    .maybeSingle()
+  if (!acc) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
+  if (!acc.form_template_name) {
+    return err('VALIDATION_ERROR', 'Crea el formulario en Ajustes → WhatsApp Business → Formulario de datos')
+  }
+
+  let status = acc.form_template_status as string | null
+  if (status !== 'APPROVED') {
+    const t = await syncDataFormStatus(conv.studio_id).catch(() => null)
+    status = t?.status ?? status
+  }
+  if (status !== 'APPROVED') {
+    return err('VALIDATION_ERROR', 'Meta todavía no aprueba la plantilla del formulario (suele tardar unos minutos).')
+  }
+
+  let waMessageId: string
+  try {
+    waMessageId = await sendFlowTemplate(acc, conv.wa_id, {
+      name: acc.form_template_name,
+      language: FORM_TEMPLATE_LANGUAGE,
+      flowToken: conv.id,
+    })
+  } catch (e) {
+    return err('UNKNOWN_ERROR', `WhatsApp no envió el formulario: ${(e as Error).message}`)
+  }
+
+  const body = `${formTemplateBody(acc.verified_name || studio.name)}\n\n[${FORM_BUTTON_TEXT}]`
+  const now = new Date().toISOString()
+  const { data: message, error } = await admin
+    .from('wa_messages')
+    .insert({
+      conversation_id: conv.id,
+      studio_id: conv.studio_id,
+      wa_message_id: waMessageId,
+      direction: 'out',
+      type: 'template',
+      body,
+      status: 'sent',
+      sent_by: studio.artistId,
+      created_at: now,
+    })
+    .select()
+    .single()
+  if (error) return dbError(error)
+
+  await admin
+    .from('wa_conversations')
+    .update({
+      last_message_at: now,
+      last_message_preview: '📋 Formulario de datos enviado',
+      last_message_direction: 'out',
+      unread_count: 0,
+    })
+    .eq('id', conv.id)
+
+  return ok(message as WaMessage)
 }

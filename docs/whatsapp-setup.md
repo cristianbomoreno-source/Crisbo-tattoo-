@@ -55,6 +55,20 @@ separada de la de Diego. El usuario de sistema que genera el token debe tener
 acceso a esa WABA (Business settings → WhatsApp accounts → asignar el usuario
 de sistema con control total).
 
+## 4. Formulario de datos (WhatsApp Flow)
+
+**Ajustes → WhatsApp Business → Formulario de datos → Crear formulario y
+plantilla.** Crea y publica en la WABA un Flow (nombre completo, celular,
+correo y fecha de nacimiento) y manda a revisión de Meta una plantilla
+`formulario_datos_*` (categoría Utilidad) con el botón "Llenar formulario".
+Cuando Meta la aprueba, cada chat de Mensajes muestra **Enviar formulario**,
+que funciona también fuera de la ventana de 24 h. Las respuestas llegan por el
+webhook (`interactive.nfm_reply`), se muestran en el chat y se guardan en la
+ficha del cliente (vinculado, por teléfono, o se crea uno nuevo).
+
+Requiere el token con `whatsapp_business_management` y las columnas `form_*`
+de `whatsapp_accounts` (sección 4 de `whatsapp-inbox.sql`).
+
 ## Reglas de Meta para tener en cuenta
 
 - **Ventana de 24 h**: solo puedes escribir texto libre si el cliente te

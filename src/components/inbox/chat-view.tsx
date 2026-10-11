@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
+  ClipboardList,
   Clock,
   FileText,
   Link2,
@@ -23,6 +24,7 @@ import { cn } from '@/lib/utils'
 import { isServiceWindowOpen } from '@/lib/whatsapp-cloud/parse'
 import {
   markConversationRead,
+  sendDataForm,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
@@ -43,10 +45,13 @@ export function ChatView({
   conversation,
   initialMessages,
   clients,
+  formTemplateStatus,
 }: {
   conversation: WaConversation
   initialMessages: WaMessage[]
   clients: ClientOption[]
+  /** Estado en Meta de la plantilla del formulario de datos (null = no creada). */
+  formTemplateStatus: string | null
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
@@ -55,6 +60,7 @@ export function ChatView({
   const [linkOpen, setLinkOpen] = useState(false)
   const [sending, startSending] = useTransition()
   const [archiving, startArchiving] = useTransition()
+  const [sendingForm, startSendingForm] = useTransition()
   const scrollRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -125,6 +131,25 @@ export function ChatView({
       textareaRef.current?.focus()
     })
   }
+
+  function sendForm() {
+    startSendingForm(async () => {
+      const result = await sendDataForm(conversation.id)
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      toast.success('Formulario enviado')
+      setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
+    })
+  }
+
+  const formButton = formTemplateStatus ? (
+    <Button size="sm" variant="outline" onClick={sendForm} disabled={sendingForm}>
+      <ClipboardList />
+      {sendingForm ? 'Enviando…' : 'Enviar formulario'}
+    </Button>
+  ) : null
 
   function toggleArchive() {
     startArchiving(async () => {
@@ -233,22 +258,26 @@ export function ChatView({
                 <Send />
               </Button>
             </div>
-            {remaining && (
-              <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
-                Puedes responder libremente durante {remaining} más.
+            <div className="mt-1.5 flex items-center justify-between gap-2 px-1">
+              <p className="text-[11px] text-muted-foreground">
+                {remaining ? `Puedes responder libremente durante ${remaining} más.` : ''}
               </p>
-            )}
+              {formButton}
+            </div>
           </>
         ) : (
-          <div className="flex items-start gap-2 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200">
-            <Clock className="mt-0.5 size-4 shrink-0 text-amber-400" />
-            <p>
-              {lastInboundAt
-                ? 'Pasaron más de 24 h desde el último mensaje del cliente.'
-                : 'Este cliente todavía no te ha escrito.'}{' '}
-              WhatsApp solo permite escribirle con una <strong>plantilla aprobada por Meta</strong>. El envío de
-              plantillas llega en la próxima actualización.
-            </p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200">
+              <Clock className="mt-0.5 size-4 shrink-0 text-amber-400" />
+              <p>
+                {lastInboundAt
+                  ? 'Pasaron más de 24 h desde el último mensaje del cliente.'
+                  : 'Este cliente todavía no te ha escrito.'}{' '}
+                WhatsApp solo permite escribirle con una <strong>plantilla aprobada por Meta</strong>
+                {formTemplateStatus ? ', como el formulario de datos.' : '.'}
+              </p>
+            </div>
+            {formButton && <div className="flex justify-end">{formButton}</div>}
           </div>
         )}
       </footer>
