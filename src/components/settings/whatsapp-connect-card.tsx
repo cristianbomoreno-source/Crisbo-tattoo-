@@ -50,6 +50,7 @@ export function WhatsAppConnectCard({
       }
       setToken('')
       toast.success(`Conectado: ${result.data.verifiedName ?? ''} ${result.data.displayPhone ?? ''}`.trim())
+      if (result.data.webhookWarning) toast.warning(result.data.webhookWarning, { duration: 10000 })
       router.refresh()
     })
   }
@@ -131,10 +132,9 @@ export function WhatsAppConnectCard({
       </section>
 
       <section className="space-y-3 rounded-2xl bg-card p-4 text-sm">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em]">Webhook en Meta</h2>
+        <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em]">Webhook</h2>
         <p className="text-muted-foreground">
-          En tu app de Meta → WhatsApp → Configuración, pega esta URL como <strong>Callback URL</strong> y suscríbete
-          al campo <code className="rounded bg-muted px-1">messages</code>:
+          Al conectar, Crisbo Tattoo le pide a Meta que mande los mensajes de <strong>este número</strong> a:
         </p>
         <div className="flex items-center gap-2">
           <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 text-xs">{webhookUrl}</code>
@@ -142,6 +142,10 @@ export function WhatsAppConnectCard({
             {copied ? <Check /> : <Copy />}
           </Button>
         </div>
+        <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          La app de Meta es compartida con otros proyectos: <strong>no cambies</strong> la Callback URL general de la
+          app en developers.facebook.com. El desvío se hace solo para este número.
+        </p>
         {!verifyTokenConfigured && (
           <p className="rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
             Falta configurar <code>WHATSAPP_VERIFY_TOKEN</code> y <code>WHATSAPP_APP_SECRET</code> en Vercel: sin

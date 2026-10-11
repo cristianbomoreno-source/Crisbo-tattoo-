@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -8,7 +9,13 @@ import { ok, err, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCurrentPermissions } from '@/queries/permissions'
-import { fetchPhoneNumberInfo, markMessageRead, sendTextMessage } from '@/lib/whatsapp-cloud/api'
+import {
+  fetchPhoneNumberInfo,
+  markMessageRead,
+  sendTextMessage,
+  setPhoneWebhookOverride,
+  subscribeAppToWaba,
+} from '@/lib/whatsapp-cloud/api'
 import { isServiceWindowOpen, messagePreview } from '@/lib/whatsapp-cloud/parse'
 import type { WaMessage } from '@/queries/whatsapp'
 
@@ -23,7 +30,7 @@ const accountSchema = z.object({
 
 export async function saveWhatsAppAccount(
   input: unknown
-): Promise<Result<{ displayPhone: string | null; verifiedName: string | null }>> {
+): Promise<Result<{ displayPhone: string | null; verifiedName: string | null; webhookWarning: string | null }>> {
   const parsed = accountSchema.safeParse(input)
   if (!parsed.success) return err('VALIDATION_ERROR', parsed.error.issues[0]?.message ?? 'Datos inválidos')
 
@@ -68,7 +75,46 @@ export async function saveWhatsAppAccount(
 
   revalidatePath('/dashboard/settings/whatsapp')
   revalidatePath('/dashboard/inbox')
-  return ok({ displayPhone: info.display_phone_number ?? null, verifiedName: info.verified_name ?? null })
+  const webhookWarning = await routeWebhooksToCrisbo(
+    { phone_number_id: parsed.data.phone_number_id, access_token: token },
+    parsed.data.waba_id
+  )
+
+  return ok({
+    displayPhone: info.display_phone_number ?? null,
+    verifiedName: info.verified_name ?? null,
+    webhookWarning,
+  })
+}
+
+/** URL pública del webhook: WHATSAPP_WEBHOOK_URL si está, si no el dominio
+ * desde el que se está usando la app. `null` en local (Meta no llega a localhost). */
+async function webhookCallbackUrl() {
+  if (process.env.WHATSAPP_WEBHOOK_URL) return process.env.WHATSAPP_WEBHOOK_URL
+  const h = await headers()
+  const host = h.get('x-forwarded-host') ?? h.get('host')
+  if (!host || /^(localhost|127\.0\.0\.1)(:|$)/.test(host)) return null
+  return `https://${host}/api/whatsapp/webhook`
+}
+
+/** Suscribe la app a la WABA y fija el callback propio del número (ver
+ * `setPhoneWebhookOverride`: la app de Meta es compartida con otros
+ * proyectos). Devuelve un aviso legible si algo falla, sin tumbar el guardado. */
+async function routeWebhooksToCrisbo(
+  account: { phone_number_id: string; access_token: string },
+  wabaId: string
+): Promise<string | null> {
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN
+  if (!verifyToken) return 'Falta WHATSAPP_VERIFY_TOKEN en Vercel: los mensajes entrantes no llegarán todavía.'
+  const callbackUrl = await webhookCallbackUrl()
+  if (!callbackUrl) return 'Estás en local: el webhook solo se puede configurar desde el dominio publicado.'
+  try {
+    await subscribeAppToWaba(wabaId, account.access_token)
+    await setPhoneWebhookOverride(account, callbackUrl, verifyToken)
+    return null
+  } catch (e) {
+    return `Número guardado, pero Meta no aceptó el webhook: ${(e as Error).message}`
+  }
 }
 
 export async function disconnectWhatsAppAccount(): Promise<Result<null>> {
