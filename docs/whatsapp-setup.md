@@ -29,8 +29,8 @@ de la app, así que Diego y Keicy siguen recibiendo lo suyo.
      de la app con él)
    - `WHATSAPP_VERIFY_TOKEN` = una clave que inventes (p. ej. `crisbo-wa-2026`);
      no tiene que coincidir con la de Diego
-   - Opcional: `WHATSAPP_WEBHOOK_URL=https://crisbotattoo.com/api/whatsapp/webhook`
-     (si no, se usa el dominio desde el que conectas el número)
+   - Opcional: `WHATSAPP_WEBHOOK_URL=https://www.crisbotattoo.com/api/whatsapp/webhook`
+     (con www: el dominio sin www redirige y Meta no sigue redirecciones)
    Luego redeploy.
 
 ## 3. Número del estudio
