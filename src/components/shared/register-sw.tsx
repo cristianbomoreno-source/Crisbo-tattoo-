@@ -16,7 +16,15 @@ import { subscribeToPush } from '@/lib/push/client'
  *   y cada vez que la pestaña vuelve a primer plano (volver de otra app).
  * - Apenas encuentra una versión nueva, la activa sola (sin esperar a que
  *   cierres todas las pestañas) y recarga — no hace falta ir a Ajustes.
+ *
+ * sw.js se registra como `/sw.js?v=<build SHA>`, así cada deploy es un SW
+ * distinto para el navegador aunque el archivo no haya cambiado. Con la app
+ * abierta, el bundle viejo no conoce el SHA nuevo: por eso además se consulta
+ * `/api/version` y, si el deploy cambió, se registra el SW del deploy nuevo.
  */
+const BUILD_SHA = process.env.NEXT_PUBLIC_BUILD_SHA ?? 'local'
+const swUrl = (sha: string) => `/sw.js?v=${encodeURIComponent(sha)}`
+
 export function RegisterSW() {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return
@@ -48,7 +56,7 @@ export function RegisterSW() {
 
     const onLoad = async () => {
       try {
-        reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+        reg = await navigator.serviceWorker.register(swUrl(BUILD_SHA), { updateViaCache: 'none' })
         watchForUpdate(reg)
         reg.update()
         // Re-suscripción silenciosa: si ya se concedió permiso antes (en
@@ -76,10 +84,28 @@ export function RegisterSW() {
       window.location.reload()
     })
 
+    // ¿Hay un deploy más nuevo que el que compiló este bundle? Registrar su
+    // SW dispara install → SKIP_WAITING → controllerchange → reload.
+    async function checkForNewDeploy() {
+      try {
+        const res = await fetch('/api/version', { cache: 'no-store' })
+        if (!res.ok) return
+        const { sha } = (await res.json()) as { sha?: string }
+        if (!sha || sha === BUILD_SHA) {
+          reg?.update()
+          return
+        }
+        reg = await navigator.serviceWorker.register(swUrl(sha), { updateViaCache: 'none' })
+        watchForUpdate(reg)
+      } catch {
+        // Sin red o error puntual: se reintenta en la próxima revisión.
+      }
+    }
+
     // Revisiones activas: al volver a la pestaña y cada 60s con la app abierta.
-    const interval = window.setInterval(() => reg?.update(), 60_000)
+    const interval = window.setInterval(checkForNewDeploy, 60_000)
     const onVisible = () => {
-      if (document.visibilityState === 'visible') reg?.update()
+      if (document.visibilityState === 'visible') checkForNewDeploy()
     }
     document.addEventListener('visibilitychange', onVisible)
 

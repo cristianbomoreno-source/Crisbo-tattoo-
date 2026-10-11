@@ -401,7 +401,7 @@ function TriggerButton({
           transition={{ duration: 0.2 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/cb-isotipo.png" alt="" className="size-full object-contain" />
+          <img src="/brand/cb-isotipo-v2.png" alt="" className="size-full object-contain" />
         </motion.span>
       </span>
     </motion.button>

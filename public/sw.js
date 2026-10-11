@@ -5,9 +5,14 @@
  *  - navegaciones y datos GET same-origin: network-first → cae a caché → /offline.
  *  - estáticos same-origin (/_next/static, /icons, fuentes): stale-while-revalidate.
  *  - Supabase y todo lo que no sea GET: PASA DIRECTO a red (nunca se cachea).
- *  - activate: limpia versiones viejas. Subir CACHE en cada release.
+ *  - activate: limpia versiones viejas.
+ *
+ * La versión del caché sale del `?v=<build SHA>` con el que se registra este
+ * archivo (`register-sw.tsx`): cada deploy cambia la URL del script, el
+ * navegador instala un SW nuevo y se borran los cachés del deploy anterior.
+ * Ya no hay que subir CACHE a mano.
  */
-const CACHE = 'ofink-v53'
+const CACHE = 'ofink-' + (new URL(self.location.href).searchParams.get('v') || 'dev')
 const OFFLINE_URL = '/offline.html'
 const PRECACHE = [
   OFFLINE_URL,
