@@ -16,7 +16,6 @@ import {
   Clock,
   FileText,
   Link2,
-  MapPin,
   Send,
   UserPlus,
   UserRound,
@@ -28,7 +27,7 @@ import {
   markConversationRead,
   sendBookingConfirmationToChat,
   sendDataForm,
-  sendStudioLocation,
+  sendQuickReplyToChat,
   sendWhatsAppMessage,
   setConversationArchived,
 } from '@/actions/whatsapp'
@@ -148,23 +147,11 @@ export function ChatView({
     })
   }
 
-  function sendLocation() {
+  /** Respuesta rápida (texto o ubicación): se envía tal cual, sin pasar por el borrador. */
+  function sendQuickReply(reply: WaQuickReply) {
     if (sending) return
     startSending(async () => {
-      const result = await sendStudioLocation(conversation.id)
-      if (!result.success) {
-        toast.error(result.error.message, { duration: 8000 })
-        return
-      }
-      setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
-    })
-  }
-
-  /** Respuesta rápida: se envía tal cual, sin pasar por el borrador. */
-  function sendQuickReply(body: string) {
-    if (sending) return
-    startSending(async () => {
-      const result = await sendWhatsAppMessage({ conversationId: conversation.id, body })
+      const result = await sendQuickReplyToChat(conversation.id, reply.id)
       if (!result.success) {
         toast.error(result.error.message)
         return
@@ -323,14 +310,10 @@ export function ChatView({
               </Button>
             </div>
             <div className="mt-2 flex flex-wrap justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={sendLocation} disabled={sending}>
-                <MapPin />
-                Ubicación
-              </Button>
               {replyButtons.map((r) => {
                 const Icon = QUICK_REPLY_ICONS[r.icon!]!.icon
                 return (
-                  <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r.body)} disabled={sending}>
+                  <Button key={r.id} size="sm" variant="outline" onClick={() => sendQuickReply(r)} disabled={sending}>
                     <Icon />
                     {r.title}
                   </Button>

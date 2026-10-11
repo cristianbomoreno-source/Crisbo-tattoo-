@@ -18,7 +18,7 @@ export function QuickRepliesMenu({
   disabled,
 }: {
   replies: WaQuickReply[]
-  onPick: (body: string) => void
+  onPick: (reply: WaQuickReply) => void
   disabled?: boolean
 }) {
   return (
@@ -36,7 +36,7 @@ export function QuickRepliesMenu({
           <p className="px-2 py-3 text-center text-xs text-muted-foreground">Todavía no tienes respuestas guardadas.</p>
         ) : (
           replies.map((r) => (
-            <DropdownMenuItem key={r.id} onClick={() => onPick(r.body)} className="flex flex-col items-start gap-0.5 py-2">
+            <DropdownMenuItem key={r.id} onClick={() => onPick(r)} className="flex flex-col items-start gap-0.5 py-2">
               <span className="text-sm font-medium">{r.title}</span>
               <span className="line-clamp-2 text-xs text-muted-foreground">{r.body}</span>
             </DropdownMenuItem>

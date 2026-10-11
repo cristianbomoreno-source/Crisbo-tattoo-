@@ -495,6 +495,9 @@ const quickReplySchema = z.object({
   body: z.string().trim().min(1, 'Escribe el mensaje').max(4096, 'Máximo 4096 caracteres'),
   // Con ícono, la respuesta aparece como botón en el chat (envío con un toque).
   icon: z.enum(['payment', 'receipt', 'calendar', 'location']).nullable().optional(),
+  kind: z.enum(['text', 'location']).default('text'),
+  location_name: z.string().trim().max(100).optional(),
+  maps_url: z.string().trim().max(2000).optional(),
 })
 
 export async function saveQuickReply(input: unknown): Promise<Result<null>> {
@@ -504,13 +507,26 @@ export async function saveQuickReply(input: unknown): Promise<Result<null>> {
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
 
   const supabase = await createClient()
-  const { id, title, body } = parsed.data
+  const { id, title, body, kind } = parsed.data
   const icon = parsed.data.icon ?? null
+
+  // Ubicación: las coordenadas del pin se sacan del enlace de Maps al guardar.
+  let location: { location_name: string | null; maps_url: string | null; latitude: number | null; longitude: number | null } =
+    { location_name: null, maps_url: null, latitude: null, longitude: null }
+  if (kind === 'location') {
+    const mapsUrl = parsed.data.maps_url
+    if (!mapsUrl) return err('VALIDATION_ERROR', 'Pega el enlace de Google Maps del lugar')
+    const coords = await resolveMapsCoords(mapsUrl).catch(() => null)
+    if (!coords) {
+      return err('VALIDATION_ERROR', 'No pude leer la ubicación de ese enlace. Cópialo desde Google Maps → Compartir.')
+    }
+    location = { location_name: parsed.data.location_name || studio.name, maps_url: mapsUrl, ...coords }
+  }
+
+  const fields = { title, body, icon, kind, ...location }
   const { error } = id
-    ? await supabase.from('wa_quick_replies').update({ title, body, icon }).eq('id', id)
-    : await supabase
-        .from('wa_quick_replies')
-        .insert({ studio_id: studio.id, title, body, icon, position: Date.now() % 1e9 })
+    ? await supabase.from('wa_quick_replies').update(fields).eq('id', id)
+    : await supabase.from('wa_quick_replies').insert({ studio_id: studio.id, ...fields, position: Date.now() % 1e9 })
   if (error) return dbError(error)
 
   revalidatePath('/dashboard/settings/whatsapp')
@@ -538,16 +554,21 @@ export async function sendBookingConfirmationToChat(
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
 }
 
-/** Ubicación del estudio (pin + dirección escrita), desde Ajustes → Perfil.
- * Las coordenadas salen del enlace de Google Maps. Gratis dentro de 24 h. */
-export async function sendStudioLocation(conversationId: string): Promise<Result<WaMessage>> {
+/** Envía una respuesta rápida al chat: texto, o ubicación (pin en el mapa +
+ * dirección escrita). Ambas son mensajes normales: gratis, solo dentro de 24 h. */
+export async function sendQuickReplyToChat(conversationId: string, replyId: string): Promise<Result<WaMessage>> {
   const studio = await getCurrentStudio()
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
-  if (!studio.mapsUrl) {
-    return err('VALIDATION_ERROR', 'Agrega el enlace de Google Maps del estudio en Ajustes → Perfil')
-  }
 
   const supabase = await createClient()
+  const { data: reply } = await supabase
+    .from('wa_quick_replies')
+    .select('body, kind, location_name, latitude, longitude')
+    .eq('id', replyId)
+    .maybeSingle()
+  if (!reply) return err('NOT_FOUND', 'Respuesta rápida no encontrada')
+  if (reply.kind !== 'location') return sendWhatsAppMessage({ conversationId, body: reply.body })
+
   const { data: conv } = await supabase
     .from('wa_conversations')
     .select('id, studio_id, wa_id, last_inbound_at')
@@ -557,22 +578,18 @@ export async function sendStudioLocation(conversationId: string): Promise<Result
   if (!isServiceWindowOpen(conv.last_inbound_at)) {
     return err('VALIDATION_ERROR', 'Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite enviar la ubicación.')
   }
-
-  const coords = await resolveMapsCoords(studio.mapsUrl).catch(() => null)
-  if (!coords) {
-    return err(
-      'VALIDATION_ERROR',
-      'No pude leer las coordenadas del enlace de Maps. En Ajustes → Perfil pega el enlace del lugar (botón Compartir de Google Maps).'
-    )
-  }
-
   const account = await loadAccount(conv.studio_id)
   if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
 
-  const address = [studio.address, studio.city].filter(Boolean).join(', ') || null
+  const loc = {
+    latitude: reply.latitude as number,
+    longitude: reply.longitude as number,
+    name: (reply.location_name as string | null) || studio.name,
+    address: reply.body as string,
+  }
   let waMessageId: string
   try {
-    waMessageId = await sendLocationMessage(account, conv.wa_id, { ...coords, name: studio.name, address })
+    waMessageId = await sendLocationMessage(account, conv.wa_id, loc)
   } catch (e) {
     return err('UNKNOWN_ERROR', `WhatsApp no envió la ubicación: ${(e as Error).message}`)
   }
@@ -587,7 +604,7 @@ export async function sendStudioLocation(conversationId: string): Promise<Result
       wa_message_id: waMessageId,
       direction: 'out',
       type: 'location',
-      body: locationText(studio.name, address, coords.latitude, coords.longitude),
+      body: locationText(loc.name, loc.address, loc.latitude, loc.longitude),
       status: 'sent',
       sent_by: studio.artistId,
       created_at: now,
