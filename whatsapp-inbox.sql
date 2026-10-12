@@ -104,3 +104,6 @@ DROP TABLE IF EXISTS wa_quick_replies;
 
 -- 6. Coexistencia: el estudio respondió desde la app del celular (smb_message_echoes).
 ALTER TABLE wa_conversations ADD COLUMN IF NOT EXISTS answered_from_phone boolean NOT NULL DEFAULT false;
+
+-- 7. Imágenes enviadas por URL pública (botón Cuidados), sin media_id de Meta.
+ALTER TABLE wa_messages ADD COLUMN IF NOT EXISTS media_url text;

@@ -9,10 +9,13 @@ import {
   Archive,
   ArchiveRestore,
   ArrowLeft,
+  Bandage,
   Banknote,
   CalendarPlus,
   Check,
   CheckCheck,
+  IdCard,
+  ListChecks,
   ClipboardList,
   Clock,
   FileText,
@@ -21,6 +24,8 @@ import {
   Send,
   UserPlus,
   UserRound,
+  Wallet,
+  type LucideIcon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -28,6 +33,7 @@ import { isServiceWindowOpen } from '@/lib/whatsapp-cloud/parse'
 import {
   markConversationRead,
   sendBookingConfirmationToChat,
+  sendChatShortcut,
   sendDataForm,
   sendStudioLocation,
   sendWhatsAppMessage,
@@ -37,6 +43,7 @@ import type { WaConversation, WaMessage } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { todayKey } from '@/lib/calendar/utils'
+import { CHAT_SHORTCUTS } from '@/lib/whatsapp-cloud/chat-shortcuts'
 import { ClientLinkDialog } from './client-link-dialog'
 import {
   formatDayLabel,
@@ -46,8 +53,15 @@ import {
   sameDay,
 } from './format'
 
-/** Lo que envía el botón "Pedir comprobante" (texto exacto del estudio). */
-const PAYMENT_PROOF_MESSAGE = 'Una vez efectuado el abono, envía el comprobante'
+/** Ícono de cada botón de mensaje fijo (`chat-shortcuts.ts`). */
+const SHORTCUT_ICONS: Record<string, LucideIcon> = {
+  abono: Wallet,
+  comprobante: Banknote,
+  recomendaciones: ListChecks,
+  horario: Clock,
+  menores: IdCard,
+  cuidados: Bandage,
+}
 
 type ClientOption = { id: string; name: string; phone: string | null }
 
@@ -158,11 +172,11 @@ export function ChatView({
     })
   }
 
-  /** Botón "Pedir comprobante": envía el texto tal cual, sin pasar por el borrador. */
-  function askPaymentProof() {
+  /** Botones de mensajes fijos: se envían tal cual, sin pasar por el borrador. */
+  function sendShortcut(key: string) {
     if (sending) return
     startSending(async () => {
-      const result = await sendWhatsAppMessage({ conversationId: conversation.id, body: PAYMENT_PROOF_MESSAGE })
+      const result = await sendChatShortcut(conversation.id, key)
       if (!result.success) {
         toast.error(result.error.message)
         return
@@ -318,15 +332,20 @@ export function ChatView({
                 <Send />
               </Button>
             </div>
-            <div className="mt-2 flex flex-wrap justify-end gap-2">
+            <div className="mt-2 -mx-2 flex gap-2 overflow-x-auto px-2 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 *:shrink-0">
               <Button size="sm" variant="outline" onClick={sendLocation} disabled={sending}>
                 <MapPin />
                 Ubicación
               </Button>
-              <Button size="sm" variant="outline" onClick={askPaymentProof} disabled={sending}>
-                <Banknote />
-                Pedir comprobante
-              </Button>
+              {CHAT_SHORTCUTS.map((s) => {
+                const Icon = SHORTCUT_ICONS[s.key] ?? Send
+                return (
+                  <Button key={s.key} size="sm" variant="outline" onClick={() => sendShortcut(s.key)} disabled={sending}>
+                    <Icon />
+                    {s.label}
+                  </Button>
+                )
+              })}
               {formButton}
             </div>
             {remaining && (
@@ -382,7 +401,7 @@ export function ChatView({
 
 function MessageBubble({ message: m }: { message: WaMessage }) {
   const out = m.direction === 'out'
-  const mediaSrc = m.media_id ? `/api/whatsapp/media/${m.id}` : null
+  const mediaSrc = m.media_url ?? (m.media_id ? `/api/whatsapp/media/${m.id}` : null)
 
   return (
     <div className={cn('flex', out ? 'justify-end' : 'justify-start')}>

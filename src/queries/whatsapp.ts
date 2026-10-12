@@ -67,6 +67,8 @@ export type WaMessage = {
   media_id: string | null
   media_mime: string | null
   media_filename: string | null
+  /** Imagen enviada por URL pública (ruta de /public), sin media_id de Meta. */
+  media_url: string | null
   status: 'received' | 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
   error: string | null
   sent_by: string | null

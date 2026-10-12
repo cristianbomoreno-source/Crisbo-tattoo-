@@ -218,3 +218,18 @@ export async function sendLocationMessage(
   if (!id) throw new Error('Meta no devolvió el id del mensaje')
   return id
 }
+
+/** Imagen por URL pública (Meta la descarga) con pie de foto opcional. */
+export async function sendImageMessage(account: WaAccountCredentials, to: string, image: { link: string; caption?: string }) {
+  const json = await graph<{ messages?: { id: string }[] }>(
+    `/${encodeURIComponent(account.phone_number_id)}/messages`,
+    account.access_token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'image', image }),
+    }
+  )
+  const id = json.messages?.[0]?.id
+  if (!id) throw new Error('Meta no devolvió el id del mensaje')
+  return id
+}
