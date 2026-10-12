@@ -41,9 +41,10 @@ function validSignature(raw: string, header: string | null, secrets: string[]) {
 }
 
 export async function POST(request: NextRequest) {
-  const secrets = [process.env.INSTAGRAM_APP_SECRET, process.env.WHATSAPP_APP_SECRET].filter(
-    (s): s is string => Boolean(s)
-  )
+  // trim: una clave pegada con un espacio o salto de línea al final nunca coincide.
+  const secrets = [process.env.INSTAGRAM_APP_SECRET, process.env.WHATSAPP_APP_SECRET]
+    .map((s) => s?.trim())
+    .filter((s): s is string => Boolean(s))
   if (secrets.length === 0) {
     console.error('[instagram] Falta INSTAGRAM_APP_SECRET: webhook rechazado')
     return new NextResponse('Not configured', { status: 503 })
