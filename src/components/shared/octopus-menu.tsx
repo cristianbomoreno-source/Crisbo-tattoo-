@@ -32,7 +32,7 @@ import {
  *
  * Color: un solo verde de marca (`--primary`) con variaciones de
  * luminosidad muy sutiles para dar volumen — nada de degradados
- * multicolor ni brillos exagerados. Un glow verde suave y difuso detrás
+ * multicolor ni brillos exagerados. Un glow dorado suave y difuso detrás
  * de todo aporta la única "puesta en escena".
  *
  * Piezas internas (todas comparten el mismo estado `open` y la misma
@@ -177,7 +177,7 @@ const BTN_SIZE = 76
 const ARM_SPRING = { type: 'spring', stiffness: 210, damping: 22 } as const
 const BUTTON_SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const
 
-/** Resplandor azul muy difuso detrás de todo — la única puesta en
+/** Resplandor dorado muy difuso detrás de todo — la única puesta en
  * escena permitida, aparte del volumen sutil de cada brazo. */
 function Glow({ open }: { open: boolean }) {
   return (
@@ -189,7 +189,7 @@ function Glow({ open }: { open: boolean }) {
         width: 140,
         height: 100,
         borderRadius: '50%',
-        background: 'radial-gradient(closest-side, #1e3a5f, transparent 72%)',
+        background: 'radial-gradient(closest-side, var(--primary), transparent 72%)',
         filter: 'blur(18px)',
       }}
       initial={false}
@@ -269,7 +269,7 @@ function TentacleShape({ t, i, open }: { t: TentacleConfig; i: number; open: boo
         }
       >
         <defs>
-          {/* Volumen por luminosidad, tonos azules: base más
+          {/* Volumen por luminosidad, tonos del acento (dorado): base más
               luminosa → punta más profunda (3 paradas). En los brazos
               decorativos el degradado corre HORIZONTAL, siguiendo su
               anatomía (la base pegada al núcleo es el lado interior). */}
@@ -280,23 +280,23 @@ function TentacleShape({ t, i, open }: { t: TentacleConfig; i: number; open: boo
             x2={isDeco ? (curlDir === 1 ? '0%' : '100%') : '0%'}
             y2="0%"
           >
-            <stop offset="0%" stopColor="#5a9fd4" />
-            <stop offset="55%" stopColor="#3a7fc4" />
-            <stop offset="100%" stopColor="#1e5a9f" />
+            <stop offset="0%" style={{ stopColor: 'var(--primary-hover)' }} />
+            <stop offset="55%" style={{ stopColor: 'var(--primary)' }} />
+            <stop offset="100%" style={{ stopColor: 'var(--primary-pressed)' }} />
           </linearGradient>
         </defs>
         {/* Sin borde: el brazo se recorta solo con su relleno + sombra
             suave (el stroke oscuro previo se percibía como un "reborde"). */}
         <path d={t.d} fill={`url(#${gradId})`} />
         {/* Ventosas: cara interior, tamaño decreciente hacia la punta. */}
-        <path d={t.suckers} fill="rgba(8,12,0,0.62)" fillRule="evenodd" />
+        <path d={t.suckers} fill="rgba(24,16,6,0.55)" fillRule="evenodd" />
       </motion.svg>
     </motion.div>
   )
 }
 
-/** El botón que cada tentáculo sostiene: negro, circular, borde azul
- * fino, ícono azul, texto blanco. El tramo final del brazo queda oculto
+/** El botón que cada tentáculo sostiene: negro, circular, borde dorado
+ * fino, ícono dorado, texto blanco. El tramo final del brazo queda oculto
  * detrás (el botón se dibuja encima), dando la sensación de que entra al
  * círculo en vez de quedar pegado sobre él. */
 function ActionButton({
@@ -335,23 +335,24 @@ function ActionButton({
         style={{
           width: BTN_SIZE,
           height: BTN_SIZE,
-          borderColor: '#1e3a5f',
-          boxShadow: '0 0 18px rgba(30,58,95,0.28), 0 6px 18px rgba(0,0,0,0.55)',
+          borderColor: MENU_ACCENT,
+          boxShadow: `0 0 18px ${MENU_GLOW}, 0 6px 18px rgba(0,0,0,0.55)`,
         }}
       >
-        <Icon className="size-6" style={{ color: '#4a90d9' }} strokeWidth={2} />
+        <Icon className="size-6" style={{ color: MENU_ACCENT }} strokeWidth={2} />
         <span className="text-[11px] font-medium leading-none text-white">{action.label}</span>
       </Link>
     </motion.div>
   )
 }
 
-/** Color azul para el menú de Crisbo Tattoo */
-const CRISBO_BLUE = '#1e3a5f'
-const CRISBO_BLUE_GLOW = 'rgba(30, 58, 95, 0.35)'
+/** Acento del menú = `--primary` del tema activo (dorado LED del estudio),
+ * así el pulpo sigue la paleta de Apariencia sin colores fijos. */
+const MENU_ACCENT = 'var(--primary)'
+const MENU_GLOW = 'var(--primary-glow)'
 
 /** El botón disparador ES el centro del menú — no hay una segunda forma
- * compitiendo con él. Siempre el mismo círculo azul; al abrir, su ícono
+ * compitiendo con él. Siempre el mismo círculo con aro dorado; al abrir, su ícono
  * se desvanece y aparece la foto del tatuador en el mismo lugar
  * (crossfade). Los tentáculos nacen de detrás suyo. */
 function TriggerButton({
@@ -381,15 +382,15 @@ function TriggerButton({
         marginLeft: -TRIGGER_SIZE / 2,
         width: TRIGGER_SIZE,
         height: TRIGGER_SIZE,
-        borderColor: CRISBO_BLUE,
-        boxShadow: `0 0 26px ${CRISBO_BLUE_GLOW}, 0 8px 22px rgba(0,0,0,0.5)`,
+        borderColor: MENU_ACCENT,
+        boxShadow: `0 0 26px ${MENU_GLOW}, 0 8px 22px rgba(0,0,0,0.5)`,
       }}
     >
       {/* Segundo aro interior — el "núcleo" de la referencia. */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-1 rounded-full"
-        style={{ border: `1px solid ${CRISBO_BLUE}55` }}
+        style={{ border: '1px solid color-mix(in srgb, var(--primary) 35%, transparent)' }}
       />
       <span className="relative flex size-16 items-center justify-center">
         {/* Isotipo de Crisbo Tattoo (CB) sin fondo — siempre visible */}
