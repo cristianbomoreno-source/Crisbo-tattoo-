@@ -1,5 +1,6 @@
 import type { SessionWithProject } from '@/queries/sessions'
 import type { ProjectSummary } from '@/queries/projects'
+import { dayKey } from '@/lib/calendar/utils'
 
 /** Clientes distintos (por nombre) con cita hoy. */
 export function todayClientCount(todaySessions: SessionWithProject[]): number {
@@ -48,4 +49,61 @@ export function daySummary(
   )
   const pending = Math.max(0, expected - deposits)
   return { expected, deposits, pending }
+}
+
+
+export type MonthSummary = {
+  /** Dinero ingresado: pagos registrados este mes (cualquier proyecto). */
+  income: number
+  /** Lo mismo del mes anterior, para la comparación. */
+  prevIncome: number
+  /** Citas no canceladas agendadas este mes. */
+  scheduled: number
+  /** De esas, las que aún no han pasado. */
+  upcoming: number
+  /** Cotizaciones sin cerrar: nuevas, revisadas o enviadas al cliente. */
+  waitingQuotes: number
+  /** De esas, las que nadie ha respondido todavía (estado `new`). */
+  newQuotes: number
+}
+
+const WAITING_QUOTE_STATUSES = new Set(['new', 'reviewed', 'quoted'])
+
+/** Mes anterior de 'YYYY-MM'. */
+function prevMonthKey(monthKey: string): string {
+  const [y, m] = monthKey.split('-').map(Number)
+  const d = new Date(Date.UTC(Number(y), Number(m) - 2, 1))
+  return d.toISOString().slice(0, 7)
+}
+
+/** Resumen del mes de Inicio: dinero ingresado, citas y cotizaciones en espera. */
+export function monthSummary(
+  monthKey: string,
+  sessions: SessionWithProject[],
+  projects: ProjectSummary[],
+  quotes: { status: string | null }[],
+  nowIso: string,
+): MonthSummary {
+  const prevKey = prevMonthKey(monthKey)
+  let income = 0
+  let prevIncome = 0
+  for (const p of projects) {
+    for (const pay of p.payments) {
+      // paid_at es un instante real (now() al cobrar): se pasa a hora de Colombia.
+      const key = new Date(new Date(pay.paid_at).getTime() - 5 * 3_600_000).toISOString().slice(0, 7)
+      if (key.startsWith(monthKey)) income += pay.amount ?? 0
+      else if (key.startsWith(prevKey)) prevIncome += pay.amount ?? 0
+    }
+  }
+  const now = new Date(nowIso).getTime()
+  const inMonth = sessions.filter((s) => s.status !== 'cancelled' && dayKey(s.scheduled_at).startsWith(monthKey))
+  const waiting = quotes.filter((q) => q.status && WAITING_QUOTE_STATUSES.has(q.status))
+  return {
+    income,
+    prevIncome,
+    scheduled: inMonth.length,
+    upcoming: inMonth.filter((s) => new Date(s.scheduled_at).getTime() >= now).length,
+    waitingQuotes: waiting.length,
+    newQuotes: waiting.filter((q) => q.status === 'new').length,
+  }
 }

@@ -13,7 +13,7 @@ import { getStudioHomeData } from '@/queries/studio-home'
 import { HomeGreeting } from '@/components/home/home-greeting'
 import { OnboardingChecklist } from '@/components/home/onboarding-checklist'
 import { TodayCards } from '@/components/home/today-cards'
-import { DaySummary } from '@/components/home/day-summary'
+import { MonthSummaryCard } from '@/components/home/month-summary'
 import { TodayAppointments, type ProjectBalance } from '@/components/home/today-appointments'
 import { CalendarCard } from '@/components/home/calendar-card'
 import { NextSessionCard } from '@/components/home/next-session-card'
@@ -23,7 +23,7 @@ import { RestDayGate } from '@/components/home/rest-day-gate'
 import { EstudioHome } from '@/components/home/estudio/estudio-home'
 import { todayKey, getMonthKeys, dayKey, TZ, nowAsWallClock, expandClosedWeekdays } from '@/lib/calendar/utils'
 import { greetingWord } from '@/lib/home/month-metrics'
-import { daySummary } from '@/lib/home/day-metrics'
+import { monthSummary } from '@/lib/home/day-metrics'
 import { calculateBalance } from '@/lib/projects/metrics'
 import { weekCounts } from '@/lib/home/metrics'
 import { calculateUpcomingExpenseAlerts, type UpcomingExpenseAlert } from '@/lib/finance/alerts'
@@ -122,6 +122,7 @@ export default async function DashboardPage() {
   // Inicio sigue funcionando normal.
   let activeShift: { id: string; startedAt: string } | null = null
   let pendingQuotes = 0
+  let quoteStatuses: { status: string | null }[] = []
   let pendingConsents = 0
   let activeSessionShifts: Record<string, { id: string; startedAt: string }> = {}
   let inventoryItems: InventoryItem[] = []
@@ -140,6 +141,7 @@ export default async function DashboardPage() {
     const quotes = quotesResult?.success ? quotesResult.data : []
     const consents = consentsResult?.success ? consentsResult.data : []
     pendingQuotes = quotes.filter((q) => q.status === 'new').length
+    quoteStatuses = quotes
     pendingConsents = consents.filter((c) => !c.signed_at).length
     activeSessionShifts = sessionShiftsResult?.success ? sessionShiftsResult.data : {}
     inventoryItems = inventoryResult.success ? inventoryResult.data : []
@@ -178,7 +180,8 @@ export default async function DashboardPage() {
   const horasHoy = Math.round(
     (todaySessions.reduce((sum, s) => sum + (s.duration_minutes ?? 0), 0) / 60) * 10
   ) / 10
-  const summary = daySummary(todaySessions, projects)
+  const monthKey = today.slice(0, 7)
+  const summary = monthSummary(monthKey, sessions, projects, quoteStatuses, new Date().toISOString())
 
   // Saldo por proyecto (para la fila de cada cita) + mapa de proyectos por id
   // (para sacarle la última foto de galería a la próxima sesión).
@@ -272,7 +275,8 @@ export default async function DashboardPage() {
 
       <TodayCards citasHoy={citasHoy} clientesHoy={clientesHoy} horasHoy={horasHoy} />
 
-      <DaySummary
+      <MonthSummaryCard
+        monthKey={monthKey}
         summary={summary}
         projects={projects}
         todaySessions={todaySessions}
@@ -329,6 +333,7 @@ export default async function DashboardPage() {
           todaySessions={todaySessions}
           balances={balances}
           blockedDays={blockedKeys}
+          monthKey={monthKey}
           summary={summary}
           pendingQuotes={pendingQuotes}
           pendingConsents={pendingConsents}

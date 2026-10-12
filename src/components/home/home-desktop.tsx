@@ -1,13 +1,13 @@
 import { HomeHero } from '@/components/home/home-hero'
 import { NextSessionCard } from '@/components/home/next-session-card'
 import { CalendarCard } from '@/components/home/calendar-card'
-import { DaySummary } from '@/components/home/day-summary'
+import { MonthSummaryCard } from '@/components/home/month-summary'
 import { TodayAppointments, type ProjectBalance } from '@/components/home/today-appointments'
 import { PendingImportantCard } from '@/components/home/pending-important-card'
 import { ExpenseAlertsCard } from '@/components/home/expense-alerts-card'
 import type { SessionWithProject } from '@/queries/sessions'
 import type { ProjectSummary } from '@/queries/projects'
-import type { DaySummary as DaySummaryData } from '@/lib/home/day-metrics'
+import type { MonthSummary } from '@/lib/home/day-metrics'
 import type { InventoryItem } from '@/queries/inventory'
 import type { UpcomingExpenseAlert } from '@/lib/finance/alerts'
 
@@ -20,7 +20,7 @@ import type { UpcomingExpenseAlert } from '@/lib/finance/alerts'
  * `/dashboard/stats`.
  *
  * Jerarquía: 1) Portada  2) Iniciar sesión (dentro del hero)  3) Próxima
- * sesión  4) Calendario  5) Sesiones de hoy  6) Resumen del día
+ * sesión  4) Calendario  5) Sesiones de hoy  6) Resumen del mes
  * 7) Pendientes importantes.
  *
  * Botón ▶ por CITA: antes "Iniciar sesión" era solo la jornada general del
@@ -46,7 +46,8 @@ export type HomeDesktopProps = {
   todaySessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
   blockedDays: string[]
-  summary: DaySummaryData
+  monthKey: string
+  summary: MonthSummary
   pendingQuotes: number
   pendingConsents: number
   unscheduledApproved: number
@@ -75,6 +76,7 @@ export function HomeDesktop({
   todaySessions,
   balances,
   blockedDays,
+  monthKey,
   summary,
   pendingQuotes,
   pendingConsents,
@@ -146,7 +148,8 @@ export function HomeDesktop({
         </div>
 
         <div className="space-y-6 lg:col-span-3">
-          <DaySummary
+          <MonthSummaryCard
+            monthKey={monthKey}
             summary={summary}
             projects={projects}
             todaySessions={todaySessions}

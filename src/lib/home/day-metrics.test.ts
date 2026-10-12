@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { SessionWithProject } from '@/queries/sessions'
 import type { ProjectSummary } from '@/queries/projects'
-import { todayClientCount, nextAppointment, daySummary } from './day-metrics'
+import { todayClientCount, nextAppointment, daySummary, monthSummary } from './day-metrics'
 
 const sess = (
   id: string, project_id: string, iso: string, client: string | null,
@@ -55,5 +55,36 @@ describe('daySummary', () => {
   it('pendiente nunca negativo', () => {
     const d = daySummary([sess('1','p1','2026-07-08T15:00:00Z','Ana')], [proj('p1', 100, [500])])
     expect(d.pending).toBe(0)
+  })
+})
+
+describe('monthSummary', () => {
+  const projWithPays = (id: string, pays: [number, string][]) =>
+    ({ id, total_value: 0, payments: pays.map(([amount, paid_at]) => ({ amount, paid_at })) } as unknown as ProjectSummary)
+
+  it('suma pagos del mes en hora de Colombia y compara con el mes anterior', () => {
+    const projects = [
+      projWithPays('a', [[100, '2026-10-05T15:00:00Z'], [50, '2026-09-20T15:00:00Z']]),
+      // 1 oct 03:00 UTC = 30 sep 22:00 en Colombia → cuenta para septiembre.
+      projWithPays('b', [[30, '2026-10-01T03:00:00Z']]),
+    ]
+    const r = monthSummary('2026-10', [], projects, [], '2026-10-12T15:00:00Z')
+    expect(r.income).toBe(100)
+    expect(r.prevIncome).toBe(80)
+  })
+
+  it('cuenta citas no canceladas del mes y cotizaciones en espera', () => {
+    const sessions = [
+      sess('1', 'a', '2026-10-02T15:00:00Z', 'Ana'),
+      sess('2', 'a', '2026-10-20T15:00:00Z', 'Ana'),
+      sess('3', 'a', '2026-10-21T15:00:00Z', 'Ana', 'cancelled'),
+      sess('4', 'a', '2026-11-01T15:00:00Z', 'Ana'),
+    ]
+    const quotes = [{ status: 'new' }, { status: 'quoted' }, { status: 'reviewed' }, { status: 'approved' }, { status: 'rejected' }]
+    const r = monthSummary('2026-10', sessions, [], quotes, '2026-10-12T15:00:00Z')
+    expect(r.scheduled).toBe(2)
+    expect(r.upcoming).toBe(1)
+    expect(r.waitingQuotes).toBe(3)
+    expect(r.newQuotes).toBe(1)
   })
 })
