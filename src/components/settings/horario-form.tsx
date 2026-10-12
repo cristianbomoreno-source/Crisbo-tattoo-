@@ -55,7 +55,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
     <SettingsSubpage title="Horario" description="Los días y horas en que trabajas.">
       <div className="space-y-6">
         <div>
-          <div id="dias-label" className="mb-1.5 font-display text-xs font-medium uppercase tracking-wide text-foreground">
+          <div id="dias-label" className="mb-1.5 font-display text-xs font-medium text-foreground">
             Días de atención
           </div>
           <div className="flex gap-1.5" role="group" aria-labelledby="dias-label">
@@ -68,7 +68,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
                   onClick={() => toggleDay(day.value)}
                   aria-pressed={active}
                   className={cn(
-                    'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.65rem] font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.65rem] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-muted-foreground hover:border-primary/40'
@@ -83,7 +83,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="open-time" className="mb-1.5 block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+            <label htmlFor="open-time" className="mb-1.5 block font-display text-xs font-medium text-foreground">
               Apertura
             </label>
             <select id="open-time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} className={selectClass}>
@@ -96,7 +96,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
             </select>
           </div>
           <div>
-            <label htmlFor="close-time" className="mb-1.5 block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+            <label htmlFor="close-time" className="mb-1.5 block font-display text-xs font-medium text-foreground">
               Cierre
             </label>
             <select id="close-time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} className={selectClass}>

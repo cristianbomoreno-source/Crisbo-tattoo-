@@ -103,7 +103,7 @@ export function ProjectCompletionStep({
       <div className="space-y-3 rounded-xl bg-card p-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Avance del proyecto</span>
-          <span className="font-title text-lg tabular-nums text-primary">{percent}%</span>
+          <span className="font-title font-bold text-lg tabular-nums text-primary">{percent}%</span>
         </div>
         <input
           type="range"

@@ -36,7 +36,7 @@ function Tile({
         <Icon className="size-4 sm:size-5" strokeWidth={1.9} />
       </span>
       <div className="min-w-0">
-        <p className="truncate font-title text-[clamp(0.8rem,3.6vw,1.25rem)] leading-none tabular-nums">
+        <p className="truncate font-title font-bold text-[clamp(0.8rem,3.6vw,1.25rem)] leading-none tabular-nums">
           {value}
         </p>
         <p className="mt-1 truncate text-[clamp(0.5rem,2vw,0.68rem)] text-muted-foreground">{label}</p>

@@ -21,7 +21,7 @@ export default async function InboxLayout({ children }: { children: React.ReactN
           <span className="mx-auto grid size-12 place-items-center rounded-full bg-primary/15 text-primary">
             <MessageCircle className="size-6" />
           </span>
-          <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em]">
+          <h2 className="font-display text-sm font-semibold">
             Conecta tu WhatsApp Business
           </h2>
           <p className="text-sm text-muted-foreground">

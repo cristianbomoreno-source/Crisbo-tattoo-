@@ -54,7 +54,7 @@ export function Sidebar({
           <Link href="/dashboard" aria-label={studio?.name ?? 'Mi estudio'}>
             <span
               aria-hidden="true"
-              className="grid size-9 place-items-center rounded-full bg-primary/15 font-display text-sm font-bold uppercase text-primary"
+              className="grid size-9 place-items-center rounded-full bg-primary/15 font-display text-sm font-bold text-primary"
             >
               {(studio?.name ?? 'O').charAt(0)}
             </span>

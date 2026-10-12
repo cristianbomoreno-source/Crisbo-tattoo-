@@ -111,7 +111,7 @@ export function EquipoPanel({
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <section className="rounded-2xl bg-card p-5" data-tour="team-invite-section">
-        <h2 className="font-title text-lg uppercase">Invitar colaborador</h2>
+        <h2 className="font-title font-bold text-lg">Invitar colaborador</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Si esa persona ya tiene cuenta de Crisbo Tattoo, verá la invitación apenas entre y se une con
           un toque — automático, sin código.
@@ -162,7 +162,7 @@ export function EquipoPanel({
       </section>
 
       <section className="rounded-2xl bg-card p-5">
-        <h2 className="font-title text-lg uppercase">Código de acceso</h2>
+        <h2 className="font-title font-bold text-lg">Código de acceso</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Compártelo con los tatuadores que quieras invitar a tu estudio.
         </p>
@@ -206,7 +206,7 @@ export function EquipoPanel({
 
       {pending.length > 0 && (
         <section className="rounded-2xl bg-card p-5">
-          <h2 className="font-title text-lg uppercase">Solicitudes pendientes</h2>
+          <h2 className="font-title font-bold text-lg">Solicitudes pendientes</h2>
           <div className="mt-3 space-y-2">
             {pending.map((r) => (
               <div key={r.id} className="flex items-center gap-3 rounded-xl bg-background px-4 py-3">
@@ -229,7 +229,7 @@ export function EquipoPanel({
       )}
 
       <section className="rounded-2xl bg-card p-5" data-tour="team-list">
-        <h2 className="font-title text-lg uppercase">Tatuadores</h2>
+        <h2 className="font-title font-bold text-lg">Tatuadores</h2>
         <div className="mt-3 space-y-2">
           {team.map((member) => (
             <MemberRow key={member.id} member={member} />

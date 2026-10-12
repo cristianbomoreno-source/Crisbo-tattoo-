@@ -14,7 +14,7 @@ export function AlertsCard({ alerts }: { alerts: AgendaAlert[] }) {
     <section className="rounded-[1.75rem] border border-amber-400/20 bg-card p-5">
       <div className="mb-3 flex items-center gap-2">
         <AlertTriangle className="size-4 text-amber-400" strokeWidth={2} aria-hidden="true" />
-        <h2 className="font-title text-base uppercase leading-none text-amber-400">
+        <h2 className="font-title font-bold text-base leading-none text-amber-400">
           Alertas importantes
         </h2>
       </div>

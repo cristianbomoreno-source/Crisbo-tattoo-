@@ -46,7 +46,7 @@ export function ModuleAccordion({
           <Icon className="size-5.5" strokeWidth={1.7} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-title text-lg leading-tight uppercase">{title}</h2>
+          <h2 className="font-title font-bold text-lg leading-tight">{title}</h2>
           <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{description}</p>
         </div>
       </div>

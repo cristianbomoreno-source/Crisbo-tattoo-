@@ -26,7 +26,7 @@ export default async function CuentaHubPage() {
         />
         <div className="flex min-h-9 items-center gap-2.5 px-1.5 py-1 text-[13px] text-foreground/90">
           Suscripción
-          <span className="rounded-full bg-primary px-1.5 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-primary-foreground">
+          <span className="rounded-full bg-primary px-1.5 py-0.5 font-display text-[9px] font-bold text-primary-foreground">
             Pro
           </span>
         </div>

@@ -23,7 +23,7 @@ export function QuoteInvestment({ quote, artistName }: { quote: QuoteTemplateDat
     <section id="inversion" className="px-5 pt-16">
       <Reveal className="rounded-3xl border border-white/8 bg-card p-6">
         <p className="text-xs tracking-wide text-white/50 uppercase">Inversión del proyecto</p>
-        <p className="mt-2 font-title text-4xl text-white">
+        <p className="mt-2 font-title font-bold text-4xl text-white">
           {quote.isCourtesy ? 'Cortesía' : `$${Math.round(quote.price).toLocaleString('es-CO')}`}
         </p>
 

@@ -76,7 +76,7 @@ export function InstallPrompt() {
         />
 
         <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
+          <p className="font-display text-sm font-semibold text-foreground">
             Instalá Crisbo Tattoo
           </p>
           <p className="truncate text-[13px] text-muted-foreground">

@@ -114,7 +114,7 @@ export default async function ProjectDetailPage({
 
         <div className="space-y-2.5">
           <div className="flex items-center gap-2">
-            <h1 className="min-w-0 truncate font-title text-2xl leading-tight sm:text-3xl">
+            <h1 className="min-w-0 truncate font-title font-bold text-2xl leading-tight sm:text-3xl">
               {p.clients?.name ?? p.name}
             </h1>
             <span

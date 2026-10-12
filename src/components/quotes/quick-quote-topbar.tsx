@@ -37,7 +37,7 @@ export function QuickQuoteTopBar({
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/cb-icon.png" alt="Crisbo Tattoo" className="size-8 rounded-md" />
-          <span className="hidden font-display text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground sm:inline">
+          <span className="hidden font-display text-[11px] font-semibold text-muted-foreground sm:inline">
             Cotización rápida
           </span>
         </div>
@@ -53,7 +53,7 @@ export function QuickQuoteTopBar({
       </div>
 
       <div className="mt-3 flex items-center gap-3">
-        <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+        <span className="shrink-0 font-display text-[10px] font-bold text-primary">
           Paso {Math.min(completed + 1, total)} de {total}
         </span>
         <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-foreground/8">

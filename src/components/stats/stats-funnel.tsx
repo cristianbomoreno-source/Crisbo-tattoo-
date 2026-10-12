@@ -7,7 +7,7 @@ const ICONS: LucideIcon[] = [Users, FileText, CheckCircle2, CalendarCheck, Star]
 export function StatsFunnel({ stages }: { stages: FunnelStage[] }) {
   return (
     <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
-      <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-xs font-semibold text-muted-foreground">
         Embudo de ventas
       </p>
       <div className="mt-4 flex flex-col">
@@ -19,7 +19,7 @@ export function StatsFunnel({ stages }: { stages: FunnelStage[] }) {
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10">
                   <Icon className="size-4 text-primary" aria-hidden />
                 </span>
-                <span className="font-title text-xl tabular-nums text-foreground">{stage.count}</span>
+                <span className="font-title font-bold text-xl tabular-nums text-foreground">{stage.count}</span>
                 <span className="text-sm text-foreground/70">{stage.label}</span>
               </div>
               {i < stages.length - 1 && (

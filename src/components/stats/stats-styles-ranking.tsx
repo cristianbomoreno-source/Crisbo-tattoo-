@@ -4,7 +4,7 @@ export function StatsStylesRanking({ rows }: { rows: RankingRow[] }) {
   const max = Math.max(1, ...rows.map((r) => r.count))
   return (
     <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-xs font-semibold text-muted-foreground">
         Estilos más solicitados
       </p>
       {rows.length === 0 ? (

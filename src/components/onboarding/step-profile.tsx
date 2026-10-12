@@ -31,7 +31,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium uppercase tracking-wide text-foreground"
+      className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium text-foreground"
     >
       {icon}
       {children}

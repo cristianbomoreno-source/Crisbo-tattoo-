@@ -27,7 +27,7 @@ export function QuoteHero({
       <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pt-24 pb-10">
         {isProject && (
           <span
-            className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.2em]"
+            className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 font-display text-[10px] font-semibold"
             style={{ borderColor: quote.templateColor, color: quote.templateColor }}
           >
             <span className="size-1.5 rounded-full" style={{ backgroundColor: quote.templateColor }} />
@@ -35,12 +35,12 @@ export function QuoteHero({
           </span>
         )}
         <p
-          className="font-display text-sm font-semibold tracking-wide"
+          className="font-display text-sm font-semibold"
           style={{ color: quote.templateColor }}
         >
           Hola {firstName} 👋
         </p>
-        <h1 className="mt-2 font-title text-5xl leading-[0.95] tracking-tight text-white uppercase">
+        <h1 className="mt-2 font-title font-bold text-5xl leading-[0.95] tracking-tight text-white">
           {isProject ? 'Tu proyecto está en marcha.' : 'Este es tu proyecto.'}
         </h1>
         <p className="mt-4 max-w-sm text-base leading-relaxed text-white/70">

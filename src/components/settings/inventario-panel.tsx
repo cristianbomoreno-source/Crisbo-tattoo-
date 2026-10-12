@@ -240,8 +240,8 @@ export function InventarioPanel({
         </Link>
 
         <div className="relative mt-5 max-w-[80%] sm:max-w-[70%]">
-          <p className="font-heading text-xs font-semibold uppercase tracking-widest text-primary">Nuevo insumo</p>
-          <h1 className="mt-1 font-title text-[2.75rem] leading-[0.95] text-foreground sm:text-6xl">INVENTARIO</h1>
+          <p className="font-heading text-xs font-semibold text-primary">Nuevo insumo</p>
+          <h1 className="mt-1 font-title font-bold text-[2.75rem] leading-[0.95] text-foreground sm:text-6xl">INVENTARIO</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
             Organiza tus insumos y mantén tu estudio{' '}
             <span className="text-primary">siempre listo</span>.

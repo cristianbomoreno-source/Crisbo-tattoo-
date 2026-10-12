@@ -12,7 +12,7 @@ export function RecentActivityCard({ items }: { items: RecentActivityItem[] }) {
   return (
     <section className="rounded-[1.75rem] bg-card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-title text-base uppercase leading-none">Actividad reciente</h2>
+        <h2 className="font-title font-bold text-base leading-none">Actividad reciente</h2>
         <Link href="/dashboard/estudio/calendario" className="text-xs font-medium text-primary">
           Ver todo →
         </Link>

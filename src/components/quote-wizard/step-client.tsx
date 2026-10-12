@@ -46,7 +46,7 @@ function SectionHeader({
         <Icon className="size-5" strokeWidth={1.8} />
       </span>
       <div className="min-w-0 pt-1">
-        <h2 className="font-display text-base font-semibold uppercase tracking-wide">{title}</h2>
+        <h2 className="font-display text-base font-semibold">{title}</h2>
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
     </div>
@@ -85,7 +85,7 @@ function ModeCard({
       >
         <Icon className="size-5" strokeWidth={1.8} />
       </span>
-      <span className="font-display text-[clamp(0.68rem,3vw,0.78rem)] font-semibold uppercase tracking-wide">
+      <span className="font-display text-[clamp(0.68rem,3vw,0.78rem)] font-semibold">
         {title}
       </span>
       <span className="text-[clamp(0.65rem,2.8vw,0.72rem)] text-muted-foreground">{subtitle}</span>
@@ -190,7 +190,7 @@ export function StepClient({ draft, patch, clients }: StepClientProps) {
           <div>
             <Label
               htmlFor="wizard-client-name"
-              className="mb-1.5 font-display text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              className="mb-1.5 font-display text-xs font-medium text-muted-foreground"
             >
               Nombre completo
             </Label>
@@ -212,7 +212,7 @@ export function StepClient({ draft, patch, clients }: StepClientProps) {
           <div>
             <Label
               htmlFor="wizard-client-phone"
-              className="mb-1.5 font-display text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              className="mb-1.5 font-display text-xs font-medium text-muted-foreground"
             >
               WhatsApp (opcional)
             </Label>

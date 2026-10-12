@@ -13,7 +13,7 @@ export function StatsAudienceCard({
   return (
     <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="font-display text-xs font-semibold text-muted-foreground">
           Tu público
         </p>
         <Users2 className="size-4 text-muted-foreground" aria-hidden />
@@ -51,7 +51,7 @@ export function StatsAudienceCard({
             </div>
             {age.average !== null && (
               <div className="shrink-0 border-l border-foreground/8 pl-4 text-center">
-                <p className="font-title text-2xl tabular-nums text-foreground">{age.average}</p>
+                <p className="font-title font-bold text-2xl tabular-nums text-foreground">{age.average}</p>
                 <p className="text-[11px] text-muted-foreground">años en promedio</p>
               </div>
             )}

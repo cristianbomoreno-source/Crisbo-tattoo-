@@ -83,7 +83,7 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <h2 className="font-title text-lg uppercase leading-none">Agenda general</h2>
+          <h2 className="font-title font-bold text-lg leading-none">Agenda general</h2>
           <Info className="size-3.5 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
         </div>
         <Select value={view} onValueChange={(v) => v !== null && setView(v)}>
@@ -117,7 +117,7 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
           {visibleTeam.map((member) => (
             <div key={member.artistId} className="border-b border-l border-border/60 px-3 pb-3 pt-4">
               <div className="flex items-center gap-2">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 font-title text-xs text-primary">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 font-title font-bold text-xs text-primary">
                   {member.name.charAt(0).toUpperCase()}
                 </span>
                 <p className="truncate text-sm font-semibold">{member.name}</p>

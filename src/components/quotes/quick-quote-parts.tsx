@@ -60,7 +60,7 @@ export function QuickSection({
     >
       <div className="flex items-center gap-2.5">
         <StepBadge n={n} done={done} />
-        <h2 className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">{title}</h2>
+        <h2 className="font-display text-xs font-semibold text-foreground">{title}</h2>
         {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
       </div>
       {children}

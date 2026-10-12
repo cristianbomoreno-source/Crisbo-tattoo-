@@ -625,7 +625,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   ) : (
                     <span className="min-w-0 flex-1 text-sm text-muted-foreground">Elegir en el mapa del cuerpo</span>
                   )}
-                  <span className="shrink-0 rounded-lg border border-foreground/15 px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  <span className="shrink-0 rounded-lg border border-foreground/15 px-2.5 py-1.5 font-display text-[10px] font-bold text-muted-foreground">
                     Editar
                   </span>
                 </button>
@@ -639,10 +639,10 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                 className="flex flex-col justify-center bg-gradient-to-b from-primary/[0.07] to-transparent"
               >
                 <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-2 text-center">
-                  <span className="font-display text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                  <span className="font-display text-[10px] font-semibold text-muted-foreground">
                     Total
                   </span>
-                  <AnimatedPrice value={effectivePrice} className="font-title text-4xl leading-none text-primary sm:text-5xl" />
+                  <AnimatedPrice value={effectivePrice} className="font-title font-bold text-4xl leading-none text-primary sm:text-5xl" />
                   <TinyTip>
                     Este es un precio estimado.
                     <br />
@@ -776,7 +776,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
 
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             <section className="flex flex-col gap-2">
-              <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">Tamaño</h3>
+              <h3 className="font-display text-xs font-semibold text-foreground">Tamaño</h3>
               <div className="flex h-72 shrink-0">
                 <BodySizeCards
                   gender={precisionGender}
@@ -787,7 +787,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
             </section>
 
             <section className="flex min-h-96 flex-1 flex-col gap-2">
-              <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">Zona</h3>
+              <h3 className="font-display text-xs font-semibold text-foreground">Zona</h3>
               <div className="flex flex-1 rounded-xl border border-border bg-secondary/30 p-2">
                 <BodyMapExplorer gender={precisionGender} onDone={(label) => setPrecisionZone(label)} />
               </div>

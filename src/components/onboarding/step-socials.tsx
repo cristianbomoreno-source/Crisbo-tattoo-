@@ -92,7 +92,7 @@ function SocialRow({
       <div className="min-w-0 flex-1">
         <label
           htmlFor={id}
-          className="mb-0.5 block font-display text-[0.62rem] font-medium uppercase tracking-wide text-muted-foreground"
+          className="mb-0.5 block font-display text-[0.62rem] font-medium text-muted-foreground"
         >
           {label}
         </label>
@@ -235,7 +235,7 @@ export function StepSocials({ draft, patch }: OnboardingStepProps) {
       <div className="flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
         <Link2 className="mt-0.5 size-4 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
         <div>
-          <p className="font-display text-xs font-semibold uppercase tracking-wide text-primary">
+          <p className="font-display text-xs font-semibold text-primary">
             Así funciona tu enlace de reservas
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -248,16 +248,16 @@ export function StepSocials({ draft, patch }: OnboardingStepProps) {
 
       {/* VISTA PREVIA */}
       <div className="rounded-2xl border-primary bg-card p-4">
-        <span className="mb-3 block font-display text-xs font-semibold uppercase tracking-wide text-primary">
+        <span className="mb-3 block font-display text-xs font-semibold text-primary">
           Vista previa
         </span>
 
         <div className="flex items-center gap-3">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border bg-secondary font-display text-lg font-semibold uppercase text-foreground">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border bg-secondary font-display text-lg font-semibold text-foreground">
             {initial}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+            <p className="truncate font-display text-sm font-semibold text-foreground">
               {displayName || 'Tu estudio'}
             </p>
             <div className="mt-1.5 flex items-center gap-1.5">

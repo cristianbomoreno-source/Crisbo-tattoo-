@@ -115,7 +115,7 @@ export function QuotesList({
               />
               {q.style && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden select-none">
-                  <span className="block w-full max-w-full truncate text-center font-title text-7xl leading-none tracking-tight text-foreground uppercase opacity-[0.13] sm:text-8xl">
+                  <span className="block w-full max-w-full truncate text-center font-title font-bold text-7xl leading-none tracking-tight text-foreground opacity-[0.13] sm:text-8xl">
                     {q.style}
                   </span>
                 </div>
@@ -125,7 +125,7 @@ export function QuotesList({
                 <BotBadge source={q.source} />
                 <span
                   className={cn(
-                    'inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium tracking-wider text-white uppercase',
+                    'inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium text-white',
                     config.tone === 'active' && 'border-primary/40'
                   )}
                 >
@@ -135,7 +135,7 @@ export function QuotesList({
               </div>
 
               <div className="relative z-10 min-w-0 pr-14">
-                <h3 className="truncate font-title text-4xl leading-none tracking-tight text-foreground uppercase sm:text-5xl">
+                <h3 className="truncate font-title font-bold text-4xl leading-none tracking-tight text-foreground sm:text-5xl">
                   {q.clients?.name ?? 'Cliente'}
                 </h3>
                 <p className="mt-2 text-sm text-foreground/70">

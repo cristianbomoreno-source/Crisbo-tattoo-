@@ -157,7 +157,7 @@ export function IntakeChat({ slug, studioName, logoUrl, waPhone, instagram, avai
     return (
       <Shell studioName={studioName} logoUrl={logoUrl}>
         <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-          <p className="font-title text-2xl text-white">{COPY.unavailableTitle}</p>
+          <p className="font-title font-bold text-2xl text-white">{COPY.unavailableTitle}</p>
           <p className="text-sm text-muted-foreground">{COPY.unavailableBody}</p>
         </div>
       </Shell>
@@ -244,7 +244,7 @@ function TypingBubble({ logoUrl }: { logoUrl: string | null }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="mt-0.5 size-7 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading uppercase text-white/70">
+        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading text-white/70">
           B
         </div>
       )}
@@ -266,12 +266,12 @@ function BotBubble({ logoUrl, text, subtext }: { logoUrl: string | null; text: s
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="mt-0.5 size-7 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading uppercase text-white/70">
+        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading text-white/70">
           B
         </div>
       )}
       <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-card px-4 py-2.5">
-        <p className="font-title text-[17px] leading-[1.2] text-white">{text}</p>
+        <p className="font-title font-bold text-[17px] leading-[1.2] text-white">{text}</p>
         {subtext && <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{subtext}</p>}
       </div>
     </div>
@@ -327,11 +327,11 @@ function Shell({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt="" className="size-8 rounded-full object-cover" />
               ) : (
-                <div className="flex size-8 items-center justify-center rounded-full bg-card font-heading text-xs uppercase">
+                <div className="flex size-8 items-center justify-center rounded-full bg-card font-heading text-xs">
                   {studioName.slice(0, 2)}
                 </div>
               )}
-              <p className="font-heading text-xs uppercase tracking-wide text-white">{studioName}</p>
+              <p className="font-heading text-xs text-white">{studioName}</p>
             </div>
           )}
         </div>
@@ -544,7 +544,7 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
       {/* Hero: título + descripción a la izquierda, ilustración con halo verde a la derecha. */}
       <div className="relative mb-5 flex shrink-0 items-start gap-3 overflow-hidden rounded-3xl border border-white/8 bg-card p-5">
         <div className="min-w-0 flex-1">
-          <h2 className="font-title text-[26px] leading-[1.05] text-white">
+          <h2 className="font-title font-bold text-[26px] leading-[1.05] text-white">
             {STEP_HEADERS.service.title.split('tu piel').map((part, i, arr) => (
               <span key={i}>
                 {part}
@@ -594,7 +594,7 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
                 <Icon className="absolute right-3 top-3 size-5 text-primary/80" strokeWidth={1.8} aria-hidden />
               )}
               <div className="relative z-10 p-3.5">
-                <span className="block font-heading text-[15px] font-semibold uppercase tracking-wide text-white">
+                <span className="block font-heading text-[15px] font-semibold text-white">
                   {service}
                 </span>
                 <span className="mt-0.5 block text-[11px] leading-snug text-white/70">
@@ -629,7 +629,7 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
               <MoreHorizontal className="size-5" aria-hidden />
             </span>
             <span className="min-w-0">
-              <span className="block font-heading text-[15px] font-semibold uppercase tracking-wide text-white">Otro</span>
+              <span className="block font-heading text-[15px] font-semibold text-white">Otro</span>
               <span className="mt-0.5 block text-[11px] leading-snug text-white/70">{SERVICE_DESCRIPTION[otro]}</span>
             </span>
           </div>
@@ -677,7 +677,7 @@ function StyleCards({ initialValue, onDone }: { initialValue?: string; onDone: (
           <button
             type="button"
             onClick={() => onDone(value)}
-            className="sticky bottom-2 left-full flex w-fit cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs uppercase tracking-wide text-primary-foreground shadow-lg transition-all active:scale-95"
+            className="sticky bottom-2 left-full flex w-fit cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs text-primary-foreground shadow-lg transition-all active:scale-95"
           >
             <Check className="size-3.5" strokeWidth={3} aria-hidden /> Listo
           </button>
@@ -1071,7 +1071,7 @@ function AvailabilityDaysPicker({
             const labels = days.filter(d => selected.includes(d.key)).map(d => d.label)
             onPick(labels.join(', '))
           }}
-          className="ml-auto flex w-fit shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs uppercase tracking-wide text-primary-foreground transition-all active:scale-95"
+          className="ml-auto flex w-fit shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs text-primary-foreground transition-all active:scale-95"
         >
           <Check className="size-3.5" strokeWidth={3} aria-hidden /> Listo
         </button>

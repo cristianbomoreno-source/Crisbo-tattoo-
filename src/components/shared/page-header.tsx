@@ -11,11 +11,11 @@ export function PageHeader({ title, kicker, description, action }: PageHeaderPro
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div className="min-w-0">
         {kicker && (
-          <p className="mb-1.5 font-display text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+          <p className="mb-1.5 font-display text-xs font-semibold text-primary">
             {kicker}
           </p>
         )}
-        <h1 className="font-title text-4xl uppercase leading-[0.95] tracking-[0.01em] break-words sm:text-5xl">
+        <h1 className="font-title font-bold text-4xl leading-[0.95] break-words sm:text-5xl">
           {title}
         </h1>
         {description && (

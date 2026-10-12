@@ -55,7 +55,7 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-title text-3xl uppercase leading-none">Feedback de tatuadores</h1>
+        <h1 className="font-title font-bold text-3xl leading-none">Feedback de tatuadores</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
           Calificaciones que dejaron los tatuadores/estudios en Ajustes → Mensaje de Crisbo Tattoo.
         </p>
@@ -68,7 +68,7 @@ export default async function AdminPage() {
       </div>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Promedio por función</h2>
+        <h2 className="mb-4 font-title font-bold text-lg leading-none">Promedio por función</h2>
         <div className="space-y-3">
           {data.byFeature.map((f) => (
             <div key={f.key} className="space-y-1">
@@ -88,7 +88,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Comentarios</h2>
+        <h2 className="mb-4 font-title font-bold text-lg leading-none">Comentarios</h2>
         {data.comments.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay comentarios.</p>
         ) : (
@@ -112,7 +112,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Módulos por cuenta</h2>
+        <h2 className="mb-4 font-title font-bold text-lg leading-none">Módulos por cuenta</h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Activa o desactiva qué puede usar cada estudio/cuenta. Al apagar uno, esa cuenta ve un aviso de
           «disponible más adelante por suscripción» al intentar entrar.
@@ -121,7 +121,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Clientes de Crisbo Tattoo</h2>
+        <h2 className="mb-4 font-title font-bold text-lg leading-none">Clientes de Crisbo Tattoo</h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Historial de cuentas creadas: correo/usuario, método y dispositivo.
         </p>
@@ -148,7 +148,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="rounded-[1.75rem] bg-card p-5">
-        <h2 className="mb-4 font-title text-lg uppercase leading-none">Administradores</h2>
+        <h2 className="mb-4 font-title font-bold text-lg leading-none">Administradores</h2>
         <ManageAdmins admins={admins} myUserId={user?.id ?? ''} />
       </section>
     </div>

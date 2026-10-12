@@ -18,7 +18,7 @@ export default function OfflinePage() {
       </div>
 
       <div className="space-y-2">
-        <h1 className="font-display text-2xl font-semibold uppercase tracking-[0.04em] text-foreground">
+        <h1 className="font-display text-2xl font-semibold text-foreground">
           Sin conexión
         </h1>
         <p className="mx-auto max-w-sm text-[15px] leading-relaxed text-muted-foreground">

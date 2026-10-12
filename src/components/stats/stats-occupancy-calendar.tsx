@@ -17,7 +17,7 @@ export function StatsOccupancyCalendar({
 
   return (
     <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-xs font-semibold text-muted-foreground">
         Días ocupados
       </p>
 
@@ -53,11 +53,11 @@ export function StatsOccupancyCalendar({
 
       <div className="mt-4 flex items-center justify-between border-t border-foreground/8 pt-3">
         <div>
-          <p className="font-title text-lg tabular-nums text-primary">{occupied}</p>
+          <p className="font-title font-bold text-lg tabular-nums text-primary">{occupied}</p>
           <p className="text-[11px] text-muted-foreground">Días ocupados</p>
         </div>
         <div className="text-right">
-          <p className="font-title text-lg tabular-nums text-foreground">{free}</p>
+          <p className="font-title font-bold text-lg tabular-nums text-foreground">{free}</p>
           <p className="text-[11px] text-muted-foreground">Días libres</p>
         </div>
       </div>

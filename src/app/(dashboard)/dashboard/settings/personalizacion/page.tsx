@@ -33,13 +33,13 @@ export default async function PersonalizacionHubPage() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={studio.logoUrl} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
           ) : (
-            <span className="font-title text-xl text-white">{studio.name.charAt(0)}</span>
+            <span className="font-title font-bold text-xl text-white">{studio.name.charAt(0)}</span>
           )}
         </Link>
         <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl border border-border">
           <span className="size-6 rounded-full bg-primary" />
         </span>
-        <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl border border-border font-title text-xl">
+        <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl border border-border font-title font-bold text-xl">
           Aa
         </span>
       </div>

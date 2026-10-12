@@ -36,7 +36,7 @@ export function SettingsSubpage({
     return (
       <div>
         <div className="mb-4">
-          <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+          <h3 className="font-display text-sm font-semibold text-foreground">
             {title}
           </h3>
           {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
@@ -61,7 +61,7 @@ export function SettingsSubpage({
           <ArrowLeft className="size-5" strokeWidth={1.8} aria-hidden="true" />
         </Link>
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-semibold uppercase tracking-[0.04em] text-foreground">
+          <h1 className="font-display text-2xl font-semibold text-foreground">
             {title}
           </h1>
           {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}

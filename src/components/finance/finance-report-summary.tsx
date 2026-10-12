@@ -91,7 +91,7 @@ function StatCard({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+    <h3 className="font-display text-sm font-semibold text-muted-foreground mb-3">
       {children}
     </h3>
   )

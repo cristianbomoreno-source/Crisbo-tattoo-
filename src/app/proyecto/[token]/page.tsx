@@ -8,7 +8,7 @@ function Message({ title, body }: { title: string; body: string }) {
     <div className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 text-center">
       <Logo full className="text-xl" />
       <div className="rounded-2xl border border-foreground/8 bg-card p-6">
-        <h1 className="font-display text-xl font-medium uppercase text-foreground">{title}</h1>
+        <h1 className="font-display text-xl font-medium text-foreground">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{body}</p>
       </div>
     </div>

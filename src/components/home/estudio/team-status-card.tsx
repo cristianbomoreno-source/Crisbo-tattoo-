@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<ArtistToday['status'], { text: string; className: str
 export function TeamStatusCard({ team }: { team: ArtistToday[] }) {
   return (
     <section className="rounded-[1.75rem] bg-card p-5">
-      <h2 className="mb-3 font-title text-base uppercase leading-none">Estado de tatuadores</h2>
+      <h2 className="mb-3 font-title font-bold text-base leading-none">Estado de tatuadores</h2>
       <div className="space-y-1">
         {team.map((member) => {
           const status = STATUS_LABEL[member.status]
@@ -32,7 +32,7 @@ export function TeamStatusCard({ team }: { team: ArtistToday[] }) {
               href="/dashboard/estudio/calendario"
               className="flex items-center gap-3 rounded-xl px-1.5 py-2.5 transition-colors hover:bg-accent/60"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/15 font-title text-xs text-primary">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/15 font-title font-bold text-xs text-primary">
                 {member.name.charAt(0).toUpperCase()}
               </span>
               <div className="min-w-0 flex-1">

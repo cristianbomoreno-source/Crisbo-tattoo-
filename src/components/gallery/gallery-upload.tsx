@@ -84,7 +84,7 @@ export function GalleryUpload({
 
   return (
     <form onSubmit={handleSubmit} className="max-w-md space-y-4 rounded-2xl bg-card p-5">
-      <h3 className="flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide">
+      <h3 className="flex items-center gap-2 font-display text-sm font-semibold">
         <ImagePlus className="size-4 text-primary" strokeWidth={1.8} />
         Subir foto
       </h3>

@@ -138,7 +138,7 @@ export function CajaDialog({
         {step.view === 'list' && (
           <div className="space-y-5">
             <div className="space-y-2">
-              <p className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="font-display text-xs font-semibold text-muted-foreground">
                 Cobros pendientes del día
               </p>
               {todayRows.length === 0 ? (
@@ -166,7 +166,7 @@ export function CajaDialog({
             </div>
 
             <div className="space-y-2">
-              <p className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="font-display text-xs font-semibold text-muted-foreground">
                 Abono de otro proyecto
               </p>
               <div className="relative">
@@ -229,7 +229,7 @@ export function CajaDialog({
 
             {detail.payments.length > 0 && (
               <div className="space-y-1.5">
-                <p className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className="font-display text-xs font-semibold text-muted-foreground">
                   Abonos realizados
                 </p>
                 <ul className="space-y-1.5">

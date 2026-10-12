@@ -86,7 +86,7 @@ export function ColorCards({ onPick }: { onPick: (v: string) => void }) {
               )}
             </span>
             <span className="flex-1">
-              <span className="block font-heading text-sm font-semibold uppercase tracking-wide text-white">
+              <span className="block font-heading text-sm font-semibold text-white">
                 {p.label}
               </span>
               <span className="block text-xs text-muted-foreground">{p.subtitle}</span>
@@ -210,7 +210,7 @@ export function PhotoPicker({ onDone }: { onDone: (files: File[]) => void }) {
             className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-2 focus-visible:outline-ring"
           >
             <ImagePlus className="size-6" aria-hidden />
-            <span className="font-heading text-[10px] font-semibold uppercase tracking-wide">Agregar más</span>
+            <span className="font-heading text-[10px] font-semibold">Agregar más</span>
           </button>
         )}
       </div>
@@ -225,7 +225,7 @@ export function PhotoPicker({ onDone }: { onDone: (files: File[]) => void }) {
         <button
           type="button"
           onClick={() => onDone(files)}
-          className="ml-auto flex w-fit cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs uppercase tracking-wide text-primary-foreground transition-all active:scale-95"
+          className="ml-auto flex w-fit cursor-pointer items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 font-heading text-xs text-primary-foreground transition-all active:scale-95"
         >
           <Check className="size-3.5" strokeWidth={3} aria-hidden /> Listo
         </button>

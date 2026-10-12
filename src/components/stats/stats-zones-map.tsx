@@ -6,7 +6,7 @@ export function StatsZonesMap({ rows }: { rows: RankingRow[] }) {
 
   return (
     <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-xs font-semibold text-muted-foreground">
         Zonas más elegidas
       </p>
 

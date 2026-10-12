@@ -145,7 +145,7 @@ export function DurationAccordion({
           <Clock className="size-5" strokeWidth={1.75} aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="block font-display text-[11px] font-semibold text-muted-foreground">
             Duración aproximada por sesión
           </span>
           <span className="mt-0.5 block truncate text-base font-medium text-foreground">

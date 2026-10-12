@@ -75,7 +75,7 @@ export function ProjectsBoard({
           type="button"
           onClick={() => setChip('all')}
           className={cn(
-            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             chip === 'all'
               ? 'border-primary bg-primary text-primary-foreground'
               : 'border-border text-muted-foreground hover:text-foreground',
@@ -87,7 +87,7 @@ export function ProjectsBoard({
           type="button"
           onClick={() => setChip('completed')}
           className={cn(
-            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             chip === 'completed'
               ? 'border-primary bg-primary text-primary-foreground'
               : 'border-border text-muted-foreground hover:text-foreground',
@@ -102,7 +102,7 @@ export function ProjectsBoard({
           value={monthFilter}
           onChange={(e) => setMonthFilter(e.target.value)}
           aria-label="Filtrar proyectos por mes"
-          className="cursor-pointer rounded-full border border-border bg-transparent px-3 py-1.5 font-display text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="cursor-pointer rounded-full border border-border bg-transparent px-3 py-1.5 font-display text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="all">Proyectos por mes</option>
           {months.map((m) => (
@@ -155,7 +155,7 @@ function ProjectRow({ project }: { project: ProjectSummary }) {
       className="flex items-center gap-3 rounded-2xl border-l-2 border-l-primary bg-card p-3 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate font-display text-sm font-medium uppercase leading-tight tracking-tight">
+        <p className="truncate font-display text-sm font-medium leading-tight tracking-tight">
           {clientName}
         </p>
         <p className="truncate text-xs text-muted-foreground">{project.name}</p>

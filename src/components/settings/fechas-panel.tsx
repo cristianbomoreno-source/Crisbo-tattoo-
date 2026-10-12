@@ -66,7 +66,7 @@ export function FechasPanel({ blockedDays }: { blockedDays: BlockedDay[] }) {
       <div className="space-y-6">
         {/* Agregar un día */}
         <div className="space-y-3 rounded-2xl bg-card p-4">
-          <div className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">Bloquear un día</div>
+          <div className="font-display text-xs font-semibold text-foreground">Bloquear un día</div>
           <div className="space-y-1.5">
             <label htmlFor="block-date" className="block text-xs text-muted-foreground">
               Fecha

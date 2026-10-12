@@ -52,7 +52,7 @@ function MiniHeader({
   return (
     <div className="mb-3 flex items-center gap-2">
       <Icon className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide">
+      <h3 className="font-display text-xs font-semibold">
         {label}
         {required && (
           <span className="ml-0.5 text-primary" aria-hidden="true">
@@ -178,7 +178,7 @@ export function StepDetails({ draft, patch }: StepDetailsProps) {
                 >
                   {active && <CornerCheck className="-right-1 -top-1" />}
                 </span>
-                <span className="font-display text-[clamp(0.66rem,2.8vw,0.75rem)] font-semibold uppercase tracking-wide">
+                <span className="font-display text-[clamp(0.66rem,2.8vw,0.75rem)] font-semibold">
                   {wt.label}
                 </span>
               </button>
@@ -215,7 +215,7 @@ export function StepDetails({ draft, patch }: StepDetailsProps) {
                   strokeWidth={1.8}
                   aria-hidden="true"
                 />
-                <span className="font-display text-sm font-semibold uppercase tracking-wide">{opt.label}</span>
+                <span className="font-display text-sm font-semibold">{opt.label}</span>
                 {active && <Check className="size-4 text-primary" strokeWidth={2.5} aria-hidden="true" />}
               </button>
             )

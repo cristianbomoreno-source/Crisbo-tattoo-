@@ -32,7 +32,7 @@ export function StatsRecommendations({
 
   return (
     <section className="space-y-3">
-      <h2 className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <h2 className="font-display text-xs font-semibold text-muted-foreground">
         Recomendaciones
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">

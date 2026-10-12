@@ -9,7 +9,7 @@ export function QuoteMessage({ quote, artistName }: { quote: QuoteTemplateData; 
       <Reveal className="rounded-3xl border border-white/8 bg-card p-6">
         <div className="mb-5 flex items-center gap-2">
           <Mail className="size-4" style={{ color: quote.templateColor }} />
-          <span className="font-display text-xs font-semibold tracking-wider text-white/60 uppercase">
+          <span className="font-display text-xs font-semibold text-white/60">
             Una carta para ti
           </span>
         </div>

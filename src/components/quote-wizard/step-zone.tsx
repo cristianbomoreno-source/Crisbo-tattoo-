@@ -26,7 +26,7 @@ export function StepZone({ draft, patch }: StepZoneProps) {
           <MapPin className="size-5" strokeWidth={1.8} />
         </span>
         <div className="min-w-0 pt-1">
-          <h2 className="font-display text-base font-semibold uppercase tracking-wide">Zona del cuerpo</h2>
+          <h2 className="font-display text-base font-semibold">Zona del cuerpo</h2>
           <p className="text-sm text-muted-foreground">
             {draft.zone ? draft.zone : 'Recorré el cuerpo hasta la zona exacta'}
           </p>
@@ -41,7 +41,7 @@ export function StepZone({ draft, patch }: StepZoneProps) {
             onClick={() => patch({ gender: g })}
             aria-pressed={(draft.gender ?? 'Hombre') === g}
             className={cn(
-              'flex-1 cursor-pointer rounded-full py-2 font-display text-[clamp(0.62rem,2.8vw,0.75rem)] font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'flex-1 cursor-pointer rounded-full py-2 font-display text-[clamp(0.62rem,2.8vw,0.75rem)] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               (draft.gender ?? 'Hombre') === g
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'

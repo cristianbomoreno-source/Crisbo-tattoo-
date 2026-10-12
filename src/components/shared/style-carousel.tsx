@@ -94,7 +94,7 @@ export function StyleCarousel({
                 </span>
               )}
             </span>
-            <span className="line-clamp-2 block px-1 py-1.5 text-center font-heading text-[10px] font-semibold leading-tight uppercase tracking-wide text-foreground">
+            <span className="line-clamp-2 block px-1 py-1.5 text-center font-heading text-[10px] font-semibold leading-tight text-foreground">
               {style}
             </span>
           </button>

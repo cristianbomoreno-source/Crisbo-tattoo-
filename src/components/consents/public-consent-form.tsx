@@ -175,7 +175,7 @@ export function PublicConsentForm({
         <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary/15 text-primary">
           <Check className="size-7" strokeWidth={2.5} />
         </span>
-        <h1 className="mt-3 font-display text-xl font-medium uppercase">¡Listo!</h1>
+        <h1 className="mt-3 font-display text-xl font-medium">¡Listo!</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Tu consentimiento quedó firmado. ¡Gracias!
         </p>
@@ -264,7 +264,7 @@ export function PublicConsentForm({
   return (
     <div className="space-y-5 rounded-2xl bg-card p-5">
       <div>
-        <h1 className="font-display text-xl font-medium uppercase leading-tight">
+        <h1 className="font-display text-xl font-medium leading-tight">
           Consentimiento informado
         </h1>
         <p className="text-sm text-muted-foreground">{studioName}</p>
@@ -300,7 +300,7 @@ export function PublicConsentForm({
         ))}
       </div>
 
-      <p className="font-display text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+      <p className="font-display text-xs font-semibold text-primary">
         {step + 1}. {STEPS[step]!.label}
       </p>
 
@@ -543,7 +543,7 @@ export function PublicConsentForm({
       {step === 5 && (
         <div className="space-y-4">
           <div className="space-y-1.5 rounded-2xl bg-background p-4 text-sm">
-            <p className="mb-1 flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wide text-primary">
+            <p className="mb-1 flex items-center gap-1.5 font-display text-xs font-semibold text-primary">
               <ShieldCheck className="size-3.5" strokeWidth={2} />
               Resumen antes de firmar
             </p>

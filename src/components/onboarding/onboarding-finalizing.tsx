@@ -51,7 +51,7 @@ export function OnboardingFinalizing({ ready, onDone }: { ready: boolean; onDone
       />
 
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center text-center">
-        <h1 className="font-title text-2xl uppercase leading-tight">
+        <h1 className="font-title font-bold text-2xl leading-tight">
           {finished ? '¡Listo!' : 'Configurando tu estudio digital'}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ export function OnboardingFinalizing({ ready, onDone }: { ready: boolean; onDone
             <button
               type="button"
               onClick={onDone}
-              className="flex w-full animate-in fade-in items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-display text-sm font-bold uppercase tracking-wide text-primary-foreground"
+              className="flex w-full animate-in fade-in items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-display text-sm font-bold text-primary-foreground"
             >
               Entrar a Crisbo Tattoo
               <ArrowRight className="size-4" strokeWidth={2.2} aria-hidden="true" />

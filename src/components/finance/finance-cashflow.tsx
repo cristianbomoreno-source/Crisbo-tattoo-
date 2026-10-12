@@ -9,7 +9,7 @@ export function FinanceCashflowCard({ rows }: { rows: CashflowRow[] }) {
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="flex items-center gap-2 font-display text-xs font-semibold text-muted-foreground">
         <TrendingUp className="size-4 text-primary" strokeWidth={1.8} aria-hidden />
         Flujo de caja — próximos ingresos
       </h3>

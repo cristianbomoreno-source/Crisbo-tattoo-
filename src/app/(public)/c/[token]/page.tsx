@@ -4,7 +4,7 @@ import { PublicConsentForm } from '@/components/consents/public-consent-form'
 function Message({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-2xl bg-card p-6 text-center">
-      <h1 className="font-display text-xl font-medium uppercase">{title}</h1>
+      <h1 className="font-display text-xl font-medium">{title}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{body}</p>
     </div>
   )

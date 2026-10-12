@@ -79,7 +79,7 @@ export function AbonoForm({ depositMode: initialMode, depositValue: initialValue
                 )}
               >
                 <Icon className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')} strokeWidth={1.8} aria-hidden="true" />
-                <span className={cn('font-display text-xs font-semibold uppercase tracking-wide', active ? 'text-primary' : 'text-foreground')}>
+                <span className={cn('font-display text-xs font-semibold', active ? 'text-primary' : 'text-foreground')}>
                   {title}
                 </span>
                 <span className="text-xs text-muted-foreground">{sub}</span>
@@ -90,7 +90,7 @@ export function AbonoForm({ depositMode: initialMode, depositValue: initialValue
 
         {mode && (
           <div>
-            <label htmlFor="abono-value" className="mb-1.5 block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+            <label htmlFor="abono-value" className="mb-1.5 block font-display text-xs font-medium text-foreground">
               Monto del abono
             </label>
             <div className="relative">
@@ -104,11 +104,11 @@ export function AbonoForm({ depositMode: initialMode, depositValue: initialValue
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="0"
                 className={cn(
-                  'h-11 w-full rounded-md border border-input bg-transparent py-2 text-right font-title text-lg tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'h-11 w-full rounded-md border border-input bg-transparent py-2 text-right font-title font-bold text-lg tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   mode === 'fixed' ? 'pl-8 pr-16' : 'pl-3 pr-10'
                 )}
               />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-display text-xs font-semibold uppercase text-muted-foreground">
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-display text-xs font-semibold text-muted-foreground">
                 {mode === 'fixed' ? 'COP' : '%'}
               </span>
             </div>

@@ -26,7 +26,7 @@ export function TodayCards({
             <it.icon className="size-4" strokeWidth={2} />
           </span>
           <div>
-            <p className="font-title text-xl leading-none tabular-nums">{it.value}</p>
+            <p className="font-title font-bold text-xl leading-none tabular-nums">{it.value}</p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">{it.label}</p>
           </div>
         </div>

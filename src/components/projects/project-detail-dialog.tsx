@@ -79,7 +79,7 @@ function Content({
           </span>
         )}
         <div
-          className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[11px] font-bold uppercase tracking-wider ${
+          className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[11px] font-bold ${
             complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
           }`}
         >
@@ -89,7 +89,7 @@ function Content({
 
       <div className="space-y-4 p-4 sm:p-5">
         <DialogHeader className="space-y-1 text-left">
-          <DialogTitle className="font-display text-xl font-bold uppercase tracking-tight">
+          <DialogTitle className="font-display text-xl font-bold tracking-tight">
             {clientName}
           </DialogTitle>
           <DialogDescription>{project.name}</DialogDescription>

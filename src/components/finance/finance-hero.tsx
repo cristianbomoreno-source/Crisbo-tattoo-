@@ -24,7 +24,7 @@ function CollectedRing({ pct }: { pct: number }) {
           style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }}
         />
       </svg>
-      <span className="font-title text-2xl tabular-nums text-foreground">
+      <span className="font-title font-bold text-2xl tabular-nums text-foreground">
         {pct}
         <span className="text-sm text-muted-foreground">%</span>
       </span>
@@ -53,11 +53,11 @@ export function FinanceHero({
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-6">
-      <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-[11px] font-semibold text-muted-foreground">
         Facturación del mes
       </p>
       <div className="mt-2 flex items-start justify-between gap-4">
-        <p className="font-title text-[2.6rem] leading-[0.95] tracking-tight text-foreground tabular-nums">
+        <p className="font-title font-bold text-[2.6rem] leading-[0.95] tracking-tight text-foreground tabular-nums">
           {cop(revenue)}
         </p>
         <CollectedRing pct={collectedPct} />

@@ -29,7 +29,7 @@ export function CelebrationScreen({
           <Check className="size-11 text-primary" strokeWidth={2.2} />
         </div>
 
-        <h1 className="mt-8 font-title text-3xl uppercase leading-tight">{title}</h1>
+        <h1 className="mt-8 font-title font-bold text-3xl leading-tight">{title}</h1>
         <p className="mt-2 max-w-xs text-sm text-muted-foreground">{subtitle}</p>
 
         <ul className="mt-8 w-full space-y-2.5 text-left">
@@ -43,7 +43,7 @@ export function CelebrationScreen({
 
         <Link
           href={href}
-          className="mt-8 flex w-full items-center justify-center rounded-xl bg-primary py-3.5 font-display text-sm font-bold uppercase tracking-wide text-primary-foreground"
+          className="mt-8 flex w-full items-center justify-center rounded-xl bg-primary py-3.5 font-display text-sm font-bold text-primary-foreground"
         >
           {cta}
         </Link>

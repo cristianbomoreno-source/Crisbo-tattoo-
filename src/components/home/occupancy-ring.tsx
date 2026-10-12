@@ -26,8 +26,8 @@ export function OccupancyRing({
         />
       </svg>
       <div className="absolute flex flex-col items-center leading-none">
-        <span className={compact ? 'font-title text-[clamp(0.6rem,4vw,1.25rem)] tabular-nums' : 'font-title text-2xl tabular-nums'}>{clamped}%</span>
-        {!compact && label && <span className="mt-1 font-display text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>}
+        <span className={compact ? 'font-title font-bold text-[clamp(0.6rem,4vw,1.25rem)] tabular-nums' : 'font-title font-bold text-2xl tabular-nums'}>{clamped}%</span>
+        {!compact && label && <span className="mt-1 font-display text-[9px] font-medium text-muted-foreground">{label}</span>}
         {!compact && sublabel && <span className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">{sublabel}</span>}
       </div>
     </div>

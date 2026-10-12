@@ -167,10 +167,10 @@ export function QuoteWizard({
         </div>
 
         <div className="flex flex-col items-center gap-0.5">
-          <h1 className="font-display text-[clamp(0.85rem,3.6vw,1rem)] font-semibold uppercase tracking-wide">
+          <h1 className="font-display text-[clamp(0.85rem,3.6vw,1rem)] font-semibold">
             Nueva cotización
           </h1>
-          <p className="font-display text-[clamp(0.6rem,2.6vw,0.68rem)] uppercase tracking-wider text-muted-foreground">
+          <p className="font-display text-[clamp(0.6rem,2.6vw,0.68rem)] text-muted-foreground">
             Paso <span className="text-primary">{stepIndex + 1}</span> de {WIZARD_STEPS.length}
           </p>
         </div>
@@ -222,7 +222,7 @@ export function QuoteWizard({
               variant="outline"
               onClick={() => setConfirmCancelOpen(true)}
               className={cn(
-                'h-12 flex-1 cursor-pointer font-display text-sm font-semibold uppercase tracking-wider'
+                'h-12 flex-1 cursor-pointer font-display text-sm font-semibold'
               )}
             >
               Cancelar
@@ -233,7 +233,7 @@ export function QuoteWizard({
               variant="outline"
               onClick={goBack}
               className={cn(
-                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold uppercase tracking-wider'
+                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold'
               )}
             >
               <ArrowLeft className="size-4" strokeWidth={1.8} />
@@ -247,7 +247,7 @@ export function QuoteWizard({
               onClick={goNext}
               disabled={!canContinue(stepKey, draft)}
               className={cn(
-                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold uppercase tracking-wider'
+                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold'
               )}
             >
               Continuar
@@ -261,7 +261,7 @@ export function QuoteWizard({
               onClick={() => summarySaveRef.current()}
               disabled={summarySaving}
               className={cn(
-                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold uppercase tracking-wider'
+                'h-12 flex-1 cursor-pointer gap-1.5 font-display text-sm font-semibold'
               )}
             >
               <CheckCircle2 className="size-4" strokeWidth={1.8} aria-hidden="true" />

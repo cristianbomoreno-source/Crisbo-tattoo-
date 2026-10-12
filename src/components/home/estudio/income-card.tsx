@@ -35,7 +35,7 @@ export function IncomeCard({
   return (
     <section className="rounded-[1.75rem] bg-card p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-title text-base uppercase leading-none">Ingresos del día</h2>
+        <h2 className="font-title font-bold text-base leading-none">Ingresos del día</h2>
         <Link href="/dashboard/settings/finanzas" className="text-xs font-medium text-primary">
           Ver detalle →
         </Link>

@@ -90,7 +90,7 @@ export function VersionInfo() {
   return (
     <div className="flex items-center justify-between gap-3 px-2 py-1.5">
       <div className="min-w-0">
-        <p className="font-display text-sm font-semibold uppercase tracking-wide">Acerca de Crisbo Tattoo</p>
+        <p className="font-display text-sm font-semibold">Acerca de Crisbo Tattoo</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Versión {APP_VERSION} · build {BUILD_SHA}
         </p>

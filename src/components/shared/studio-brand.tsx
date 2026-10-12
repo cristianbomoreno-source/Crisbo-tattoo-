@@ -18,7 +18,7 @@ export function StudioBrand({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 font-display font-semibold uppercase leading-none tracking-[0.06em] text-foreground',
+        'inline-flex items-center gap-2 font-display font-semibold leading-none text-foreground',
         variant === 'compact' ? 'text-lg' : 'text-2xl'
       )}
     >

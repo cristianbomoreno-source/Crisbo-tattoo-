@@ -47,7 +47,7 @@ export function PageHint() {
       <div className="relative flex w-full max-w-sm items-start gap-3 rounded-2xl bg-card p-3.5 pr-9 shadow-xl ring-1 ring-border/60">
         <span className="mt-0.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
         <div className="min-w-0">
-          <p className="font-display text-xs font-semibold uppercase tracking-[0.08em] text-foreground">
+          <p className="font-display text-xs font-semibold text-foreground">
             {content.title}
           </p>
           <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{content.body}</p>

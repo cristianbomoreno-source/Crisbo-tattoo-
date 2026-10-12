@@ -86,7 +86,7 @@ function ProgressRing({ pct }: { pct: number }) {
         />
       </svg>
       <span className="flex flex-col items-center leading-none">
-        <span className="font-title text-lg tabular-nums">
+        <span className="font-title font-bold text-lg tabular-nums">
           {pct}
           <span className="text-xs text-muted-foreground">%</span>
         </span>
@@ -100,7 +100,7 @@ function ProgressRing({ pct }: { pct: number }) {
 function MetricPill({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 text-center">
-      <span className="font-title text-lg tabular-nums leading-none sm:text-xl">{value}</span>
+      <span className="font-title font-bold text-lg tabular-nums leading-none sm:text-xl">{value}</span>
       <span className="text-[10px] leading-tight text-muted-foreground">{label}</span>
     </div>
   )
@@ -129,7 +129,7 @@ function CompactCard({
           <Icon className="size-5" strokeWidth={1.7} aria-hidden="true" />
         </span>
         <div className="mt-3">
-          <h3 className="font-title text-sm uppercase leading-none text-muted-foreground">{title}</h3>
+          <h3 className="font-title font-bold text-sm leading-none text-muted-foreground">{title}</h3>
           <div className="mt-2.5">
             <FeatureLockedRow label="Disponible con suscripción" />
           </div>
@@ -157,7 +157,7 @@ function CompactCard({
         />
       </div>
       <div className="mt-3">
-        <h3 className="font-title text-sm uppercase leading-none">{title}</h3>
+        <h3 className="font-title font-bold text-sm leading-none">{title}</h3>
         <div className="mt-2">{children}</div>
       </div>
     </Link>
@@ -210,7 +210,7 @@ export function StudioControlCenter({
     <div className="mx-auto max-w-3xl space-y-5">
       {/* ═══ Cápsula selectora de cuenta ═══ */}
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 font-display text-xs font-bold text-primary">
           {isEstudio ? 'Estudio' : 'Tatuador'}
         </span>
       </div>
@@ -229,14 +229,14 @@ export function StudioControlCenter({
                 className="size-14 shrink-0 rounded-full border border-border object-cover sm:size-16"
               />
             ) : (
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 font-title text-2xl text-primary sm:size-16">
+              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 font-title font-bold text-2xl text-primary sm:size-16">
                 {studio.name.charAt(0).toUpperCase()}
               </span>
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="truncate font-title text-xl uppercase leading-none sm:text-2xl">{studio.name}</h1>
-                <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                <h1 className="truncate font-title font-bold text-xl leading-none sm:text-2xl">{studio.name}</h1>
+                <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 font-display text-[10px] font-bold text-primary-foreground">
                   Pro
                 </span>
               </div>
@@ -327,7 +327,7 @@ export function StudioControlCenter({
 
       {/* ═══ Accesos rápidos ═══ */}
       <div>
-        <p className="mb-2 px-1 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="mb-2 px-1 font-display text-[11px] font-semibold text-muted-foreground">
           Accesos rápidos
         </p>
         <QuickActionsRow slug={studio.slug} whatsappConnected={checks.whatsapp} />
@@ -337,7 +337,7 @@ export function StudioControlCenter({
       <section className="rounded-[1.75rem] border border-border/60 bg-card p-2">
         <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-1">
           <HelpCircle className="size-3.5 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
-          <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="font-display text-[11px] font-semibold text-muted-foreground">
             Ayuda y soporte
           </p>
         </div>

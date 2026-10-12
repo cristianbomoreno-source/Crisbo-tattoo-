@@ -68,7 +68,7 @@ export function StudioLinksPanel({ slug, initialLinks }: { slug: string; initial
   return (
     <div className="mt-8 space-y-4 border-t border-border/60 pt-8">
       <div>
-        <h2 className="font-title text-lg uppercase">Tu página de enlaces</h2>
+        <h2 className="font-title font-bold text-lg">Tu página de enlaces</h2>
         <p className="text-xs text-muted-foreground">
           Una sola página pública, personalizable, con todos tus enlaces — estilo Linktree.
         </p>

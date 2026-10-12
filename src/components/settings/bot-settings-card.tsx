@@ -51,7 +51,7 @@ export function BotSettingsCard({ slug: initialSlug, whatsappPhone, instagram, b
   return (
     <section className="max-w-lg space-y-4 rounded-2xl bg-card p-4">
       <div>
-        <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-foreground">
+        <h2 className="font-display text-sm font-semibold text-foreground">
           Bot de solicitudes
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

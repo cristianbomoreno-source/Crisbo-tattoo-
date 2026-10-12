@@ -67,7 +67,7 @@ export function PoliticasForm({ paymentPolicy: iPay, cancellationPolicy: iCancel
     <SettingsSubpage title="Políticas del estudio" description="Pago, cancelación y reglas — salen en el PDF de tus cotizaciones.">
       <div className="space-y-6">
         <div>
-          <label htmlFor="pol-pago" className="mb-1.5 block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+          <label htmlFor="pol-pago" className="mb-1.5 block font-display text-xs font-medium text-foreground">
             Política de pago
           </label>
           <select id="pol-pago" value={paymentPolicy} onChange={(e) => setPaymentPolicy(e.target.value)} className={selectClass}>
@@ -81,7 +81,7 @@ export function PoliticasForm({ paymentPolicy: iPay, cancellationPolicy: iCancel
         </div>
 
         <div>
-          <label htmlFor="pol-cancel" className="mb-1.5 block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+          <label htmlFor="pol-cancel" className="mb-1.5 block font-display text-xs font-medium text-foreground">
             Política de cancelación
           </label>
           <select id="pol-cancel" value={cancellationPolicy} onChange={(e) => setCancellationPolicy(e.target.value)} className={selectClass}>
@@ -95,7 +95,7 @@ export function PoliticasForm({ paymentPolicy: iPay, cancellationPolicy: iCancel
         </div>
 
         <div>
-          <div className="mb-2 font-display text-xs font-medium uppercase tracking-wide text-foreground">Reglas del estudio</div>
+          <div className="mb-2 font-display text-xs font-medium text-foreground">Reglas del estudio</div>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {FIXED_RULES.map((rule) => {
               const active = rules.includes(rule.value)
@@ -114,7 +114,7 @@ export function PoliticasForm({ paymentPolicy: iPay, cancellationPolicy: iCancel
                   <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full', active ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
                     <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
                   </span>
-                  <span className={cn('flex-1 font-display text-xs font-semibold uppercase tracking-wide', active ? 'text-primary' : 'text-foreground')}>
+                  <span className={cn('flex-1 font-display text-xs font-semibold', active ? 'text-primary' : 'text-foreground')}>
                     {rule.label}
                   </span>
                   {active && <Check className="size-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden="true" />}
@@ -133,7 +133,7 @@ export function PoliticasForm({ paymentPolicy: iPay, cancellationPolicy: iCancel
               <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full', otherActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
                 <OTHER_RULE.icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
               </span>
-              <span className={cn('flex-1 font-display text-xs font-semibold uppercase tracking-wide', otherActive ? 'text-primary' : 'text-foreground')}>
+              <span className={cn('flex-1 font-display text-xs font-semibold', otherActive ? 'text-primary' : 'text-foreground')}>
                 {OTHER_RULE.label}
               </span>
               {otherActive && <Check className="size-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden="true" />}

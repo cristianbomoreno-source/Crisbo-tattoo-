@@ -248,7 +248,7 @@ function VistaScreen({ onPick }: { onPick: (v: Vista) => void }) {
           className="flex cursor-pointer flex-col items-center gap-3 rounded-3xl border border-white/8 bg-card p-8 text-center transition-all active:scale-[0.97] hover:border-primary/50"
         >
           <Eye className="size-7 text-primary" aria-hidden />
-          <span className="font-heading text-sm font-semibold uppercase tracking-wide text-white">Frente</span>
+          <span className="font-heading text-sm font-semibold text-white">Frente</span>
         </button>
         <button
           type="button"
@@ -256,7 +256,7 @@ function VistaScreen({ onPick }: { onPick: (v: Vista) => void }) {
           className="flex cursor-pointer flex-col items-center gap-3 rounded-3xl border border-white/8 bg-card p-8 text-center transition-all active:scale-[0.97] hover:border-primary/50"
         >
           <EyeOff className="size-7 text-primary" aria-hidden />
-          <span className="font-heading text-sm font-semibold uppercase tracking-wide text-white">Espaldas</span>
+          <span className="font-heading text-sm font-semibold text-white">Espaldas</span>
         </button>
       </div>
     </div>
@@ -277,7 +277,7 @@ function RegionScreen({ gender, onPick }: { gender: MapGender; onPick: (r: Regio
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={regionImage(gender, region)} alt={region} loading="lazy" className="size-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" />
           </span>
-          <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold uppercase tracking-wide text-white">
+          <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold text-white">
             {region}
           </span>
         </button>
@@ -304,7 +304,7 @@ function GroupPicker({ title, options, onPick }: { title: string; options: Opt[]
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={o.image} alt={o.label} loading="lazy" className="size-full object-contain" />
             </span>
-            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold uppercase tracking-wide text-white">
+            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold text-white">
               {o.label}
             </span>
           </button>
@@ -330,7 +330,7 @@ function LadoPicker({ options, onPick }: { options: Opt[]; onPick: (key: string)
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={o.image} alt={o.label} loading="lazy" className="size-full object-contain" />
             </span>
-            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold uppercase tracking-wide text-white">
+            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold text-white">
               {o.label}
             </span>
           </button>
@@ -356,7 +356,7 @@ function ProfundidadPicker({ options, onPick }: { options: Opt[]; onPick: (key: 
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={o.image} alt={o.label} loading="lazy" className="size-full object-contain" />
             </span>
-            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold uppercase tracking-wide text-white">
+            <span className="block shrink-0 px-3 py-2.5 text-center font-heading text-xs font-semibold text-white">
               {o.label}
             </span>
           </button>
@@ -395,7 +395,7 @@ function ItemGrid({ options, onPick }: { options: Opt[]; onPick: (key: string, l
                 </span>
               )}
             </span>
-            <span className="block shrink-0 px-1.5 py-1.5 text-center font-heading text-[11px] font-semibold leading-tight uppercase tracking-wide text-white">
+            <span className="block shrink-0 px-1.5 py-1.5 text-center font-heading text-[11px] font-semibold leading-tight text-white">
               {o.label}
             </span>
           </button>

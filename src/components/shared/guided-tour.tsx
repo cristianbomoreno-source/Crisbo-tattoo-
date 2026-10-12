@@ -410,7 +410,7 @@ export function GuidedTour() {
         style={hasSpotlight && cardPos ? { top: cardPos.top, left: cardPos.left } : undefined}
       >
         <div className="flex items-start justify-between gap-3">
-          <span className="rounded-full bg-primary/15 px-2.5 py-1 font-display text-[10px] font-bold uppercase tracking-wider text-primary">
+          <span className="rounded-full bg-primary/15 px-2.5 py-1 font-display text-[10px] font-bold text-primary">
             Paso {stepIndex + 1} de {total}
           </span>
           <button
@@ -423,7 +423,7 @@ export function GuidedTour() {
           </button>
         </div>
 
-        <h2 className="mt-3 font-title text-xl uppercase leading-tight">{step.title}</h2>
+        <h2 className="mt-3 font-title font-bold text-xl leading-tight">{step.title}</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
 
         <div className="mt-5 flex items-center gap-2">

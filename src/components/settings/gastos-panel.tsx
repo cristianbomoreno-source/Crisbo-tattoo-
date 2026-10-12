@@ -89,7 +89,7 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
       <div className="space-y-5">
         <div className="rounded-2xl bg-card p-4">
           <p className="text-xs text-muted-foreground">Total registrado</p>
-          <p className="mt-1 font-title text-2xl tabular-nums">{cop(total)}</p>
+          <p className="mt-1 font-title font-bold text-2xl tabular-nums">{cop(total)}</p>
         </div>
 
         <div className="space-y-2.5 rounded-2xl border border-border p-4">

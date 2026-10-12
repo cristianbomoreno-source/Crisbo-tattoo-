@@ -31,7 +31,7 @@ export function WizardProgress({ steps, current }: { steps: readonly Step[]; cur
                 </div>
                 <span
                   className={cn(
-                    'whitespace-nowrap font-display text-[clamp(0.5rem,2.2vw,0.62rem)] font-medium uppercase tracking-wider',
+                    'whitespace-nowrap font-display text-[clamp(0.5rem,2.2vw,0.62rem)] font-medium',
                     isCurrent && 'text-primary',
                     done && 'text-foreground',
                     !done && !isCurrent && 'text-muted-foreground'

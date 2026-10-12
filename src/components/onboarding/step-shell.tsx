@@ -90,7 +90,7 @@ export function StepShell({
           <img src="/brand/cb-icon.png" alt="Crisbo Tattoo" className="h-8 w-auto rounded-md" />
 
           <div className="w-10 text-right">
-            <span className="font-display text-[clamp(0.65rem,2.8vw,0.75rem)] uppercase tracking-wider text-muted-foreground">
+            <span className="font-display text-[clamp(0.65rem,2.8vw,0.75rem)] text-muted-foreground">
               <span className="text-primary">{stepNumber}</span> / {TOTAL_STEPS}
             </span>
           </div>
@@ -106,14 +106,14 @@ export function StepShell({
           <div className="mx-auto max-w-xl">
             <div className="mb-6 flex flex-col items-center gap-3 text-center">
               <div className="flex flex-col items-center gap-1.5">
-                <span className="font-display text-[clamp(0.65rem,2.8vw,0.75rem)] font-medium italic uppercase tracking-[0.2em] text-primary">
+                <span className="font-display text-[clamp(0.65rem,2.8vw,0.75rem)] font-medium italic text-primary">
                   Paso {stepNumber}
                 </span>
                 <span aria-hidden="true" className="h-0.5 w-8 rounded-full bg-primary" />
               </div>
 
               <h1 className="leading-[0.95]">
-                <span className="block font-title text-[clamp(1.75rem,7vw,2.5rem)] uppercase text-foreground">
+                <span className="block font-title font-bold text-[clamp(1.75rem,7vw,2.5rem)] text-foreground">
                   {titleLine1}
                 </span>
                 {titleLine2 ? (
@@ -149,7 +149,7 @@ export function StepShell({
               onClick={onContinue}
               disabled={!canContinue || saving}
               className={cn(
-                'glow-primary flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+                'glow-primary flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary font-display text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
               )}
             >
               {saving ? 'Guardando…' : continueLabel}
@@ -162,7 +162,7 @@ export function StepShell({
                 variant="ghost"
                 onClick={onSkip}
                 disabled={saving}
-                className="h-10 w-full cursor-pointer font-display text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                className="h-10 w-full cursor-pointer font-display text-xs font-medium text-muted-foreground"
               >
                 {skipLabel}
               </Button>

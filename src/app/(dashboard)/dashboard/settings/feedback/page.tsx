@@ -33,7 +33,7 @@ export default async function FeedbackPage() {
 
         {FEEDBACK_SECTIONS.map((section) => (
           <section key={section.key} className="space-y-3">
-            <h2 className="font-title text-lg uppercase leading-none">{section.title}</h2>
+            <h2 className="font-title font-bold text-lg leading-none">{section.title}</h2>
             <div className="space-y-3">
               {section.features.map((feature) => (
                 <FeatureRatingCard

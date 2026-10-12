@@ -41,7 +41,7 @@ export function StudioDashboard({ data }: { data: StudioDashboardData }) {
 
       <section className="rounded-2xl bg-card p-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-title text-lg uppercase">Ranking de tatuadores</h2>
+          <h2 className="font-title font-bold text-lg">Ranking de tatuadores</h2>
           <Link href="/dashboard/settings/equipo" className="text-xs text-primary">
             Ver equipo
           </Link>

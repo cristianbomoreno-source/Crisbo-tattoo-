@@ -22,7 +22,7 @@ export function EstudioGreeting({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-lg text-muted-foreground">{greeting}</p>
-          <h1 className="-mt-1 flex items-center gap-1.5 truncate font-title text-2xl uppercase leading-[1.05] tracking-[0.01em] sm:text-3xl">
+          <h1 className="-mt-1 flex items-center gap-1.5 truncate font-title font-bold text-2xl leading-[1.05] sm:text-3xl">
             <span className="truncate">{studioName}</span>
             <ChevronDown className="size-4 shrink-0 text-muted-foreground" strokeWidth={2.2} aria-hidden="true" />
           </h1>
@@ -49,7 +49,7 @@ export function EstudioGreeting({
                 className="size-11 rounded-full object-cover ring-2 ring-primary/70"
               />
             ) : (
-              <span className="grid size-11 place-items-center rounded-full bg-primary/15 font-title text-lg text-primary ring-2 ring-primary/40">
+              <span className="grid size-11 place-items-center rounded-full bg-primary/15 font-title font-bold text-lg text-primary ring-2 ring-primary/40">
                 {initial}
               </span>
             )}

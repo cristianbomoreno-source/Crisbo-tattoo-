@@ -23,7 +23,7 @@ function MiniHeader({ icon: Icon, label }: { icon: LucideIcon; label: string }) 
   return (
     <div className="mb-3 flex items-center gap-2">
       <Icon className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide">{label}</h3>
+      <h3 className="font-display text-xs font-semibold">{label}</h3>
     </div>
   )
 }
@@ -81,7 +81,7 @@ export function StepExperience({ draft, patch }: OnboardingStepProps) {
                 {active && <CornerCheck />}
                 {/* Icono siempre blanco/outline (brief §3): la selección la marca el borde + check. */}
                 <Icon className="size-5 text-foreground" strokeWidth={1.7} aria-hidden="true" />
-                <span className="line-clamp-2 font-display text-[clamp(0.48rem,1.9vw,0.58rem)] font-medium uppercase leading-tight tracking-wide text-foreground">
+                <span className="line-clamp-2 font-display text-[clamp(0.48rem,1.9vw,0.58rem)] font-medium leading-tight text-foreground">
                   {range.label}
                 </span>
               </button>
@@ -170,7 +170,7 @@ function WorkModeCard({
         <Icon className="size-6" strokeWidth={1.7} aria-hidden="true" />
       </span>
       <span className="relative z-10 flex flex-1 flex-col gap-0.5">
-        <span className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+        <span className="font-display text-sm font-semibold text-foreground">
           {title}
         </span>
         <span className="text-xs text-muted-foreground">{subtitle}</span>

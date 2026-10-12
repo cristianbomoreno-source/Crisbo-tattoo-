@@ -64,7 +64,7 @@ export function StatsHero({
           <div className="flex items-center gap-1.5">
             <Link
               href={`/dashboard/stats?m=${prevMonthKey}`}
-              className="font-display text-xs font-semibold uppercase tracking-[0.2em] transition-opacity hover:opacity-70"
+              className="font-display text-xs font-semibold transition-opacity hover:opacity-70"
               style={{ color: accentColor }}
             >
               {capitalize(monthLabel(monthKey))}
@@ -79,7 +79,7 @@ export function StatsHero({
           </div>
 
           <div>
-            <h1 className="font-title text-[clamp(1.9rem,7vw,3rem)] uppercase leading-[0.98] text-foreground">
+            <h1 className="font-title font-bold text-[clamp(1.9rem,7vw,3rem)] leading-[0.98] text-foreground">
               Tu estudio va{' '}
               <span style={{ color: accentColor }}>{highlight}</span>.
             </h1>
@@ -91,10 +91,10 @@ export function StatsHero({
       {goalPct !== null && monthlyGoal !== null && (
         <div className="p-4 pt-3.5 sm:p-6 sm:pt-4">
           <div className="flex items-center justify-between">
-            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="font-display text-[10px] font-semibold text-muted-foreground">
               Meta mensual
             </p>
-            <p className="font-title text-sm tabular-nums text-foreground">{cop(monthlyGoal)}</p>
+            <p className="font-title font-bold text-sm tabular-nums text-foreground">{cop(monthlyGoal)}</p>
           </div>
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
             <div

@@ -30,11 +30,11 @@ export function IntakeCover({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt="" className="size-9 rounded-full border border-white/20 object-cover" />
             ) : (
-              <div className="grid size-9 place-items-center rounded-full bg-card font-heading text-xs uppercase">
+              <div className="grid size-9 place-items-center rounded-full bg-card font-heading text-xs">
                 {studioName.slice(0, 2)}
               </div>
             )}
-            <p className="font-heading text-xs uppercase tracking-wide text-white drop-shadow-sm">{studioName}</p>
+            <p className="font-heading text-xs text-white drop-shadow-sm">{studioName}</p>
           </div>
         </div>
       </div>
@@ -46,7 +46,7 @@ export function IntakeCover({
             <span className="size-1.5 rounded-full bg-primary" aria-hidden />
             Hola, soy {studioName.split(' ')[0]}
           </p>
-          <h1 className="mt-2 font-title text-[26px] leading-[1.12] text-white uppercase">
+          <h1 className="mt-2 font-title font-bold text-[26px] leading-[1.12] text-white">
             Gracias por interesarte en tatuarte <span className="text-primary">conmigo</span>.
           </h1>
           <p className="mt-3 text-[14px] leading-relaxed text-white/60">
@@ -70,7 +70,7 @@ export function IntakeCover({
         <button
           type="button"
           onClick={onStart}
-          className="inline-flex h-13 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary font-heading text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-transform active:scale-[0.98]"
+          className="inline-flex h-13 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary font-heading text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
         >
           Comenzar mi proyecto <ArrowRight className="size-4" aria-hidden />
         </button>

@@ -94,7 +94,7 @@ export function MultiSessionDialog({
           {rows.map((row, i) => (
             <div key={i} className="space-y-2 rounded-lg border p-3">
               <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="font-display text-xs font-medium text-muted-foreground">
                   Sesión {i + 1}
                 </span>
                 {rows.length > 1 && (

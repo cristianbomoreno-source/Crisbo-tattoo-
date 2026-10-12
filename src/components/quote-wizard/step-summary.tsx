@@ -90,7 +90,7 @@ function SummaryCard({
         <Icon className="size-4.5" strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1 pt-0.5">
-        <p className="font-display text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="font-display text-[0.65rem] font-medium text-muted-foreground">
           {label}
         </p>
         <div className="mt-0.5 break-words text-sm font-medium">{value}</div>
@@ -280,7 +280,7 @@ export function StepSummary({
           </div>
 
           <div>
-            <h2 className="font-title text-3xl uppercase tracking-tight">Cotización guardada</h2>
+            <h2 className="font-title font-bold text-3xl tracking-tight">Cotización guardada</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Ya está lista para compartir con tu cliente.
             </p>
@@ -292,7 +292,7 @@ export function StepSummary({
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-display text-sm font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-display text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <WaGlyph />
                 Enviar por WhatsApp
@@ -330,7 +330,7 @@ export function StepSummary({
           <ClipboardList className="size-5" strokeWidth={1.8} />
         </span>
         <div className="min-w-0 pt-1">
-          <h2 className="font-display text-base font-semibold uppercase tracking-wide">
+          <h2 className="font-display text-base font-semibold">
             Resumen de tu cotización
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -376,11 +376,11 @@ export function StepSummary({
           <div className="rounded-2xl bg-card p-4">
             <div className="flex items-center gap-2">
               <Wallet className="size-4 text-primary" strokeWidth={1.8} aria-hidden="true" />
-              <p className="font-display text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="font-display text-[0.65rem] font-medium text-muted-foreground">
                 Valor total
               </p>
             </div>
-            <p className="mt-1 font-title text-3xl tabular-nums">{cop(Number(draft.price))}</p>
+            <p className="mt-1 font-title font-bold text-3xl tabular-nums">{cop(Number(draft.price))}</p>
             <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-border p-3">
               <ShieldCheck className="size-4 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
               <p className="text-xs text-muted-foreground">

@@ -45,10 +45,10 @@ export function IntakeProgress({ current }: { current: StepId }) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <p className="font-heading text-[10px] font-semibold uppercase tracking-[0.28em] text-white/90">
+        <p className="font-heading text-[10px] font-semibold text-white/90">
           Tu proyecto
         </p>
-        <p className="font-heading text-[10px] tabular-nums tracking-wider text-muted-foreground">
+        <p className="font-heading text-[10px] tabular-nums text-muted-foreground">
           {active + 1} / {PHASES.length}
         </p>
       </div>

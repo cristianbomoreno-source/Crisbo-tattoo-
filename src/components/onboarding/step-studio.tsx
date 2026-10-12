@@ -28,7 +28,7 @@ function MiniHeader({ icon: Icon, label }: { icon: LucideIcon; label: string }) 
   return (
     <div className="mb-2.5 flex items-center gap-2">
       <Icon className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide">{label}</h3>
+      <h3 className="font-display text-xs font-semibold">{label}</h3>
     </div>
   )
 }
@@ -47,7 +47,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium uppercase tracking-wide text-foreground"
+      className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium text-foreground"
     >
       {icon}
       {children}
@@ -133,7 +133,7 @@ export function StepStudio({ draft, patch }: OnboardingStepProps) {
                 />
                 <span
                   className={cn(
-                    'line-clamp-2 font-display text-[clamp(0.55rem,2.2vw,0.62rem)] font-medium uppercase leading-tight tracking-wide',
+                    'line-clamp-2 font-display text-[clamp(0.55rem,2.2vw,0.62rem)] font-medium leading-tight',
                     active ? 'text-primary' : 'text-foreground'
                   )}
                 >
@@ -196,7 +196,7 @@ export function StepStudio({ draft, patch }: OnboardingStepProps) {
       <div>
         <div
           id="studio-open-days-label"
-          className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium uppercase tracking-wide text-foreground"
+          className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium text-foreground"
         >
           <CalendarDays className="size-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
           Días de atención
@@ -211,7 +211,7 @@ export function StepStudio({ draft, patch }: OnboardingStepProps) {
                 onClick={() => toggleDay(day.value)}
                 aria-pressed={active}
                 className={cn(
-                  'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.65rem] font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.65rem] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-card/60 text-muted-foreground hover:border-primary/40'

@@ -66,7 +66,7 @@ export function PagosForm({ initialMethods }: { initialMethods: string[] }) {
                   active ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
                 )}
               >
-                <span className={cn('font-display text-sm font-semibold uppercase tracking-wide', active ? 'text-primary' : 'text-foreground')}>
+                <span className={cn('font-display text-sm font-semibold', active ? 'text-primary' : 'text-foreground')}>
                   {method}
                 </span>
                 <span
@@ -104,7 +104,7 @@ export function PagosForm({ initialMethods }: { initialMethods: string[] }) {
 
         {/* Agregar método personalizado */}
         <div className="space-y-1.5">
-          <label htmlFor="custom-method" className="block font-display text-xs font-medium uppercase tracking-wide text-foreground">
+          <label htmlFor="custom-method" className="block font-display text-xs font-medium text-foreground">
             Agregar otro método
           </label>
           <div className="flex gap-2">

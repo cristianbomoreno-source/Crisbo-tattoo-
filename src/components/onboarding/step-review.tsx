@@ -51,12 +51,12 @@ function ReviewRow({
         <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-[0.62rem] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="block font-display text-[0.62rem] font-medium text-muted-foreground">
           {label}
         </span>
         <span className="block truncate text-sm text-foreground">{value}</span>
       </span>
-      <span className="flex shrink-0 items-center gap-1 font-display text-xs font-semibold uppercase tracking-wide text-primary">
+      <span className="flex shrink-0 items-center gap-1 font-display text-xs font-semibold text-primary">
         Editar
         <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden="true" />
       </span>
@@ -68,7 +68,7 @@ function ReviewRow({
 function DetailBlock({ kicker, children }: { kicker: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-card/40 p-4">
-      <p className="mb-2 font-display text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-primary">
+      <p className="mb-2 font-display text-[0.65rem] font-semibold text-primary">
         {kicker}
       </p>
       {children}
@@ -140,7 +140,7 @@ export function StepReview({
             <FileCheck2 className="size-5" strokeWidth={1.8} aria-hidden="true" />
           </span>
           <div>
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+            <p className="font-display text-xs font-semibold text-primary">
               Resumen de tu registro
             </p>
             <p className="text-xs text-muted-foreground">Revisa que todos los datos estén correctos.</p>
@@ -248,7 +248,7 @@ export function StepReview({
               {draft.openDays.map((day) => (
                 <span
                   key={day}
-                  className="rounded-md border border-border bg-secondary px-2 py-1 font-display text-[0.62rem] font-semibold uppercase tracking-wide text-foreground"
+                  className="rounded-md border border-border bg-secondary px-2 py-1 font-display text-[0.62rem] font-semibold text-foreground"
                 >
                   {day}
                 </span>
@@ -265,7 +265,7 @@ export function StepReview({
 
         {hasDeposit && (
           <DetailBlock kicker="Abono para reservar">
-            <p className="font-title text-2xl tabular-nums text-foreground">{depositAmount}</p>
+            <p className="font-title font-bold text-2xl tabular-nums text-foreground">{depositAmount}</p>
           </DetailBlock>
         )}
 
@@ -281,7 +281,7 @@ export function StepReview({
         <ShieldAlert className="mt-0.5 size-4 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
         <div className="flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Al confirmar, aceptas nuestras políticas y condiciones.</p>
-          <p className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">
+          <p className="font-display text-xs font-semibold text-foreground">
             Estás a un paso de organizar tu estudio como un profesional.
           </p>
         </div>

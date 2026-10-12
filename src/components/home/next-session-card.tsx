@@ -226,7 +226,7 @@ export function NextSessionCard({
           </div>
 
           <div className="relative mt-2.5 max-w-[65%] sm:max-w-[60%]">
-            <p className="font-title text-4xl leading-none tabular-nums">
+            <p className="font-title font-bold text-4xl leading-none tabular-nums">
               {formatTime(session.scheduled_at)}
             </p>
 

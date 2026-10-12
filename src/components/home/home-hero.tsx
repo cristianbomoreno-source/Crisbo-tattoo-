@@ -56,7 +56,7 @@ export function HomeHero({
       <div className="flex w-full items-end justify-between gap-6">
         <div className="min-w-0">
           <p className="text-sm text-white/70">{greeting}</p>
-          <h1 className="-mt-1 truncate font-title text-6xl leading-[0.95] tracking-[0.005em] text-primary lg:text-7xl">
+          <h1 className="-mt-1 truncate font-title font-bold text-6xl leading-[0.95] text-primary lg:text-7xl">
             {who}
           </h1>
           <p className="mt-2 text-sm text-white/60">{dateLabel}</p>

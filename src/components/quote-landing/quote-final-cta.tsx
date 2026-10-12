@@ -7,7 +7,7 @@ export function QuoteFinalCta({ quote }: { quote: QuoteTemplateData }) {
   return (
     <section id="reserva" className="flex min-h-[70dvh] flex-col items-center justify-center px-6 py-20 text-center">
       <Reveal>
-        <p className="font-title text-3xl leading-tight text-white uppercase">
+        <p className="font-title font-bold text-3xl leading-tight text-white">
           ¿Listo para comenzar
           <br />
           esta historia juntos?

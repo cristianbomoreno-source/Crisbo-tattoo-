@@ -59,7 +59,7 @@ export function StepSpecialty({ draft, patch }: OnboardingStepProps) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={image} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="font-title text-3xl text-muted-foreground/30" aria-hidden="true">
+                  <span className="font-title font-bold text-3xl text-muted-foreground/30" aria-hidden="true">
                     {style.charAt(0)}
                   </span>
                 )}
@@ -77,7 +77,7 @@ export function StepSpecialty({ draft, patch }: OnboardingStepProps) {
               </span>
               <span
                 className={cn(
-                  'line-clamp-2 font-display text-xs font-semibold uppercase leading-tight tracking-wide',
+                  'line-clamp-2 font-display text-xs font-semibold leading-tight',
                   active ? 'text-primary' : 'text-foreground'
                 )}
               >
@@ -91,7 +91,7 @@ export function StepSpecialty({ draft, patch }: OnboardingStepProps) {
       <div>
         <label
           htmlFor="specialty-other"
-          className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium uppercase tracking-wide text-foreground"
+          className="mb-1.5 flex items-center gap-2 font-display text-xs font-medium text-foreground"
         >
           <Pencil className="size-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
           Otro estilo

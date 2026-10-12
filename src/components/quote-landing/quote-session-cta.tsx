@@ -64,7 +64,7 @@ export function QuoteSessionCta({ quote, artistName, session }: Props) {
   return (
     <section className="mx-auto mt-4 w-full max-w-md px-5">
       <div className="rounded-2xl border border-primary/25 bg-card p-4">
-        <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+        <p className="font-display text-[10px] font-semibold text-primary">
           Tu próxima sesión
         </p>
         <p className="mt-1.5 text-sm capitalize text-white/90">{dateLabel}</p>
@@ -73,7 +73,7 @@ export function QuoteSessionCta({ quote, artistName, session }: Props) {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm uppercase tracking-wide text-primary-foreground transition-transform active:scale-[0.98]"
+            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm text-primary-foreground transition-transform active:scale-[0.98]"
           >
             <CalendarPlus className="size-4" aria-hidden /> Agregar a mi calendario
             <ChevronDown className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />

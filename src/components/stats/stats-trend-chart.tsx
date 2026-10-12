@@ -30,7 +30,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
   return (
     <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="font-display text-xs font-semibold text-muted-foreground">
           Cotizaciones y valor cotizado
         </p>
         <span className="rounded-full border border-border px-3 py-1 text-xs text-foreground/80">

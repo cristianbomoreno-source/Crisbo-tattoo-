@@ -21,7 +21,7 @@ export function WorkingTodayRow({ team }: { team: ArtistToday[] }) {
       <div className="flex gap-4 overflow-x-auto px-1 pb-1">
         {team.map((member) => (
           <div key={member.artistId} className="flex shrink-0 flex-col items-center gap-1.5">
-            <span className="relative grid size-12 place-items-center rounded-full bg-primary/15 font-title text-sm text-primary">
+            <span className="relative grid size-12 place-items-center rounded-full bg-primary/15 font-title font-bold text-sm text-primary">
               {initials(member.name)}
               <span
                 aria-hidden="true"

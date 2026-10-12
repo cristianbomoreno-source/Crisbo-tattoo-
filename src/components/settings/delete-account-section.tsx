@@ -30,7 +30,7 @@ export function DeleteAccountSection({ isOwner, studioName }: { isOwner: boolean
           <AlertTriangle className="size-4" strokeWidth={2} />
         </span>
         <div className="min-w-0">
-          <h2 className="font-title text-lg uppercase leading-none text-destructive">Zona de peligro</h2>
+          <h2 className="font-title font-bold text-lg leading-none text-destructive">Zona de peligro</h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {isOwner
               ? `Esto borra TODO "${studioName}" para siempre: proyectos, clientes, cotizaciones, pagos, citas, galería y enlaces. No hay vuelta atrás.`

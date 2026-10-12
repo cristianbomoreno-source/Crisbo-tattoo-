@@ -67,7 +67,7 @@ export function BotIntakeSummary({
   return (
     <div className="rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/15">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-wide text-primary">
+        <h3 className="flex items-center gap-2 font-display text-xs font-semibold text-primary">
           <Bot className="size-4" strokeWidth={1.8} aria-hidden />
           Información del bot
         </h3>

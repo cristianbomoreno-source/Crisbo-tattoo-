@@ -11,7 +11,7 @@ function MiniHeader({ icon: Icon, label }: { icon: LucideIcon; label: string }) 
   return (
     <div className="mb-3 flex items-center gap-2">
       <Icon className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide">{label}</h3>
+      <h3 className="font-display text-xs font-semibold">{label}</h3>
     </div>
   )
 }
@@ -55,7 +55,7 @@ function PaymentPolicyCard({
       <Icon className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')} strokeWidth={1.7} aria-hidden="true" />
       <span
         className={cn(
-          'line-clamp-2 font-display text-[clamp(0.55rem,2.2vw,0.62rem)] font-semibold uppercase leading-tight tracking-wide',
+          'line-clamp-2 font-display text-[clamp(0.55rem,2.2vw,0.62rem)] font-semibold leading-tight',
           active ? 'text-primary' : 'text-foreground'
         )}
       >
@@ -102,7 +102,7 @@ function CancellationRow({
       <span className="flex flex-1 flex-col gap-0.5">
         <span
           className={cn(
-            'font-display text-sm font-semibold uppercase tracking-wide',
+            'font-display text-sm font-semibold',
             active ? 'text-primary' : 'text-foreground'
           )}
         >
@@ -142,7 +142,7 @@ function RuleSwitchRow({
         <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span className="flex flex-1 flex-col gap-0.5">
-        <span className="font-display text-xs font-semibold uppercase tracking-wide text-foreground">{title}</span>
+        <span className="font-display text-xs font-semibold text-foreground">{title}</span>
         <span className="text-xs text-muted-foreground">{subtitle}</span>
       </span>
       <button

@@ -115,7 +115,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
           </div>
 
           <div>
-            <h2 className="font-title text-3xl uppercase tracking-tight">{COPY.sentTitle}</h2>
+            <h2 className="font-title font-bold text-3xl tracking-tight">{COPY.sentTitle}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{COPY.sentBody}</p>
           </div>
 
@@ -155,7 +155,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
           <button
             type="button"
             onClick={() => window.open(sentLink, '_blank', 'noopener')}
-            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
+            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
           >
             <MessageCircle className="size-4" aria-hidden /> {COPY.openWhatsapp}
           </button>
@@ -170,7 +170,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
                 href={igUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
+                className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-heading text-sm text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <AtSign className="size-4" aria-hidden /> {COPY.openInstagram}
               </a>
@@ -191,7 +191,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
             <span className="size-2 rounded-full bg-primary" style={{ boxShadow: '0 0 16px 2px var(--primary-glow, rgba(217,165,74,0.6))' }} aria-hidden />
           </div>
           <div>
-            <p className="font-title text-2xl text-white">Estamos preparando tu proyecto…</p>
+            <p className="font-title font-bold text-2xl text-white">Estamos preparando tu proyecto…</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Analizando cada detalle para crear la mejor propuesta posible.
             </p>
@@ -211,7 +211,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
       )}
 
       <div className="shrink-0">
-        <h2 className="font-title text-[28px] leading-[1.08] text-white">Casi terminamos.</h2>
+        <h2 className="font-title font-bold text-[28px] leading-[1.08] text-white">Casi terminamos.</h2>
         <p className="mt-2.5 text-[15px] leading-relaxed text-muted-foreground">
           Revisa tu proyecto antes de enviarlo y comenzar a crear tu cotización.
         </p>
@@ -231,7 +231,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
                 <Icon className="size-4 text-primary" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-heading text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+                <span className="block font-heading text-[10px] font-semibold text-muted-foreground">{label}</span>
                 <span className="block truncate text-sm text-white">{value || '—'}</span>
               </span>
               {onEditStep && (
@@ -245,7 +245,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
                 <Images className="size-4 text-primary" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-heading text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Referencias</span>
+                <span className="block font-heading text-[10px] font-semibold text-muted-foreground">Referencias</span>
                 <span className="mt-1 flex gap-1.5">
                   {answers.photos!.map((f, i) => (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -297,7 +297,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
         type="button"
         disabled={!accepted || sending}
         onClick={send}
-        className="mt-3 inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3.5 font-heading text-sm uppercase tracking-wide text-primary-foreground transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-ring"
+        className="mt-3 inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3.5 font-heading text-sm text-primary-foreground transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-ring"
       >
         <MessageCircle className="size-4" aria-hidden />
         {sending ? COPY.sending : error ? COPY.retry : COPY.send}

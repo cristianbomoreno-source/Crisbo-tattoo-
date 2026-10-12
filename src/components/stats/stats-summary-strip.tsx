@@ -42,14 +42,14 @@ export function StatsSummaryStrip({
     <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 sm:gap-x-6">
         <div>
-          <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-primary">{cop(quotedValue)}</p>
+          <p className="font-title font-bold text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-primary">{cop(quotedValue)}</p>
           <p className="mt-1 text-xs text-muted-foreground">Valor cotizado</p>
           <DeltaLabel cur={quotedValue} prev={prevQuotedValue} />
         </div>
 
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{approvedCount}</p>
+            <p className="font-title font-bold text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{approvedCount}</p>
             <Briefcase className="size-4 text-muted-foreground" aria-hidden />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Proyectos aprobados</p>
@@ -58,7 +58,7 @@ export function StatsSummaryStrip({
 
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-title text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{scheduledSessions}</p>
+            <p className="font-title font-bold text-[clamp(1.35rem,5vw,2rem)] tabular-nums text-foreground">{scheduledSessions}</p>
             <CalendarCheck className="size-4 text-muted-foreground" aria-hidden />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Sesiones agendadas</p>
@@ -68,7 +68,7 @@ export function StatsSummaryStrip({
         <div className="flex items-center gap-3">
           <OccupancyRing pct={occupancyPct} compact />
           <div>
-            <p className="font-title text-[clamp(1.1rem,4vw,1.6rem)] tabular-nums text-foreground">
+            <p className="font-title font-bold text-[clamp(1.1rem,4vw,1.6rem)] tabular-nums text-foreground">
               {daysWithSessionOpen} / {workableDays}
             </p>
             <p className="text-xs text-muted-foreground">Ocupación del mes</p>

@@ -19,7 +19,7 @@ export function QuoteArtist({
       <Reveal>
         <div className="mb-5 flex items-center gap-2">
           <Sparkles className="size-4" style={{ color: quote.templateColor }} />
-          <span className="font-display text-xs font-semibold tracking-wider text-white/60 uppercase">
+          <span className="font-display text-xs font-semibold text-white/60">
             ¿Quién hará tu tatuaje?
           </span>
         </div>
@@ -52,7 +52,7 @@ export function QuoteArtist({
             <div className="mt-5 flex justify-center gap-6 border-t border-white/8 pt-5">
               {experienceRange && (
                 <div>
-                  <p className="font-title text-xl" style={{ color: quote.templateColor }}>
+                  <p className="font-title font-bold text-xl" style={{ color: quote.templateColor }}>
                     {experienceRange}
                   </p>
                   <p className="text-xs text-white/45">de experiencia</p>
@@ -60,7 +60,7 @@ export function QuoteArtist({
               )}
               {fullTime !== null && (
                 <div>
-                  <p className="font-title text-xl" style={{ color: quote.templateColor }}>
+                  <p className="font-title font-bold text-xl" style={{ color: quote.templateColor }}>
                     {fullTime ? '100%' : '·'}
                   </p>
                   <p className="text-xs text-white/45">comprometido contigo</p>

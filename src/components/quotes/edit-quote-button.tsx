@@ -34,7 +34,7 @@ export function EditQuoteButton({
         <div className="mb-1 flex items-start gap-3 pr-10">
           <TattooMachineIcon className="size-14 shrink-0 text-primary" />
           <div>
-            <h2 className="font-title text-2xl leading-tight text-foreground">{title}</h2>
+            <h2 className="font-title font-bold text-2xl leading-tight text-foreground">{title}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
           </div>
         </div>

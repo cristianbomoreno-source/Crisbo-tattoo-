@@ -84,7 +84,7 @@ export function StyleGridPicker({
             className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-foreground/15 text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
           >
             <Grid3x3 className="size-5" strokeWidth={1.8} aria-hidden="true" />
-            <span className="font-display text-[11px] font-semibold uppercase tracking-wide">Ver más</span>
+            <span className="font-display text-[11px] font-semibold">Ver más</span>
           </button>
         )}
       </div>
@@ -153,7 +153,7 @@ function StyleTile({
       )}
       <span
         className={cn(
-          'relative mt-auto px-2.5 py-2 font-display text-[11px] font-bold uppercase leading-tight tracking-wide',
+          'relative mt-auto px-2.5 py-2 font-display text-[11px] font-bold leading-tight',
           active ? 'text-primary' : 'text-white'
         )}
       >
@@ -208,7 +208,7 @@ export function QuickQuoteSummaryBar({
           type="button"
           onClick={onCta}
           disabled={ctaDisabled}
-          className="glow-primary flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-display text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="glow-primary flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-display text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {ctaLabel}
           <ArrowRight className="size-4" strokeWidth={2.4} aria-hidden="true" />

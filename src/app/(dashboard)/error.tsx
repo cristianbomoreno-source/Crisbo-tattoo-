@@ -23,7 +23,7 @@ export default function DashboardError({
 
   return (
     <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <p className="font-display text-lg font-semibold uppercase tracking-wide">Algo no cargó bien</p>
+      <p className="font-display text-lg font-semibold">Algo no cargó bien</p>
       <p className="max-w-xs text-sm text-muted-foreground">
         Puede haber sido un problema momentáneo de conexión. Intenta de nuevo.
       </p>

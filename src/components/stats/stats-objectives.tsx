@@ -60,7 +60,7 @@ export function StatsObjectives({
           <Target className="size-5 text-primary" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-title text-lg text-foreground">Objetivo del mes</p>
+          <p className="font-title font-bold text-lg text-foreground">Objetivo del mes</p>
           {anyGoal ? (
             <p className="text-xs text-muted-foreground">Sigue así, vas en buen camino para alcanzar tu meta.</p>
           ) : (
@@ -83,7 +83,7 @@ export function StatsObjectives({
           </div>
           <Link
             href="/dashboard/settings/metas"
-            className="mt-5 inline-flex items-center gap-1 font-heading text-xs font-semibold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground"
+            className="mt-5 inline-flex items-center gap-1 font-heading text-xs font-semibold text-foreground/80 transition-colors hover:text-foreground"
           >
             Ver objetivos completos <ChevronRight className="size-3.5" aria-hidden />
           </Link>

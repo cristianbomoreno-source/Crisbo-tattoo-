@@ -168,7 +168,7 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
 
       {/* Foto de portada — solo se usa en el Home de iPad/escritorio. */}
       <section className="mb-8">
-        <p className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-foreground">
+        <p className="mb-2 font-display text-xs font-semibold text-foreground">
           Foto de portada
         </p>
         <p className="mb-3 text-xs text-muted-foreground">
@@ -331,7 +331,7 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
           />
 
           <fieldset className="space-y-4 rounded-xl border border-border p-4">
-            <legend className="px-1 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <legend className="px-1 font-display text-xs font-semibold text-muted-foreground">
               Redes del estudio
             </legend>
             <FormField

@@ -39,7 +39,7 @@ function IgGlyph({ className }: { className?: string }) {
 function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-lg border bg-background/40 p-3">
-      <p className="font-display text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-[9px] font-medium text-muted-foreground">
         {label}
       </p>
       <p className={`mt-1.5 text-sm font-semibold tabular-nums ${accent ? 'text-primary' : ''}`}>
@@ -68,7 +68,7 @@ function AppointmentRow({
       className="flex items-center justify-between gap-3 rounded-2xl bg-card p-3 transition-colors hover:border-primary/40"
     >
       <div className="min-w-0">
-        <p className="truncate font-display text-xs font-semibold uppercase tracking-wide">
+        <p className="truncate font-display text-xs font-semibold">
           {projectName}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
@@ -164,7 +164,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
       {/* Proyectos */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 font-display text-sm font-medium uppercase tracking-wider">
+        <h2 className="flex items-center gap-2 font-display text-sm font-medium">
           <Layers className="size-4 text-primary" strokeWidth={1.8} aria-hidden="true" />
           Proyectos
         </h2>
@@ -183,7 +183,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="truncate font-display text-sm font-semibold uppercase tracking-wide">
+                      <p className="truncate font-display text-sm font-semibold">
                         {p.name}
                       </p>
                       <StatusBadge status={p.status} />
@@ -205,7 +205,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       {/* Próximas citas */}
       {upcoming.length > 0 && (
         <section className="space-y-3">
-          <h2 className="flex items-center gap-2 font-display text-sm font-medium uppercase tracking-wider">
+          <h2 className="flex items-center gap-2 font-display text-sm font-medium">
             <CalendarClock className="size-4 text-primary" strokeWidth={1.8} aria-hidden="true" />
             Próximas citas
           </h2>
@@ -226,7 +226,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
       {/* Historial de citas */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 font-display text-sm font-medium uppercase tracking-wider">
+        <h2 className="flex items-center gap-2 font-display text-sm font-medium">
           <CalendarClock className="size-4 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
           Historial de citas
         </h2>
@@ -251,7 +251,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       {/* Consentimientos firmados */}
       {consents.length > 0 && (
         <section className="space-y-3">
-          <h2 className="flex items-center gap-2 font-display text-sm font-medium uppercase tracking-wider">
+          <h2 className="flex items-center gap-2 font-display text-sm font-medium">
             <FileSignature className="size-4 text-primary" strokeWidth={1.8} aria-hidden="true" />
             Consentimientos firmados
           </h2>

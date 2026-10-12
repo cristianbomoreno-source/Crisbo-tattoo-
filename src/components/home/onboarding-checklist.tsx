@@ -36,7 +36,7 @@ export function OnboardingChecklist({ stepsDone }: { stepsDone: string[] }) {
           <ClipboardCheck className="size-5" strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-tight">
+          <h2 className="font-display text-sm font-semibold tracking-tight">
             Completa tu perfil
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">

@@ -13,7 +13,7 @@ export function FinanceHealthCard({ health }: { health: FinanceHealthT }) {
     <div className={`rounded-[28px] border bg-card p-5 ${TONE_BORDER[health.tone]}`}>
       <div className="flex items-center gap-2.5">
         <span className="text-2xl leading-none">{health.emoji}</span>
-        <p className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">{health.label}</p>
+        <p className="font-display text-sm font-semibold text-foreground">{health.label}</p>
       </div>
       <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{health.message}</p>
     </div>

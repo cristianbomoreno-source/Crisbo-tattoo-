@@ -83,7 +83,7 @@ export function QuoteDetailContent({
         <div className="absolute inset-0 bg-black/60" aria-hidden />
 
         <div className="relative z-10 flex items-start justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[11px] font-medium uppercase tracking-wider text-white">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[11px] font-medium text-white">
             {isBot ? <Bot className="size-3" aria-hidden /> : <PenLine className="size-3" aria-hidden />}
             {isBot ? 'Desde bot' : 'Creada por mí'}
           </span>
@@ -109,15 +109,15 @@ export function QuoteDetailContent({
         </div>
 
         <div className="relative z-10 min-w-0">
-          <h2 className="truncate font-title text-5xl leading-[0.95] tracking-tight text-foreground uppercase sm:text-6xl">
+          <h2 className="truncate font-title font-bold text-5xl leading-[0.95] tracking-tight text-foreground sm:text-6xl">
             {clientName}
           </h2>
           {q.style && (
-            <p className="truncate font-title text-3xl leading-[0.95] tracking-tight text-foreground/80 uppercase sm:text-4xl">
+            <p className="truncate font-title font-bold text-3xl leading-[0.95] tracking-tight text-foreground/80 sm:text-4xl">
               {q.style}
             </p>
           )}
-          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium tracking-wider text-white uppercase">
+          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium text-white">
             <span className={cn('size-1.5 rounded-full', DOT[config.tone])} />
             {config.label}
           </span>
@@ -156,13 +156,13 @@ export function QuoteDetailContent({
       <div className="space-y-3 px-4 pb-4">
         {/* RESUMEN */}
         <div className="rounded-2xl bg-card p-4">
-          <h3 className="mb-3 flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="mb-3 flex items-center gap-2 font-display text-xs font-semibold text-muted-foreground">
             <FileText className="size-4" strokeWidth={1.8} aria-hidden />
             Resumen
           </h3>
           <div className="flex flex-wrap items-stretch gap-2">
             <div className="flex-1 rounded-xl bg-muted/60 p-3">
-              <p className="font-title text-3xl leading-none tracking-tight text-foreground tabular-nums">
+              <p className="font-title font-bold text-3xl leading-none tracking-tight text-foreground tabular-nums">
                 {q.is_courtesy ? 'Cortesía' : cop(q.price ?? 0)}
               </p>
             </div>
@@ -225,7 +225,7 @@ export function QuoteDetailContent({
 
         {!isBot && q.notes && (
           <div className="rounded-2xl bg-card p-4">
-            <h3 className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="mb-2 font-display text-xs font-semibold text-muted-foreground">
               Notas
             </h3>
             <p className="text-sm text-foreground/90">{q.notes}</p>

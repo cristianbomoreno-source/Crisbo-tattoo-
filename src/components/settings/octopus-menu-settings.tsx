@@ -45,7 +45,7 @@ export function OctopusMenuSettings({ accountKind }: { accountKind?: 'tatuador' 
 
   return (
     <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-      <p className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+      <p className="font-display text-sm font-semibold text-foreground">
         Menú del pulpo
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">

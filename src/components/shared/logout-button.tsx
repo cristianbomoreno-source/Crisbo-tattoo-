@@ -15,7 +15,7 @@ export function LogoutButton({ className, collapsed = false }: { className?: str
         type="submit"
         title={collapsed ? 'Cerrar sesión' : undefined}
         className={cn(
-          'flex min-h-11 w-full items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[13px] font-medium uppercase tracking-[0.12em] text-sidebar-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'flex min-h-11 w-full items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           collapsed && 'justify-center px-0',
           className
         )}

@@ -94,7 +94,7 @@ export function LinkPageCustomizer({
         </span>
       </div>
 
-      <h1 className="mb-4 font-title text-2xl uppercase leading-none">Personalizar mi link</h1>
+      <h1 className="mb-4 font-title font-bold text-2xl leading-none">Personalizar mi link</h1>
 
       <div className="mb-4 flex gap-1.5 rounded-xl bg-card p-1 lg:hidden">
         <button

@@ -29,7 +29,7 @@ export function RestDayGate({
       <Logo className="text-[2.75rem]" />
 
       <div className="space-y-2">
-        <h1 className="font-display text-2xl font-semibold uppercase tracking-[0.04em] text-foreground">
+        <h1 className="font-display text-2xl font-semibold text-foreground">
           Hoy es tu día de descanso
         </h1>
         {reason && (

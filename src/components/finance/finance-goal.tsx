@@ -11,10 +11,10 @@ export function FinanceGoalCard({ goal, revenue }: { goal: number; revenue: numb
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-6">
-      <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="font-display text-[11px] font-semibold text-muted-foreground">
         Meta mensual
       </p>
-      <p className="mt-1.5 font-title text-3xl tracking-tight text-foreground tabular-nums">{cop(goal)}</p>
+      <p className="mt-1.5 font-title font-bold text-3xl tracking-tight text-foreground tabular-nums">{cop(goal)}</p>
 
       <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-foreground/10">
         <div

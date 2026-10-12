@@ -83,7 +83,7 @@ export function InboxShell({
       >
         <div className="space-y-2 border-b border-border/60 p-3">
           <div className="flex items-center justify-between">
-            <h1 className="font-display text-sm font-semibold uppercase tracking-[0.12em]">
+            <h1 className="font-display text-sm font-semibold">
               {showArchived ? 'Archivados' : 'Mensajes'}
             </h1>
             {(archivedCount > 0 || showArchived) && (
@@ -127,7 +127,7 @@ export function InboxShell({
                       activeId === c.id && 'bg-accent/70'
                     )}
                   >
-                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 font-display text-sm font-semibold uppercase text-primary">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary">
                       {name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2) || '#'}
                     </span>
                     <span className="min-w-0 flex-1">

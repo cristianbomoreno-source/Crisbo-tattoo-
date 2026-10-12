@@ -26,7 +26,7 @@ export function GenderCards({ onPick }: { onPick: (v: 'Hombre' | 'Mujer') => voi
               className="size-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
             />
           </span>
-          <span className="block px-3 py-2.5 text-center font-heading text-sm font-semibold uppercase tracking-wide text-white">
+          <span className="block px-3 py-2.5 text-center font-heading text-sm font-semibold text-white">
             {gVal}
           </span>
         </button>

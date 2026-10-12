@@ -72,7 +72,7 @@ export function ProjectCard({
 
         {/* ── Bloque inferior: al mínimo, solo lo esencial ── */}
         <div className="shrink-0 px-[clamp(0.55rem,2.6vw,0.85rem)] pb-[clamp(0.45rem,2vw,0.65rem)] pt-[clamp(0.35rem,1.6vw,0.5rem)]">
-          <p className="truncate font-display text-[clamp(0.85rem,3.8vw,1.2rem)] font-bold uppercase leading-tight tracking-tight text-black">
+          <p className="truncate font-display text-[clamp(0.85rem,3.8vw,1.2rem)] font-bold leading-tight tracking-tight text-black">
             {clientName}
           </p>
           <p className="truncate text-[clamp(0.62rem,2.5vw,0.78rem)] leading-tight text-black/45">
@@ -94,7 +94,7 @@ export function ProjectCard({
 
           {/* Chip de estado a todo lo ancho: verde cuando está completado */}
           <div
-            className={`mt-1.5 flex items-center justify-center rounded-full py-1 font-display text-[clamp(0.5rem,2.1vw,0.64rem)] font-bold uppercase tracking-wider ${
+            className={`mt-1.5 flex items-center justify-center rounded-full py-1 font-display text-[clamp(0.5rem,2.1vw,0.64rem)] font-bold ${
               complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
             }`}
           >

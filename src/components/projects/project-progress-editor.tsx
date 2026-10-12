@@ -54,7 +54,7 @@ export function ProjectProgressEditor({
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-title text-2xl leading-none tabular-nums">{shownPct}%</p>
+          <p className="font-title font-bold text-2xl leading-none tabular-nums">{shownPct}%</p>
           {!editing && (
             <button
               type="button"

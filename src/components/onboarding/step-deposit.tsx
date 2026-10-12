@@ -18,7 +18,7 @@ function MiniHeader({
   return (
     <div className="mb-3 flex items-center gap-2">
       <Icon className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide">{label}</h3>
+      <h3 className="font-display text-xs font-semibold">{label}</h3>
     </div>
   )
 }
@@ -71,7 +71,7 @@ function ModeToggleCard({
       </span>
       <span
         className={cn(
-          'font-display text-xs font-semibold uppercase tracking-wide',
+          'font-display text-xs font-semibold',
           active ? 'text-primary' : 'text-foreground'
         )}
       >
@@ -106,11 +106,11 @@ function SuggestedCard({
       )}
     >
       {active && <CornerCheck />}
-      <span className={cn('font-title text-base tabular-nums', active ? 'text-primary' : 'text-foreground')}>
+      <span className={cn('font-title font-bold text-base tabular-nums', active ? 'text-primary' : 'text-foreground')}>
         {label}
       </span>
       {badge && (
-        <span className="font-display text-[0.55rem] font-bold uppercase tracking-wide text-primary">{badge}</span>
+        <span className="font-display text-[0.55rem] font-bold text-primary">{badge}</span>
       )}
     </button>
   )
@@ -235,11 +235,11 @@ export function StepDeposit({ draft, patch }: OnboardingStepProps) {
                 onChange={(e) => onCustomChange(e.target.value)}
                 placeholder="0"
                 className={cn(
-                  'h-12 w-full rounded-xl border border-border bg-card/60 py-3 text-right font-title text-lg tabular-nums text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'h-12 w-full rounded-xl border border-border bg-card/60 py-3 text-right font-title font-bold text-lg tabular-nums text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   mode === 'fixed' ? 'pl-8 pr-16' : 'pl-4 pr-10'
                 )}
               />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-display text-xs font-semibold text-muted-foreground">
                 {mode === 'fixed' ? 'COP' : '%'}
               </span>
             </div>
@@ -261,17 +261,17 @@ export function StepDeposit({ draft, patch }: OnboardingStepProps) {
       {/* VISTA PREVIA — solo si hay un monto real (nunca datos inventados) */}
       {mode && draft.depositValue !== undefined && (
         <div className="rounded-2xl border-primary bg-card p-4">
-          <span className="mb-3 block font-display text-xs font-semibold uppercase tracking-wide text-primary">
+          <span className="mb-3 block font-display text-xs font-semibold text-primary">
             Vista previa
           </span>
           <div className="flex items-start gap-3 rounded-2xl border-dashed bg-card/40 p-3.5">
             <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} aria-hidden="true" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">Se mostrará en tus cotizaciones así:</p>
-              <p className="mt-2 font-display text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="mt-2 font-display text-[0.65rem] font-semibold text-muted-foreground">
                 Abono para reservar
               </p>
-              <p className="mt-0.5 font-title text-2xl tabular-nums text-foreground">
+              <p className="mt-0.5 font-title font-bold text-2xl tabular-nums text-foreground">
                 {mode === 'fixed' ? `${cop(draft.depositValue)} COP` : `${draft.depositValue}% del valor`}
               </p>
             </div>

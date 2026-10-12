@@ -1,29 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Oswald, Orbitron, Anton, Geist_Mono } from "next/font/google";
+import { Inter, Orbitron, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { RegisterSW } from "@/components/shared/register-sw";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import "./globals.css";
 
+// Una sola familia para toda la app (títulos y texto): grotesca limpia, la
+// alternativa libre más cercana a Aktiv Grotesk (estilo YouVersion).
 const inter = Inter({
   variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const oswald = Oswald({
-  variable: "--font-display",
   subsets: ["latin"],
 });
 
 const orbitron = Orbitron({
   variable: "--font-wordmark",
   weight: ["600", "700"],
-  subsets: ["latin"],
-});
-
-const anton = Anton({
-  variable: "--font-title",
-  weight: "400",
   subsets: ["latin"],
 });
 
@@ -82,7 +73,7 @@ export default function RootLayout({
       // eso hace que el className del server difiera del primer render del
       // cliente a propósito, y next-themes pide silenciar ese warning aquí.
       suppressHydrationWarning
-      className={`${inter.variable} ${oswald.variable} ${orbitron.variable} ${anton.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${orbitron.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* SplashScreen deshabilitado temporalmente (2026-07-21) para descartar

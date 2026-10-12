@@ -7,7 +7,7 @@ export function FinanceTopServicesCard({ rows }: { rows: RevenueRanking[] }) {
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="font-display text-xs font-semibold text-muted-foreground">
         Servicios más rentables
       </h3>
       <div className="mt-4 flex flex-col gap-3">
@@ -39,7 +39,7 @@ export function FinanceTopClientsCard({ rows }: { rows: TopClient[] }) {
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="font-display text-xs font-semibold text-muted-foreground">
         Clientes más importantes
       </h3>
       <div className="mt-4 flex flex-col gap-2.5">

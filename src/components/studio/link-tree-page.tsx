@@ -132,7 +132,7 @@ export function LinkTreePage({
           />
         ) : (
           <span
-            className="grid size-28 place-items-center rounded-full font-title text-3xl"
+            className="grid size-28 place-items-center rounded-full font-title font-bold text-3xl"
             style={{ backgroundColor: hexToRgba(theme.colors.accent, 0.15), color: theme.colors.accent, boxShadow: `0 0 0 3px ${theme.colors.accent}` }}
           >
             {name.charAt(0).toUpperCase()}
@@ -148,7 +148,7 @@ export function LinkTreePage({
           </span>
         )}
 
-        <h1 className="mt-3 text-center font-title text-2xl uppercase leading-none" style={{ color: theme.colors.text }}>
+        <h1 className="mt-3 text-center font-title font-bold text-2xl leading-none" style={{ color: theme.colors.text }}>
           {name}
         </h1>
         {config.tagline && (

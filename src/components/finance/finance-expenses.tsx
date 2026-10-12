@@ -19,7 +19,7 @@ export function FinanceIncomeVsExpensesCard({
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="font-display text-xs font-semibold text-muted-foreground">
         Ingresos vs. gastos
       </h3>
       <div className="mt-4 flex flex-col gap-3">
@@ -66,7 +66,7 @@ export function FinanceExpensesDonut({ totals }: { totals: CategoryTotal[] }) {
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="font-display text-xs font-semibold text-muted-foreground">
         Gastos del estudio
       </h3>
       <div className="mt-4 flex items-center gap-5">
@@ -75,7 +75,7 @@ export function FinanceExpensesDonut({ totals }: { totals: CategoryTotal[] }) {
           style={{ background: `conic-gradient(${stops.join(', ')})` }}
         >
           <div className="grid size-[4.2rem] place-items-center rounded-full bg-card text-center">
-            <span className="font-title text-base leading-none tabular-nums">{cop(sum)}</span>
+            <span className="font-title font-bold text-base leading-none tabular-nums">{cop(sum)}</span>
           </div>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-2">

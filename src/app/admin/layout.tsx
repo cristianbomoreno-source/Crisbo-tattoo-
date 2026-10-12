@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Logo full className="text-3xl" />
         {anyAdmin ? (
           <>
-            <h1 className="font-title text-2xl uppercase">Sin acceso</h1>
+            <h1 className="font-title font-bold text-2xl">Sin acceso</h1>
             <p className="max-w-sm text-sm text-muted-foreground">
               Tu cuenta no es administradora de Crisbo Tattoo. Pide a un administrador que te agregue
               desde esta misma pantalla, con el correo {user.email}.
@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </>
         ) : (
           <>
-            <h1 className="font-title text-2xl uppercase">Primer arranque</h1>
+            <h1 className="font-title font-bold text-2xl">Primer arranque</h1>
             <p className="max-w-sm text-sm text-muted-foreground">
               Todavía no hay administradores registrados. Reclama el acceso con esta cuenta
               ({user.email}) para empezar.

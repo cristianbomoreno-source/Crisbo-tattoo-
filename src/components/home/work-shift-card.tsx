@@ -76,7 +76,7 @@ export function WorkShiftCard({
         {shift ? 'Jornada en curso' : 'Aún no has iniciado tu jornada.'}
       </p>
 
-      <div className="mt-3 flex items-center justify-center gap-1 font-title text-4xl tabular-nums text-white">
+      <div className="mt-3 flex items-center justify-center gap-1 font-title font-bold text-4xl tabular-nums text-white">
         <span>{h}</span>
         <span className="text-white/30">:</span>
         <span>{m}</span>

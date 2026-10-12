@@ -76,7 +76,7 @@ function depositHint(
 /** Mini-encabezado de sub-sección, mismo patrón visual que `step-details.tsx`. */
 function MiniHeader({ label, required }: { label: string; required?: boolean }) {
   return (
-    <h3 className="mb-3 font-display text-xs font-semibold uppercase tracking-wide">
+    <h3 className="mb-3 font-display text-xs font-semibold">
       {label}
       {required && (
         <span className="ml-0.5 text-primary" aria-hidden="true">
@@ -154,7 +154,7 @@ function DurationDial({
             strokeDasharray={`${dash.toFixed(2)} ${c.toFixed(2)}`}
           />
         </svg>
-        <span className="absolute font-title text-2xl tabular-nums" aria-hidden="true">
+        <span className="absolute font-title font-bold text-2xl tabular-nums" aria-hidden="true">
           {formatDuration(clamped)}
         </span>
       </div>
@@ -199,7 +199,7 @@ function SessionCountPicker({
             >
               <span
                 className={cn(
-                  'font-title text-xl tabular-nums',
+                  'font-title font-bold text-xl tabular-nums',
                   active ? 'text-primary' : 'text-foreground'
                 )}
               >
@@ -228,7 +228,7 @@ function SessionCountPicker({
           >
             <Minus className="size-3.5" strokeWidth={2} aria-hidden="true" />
           </RoundStepButton>
-          <span className="font-title text-2xl tabular-nums">{sessionCount}</span>
+          <span className="font-title font-bold text-2xl tabular-nums">{sessionCount}</span>
           <RoundStepButton
             onClick={() => onChange(Math.min(SESSION_STEPPER_MAX, sessionCount + 1))}
             disabled={sessionCount >= SESSION_STEPPER_MAX}
@@ -257,7 +257,7 @@ export function StepPrice({ draft, patch, studioDeposit }: StepPriceProps) {
       <section>
         <Label
           htmlFor="wizard-description"
-          className="mb-3 block font-display text-xs font-semibold uppercase tracking-wide"
+          className="mb-3 block font-display text-xs font-semibold"
         >
           Describe tu idea
           <span className="ml-0.5 text-primary" aria-hidden="true">
@@ -299,7 +299,7 @@ export function StepPrice({ draft, patch, studioDeposit }: StepPriceProps) {
       <section>
         <Label
           htmlFor="wizard-price"
-          className="mb-3 block font-display text-xs font-semibold uppercase tracking-wide"
+          className="mb-3 block font-display text-xs font-semibold"
         >
           Valor del tatuaje
           <span className="ml-0.5 text-primary" aria-hidden="true">
@@ -307,7 +307,7 @@ export function StepPrice({ draft, patch, studioDeposit }: StepPriceProps) {
           </span>
         </Label>
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-display text-xs font-semibold text-muted-foreground">
             COP
           </span>
           <Input
@@ -319,7 +319,7 @@ export function StepPrice({ draft, patch, studioDeposit }: StepPriceProps) {
               patch({ price: digits === '' ? '' : Number(digits) })
             }}
             placeholder="0"
-            className="h-12 pl-14 text-right font-title text-lg tabular-nums"
+            className="h-12 pl-14 text-right font-title font-bold text-lg tabular-nums"
           />
         </div>
 
