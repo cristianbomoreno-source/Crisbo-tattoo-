@@ -6,6 +6,7 @@ import {
   User, Ruler, MapPin, Palette, Droplet, Contact, CalendarDays, Images, Lightbulb, Pencil,
 } from 'lucide-react'
 import { submitIntakeAction } from '@/actions/intake'
+import { compressImage } from '@/lib/images/compress'
 import { instagramUrl } from '@/lib/intake/instagram'
 import { buildBodyZone, type Answers, type StepId } from './flow'
 import { COPY } from './copy'
@@ -63,9 +64,20 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
     fd.set('phone', answers.phone ?? '')
     fd.set('availability', answers.availability ?? '')
     fd.set('website', '') // honeypot
-    for (const photo of answers.photos ?? []) fd.append('photos', photo)
+    // Vercel corta envíos de más de 4,5 MB (sin llegar al servidor): 3 fotos
+    // de celular lo superan fácil. Se reducen a ~0,5 MB c/u antes de enviar.
+    const photos = await Promise.all((answers.photos ?? []).map((p) => compressImage(p, 1600, 0.82)))
+    for (const photo of photos) fd.append('photos', photo)
 
-    const result = await submitIntakeAction(fd)
+    let result: Awaited<ReturnType<typeof submitIntakeAction>>
+    try {
+      result = await submitIntakeAction(fd)
+    } catch (e) {
+      console.error('[intake] envío falló', e)
+      setSending(false)
+      setError(COPY.errorSubmit)
+      return
+    }
     setSending(false)
     if (!result.success) {
       setError(result.error.message || COPY.errorSubmit)

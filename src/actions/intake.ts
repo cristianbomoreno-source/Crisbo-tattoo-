@@ -59,7 +59,10 @@ export async function submitIntakeAction(
   if (raw.service === '') delete raw.service
   if (raw.style === '') delete raw.style
   const parsed = intakeSchema.safeParse(raw)
-  if (!parsed.success) return err('VALIDATION_ERROR', 'Datos inválidos', parsed.error)
+  if (!parsed.success) {
+    console.error('[intake] datos inválidos', parsed.error.issues)
+    return err('VALIDATION_ERROR', 'Datos inválidos', parsed.error)
+  }
 
   const h = await headers()
   const ip = (h.get('x-forwarded-for') ?? 'local').split(',')[0]?.trim() ?? 'local'
@@ -115,7 +118,10 @@ export async function submitIntakeAction(
       })
       .select('id')
       .single()
-    if (clientErr || !created) return err('DB_ERROR', GENERIC_ERROR)
+    if (clientErr || !created) {
+      console.error('[intake] no se pudo crear el cliente', clientErr)
+      return err('DB_ERROR', GENERIC_ERROR)
+    }
     clientId = created.id
   } else if (existing && !existing.birthdate && parsed.data.birthdate) {
     // El bot solo pregunta la fecha de nacimiento si no la teníamos — si
@@ -146,7 +152,10 @@ export async function submitIntakeAction(
     })
     .select('id')
     .single()
-  if (quoteErr || !quote) return err('DB_ERROR', GENERIC_ERROR)
+  if (quoteErr || !quote) {
+    console.error('[intake] no se pudo crear la cotización', quoteErr)
+    return err('DB_ERROR', GENERIC_ERROR)
+  }
 
   const notifTitle = 'Nueva cotización por el bot'
   const notifBody = `${parsed.data.name} envió una solicitud${parsed.data.style ? ` de ${parsed.data.style}` : ''}.`
