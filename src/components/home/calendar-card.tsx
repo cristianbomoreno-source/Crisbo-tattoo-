@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ChevronRight, CalendarDays } from 'lucide-react'
 import { MonthGrid } from '@/components/home/month-grid'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
+import { QuickScheduleDialog } from '@/components/calendar/quick-schedule-dialog'
 import { AgendaListDialog } from '@/components/home/agenda-list-dialog'
 import type { ProjectBalance } from '@/components/home/today-appointments'
 import type { SessionWithProject } from '@/queries/sessions'
@@ -39,6 +40,8 @@ export function CalendarCard({
   const [selectedDay, setSelectedDay] = useState(today)
   const [initialView, setInitialView] = useState<'day' | 'month'>('day')
   const [agendaOpen, setAgendaOpen] = useState(false)
+  // Tocar un día del mes abre directo "Agendar cita" para ese día.
+  const [scheduleOpen, setScheduleOpen] = useState(false)
   const count = todaySessions.length
 
   useEffect(() => {
@@ -85,8 +88,7 @@ export function CalendarCard({
           blockedDays={blockedDays}
           onSelectDay={(key) => {
             setSelectedDay(key)
-            setInitialView('day')
-            setDialogOpen(true)
+            setScheduleOpen(true)
           }}
         />
       </div>
@@ -109,6 +111,19 @@ export function CalendarCard({
         onOpenChange={setDialogOpen}
         initialDay={selectedDay}
         initialView={initialView}
+      />
+
+      <QuickScheduleDialog
+        dayKey={selectedDay}
+        defaultTime="10:00"
+        editableTime
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        onViewDay={() => {
+          setScheduleOpen(false)
+          setInitialView('day')
+          setDialogOpen(true)
+        }}
       />
 
       <AgendaListDialog open={agendaOpen} onOpenChange={setAgendaOpen} />

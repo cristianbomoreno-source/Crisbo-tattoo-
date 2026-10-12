@@ -43,6 +43,8 @@ export function QuickScheduleDialog({
   presetDurationMinutes,
   onScheduled,
   onBooked,
+  editableTime = false,
+  onViewDay,
 }: {
   dayKey: string
   defaultTime: string
@@ -61,6 +63,11 @@ export function QuickScheduleDialog({
   /** Si se pasa, la confirmación la manda quien llama (ej. la bandeja de
    * Mensajes, por la API) y NO se abre la pestaña de wa.me. */
   onBooked?: (sessionId: string) => void
+  /** Muestra un selector de hora (cuando se abre tocando un día del mes,
+   * no un hueco concreto del calendario). */
+  editableTime?: boolean
+  /** Enlace "Ver agenda del día" (abre el calendario de ese día). */
+  onViewDay?: () => void
 }) {
   const router = useRouter()
   const [name, setName] = useState(presetClientName ?? '')
@@ -197,9 +204,30 @@ export function QuickScheduleDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
-            {dayKey} · {time || '—'}
-          </div>
+          {editableTime ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
+                {dayKey}
+              </div>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                aria-label="Hora de la cita"
+                disabled={loading}
+                className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
+            </div>
+          ) : (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
+              {dayKey} · {time || '—'}
+            </div>
+          )}
+          {onViewDay && (
+            <button type="button" onClick={onViewDay} className="text-xs font-medium text-primary hover:underline">
+              Ver agenda del día
+            </button>
+          )}
 
           {presetProjectId ? (
             <p className="rounded-lg bg-accent px-3 py-2 text-sm">
