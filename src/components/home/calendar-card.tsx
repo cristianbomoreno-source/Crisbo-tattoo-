@@ -88,7 +88,14 @@ export function CalendarCard({
           blockedDays={blockedDays}
           onSelectDay={(key) => {
             setSelectedDay(key)
-            setScheduleOpen(true)
+            // Día con citas → su horario (desde ahí se agenda en un hueco libre).
+            // Día libre → directo a "Agendar cita".
+            if (days.some((d) => d.key === key && d.count > 0)) {
+              setInitialView('day')
+              setDialogOpen(true)
+            } else {
+              setScheduleOpen(true)
+            }
           }}
         />
       </div>
