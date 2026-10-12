@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { compressImage } from '@/lib/images/compress'
 import { toast } from 'sonner'
 import { Camera } from 'lucide-react'
 import {
@@ -45,9 +46,17 @@ function PhotoField({
     const file = e.target.files?.[0]
     if (!file) return
     setBusy(true)
-    await onUpload(file)
-    setBusy(false)
-    e.target.value = ''
+    try {
+      // Perfil ≤ 2 MB y portada ≤ 8 MB en el servidor, pero Vercel corta en
+      // 4,5 MB: se reduce antes de subir (y HEIC → JPEG en Safari).
+      const small = aspect === 'square' ? await compressImage(file, 1024, 0.88) : await compressImage(file, 2400, 0.85)
+      await onUpload(small)
+    } catch {
+      toast.error('No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.')
+    } finally {
+      setBusy(false)
+      e.target.value = ''
+    }
   }
 
   return (

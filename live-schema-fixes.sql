@@ -27,3 +27,48 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
   ('studio-covers', 'studio-covers', true, 8388608, ARRAY['image/png','image/jpeg','image/webp']),
   ('link-page-photos', 'link-page-photos', true, 8388608, ARRAY['image/png','image/jpeg','image/webp'])
 ON CONFLICT (id) DO NOTHING;
+
+-- (2026-10-12) Página pública de enlaces (/l/<slug>, Ajustes → Enlace): tablas que
+-- el código ya usaba pero no existían en vivo. Lectura pública vía service role.
+ALTER TABLE public.studios ADD COLUMN IF NOT EXISTS description text;
+
+CREATE TABLE IF NOT EXISTS public.studio_links (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  studio_id uuid NOT NULL REFERENCES public.studios(id) ON DELETE CASCADE,
+  label text NOT NULL,
+  subtitle text,
+  url text NOT NULL,
+  icon text NOT NULL DEFAULT 'link',
+  color text,
+  enabled boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS studio_links_studio_idx ON public.studio_links(studio_id, sort_order);
+ALTER TABLE public.studio_links ENABLE ROW LEVEL SECURITY;
+CREATE POLICY studio_links_select ON public.studio_links FOR SELECT USING (studio_id = get_studio_id());
+CREATE POLICY studio_links_insert ON public.studio_links FOR INSERT WITH CHECK (studio_id = get_studio_id() AND is_owner());
+CREATE POLICY studio_links_update ON public.studio_links FOR UPDATE USING (studio_id = get_studio_id() AND is_owner()) WITH CHECK (studio_id = get_studio_id());
+CREATE POLICY studio_links_delete ON public.studio_links FOR DELETE USING (studio_id = get_studio_id() AND is_owner());
+
+CREATE TABLE IF NOT EXISTS public.studio_link_page (
+  studio_id uuid PRIMARY KEY REFERENCES public.studios(id) ON DELETE CASCADE,
+  profile_photo_url text,
+  profile_photo_path text,
+  cover_photo_url text,
+  cover_photo_path text,
+  display_name text,
+  bio text,
+  tagline text,
+  badge_label text,
+  location_label text,
+  template text NOT NULL DEFAULT 'dark',
+  theme jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.studio_link_page ENABLE ROW LEVEL SECURITY;
+CREATE POLICY studio_link_page_select ON public.studio_link_page FOR SELECT USING (studio_id = get_studio_id());
+CREATE POLICY studio_link_page_insert ON public.studio_link_page FOR INSERT WITH CHECK (studio_id = get_studio_id() AND is_owner());
+CREATE POLICY studio_link_page_update ON public.studio_link_page FOR UPDATE USING (studio_id = get_studio_id() AND is_owner()) WITH CHECK (studio_id = get_studio_id());
