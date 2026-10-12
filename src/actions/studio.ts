@@ -467,7 +467,8 @@ export async function removeStudioLogo(): Promise<Result<void>> {
     .eq('id', studioId)
     .single()
   if (prev?.logo_path) {
-    await supabase.storage.from('studio-logos').remove([prev.logo_path])
+    // Admin: el bucket no tiene políticas de borrado para usuarios (requireOwner ya validó).
+    await createAdminClient().storage.from('studio-logos').remove([prev.logo_path])
   }
 
   const { error } = await supabase
@@ -553,7 +554,7 @@ export async function removeStudioCover(): Promise<Result<void>> {
     .eq('id', studioId)
     .single()
   if (prev?.cover_photo_path) {
-    await supabase.storage.from('studio-covers').remove([prev.cover_photo_path])
+    await createAdminClient().storage.from('studio-covers').remove([prev.cover_photo_path])
   }
 
   const { error } = await supabase

@@ -11,6 +11,7 @@ import { updateStudioProfileSchema, type UpdateStudioProfileInput } from '@/lib/
 import { updateStudioProfile, uploadStudioLogo, removeStudioLogo, uploadStudioCover, removeStudioCover } from '@/actions/studio'
 import { STUDIO_TYPES, ARTIST_COUNTS } from '@/components/onboarding/constants'
 import { LogoCropDialog } from '@/components/settings/logo-crop-dialog'
+import { compressImage } from '@/lib/images/compress'
 import { SettingsSubpage, SettingsSaveBar } from '@/components/settings/settings-subpage'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -73,8 +74,15 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
     setPendingLogoFile(null)
     setBusy(true)
     const fd = new FormData()
-    fd.append('file', cropped)
-    const result = await uploadStudioLogo(fd)
+    fd.append('file', cropped.size > 1.5 * 1024 * 1024 ? await compressImage(cropped, 1024, 0.9) : cropped)
+    let result: Awaited<ReturnType<typeof uploadStudioLogo>>
+    try {
+      result = await uploadStudioLogo(fd)
+    } catch {
+      setBusy(false)
+      toast.error('No se pudo subir el logo. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
     setBusy(false)
     if (fileRef.current) fileRef.current.value = ''
     if (!result.success) {
@@ -107,8 +115,16 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
     if (!file) return
     setCoverBusy(true)
     const fd = new FormData()
-    fd.append('file', file)
-    const result = await uploadStudioCover(fd)
+    // Vercel corta envíos de más de 4,5 MB: la portada se reduce antes de subir.
+    fd.append('file', await compressImage(file, 2400, 0.85))
+    let result: Awaited<ReturnType<typeof uploadStudioCover>>
+    try {
+      result = await uploadStudioCover(fd)
+    } catch {
+      setCoverBusy(false)
+      toast.error('No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
     setCoverBusy(false)
     if (coverFileRef.current) coverFileRef.current.value = ''
     if (!result.success) {
