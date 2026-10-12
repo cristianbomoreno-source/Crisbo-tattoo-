@@ -181,7 +181,7 @@ export function NextSessionCard({
           )}
           {photoUrl && (
             <>
-              {/* Foto del proyecto grande, ocupando el lado derecho a lo alto
+              {/* Foto del proyecto del centro hacia la derecha, a lo alto
                   de toda la tarjeta, fundida hacia la izquierda (y un poco
                   abajo) con el color de la tarjeta para que el texto y los
                   botones se lean encima. */}
@@ -189,11 +189,11 @@ export function NextSessionCard({
                 src={photoUrl}
                 width={720}
                 eager
-                className="pointer-events-none absolute inset-y-0 right-0 h-full w-[75%] object-cover"
+                className="pointer-events-none absolute inset-y-0 right-0 h-full w-1/2 object-cover"
               />
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card from-25% via-card/80 via-55% to-card/0"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card from-50% to-card/0 to-80%"
               />
               <div
                 aria-hidden="true"
