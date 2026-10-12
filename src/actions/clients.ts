@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache'
 import type { Client } from '@/queries/clients'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCurrentPermissions } from '@/queries/permissions'
-import { phoneSuffixPattern } from '@/lib/whatsapp-cloud/parse'
+import { normalizeWaPhone, phoneSuffixPattern } from '@/lib/whatsapp-cloud/parse'
 
 export async function createClientAction(input: unknown): Promise<Result<Client>> {
   const parsed = createClientSchema.safeParse(input)
@@ -33,6 +33,19 @@ export async function createClientAction(input: unknown): Promise<Result<Client>
     .single()
 
   if (error) return dbError(error)
+
+  // Si ese número ya tiene un chat de WhatsApp sin cliente, queda vinculado.
+  const waId = normalizeWaPhone((data as Client).phone)
+  if (waId) {
+    await supabase
+      .from('wa_conversations')
+      .update({ client_id: (data as Client).id })
+      .eq('studio_id', studio.id)
+      .eq('wa_id', waId)
+      .is('client_id', null)
+    revalidatePath('/dashboard/inbox', 'layout')
+  }
+
   revalidatePath('/dashboard/clients')
   return ok(data as Client)
 }

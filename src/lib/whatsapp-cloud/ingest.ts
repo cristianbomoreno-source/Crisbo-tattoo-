@@ -50,7 +50,19 @@ async function getOrCreateConversation(admin: Admin, studioId: string, waId: str
     .eq('studio_id', studioId)
     .eq('wa_id', waId)
     .maybeSingle()
-  if (existing) return existing as { id: string; unread_count: number; client_id: string | null }
+  if (existing) {
+    const conv = existing as { id: string; unread_count: number; client_id: string | null }
+    // Chat sin cliente: con cada mensaje nuevo se vuelve a buscar por número
+    // (el cliente pudo crearse o importarse después del primer mensaje).
+    if (!conv.client_id) {
+      const clientId = await findClientByPhone(admin, studioId, waId)
+      if (clientId) {
+        await admin.from('wa_conversations').update({ client_id: clientId }).eq('id', conv.id).is('client_id', null)
+        conv.client_id = clientId
+      }
+    }
+    return conv
+  }
 
   const clientId = await findClientByPhone(admin, studioId, waId)
   // ignoreDuplicates: si Meta manda dos webhooks a la vez, el segundo no
