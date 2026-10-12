@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
  * sincroniza la barra de estado del sistema con el tema elegido. */
 const THEME_COLOR = {
   dark: '#000000',
-  light: '#fafaf7',
+  light: '#efe9e0',
   minimal: '#ffffff',
 } as const
 

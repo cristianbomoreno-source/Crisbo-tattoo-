@@ -59,49 +59,53 @@
   --radius-4xl: 2rem;      /* 32px — splash/hero */
 }
 
-/* Crisbo Tattoo — tema CLARO (sin uso actual: la app fuerza .dark). Se mantiene
-   sincronizado por si se activa en el futuro. */
+/* Crisbo Tattoo — tema CLARO. Misma paleta del estudio que el oscuro, pero
+   de día: fondo del muro de concreto (beige cálido), tarjetas blanco hueso,
+   texto negro cálido, dorado LED algo más profundo para que contraste sobre
+   claro (texto negro encima, igual que en oscuro) y rojo del maletín para
+   acciones destructivas. */
 :root {
-  --background: oklch(0.985 0.002 67);
-  --foreground: oklch(0.205 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0 0);
-  --primary: #b8862f;
-  --primary-hover: #c9963c;
-  --primary-pressed: #9c7126;
-  --primary-foreground: #ffffff;
-  --secondary: oklch(0.96 0.002 67);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0.002 67);
-  --muted-foreground: oklch(0.45 0.006 67);
-  --accent: oklch(0.96 0.002 67);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #efe9e0;
+  --foreground: #16130f;
+  --card: #faf7f2;
+  --card-foreground: #16130f;
+  --popover: #fdfbf8;
+  --popover-foreground: #16130f;
+  --primary: #c8923a;
+  --primary-hover: #d4a14d;
+  --primary-pressed: #ad7c2c;
+  --primary-glow: rgba(200, 146, 58, 0.22);
+  --primary-foreground: #16130f;
+  --secondary: #e6dfd3;
+  --secondary-foreground: #16130f;
+  --muted: #e6dfd3;
+  --muted-foreground: #6b6158;
+  --accent: #e6dfd3;
+  --accent-foreground: #16130f;
   --destructive: #b42d26;
-  --success: #b8862f;
-  --success-foreground: #ffffff;
+  --success: #c8923a;
+  --success-foreground: #16130f;
   --warning: oklch(0.7433 0.1295 80.42);
   --warning-foreground: oklch(0.205 0 0);
   --info: oklch(0.6196 0.0761 241.38);
   --info-foreground: oklch(0.99 0 0);
-  --border: oklch(0.9 0.003 67);
-  --input: oklch(0.9 0.003 67);
-  --ring: #b8862f;
-  --chart-1: #b8862f;
-  --chart-2: oklch(0.7433 0.1295 80.42);
-  --chart-3: oklch(0.6196 0.0761 241.38);
+  --border: rgba(22, 19, 15, 0.1);
+  --input: rgba(22, 19, 15, 0.16);
+  --ring: #c8923a;
+  --chart-1: #c8923a;
+  --chart-2: #8a5530;
+  --chart-3: #3d3731;
   --chart-4: #b42d26;
-  --chart-5: oklch(0.6437 0.0887 306.51);
+  --chart-5: #a39887;
   --radius: 0.625rem;
-  --sidebar: oklch(0.97 0.002 67);
-  --sidebar-foreground: oklch(0.45 0.006 67);
-  --sidebar-primary: #b8862f;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: oklch(0.96 0.002 67);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.9 0.003 67);
-  --sidebar-ring: #b8862f;
+  --sidebar: #e9e2d8;
+  --sidebar-foreground: #6b6158;
+  --sidebar-primary: #c8923a;
+  --sidebar-primary-foreground: #16130f;
+  --sidebar-accent: #e0d8cb;
+  --sidebar-accent-foreground: #16130f;
+  --sidebar-border: rgba(22, 19, 15, 0.1);
+  --sidebar-ring: #c8923a;
 }
 
 /* Crisbo Tattoo — tema OSCURO (por defecto). Paleta sacada del estudio
@@ -286,6 +290,19 @@
   box-shadow:
     0 0 16px -4px var(--primary-glow, rgba(30, 58, 95, 0.12)),
     0 4px 12px -6px rgb(0 0 0 / 0.08);
+}
+
+/* Tema Claro: el dorado como TEXTO sobre beige no llega a 4.5:1 — se
+   oscurece solo el texto (los fondos dorados quedan igual). Las tarjetas
+   llevan una sombra suave cálida en vez del degradado del tema oscuro. */
+.light .text-primary,
+.light .text-success {
+  color: #8a6420;
+}
+.light .bg-card {
+  box-shadow:
+    0 1px 2px 0 rgb(60 45 25 / 0.06),
+    0 12px 32px -20px rgb(60 45 25 / 0.25);
 }
 
 /* Glow dorado reutilizable para el FAB y acentos primarios: el único lugar
