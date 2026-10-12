@@ -77,7 +77,10 @@ export async function ingestInstagram(admin: Admin, events: IgEvent[]) {
   for (const e of events) {
     if (!accounts.has(e.igUserId)) accounts.set(e.igUserId, await loadInstagramAccountByIgUser(admin, e.igUserId))
     const account = accounts.get(e.igUserId)
-    if (!account) continue
+    if (!account) {
+      console.warn(`[instagram] Mensaje para una cuenta no conectada (${e.igUserId})`)
+      continue
+    }
 
     const conv = await getOrCreateConversation(admin, account, e.customerId)
     const { error: insertError } = await admin.from('wa_messages').insert({

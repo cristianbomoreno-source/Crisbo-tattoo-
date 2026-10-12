@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
 
   const raw = await request.text()
   if (!validSignature(raw, request.headers.get('x-hub-signature-256'), secrets)) {
+    // Casi siempre es INSTAGRAM_APP_SECRET equivocada (la de Instagram, no la de la app de Meta).
+    console.error('[instagram] Firma inválida: revisa INSTAGRAM_APP_SECRET')
     return new NextResponse('Invalid signature', { status: 401 })
   }
 
@@ -61,8 +63,10 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Bad request', { status: 400 })
   }
 
+  const events = parseInstagramWebhook(payload)
+  console.log(`[instagram] webhook: ${events.length} evento(s)`)
   try {
-    await ingestInstagram(createAdminClient(), parseInstagramWebhook(payload))
+    await ingestInstagram(createAdminClient(), events)
   } catch (e) {
     // 500 → Meta reintenta; los duplicados se descartan por wa_message_id.
     console.error('[instagram] Error procesando webhook', e)
