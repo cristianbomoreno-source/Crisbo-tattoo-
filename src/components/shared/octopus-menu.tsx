@@ -348,7 +348,7 @@ function ActionButton({
 
 /** Acento del menú = `--primary` del tema activo (dorado LED del estudio),
  * así el pulpo sigue la paleta de Apariencia sin colores fijos. */
-const MENU_ACCENT = 'var(--primary)'
+const MENU_ACCENT = 'var(--octopus-accent, var(--primary))'
 const MENU_GLOW = 'var(--primary-glow)'
 
 /** El botón disparador ES el centro del menú — no hay una segunda forma
