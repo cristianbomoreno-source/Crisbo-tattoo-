@@ -4,6 +4,7 @@ import { ok, err, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import type { LeadStage } from '@/lib/whatsapp-cloud/lead'
+import type { ChatChannel } from '@/lib/instagram/channel'
 
 /** Estado de la conexión del estudio — SIN el token (ese nunca sale del
  * servidor). `whatsapp_accounts` no tiene políticas RLS, por eso se lee con
@@ -39,10 +40,30 @@ export async function getWhatsAppAccountStatus(): Promise<WhatsAppAccountStatus 
   }
 }
 
+/** Cuenta de Instagram conectada — SIN el token. */
+export type InstagramAccountStatus = { igUserId: string; username: string | null }
+
+export async function getInstagramAccountStatus(): Promise<InstagramAccountStatus | null> {
+  const studio = await getCurrentStudio()
+  if (!studio) return null
+  // Si la tabla aún no existe (migración pendiente) simplemente no hay cuenta.
+  const { data } = await createAdminClient()
+    .from('instagram_accounts')
+    .select('ig_user_id, username')
+    .eq('studio_id', studio.id)
+    .maybeSingle()
+  if (!data) return null
+  return { igUserId: data.ig_user_id, username: data.username }
+}
+
 export type WaConversation = {
   id: string
   studio_id: string
+  /** Número del cliente (WhatsApp) o su IGSID (Instagram). */
   wa_id: string
+  channel?: ChatChannel
+  /** @usuario del cliente en Instagram (sin @). */
+  ig_username?: string | null
   contact_name: string | null
   client_id: string | null
   last_message_at: string

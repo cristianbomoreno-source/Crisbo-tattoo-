@@ -21,6 +21,7 @@ import {
   FileText,
   Link2,
   MapPin,
+  MessageCircle,
   MoreVertical,
   Send,
   Sparkles,
@@ -32,6 +33,8 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { isServiceWindowOpen } from '@/lib/whatsapp-cloud/parse'
+import { chatChannel } from '@/lib/instagram/channel'
+import { InstagramIcon } from '@/components/shared/instagram-icon'
 import {
   markConversationRead,
   sendBookingConfirmationToChat,
@@ -57,6 +60,7 @@ import { ClientLinkDialog } from './client-link-dialog'
 import { LeadBar } from './lead-bar'
 import {
   chatInitials,
+  chatName,
   formatDayLabel,
   formatMessageTime,
   formatWaPhone,
@@ -100,7 +104,10 @@ export function ChatView({
   const scrollRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const name = conversation.client?.name || conversation.contact_name || formatWaPhone(conversation.wa_id)
+  const name = chatName(conversation)
+  const instagram = chatChannel(conversation) === 'instagram'
+  // El formulario de datos es un WhatsApp Flow: no existe en Instagram.
+  const formAvailable = formTemplateStatus && !instagram
   const windowOpen = isServiceWindowOpen(lastInboundAt)
   const remaining = lastInboundAt ? formatWindowRemaining(lastInboundAt) : null
   const client = conversation.client
@@ -208,7 +215,7 @@ export function ChatView({
     })
   }
 
-  const formButton = formTemplateStatus ? (
+  const formButton = formAvailable ? (
     <Button size="sm" variant="outline" onClick={sendForm} disabled={sendingForm}>
       <ClipboardList />
       {sendingForm ? 'Enviando…' : 'Enviar formulario'}
@@ -237,7 +244,7 @@ export function ChatView({
       onClick: () => sendShortcut(s.key),
       disabled: sending,
     })),
-    ...(formTemplateStatus
+    ...(formAvailable
       ? [{ key: 'formulario', label: sendingForm ? 'Enviando…' : 'Enviar formulario', Icon: ClipboardList, onClick: sendForm, disabled: sendingForm }]
       : []),
   ]
@@ -282,7 +289,7 @@ export function ChatView({
         </Link>
         <span className="relative shrink-0">
           <span className="grid size-10 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
-            {chatInitials(name)}
+            {chatInitials(name.replace(/^@/, ''))}
           </span>
           <span
             aria-hidden
@@ -294,13 +301,22 @@ export function ChatView({
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] leading-tight font-semibold">{name}</p>
-          <p suppressHydrationWarning className="mt-0.5 truncate text-xs text-muted-foreground">
-            {formatWaPhone(conversation.wa_id)}
+          <p suppressHydrationWarning className="mt-0.5 flex items-center truncate text-xs text-muted-foreground">
+            {instagram ? (
+              <InstagramIcon className="mr-1 size-3 shrink-0 text-pink-500" />
+            ) : (
+              <MessageCircle className="mr-1 size-3 shrink-0 text-emerald-500" />
+            )}
+            {instagram
+              ? conversation.ig_username
+                ? `@${conversation.ig_username}`
+                : 'Instagram'
+              : formatWaPhone(conversation.wa_id)}
             <span className="mx-1.5 opacity-50">·</span>
             {windowOpen && remaining ? (
               <span className="text-emerald-600 dark:text-emerald-400">Responde libre · {remaining}</span>
             ) : (
-              <span>Solo plantillas</span>
+              <span>{instagram ? 'Ventana cerrada' : 'Solo plantillas'}</span>
             )}
           </p>
         </div>
@@ -421,13 +437,23 @@ export function ChatView({
           <div className="space-y-2">
             <div className="flex items-start gap-2 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200">
               <Clock className="mt-0.5 size-4 shrink-0 text-amber-400" />
-              <p>
-                {lastInboundAt
-                  ? 'Pasaron más de 24 h desde el último mensaje del cliente.'
-                  : 'Este cliente todavía no te ha escrito.'}{' '}
-                WhatsApp solo permite escribirle con una <strong>plantilla aprobada por Meta</strong>
-                {formTemplateStatus ? ', como el formulario de datos.' : '.'}
-              </p>
+              {instagram ? (
+                <p>
+                  {lastInboundAt
+                    ? 'Pasaron más de 24 h desde el último mensaje del cliente.'
+                    : 'Este cliente todavía no te ha escrito.'}{' '}
+                  Instagram solo permite responder dentro de las 24 h siguientes: podrás escribirle cuando{' '}
+                  <strong>te vuelva a escribir</strong>.
+                </p>
+              ) : (
+                <p>
+                  {lastInboundAt
+                    ? 'Pasaron más de 24 h desde el último mensaje del cliente.'
+                    : 'Este cliente todavía no te ha escrito.'}{' '}
+                  WhatsApp solo permite escribirle con una <strong>plantilla aprobada por Meta</strong>
+                  {formTemplateStatus ? ', como el formulario de datos.' : '.'}
+                </p>
+              )}
             </div>
             {formButton && <div className="flex justify-end">{formButton}</div>}
           </div>
@@ -442,7 +468,7 @@ export function ChatView({
         onOpenChange={setScheduleOpen}
         initialDay={todayKey()}
         presetClientName={client?.name ?? conversation.contact_name ?? ''}
-        presetPhone={client?.phone ?? `+${conversation.wa_id}`}
+        presetPhone={client?.phone ?? (instagram ? '' : `+${conversation.wa_id}`)}
         presetClientId={client?.id}
         onBooked={(sessionId) => {
           setScheduleOpen(false)

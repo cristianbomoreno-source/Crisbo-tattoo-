@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
 import { getCurrentStudio } from '@/queries/studio'
-import { getConversations, getWhatsAppAccountStatus } from '@/queries/whatsapp'
+import { getConversations, getInstagramAccountStatus, getWhatsAppAccountStatus } from '@/queries/whatsapp'
 import { InboxShell } from '@/components/inbox/inbox-shell'
 import { PageHeader } from '@/components/shared/page-header'
 
@@ -9,11 +9,15 @@ export default async function InboxLayout({ children }: { children: React.ReactN
   const studio = await getCurrentStudio()
   if (!studio) return null
 
-  const [account, conversationsResult] = await Promise.all([getWhatsAppAccountStatus(), getConversations()])
+  const [account, instagramAccount, conversationsResult] = await Promise.all([
+    getWhatsAppAccountStatus(),
+    getInstagramAccountStatus(),
+    getConversations(),
+  ])
   const conversations = conversationsResult.success ? conversationsResult.data : []
 
-  // Sin número conectado y sin historial: explicar cómo empezar.
-  if (!account && conversations.length === 0) {
+  // Sin WhatsApp ni Instagram conectados y sin historial: explicar cómo empezar.
+  if (!account && !instagramAccount && conversations.length === 0) {
     return (
       <div>
         <PageHeader kicker="WhatsApp" title="Mensajes" />

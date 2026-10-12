@@ -34,6 +34,9 @@ import { buildBookingConfirmation } from '@/actions/sessions'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { findShortcut } from '@/lib/whatsapp-cloud/chat-shortcuts'
 import { LEAD_STAGE_KEYS } from '@/lib/whatsapp-cloud/lead'
+import { chatChannel, type ChatChannel } from '@/lib/instagram/channel'
+import { loadInstagramAccount } from '@/lib/instagram/account'
+import { markInstagramSeen, sendInstagramImage, sendInstagramText } from '@/lib/instagram/api'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
 
@@ -156,6 +159,115 @@ async function loadAccount(studioId: string) {
   return data as { phone_number_id: string; access_token: string } | null
 }
 
+type Chat = { id: string; studio_id: string; wa_id: string; last_inbound_at: string | null; channel: ChatChannel }
+
+/** Chat del estudio activo (RLS) con su canal. `*`: antes de la migración de
+ * Instagram la columna `channel` no existe y se asume WhatsApp. */
+async function loadChat(conversationId: string): Promise<Chat | null> {
+  const supabase = await createClient()
+  const { data } = await supabase.from('wa_conversations').select('*').eq('id', conversationId).maybeSingle()
+  if (!data) return null
+  return { ...(data as Omit<Chat, 'channel'>), channel: chatChannel(data) }
+}
+
+const CHANNEL_NAME: Record<ChatChannel, string> = { whatsapp: 'WhatsApp', instagram: 'Instagram' }
+
+function windowClosedError(chat: Chat, what: string) {
+  return err(
+    'VALIDATION_ERROR',
+    chat.channel === 'instagram'
+      ? `Pasaron más de 24 h desde el último mensaje del cliente: Instagram no permite ${what} hasta que te vuelva a escribir.`
+      : `Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite ${what}.`
+  )
+}
+
+type Outgoing =
+  | { kind: 'text'; body: string }
+  | { kind: 'image'; link: string; caption: string }
+  | { kind: 'location' }
+
+/** Envía por el canal del chat y devuelve el id del mensaje en Meta. Lanza
+ * un Error legible si no hay cuenta conectada o Meta rechaza el envío. */
+async function deliver(chat: Chat, out: Outgoing): Promise<string> {
+  if (chat.channel === 'instagram') {
+    const account = await loadInstagramAccount(createAdminClient(), chat.studio_id)
+    if (!account) throw new Error('Conecta tu Instagram en Ajustes → Instagram')
+    switch (out.kind) {
+      case 'text':
+        return sendInstagramText(account, chat.wa_id, out.body)
+      case 'image': {
+        // Instagram no tiene pie de foto: la imagen y luego el texto.
+        const id = await sendInstagramImage(account, chat.wa_id, out.link)
+        if (out.caption) await sendInstagramText(account, chat.wa_id, out.caption)
+        return id
+      }
+      case 'location':
+        // Sin mensajes de ubicación en Instagram: dirección + enlace a Maps.
+        return sendInstagramText(account, chat.wa_id, `📍 ${studioLocationText()}`)
+    }
+  }
+
+  const account = await loadAccount(chat.studio_id)
+  if (!account) throw new Error('Conecta tu número en Ajustes → WhatsApp')
+  switch (out.kind) {
+    case 'text':
+      return sendTextMessage(account, chat.wa_id, out.body)
+    case 'image':
+      return sendImageMessage(account, chat.wa_id, { link: out.link, caption: out.caption })
+    case 'location':
+      return sendLocationMessage(account, chat.wa_id, STUDIO_LOCATION)
+  }
+}
+
+/** Guarda el mensaje enviado y actualiza la vista previa del chat. */
+async function recordOutgoing(
+  chat: Chat,
+  waMessageId: string,
+  fields: { type: string; body: string | null; media_url?: string },
+  sentBy: string | null,
+  preview: string
+): Promise<Result<WaMessage>> {
+  const now = new Date().toISOString()
+  const admin = createAdminClient()
+  let { data: message, error } = await admin
+    .from('wa_messages')
+    .insert({
+      conversation_id: chat.id,
+      studio_id: chat.studio_id,
+      wa_message_id: waMessageId,
+      direction: 'out',
+      ...fields,
+      status: 'sent',
+      sent_by: sentBy,
+      created_at: now,
+    })
+    .select()
+    .single()
+  // Instagram avisa por webhook (eco) de lo que mandamos por la API: si el eco
+  // llegó antes que esta respuesta, el mensaje ya está guardado.
+  if (error?.code === '23505') {
+    ;({ data: message, error } = await admin
+      .from('wa_messages')
+      .update({ sent_by: sentBy, ...fields })
+      .eq('wa_message_id', waMessageId)
+      .select()
+      .single())
+  }
+  if (error) return dbError(error)
+
+  await admin
+    .from('wa_conversations')
+    .update({
+      last_message_at: now,
+      last_message_preview: preview,
+      last_message_direction: 'out',
+      unread_count: 0,
+    })
+    .eq('id', chat.id)
+
+  return ok(message as WaMessage)
+}
+
 const sendSchema = z.object({
   conversationId: z.string().uuid(),
   body: z.string().trim().min(1, 'Escribe un mensaje').max(4096, 'Máximo 4096 caracteres'),
@@ -168,79 +280,55 @@ export async function sendWhatsAppMessage(input: unknown): Promise<Result<WaMess
   const studio = await getCurrentStudio()
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
 
-  // Cliente de usuario: RLS confirma que el chat es del estudio activo.
-  const supabase = await createClient()
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, studio_id, wa_id, last_inbound_at')
-    .eq('id', parsed.data.conversationId)
-    .maybeSingle()
-  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
+  const chat = await loadChat(parsed.data.conversationId)
+  if (!chat) return err('NOT_FOUND', 'Conversación no encontrada')
 
-  if (!isServiceWindowOpen(conv.last_inbound_at)) {
-    return err(
-      'VALIDATION_ERROR',
-      'Pasaron más de 24 h desde el último mensaje del cliente. WhatsApp solo permite escribirle con una plantilla aprobada.'
-    )
+  if (!isServiceWindowOpen(chat.last_inbound_at)) {
+    return chat.channel === 'instagram'
+      ? windowClosedError(chat, 'escribirle')
+      : err(
+          'VALIDATION_ERROR',
+          'Pasaron más de 24 h desde el último mensaje del cliente. WhatsApp solo permite escribirle con una plantilla aprobada.'
+        )
   }
-
-  const account = await loadAccount(conv.studio_id)
-  if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
 
   let waMessageId: string
   try {
-    waMessageId = await sendTextMessage(account, conv.wa_id, parsed.data.body)
+    waMessageId = await deliver(chat, { kind: 'text', body: parsed.data.body })
   } catch (e) {
-    return err('UNKNOWN_ERROR', `WhatsApp no envió el mensaje: ${(e as Error).message}`)
+    return err('UNKNOWN_ERROR', `${CHANNEL_NAME[chat.channel]} no envió el mensaje: ${(e as Error).message}`)
   }
 
-  const now = new Date().toISOString()
-  const admin = createAdminClient()
-  const { data: message, error } = await admin
-    .from('wa_messages')
-    .insert({
-      conversation_id: conv.id,
-      studio_id: conv.studio_id,
-      wa_message_id: waMessageId,
-      direction: 'out',
-      type: 'text',
-      body: parsed.data.body,
-      status: 'sent',
-      sent_by: studio.artistId,
-      created_at: now,
-    })
-    .select()
-    .single()
-  if (error) return dbError(error)
-
-  await admin
-    .from('wa_conversations')
-    .update({
-      last_message_at: now,
-      last_message_preview: messagePreview('text', parsed.data.body),
-      last_message_direction: 'out',
-      unread_count: 0,
-    })
-    .eq('id', conv.id)
-
-  return ok(message as WaMessage)
+  return recordOutgoing(
+    chat,
+    waMessageId,
+    { type: 'text', body: parsed.data.body },
+    studio.artistId,
+    messagePreview('text', parsed.data.body)
+  )
 }
 
-/** Al abrir un chat: contador a 0 y doble check azul para el cliente. */
+/** Al abrir un chat: contador a 0 y "visto" para el cliente. */
 export async function markConversationRead(conversationId: string): Promise<Result<null>> {
+  const chat = await loadChat(conversationId)
+  if (!chat) return err('NOT_FOUND', 'Conversación no encontrada')
   const supabase = await createClient()
   const { data: conv } = await supabase
     .from('wa_conversations')
-    .select('id, studio_id, unread_count')
+    .select('unread_count')
     .eq('id', conversationId)
     .maybeSingle()
-  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
-  if (conv.unread_count === 0) return ok(null)
+  if (!conv || conv.unread_count === 0) return ok(null)
 
   const { error } = await supabase.from('wa_conversations').update({ unread_count: 0 }).eq('id', conversationId)
   if (error) return dbError(error)
 
-  // Best effort: Meta marca como leídos todos los anteriores al último.
+  // Best effort: "visto" en Instagram; en WhatsApp, doble check azul hasta el último.
+  if (chat.channel === 'instagram') {
+    const account = await loadInstagramAccount(createAdminClient(), chat.studio_id)
+    if (account) await markInstagramSeen(account, chat.wa_id).catch(() => {})
+    return ok(null)
+  }
   const { data: last } = await supabase
     .from('wa_messages')
     .select('wa_message_id')
@@ -249,7 +337,7 @@ export async function markConversationRead(conversationId: string): Promise<Resu
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
-  const account = await loadAccount(conv.studio_id)
+  const account = await loadAccount(chat.studio_id)
   if (account && last?.wa_message_id) {
     await markMessageRead(account, last.wa_message_id).catch(() => {})
   }
@@ -323,18 +411,18 @@ export async function createClientFromConversation(
     return err('FORBIDDEN', 'No tienes permiso para crear clientes')
 
   const supabase = await createClient()
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, wa_id')
-    .eq('id', conversationId)
-    .maybeSingle()
+  const { data: conv } = await supabase.from('wa_conversations').select('*').eq('id', conversationId).maybeSingle()
   if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
+  // Instagram no da el teléfono: se guarda el @ en la ficha.
+  const instagram = chatChannel(conv) === 'instagram'
 
   const { data: client, error } = await supabase
     .from('clients')
     .insert({
       name: trimmed.slice(0, 150),
-      phone: `+${conv.wa_id}`,
+      ...(instagram
+        ? { phone: null, instagram: conv.ig_username ? `@${conv.ig_username}` : null, source: 'Instagram' }
+        : { phone: `+${conv.wa_id}` }),
       studio_id: studio.id,
       artist_id: studio.role === 'owner' ? null : studio.artistId,
     })
@@ -447,12 +535,11 @@ export async function sendDataForm(conversationId: string): Promise<Result<WaMes
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
 
   const supabase = await createClient()
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, studio_id, wa_id')
-    .eq('id', conversationId)
-    .maybeSingle()
+  const { data: conv } = await supabase.from('wa_conversations').select('*').eq('id', conversationId).maybeSingle()
   if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
+  if (chatChannel(conv) === 'instagram') {
+    return err('VALIDATION_ERROR', 'El formulario de datos solo funciona en chats de WhatsApp.')
+  }
 
   const admin = createAdminClient()
   const { data: acc } = await admin
@@ -533,6 +620,15 @@ export async function sendBookingConfirmationToChat(
   const clientId = (session as { projects: { client_id: string | null } | null } | null)?.projects?.client_id
   if (clientId) {
     await supabase.from('wa_conversations').update({ client_id: clientId }).eq('id', conversationId).is('client_id', null)
+    // Chat de Instagram: el @ queda en la ficha (así los próximos chats se vinculan solos).
+    const { data: conv } = await supabase.from('wa_conversations').select('*').eq('id', conversationId).maybeSingle()
+    if (conv && chatChannel(conv) === 'instagram' && conv.ig_username) {
+      await supabase
+        .from('clients')
+        .update({ instagram: `@${conv.ig_username}` })
+        .eq('id', clientId)
+        .is('instagram', null)
+    }
   }
   // Cita agendada desde el chat: el lead pasa a "Agendado" y se cierra el seguimiento.
   await supabase
@@ -546,61 +642,30 @@ export async function sendBookingConfirmationToChat(
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
 }
 
-/** Botón "Ubicación" del chat: mapa con pin del estudio (gratis, dentro de 24 h). */
+/** Botón "Ubicación" del chat: en WhatsApp, mapa con pin del estudio; en
+ * Instagram, la dirección con enlace a Maps (gratis, dentro de 24 h). */
 export async function sendStudioLocation(conversationId: string): Promise<Result<WaMessage>> {
   const studio = await getCurrentStudio()
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
 
-  const supabase = await createClient()
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, studio_id, wa_id, last_inbound_at')
-    .eq('id', conversationId)
-    .maybeSingle()
-  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
-  if (!isServiceWindowOpen(conv.last_inbound_at)) {
-    return err('VALIDATION_ERROR', 'Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite enviar la ubicación.')
-  }
-  const account = await loadAccount(conv.studio_id)
-  if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
+  const chat = await loadChat(conversationId)
+  if (!chat) return err('NOT_FOUND', 'Conversación no encontrada')
+  if (!isServiceWindowOpen(chat.last_inbound_at)) return windowClosedError(chat, 'enviar la ubicación')
 
   let waMessageId: string
   try {
-    waMessageId = await sendLocationMessage(account, conv.wa_id, STUDIO_LOCATION)
+    waMessageId = await deliver(chat, { kind: 'location' })
   } catch (e) {
-    return err('UNKNOWN_ERROR', `WhatsApp no envió la ubicación: ${(e as Error).message}`)
+    return err('UNKNOWN_ERROR', `${CHANNEL_NAME[chat.channel]} no envió la ubicación: ${(e as Error).message}`)
   }
 
-  const now = new Date().toISOString()
-  const admin = createAdminClient()
-  const { data: message, error } = await admin
-    .from('wa_messages')
-    .insert({
-      conversation_id: conv.id,
-      studio_id: conv.studio_id,
-      wa_message_id: waMessageId,
-      direction: 'out',
-      type: 'location',
-      body: studioLocationText(),
-      status: 'sent',
-      sent_by: studio.artistId,
-      created_at: now,
-    })
-    .select()
-    .single()
-  if (error) return dbError(error)
-
-  await admin
-    .from('wa_conversations')
-    .update({
-      last_message_at: now,
-      last_message_preview: messagePreview('location', null),
-      last_message_direction: 'out',
-      unread_count: 0,
-    })
-    .eq('id', conv.id)
-
-  return ok(message as WaMessage)
+  return recordOutgoing(
+    chat,
+    waMessageId,
+    { type: 'location', body: studioLocationText() },
+    studio.artistId,
+    messagePreview('location', null)
+  )
 }
 
 /** Botones de mensajes fijos del chat (`chat-shortcuts.ts`): texto, o imagen
@@ -612,18 +677,9 @@ export async function sendChatShortcut(conversationId: string, key: string): Pro
 
   const studio = await getCurrentStudio()
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
-  const supabase = await createClient()
-  const { data: conv } = await supabase
-    .from('wa_conversations')
-    .select('id, studio_id, wa_id, last_inbound_at')
-    .eq('id', conversationId)
-    .maybeSingle()
-  if (!conv) return err('NOT_FOUND', 'Conversación no encontrada')
-  if (!isServiceWindowOpen(conv.last_inbound_at)) {
-    return err('VALIDATION_ERROR', 'Pasaron más de 24 h desde el último mensaje del cliente: WhatsApp no permite enviar la imagen.')
-  }
-  const account = await loadAccount(conv.studio_id)
-  if (!account) return err('VALIDATION_ERROR', 'Conecta tu número en Ajustes → WhatsApp')
+  const chat = await loadChat(conversationId)
+  if (!chat) return err('NOT_FOUND', 'Conversación no encontrada')
+  if (!isServiceWindowOpen(chat.last_inbound_at)) return windowClosedError(chat, 'enviar la imagen')
 
   // Meta descarga la imagen desde nuestro dominio público.
   const h = await headers()
@@ -634,40 +690,16 @@ export async function sendChatShortcut(conversationId: string, key: string): Pro
 
   let waMessageId: string
   try {
-    waMessageId = await sendImageMessage(account, conv.wa_id, { link: `https://${host}${shortcut.image}`, caption: shortcut.text })
+    waMessageId = await deliver(chat, { kind: 'image', link: `https://${host}${shortcut.image}`, caption: shortcut.text })
   } catch (e) {
-    return err('UNKNOWN_ERROR', `WhatsApp no envió la imagen: ${(e as Error).message}`)
+    return err('UNKNOWN_ERROR', `${CHANNEL_NAME[chat.channel]} no envió la imagen: ${(e as Error).message}`)
   }
 
-  const now = new Date().toISOString()
-  const admin = createAdminClient()
-  const { data: message, error } = await admin
-    .from('wa_messages')
-    .insert({
-      conversation_id: conv.id,
-      studio_id: conv.studio_id,
-      wa_message_id: waMessageId,
-      direction: 'out',
-      type: 'image',
-      body: shortcut.text,
-      media_url: shortcut.image,
-      status: 'sent',
-      sent_by: studio.artistId,
-      created_at: now,
-    })
-    .select()
-    .single()
-  if (error) return dbError(error)
-
-  await admin
-    .from('wa_conversations')
-    .update({
-      last_message_at: now,
-      last_message_preview: messagePreview('image', shortcut.text),
-      last_message_direction: 'out',
-      unread_count: 0,
-    })
-    .eq('id', conv.id)
-
-  return ok(message as WaMessage)
+  return recordOutgoing(
+    chat,
+    waMessageId,
+    { type: 'image', body: shortcut.text, media_url: shortcut.image },
+    studio.artistId,
+    messagePreview('image', shortcut.text)
+  )
 }

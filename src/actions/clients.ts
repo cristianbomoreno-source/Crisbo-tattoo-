@@ -9,6 +9,7 @@ import type { Client } from '@/queries/clients'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCurrentPermissions } from '@/queries/permissions'
 import { normalizeWaPhone, phoneSuffixPattern } from '@/lib/whatsapp-cloud/parse'
+import { normalizeIgUsername } from '@/lib/instagram/parse'
 
 export async function createClientAction(input: unknown): Promise<Result<Client>> {
   const parsed = createClientSchema.safeParse(input)
@@ -42,6 +43,17 @@ export async function createClientAction(input: unknown): Promise<Result<Client>
       .update({ client_id: (data as Client).id })
       .eq('studio_id', studio.id)
       .eq('wa_id', waId)
+      .is('client_id', null)
+    revalidatePath('/dashboard/inbox', 'layout')
+  }
+  // Igual con el @ de Instagram.
+  const igUsername = normalizeIgUsername((data as Client).instagram)
+  if (igUsername) {
+    await supabase
+      .from('wa_conversations')
+      .update({ client_id: (data as Client).id })
+      .eq('studio_id', studio.id)
+      .eq('ig_username', igUsername)
       .is('client_id', null)
     revalidatePath('/dashboard/inbox', 'layout')
   }

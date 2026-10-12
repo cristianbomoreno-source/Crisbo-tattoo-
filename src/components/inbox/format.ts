@@ -74,3 +74,17 @@ export function chatInitials(name: string) {
   if (words.length >= 2) return (words[0]!.charAt(0) + words[1]!.charAt(0)).toUpperCase()
   return (words[0] ?? '').slice(0, 2).toUpperCase() || '#'
 }
+
+/** Nombre del chat: cliente vinculado, nombre de perfil, @ de Instagram o número. */
+export function chatName(c: {
+  client?: { name: string } | null
+  contact_name: string | null
+  wa_id: string
+  channel?: string
+  ig_username?: string | null
+}) {
+  if (c.client?.name) return c.client.name
+  if (c.contact_name) return c.contact_name
+  if (c.channel === 'instagram') return c.ig_username ? `@${c.ig_username}` : 'Usuario de Instagram'
+  return formatWaPhone(c.wa_id)
+}

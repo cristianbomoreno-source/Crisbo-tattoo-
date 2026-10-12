@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
-import { Archive, BellRing, Search } from 'lucide-react'
+import { Archive, BellRing, MessageCircle, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WaConversation } from '@/queries/whatsapp'
 import { LEAD_STAGES, followUpDue, leadStageInfo, type LeadStage } from '@/lib/whatsapp-cloud/lead'
-import { chatInitials, formatListTime, formatWaPhone } from './format'
+import { chatChannel, type ChatChannel } from '@/lib/instagram/channel'
+import { InstagramIcon } from '@/components/shared/instagram-icon'
+import { chatInitials, chatName, formatListTime } from './format'
 
 type Filter = 'todos' | 'seguimiento' | LeadStage
 
@@ -35,6 +37,7 @@ export function InboxShell({
   const [query, setQuery] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [filter, setFilter] = useState<Filter>('todos')
+  const [channelFilter, setChannelFilter] = useState<ChatChannel | 'todos'>('todos')
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -68,13 +71,14 @@ export function InboxShell({
     const q = query.trim().toLowerCase()
     return conversations.filter((c) => {
       if (c.archived !== showArchived) return false
+      if (channelFilter !== 'todos' && chatChannel(c) !== channelFilter) return false
       if (filter === 'seguimiento' ? !c.follow_up_at : filter !== 'todos' && c.lead_stage !== filter) return false
       if (!q) return true
-      return [c.client?.name, c.contact_name, c.wa_id, c.last_message_preview]
+      return [c.client?.name, c.contact_name, c.ig_username, c.wa_id, c.last_message_preview]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q))
     })
-  }, [conversations, query, showArchived, filter])
+  }, [conversations, query, showArchived, filter, channelFilter])
   // Recordatorios primero (los vencidos arriba) cuando se filtra por seguimiento.
   const sorted =
     filter === 'seguimiento'
@@ -82,7 +86,11 @@ export function InboxShell({
       : visible
 
   const archivedCount = conversations.filter((c) => c.archived).length
-  const inbox = conversations.filter((c) => c.archived === showArchived)
+  // El selector de canal solo aparece cuando ya hay chats de Instagram.
+  const hasInstagram = conversations.some((c) => chatChannel(c) === 'instagram')
+  const inbox = conversations.filter(
+    (c) => c.archived === showArchived && (channelFilter === 'todos' || chatChannel(c) === channelFilter)
+  )
   const dueCount = inbox.filter((c) => followUpDue(c.follow_up_at)).length
   const filters: { key: Filter; label: string; count: number; dot?: string }[] = [
     { key: 'todos', label: 'Todos', count: inbox.length },
@@ -139,6 +147,32 @@ export function InboxShell({
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
+          {hasInstagram && (
+            <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
+              {(
+                [
+                  { key: 'todos', label: 'Todos' },
+                  { key: 'whatsapp', label: 'WhatsApp' },
+                  { key: 'instagram', label: 'Instagram' },
+                ] as const
+              ).map((ch) => (
+                <button
+                  key={ch.key}
+                  type="button"
+                  onClick={() => setChannelFilter(ch.key)}
+                  aria-pressed={channelFilter === ch.key}
+                  className={cn(
+                    'flex h-7 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors',
+                    channelFilter === ch.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {ch.key === 'whatsapp' && <MessageCircle className="size-3.5" />}
+                  {ch.key === 'instagram' && <InstagramIcon className="size-3.5" />}
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Filtros por etapa del lead. */}
           <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-0.5 [scrollbar-width:none]">
             {filters.map((f) => (
@@ -170,14 +204,15 @@ export function InboxShell({
           {sorted.length === 0 ? (
             <li className="p-6 text-center text-sm text-muted-foreground">
               {conversations.length === 0
-                ? 'Aún no hay chats. Cuando un cliente le escriba a tu número de WhatsApp, aparecerá aquí.'
+                ? 'Aún no hay chats. Cuando un cliente te escriba por WhatsApp o Instagram, aparecerá aquí.'
                 : filter !== 'todos'
                   ? 'No hay chats en esta etapa.'
                   : 'Sin resultados.'}
             </li>
           ) : (
             sorted.map((c) => {
-              const name = c.client?.name || c.contact_name || formatWaPhone(c.wa_id)
+              const name = chatName(c)
+              const instagram = chatChannel(c) === 'instagram'
               const stage = leadStageInfo(c.lead_stage)
               const due = followUpDue(c.follow_up_at)
               return (
@@ -189,8 +224,20 @@ export function InboxShell({
                       activeId === c.id && 'bg-accent/70'
                     )}
                   >
-                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary">
-                      {chatInitials(name)}
+                    <span className="relative shrink-0">
+                      <span className="grid size-10 place-items-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary">
+                        {chatInitials(name.replace(/^@/, ''))}
+                      </span>
+                      {/* Canal del chat. */}
+                      <span
+                        className={cn(
+                          'absolute -right-0.5 -bottom-0.5 grid size-4.5 place-items-center rounded-full text-white ring-2 ring-card',
+                          instagram ? 'bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600' : 'bg-emerald-500'
+                        )}
+                        title={instagram ? 'Instagram' : 'WhatsApp'}
+                      >
+                        {instagram ? <InstagramIcon className="size-2.5" /> : <MessageCircle className="size-2.5" />}
+                      </span>
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-2">

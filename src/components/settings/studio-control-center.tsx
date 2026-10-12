@@ -23,6 +23,7 @@ import { VersionInfo } from '@/components/settings/version-info'
 import { TutorialButton } from '@/components/settings/tutorial-button'
 import { QuickActionsRow } from '@/components/settings/quick-actions-row'
 import { cn } from '@/lib/utils'
+import { InstagramIcon } from '@/components/shared/instagram-icon'
 
 /*
  * ══ Panel de control del estudio (rediseño) ═════════════════════════════
@@ -189,6 +190,7 @@ export function StudioControlCenter({
   teamSize = 1,
   disabledFeatures = new Set(),
   whatsappConnected = false,
+  instagramConnected = false,
 }: {
   studio: CurrentStudio
   status: StudioStatus
@@ -202,6 +204,8 @@ export function StudioControlCenter({
   disabledFeatures?: Set<FeatureKey>
   /** Si el estudio ya conectó su número de la API de WhatsApp (Ajustes → WhatsApp). */
   whatsappConnected?: boolean
+  /** Si el estudio ya conectó su cuenta de Instagram (Ajustes → Instagram). */
+  instagramConnected?: boolean
 }) {
   const { checks } = status
   const isEstudio = studio.accountKind === 'estudio'
@@ -291,6 +295,10 @@ export function StudioControlCenter({
 
         <CompactCard href="/dashboard/settings/whatsapp" icon={MessageCircle} title="WhatsApp Business">
           <StatusChip ok={whatsappConnected} label={whatsappConnected ? 'Conectado' : 'Sin conectar'} />
+        </CompactCard>
+
+        <CompactCard href="/dashboard/settings/instagram" icon={InstagramIcon} title="Instagram">
+          <StatusChip ok={instagramConnected} label={instagramConnected ? 'Conectado' : 'Sin conectar'} />
         </CompactCard>
 
         <CompactCard href="/dashboard/settings/cotizaciones" icon={Wallet} title="Cotizaciones">
