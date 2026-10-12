@@ -80,7 +80,7 @@ function Content({
         )}
         <div
           className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[11px] font-bold uppercase tracking-wider ${
-            complete ? 'bg-[#B8F400] text-black' : 'bg-black/85 text-white'
+            complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
           }`}
         >
           {statusText}

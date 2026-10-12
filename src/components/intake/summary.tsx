@@ -188,7 +188,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-background px-8 text-center animate-fade-in">
           <div className="relative grid size-16 place-items-center">
             <span className="absolute inset-0 animate-spin rounded-full border-2 border-primary/25 border-t-primary" aria-hidden />
-            <span className="size-2 rounded-full bg-primary" style={{ boxShadow: '0 0 16px 2px var(--primary-glow, rgba(184,244,0,0.6))' }} aria-hidden />
+            <span className="size-2 rounded-full bg-primary" style={{ boxShadow: '0 0 16px 2px var(--primary-glow, rgba(217,165,74,0.6))' }} aria-hidden />
           </div>
           <div>
             <p className="font-title text-2xl text-white">Estamos preparando tu proyecto…</p>

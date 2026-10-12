@@ -98,7 +98,7 @@ export function BigOptionCard({
       className={cn(
         'flex flex-1 flex-col items-center gap-2 rounded-2xl border px-4 py-6 text-center transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         selected
-          ? 'border-primary bg-primary/[0.07] shadow-[0_0_0_1px_rgba(184,244,0,0.25),0_8px_24px_-8px_rgba(184,244,0,0.35)]'
+          ? 'border-primary bg-primary/[0.07] shadow-[0_0_0_1px_rgba(217,165,74,0.25),0_8px_24px_-8px_rgba(217,165,74,0.35)]'
           : 'border-foreground/10 hover:border-primary/40 hover:bg-foreground/[0.02]'
       )}
     >

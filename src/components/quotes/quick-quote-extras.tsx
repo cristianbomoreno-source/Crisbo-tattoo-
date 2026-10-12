@@ -130,7 +130,7 @@ function StyleTile({
       className={cn(
         'group relative flex aspect-square flex-col overflow-hidden rounded-2xl border bg-black text-left transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         active
-          ? 'border-primary shadow-[0_0_0_1px_rgba(184,244,0,0.3),0_10px_28px_-10px_rgba(184,244,0,0.45)]'
+          ? 'border-primary shadow-[0_0_0_1px_rgba(217,165,74,0.3),0_10px_28px_-10px_rgba(217,165,74,0.45)]'
           : 'border-foreground/10 hover:border-primary/40'
       )}
     >

@@ -7,7 +7,7 @@ import { QUOTE_TEMPLATE_COLORS, type QuoteTemplateColorId } from '@/lib/pdf/quot
 import { cn } from '@/lib/utils'
 
 const OPTIONS: { id: QuoteTemplateColorId; label: string }[] = [
-  { id: 'green', label: 'Verde Crisbo Tattoo' },
+  { id: 'green', label: 'Dorado Crisbo Tattoo' },
   { id: 'white', label: 'Blanco' },
   { id: 'blue', label: 'Azul' },
   { id: 'red', label: 'Rojo' },

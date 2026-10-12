@@ -90,7 +90,7 @@ export function QuotesList({
               className={cn(
                 'relative isolate flex aspect-[16/7.5] w-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl p-4',
                 isGreen
-                  ? 'ring-1 ring-primary/40 shadow-[0_0_28px_-6px_var(--primary-glow,_rgba(184,244,0,0.18))]'
+                  ? 'ring-1 ring-primary/40 shadow-[0_0_28px_-6px_var(--primary-glow,_rgba(217,165,74,0.18))]'
                   : 'ring-1 ring-foreground/10'
               )}
             >

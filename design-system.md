@@ -23,7 +23,8 @@ sueltos).
 | `--muted-foreground` | `#8E8E93` | Texto secundario, subtítulos, metadatos. |
 | `--foreground` | `#FFFFFF` | Texto principal. |
 | `--border` / `--input` | blanco al 6% / 12% opacidad | Bordes "hairline" (translúcidos, no grises sólidos) — técnica Linear/Arc. |
-| `--primary` / `--destructive` / `--success` | `#B8F400` (hover `#C7FF2E`, pressed `#9FDC00`, glow `rgba(184,244,0,.18)`) | **Único acento de color.** Transmite calma y control, no "gamer". Texto **negro** sobre fondos de este color. |
+| `--primary` / `--success` | `#D9A54A` dorado LED del estudio (hover `#E6B862`, pressed `#BF8D36`, glow `rgba(217,165,74,.22)`) | **Único acento de color.** Sale de las luces del estudio. Texto **negro** sobre fondos de este color. |
+| `--destructive` | `#C2332B` rojo del maletín | Solo acciones destructivas/errores. |
 | `--warning` / `--info` | ámbar / azul | Solo para estado semántico puntual (pendiente, informativo) — no decorativos. |
 
 **Regla de oro:** si un elemento no es una acción principal, un estado activo
@@ -80,7 +81,7 @@ box-shadow:
 
 /* Acento rojo (.glow-primary) — SOLO en FAB y CTAs principales */
 box-shadow:
-  0 0 20px -6px rgba(184, 244, 0, 0.18),  /* var(--primary-glow) — muy sutil, nunca "gaming" */
+  0 0 20px -6px rgba(217, 165, 74, 0.22),  /* var(--primary-glow) — muy sutil, nunca "gaming" */
   0 10px 24px -10px rgb(0 0 0 / 0.55);
 ```
 

@@ -76,7 +76,7 @@ export function IntakeProgress({ current }: { current: StepId }) {
                   color: state === 'todo' ? 'rgba(255,255,255,0.3)' : state === 'active' ? '#000' : 'var(--primary)',
                   backgroundColor:
                     state === 'active' ? 'var(--primary)' : state === 'done' ? 'color-mix(in srgb, var(--primary) 14%, transparent)' : 'transparent',
-                  boxShadow: state === 'active' ? '0 0 14px -2px var(--primary-glow, rgba(184,244,0,0.5))' : 'none',
+                  boxShadow: state === 'active' ? '0 0 14px -2px var(--primary-glow, rgba(217,165,74,0.5))' : 'none',
                 }}
               >
                 {state === 'done' ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : <Icon className="size-3.5" aria-hidden />}

@@ -9,7 +9,7 @@ function strokeProps(color: string) {
   return { stroke: color, strokeWidth: 1.6, fill: 'none' } as const
 }
 
-export function OgIconZone({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconZone({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M9 3 C6 3 5 6 6 9 L8 14 L8 21 L16 21 L16 13 L18 9 C19 6 18 3 15 3 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -17,7 +17,7 @@ export function OgIconZone({ size = 20, color = '#C8FF1A' }: { size?: number; co
   )
 }
 
-export function OgIconStyle({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconStyle({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M4 20 L15 9 L19 13 L8 20 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -26,7 +26,7 @@ export function OgIconStyle({ size = 20, color = '#C8FF1A' }: { size?: number; c
   )
 }
 
-export function OgIconColor({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconColor({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M12 3 C8 8 6 11 6 14 A6 6 0 0 0 18 14 C18 11 16 8 12 3 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -34,7 +34,7 @@ export function OgIconColor({ size = 20, color = '#C8FF1A' }: { size?: number; c
   )
 }
 
-export function OgIconSize({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconSize({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={3} y={9} width={18} height={6} rx={1} {...strokeProps(color)} />
@@ -45,7 +45,7 @@ export function OgIconSize({ size = 20, color = '#C8FF1A' }: { size?: number; co
   )
 }
 
-export function OgIconSessions({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconSessions({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M12 3 L21 8 L12 13 L3 8 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -55,7 +55,7 @@ export function OgIconSessions({ size = 20, color = '#C8FF1A' }: { size?: number
   )
 }
 
-export function OgIconClock({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconClock({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <circle cx={12} cy={12} r={9} {...strokeProps(color)} />
@@ -65,7 +65,7 @@ export function OgIconClock({ size = 20, color = '#C8FF1A' }: { size?: number; c
   )
 }
 
-export function OgIconGallery({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconGallery({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={3} y={5} width={18} height={14} rx={2} {...strokeProps(color)} />
@@ -75,7 +75,7 @@ export function OgIconGallery({ size = 20, color = '#C8FF1A' }: { size?: number;
   )
 }
 
-export function OgIconShield({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconShield({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M12 3 L20 6 V11 C20 16 17 19.5 12 21 C7 19.5 4 16 4 11 V6 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -83,7 +83,7 @@ export function OgIconShield({ size = 20, color = '#C8FF1A' }: { size?: number; 
   )
 }
 
-export function OgIconDescription({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconDescription({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={4} y={3} width={16} height={18} rx={2} {...strokeProps(color)} />
@@ -94,7 +94,7 @@ export function OgIconDescription({ size = 20, color = '#C8FF1A' }: { size?: num
   )
 }
 
-export function OgIconSkin({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconSkin({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <circle cx={12} cy={8} r={4} {...strokeProps(color)} />
@@ -103,7 +103,7 @@ export function OgIconSkin({ size = 20, color = '#C8FF1A' }: { size?: number; co
   )
 }
 
-export function OgIconService({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconService({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={3} y={8} width={18} height={12} rx={2} {...strokeProps(color)} />
@@ -112,7 +112,7 @@ export function OgIconService({ size = 20, color = '#C8FF1A' }: { size?: number;
   )
 }
 
-export function OgIconAvailability({ size = 20, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconAvailability({ size = 20, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={3} y={5} width={18} height={16} rx={2} {...strokeProps(color)} />
@@ -123,7 +123,7 @@ export function OgIconAvailability({ size = 20, color = '#C8FF1A' }: { size?: nu
   )
 }
 
-export function OgIconCheck({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconCheck({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M4 12 L10 18 L20 6" stroke={color} strokeWidth={2.4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -133,7 +133,7 @@ export function OgIconCheck({ size = 16, color = '#C8FF1A' }: { size?: number; c
 
 // ---------- Contacto (footer) ----------
 
-export function OgIconWhatsapp({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconWhatsapp({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M4 21 L5.3 16.6 A8 8 0 1 1 8 19.2 Z" {...strokeProps(color)} strokeLinejoin="round" />
@@ -142,7 +142,7 @@ export function OgIconWhatsapp({ size = 16, color = '#C8FF1A' }: { size?: number
   )
 }
 
-export function OgIconInstagram({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconInstagram({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <rect x={3} y={3} width={18} height={18} rx={5} {...strokeProps(color)} />
@@ -152,7 +152,7 @@ export function OgIconInstagram({ size = 16, color = '#C8FF1A' }: { size?: numbe
   )
 }
 
-export function OgIconTiktok({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconTiktok({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <path d="M14 3 C14 6.5 16.5 9 20 9" {...strokeProps(color)} strokeLinecap="round" />
@@ -161,7 +161,7 @@ export function OgIconTiktok({ size = 16, color = '#C8FF1A' }: { size?: number; 
   )
 }
 
-export function OgIconFacebook({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconFacebook({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <circle cx={12} cy={12} r={9} {...strokeProps(color)} />
@@ -171,7 +171,7 @@ export function OgIconFacebook({ size = 16, color = '#C8FF1A' }: { size?: number
   )
 }
 
-export function OgIconWebsite({ size = 16, color = '#C8FF1A' }: { size?: number; color?: string }) {
+export function OgIconWebsite({ size = 16, color = '#D9A54A' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'flex' }}>
       <circle cx={12} cy={12} r={9} {...strokeProps(color)} />

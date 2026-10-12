@@ -391,7 +391,7 @@ export function GuidedTour() {
             left: rect.left - SPOTLIGHT_PAD,
             width: rect.width + SPOTLIGHT_PAD * 2,
             height: rect.height + SPOTLIGHT_PAD * 2,
-            boxShadow: '0 0 0 2.5px var(--primary), 0 0 24px rgba(184,244,0,0.35)',
+            boxShadow: '0 0 0 2.5px var(--primary), 0 0 24px rgba(217,165,74,0.35)',
           }}
         />
       )}

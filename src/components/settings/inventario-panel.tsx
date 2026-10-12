@@ -46,7 +46,7 @@ const UNITS = ['Unidades', 'Botellas', 'Cajas', 'Pares', 'Cartuchos', 'Frascos',
  * categoría con este ícono/color por defecto; el tatuador puede editarlo
  * después. "Crear" abre el picker de ícono+color libre. */
 const CATEGORY_PRESETS = [
-  { name: 'Tintas', icon: '🖋️', color: '#B8F400' },
+  { name: 'Tintas', icon: '🖋️', color: '#D9A54A' },
   { name: 'Agujas', icon: '🪡', color: '#8B5CF6' },
   { name: 'Cartuchos', icon: '📦', color: '#3B82F6' },
   { name: 'Aftercare', icon: '🧴', color: '#F97316' },
@@ -57,7 +57,7 @@ const CATEGORY_PRESETS = [
   { name: 'Desechables', icon: '🧻', color: '#94A3B8' },
   { name: 'Papelería', icon: '📋', color: '#F43F5E' },
 ]
-const COLOR_SWATCHES = ['#B8F400', '#3B82F6', '#8B5CF6', '#F97316', '#EC4899', '#06B6D4', '#EAB308', '#EF4444']
+const COLOR_SWATCHES = ['#D9A54A', '#3B82F6', '#8B5CF6', '#F97316', '#EC4899', '#06B6D4', '#EAB308', '#EF4444']
 
 function statusOf(item: InventoryItem): { label: string; dot: string; text: string } {
   if (item.quantity <= 0) return { label: 'Agotado', dot: 'bg-red-500', text: 'text-red-400' }
@@ -250,7 +250,7 @@ export function InventarioPanel({
       </div>
 
       <div className="mx-auto max-w-xl space-y-5 px-5 sm:px-8">
-        <div className="-mt-4 space-y-5 rounded-[1.75rem] border border-foreground/8 bg-card p-5 shadow-[0_0_40px_-15px_rgba(184,244,0,0.15)] sm:p-6">
+        <div className="-mt-4 space-y-5 rounded-[1.75rem] border border-foreground/8 bg-card p-5 shadow-[0_0_40px_-15px_rgba(217,165,74,0.15)] sm:p-6">
           <FieldShell icon={Boxes} label="Nombre del insumo">
             <input
               value={name}
@@ -463,12 +463,12 @@ export function InventarioPanel({
               return (
                 <div
                   key={item.id}
-                  className="rounded-[1.5rem] border border-foreground/8 bg-card p-4 transition-shadow hover:shadow-[0_0_30px_-12px_rgba(184,244,0,0.2)]"
+                  className="rounded-[1.5rem] border border-foreground/8 bg-card p-4 transition-shadow hover:shadow-[0_0_30px_-12px_rgba(217,165,74,0.2)]"
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className="grid size-11 shrink-0 place-items-center rounded-2xl text-xl"
-                      style={{ backgroundColor: `${meta?.color ?? '#B8F400'}22` }}
+                      style={{ backgroundColor: `${meta?.color ?? '#D9A54A'}22` }}
                     >
                       {meta?.icon ?? '📦'}
                     </span>

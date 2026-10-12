@@ -83,7 +83,7 @@ export function ProjectCard({
           <div className="mt-1.5 flex items-center gap-1.5">
             <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-black/[0.08]">
               <div
-                className="h-full rounded-full bg-[#B8F400] transition-all duration-500 ease-out"
+                className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -95,7 +95,7 @@ export function ProjectCard({
           {/* Chip de estado a todo lo ancho: verde cuando está completado */}
           <div
             className={`mt-1.5 flex items-center justify-center rounded-full py-1 font-display text-[clamp(0.5rem,2.1vw,0.64rem)] font-bold uppercase tracking-wider ${
-              complete ? 'bg-[#B8F400] text-black' : 'bg-black/85 text-white'
+              complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
             }`}
           >
             {chipText}

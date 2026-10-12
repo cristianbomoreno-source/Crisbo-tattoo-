@@ -37,8 +37,8 @@ export type QuoteTemplateStudio = Pick<
 
 export const BRAND = {
   bg: '#090909',
-  green: '#C8FF1A',
-  greenPrint: '#8FB800', // el verde de marca puro pierde contraste como texto/borde sobre fondos claros — no aplica acá (todo es sobre negro), pero se usa igual en piezas impresas si hiciera falta.
+  green: '#D9A54A',
+  greenPrint: '#B8862F', // dorado de marca un poco más oscuro: conserva contraste como texto/borde sobre fondos claros (piezas impresas).
   white: '#FFFFFF',
   grayLight: '#B8B8B8',
   gray: '#8A8A8A',
@@ -51,7 +51,7 @@ export const BRAND = {
  * `template-color-picker.tsx`). El fondo negro nunca cambia — solo el color
  * de acento (título, línea del hero, badge de estado, íconos, QR). */
 export const QUOTE_TEMPLATE_COLORS = {
-  green: '#C8FF1A',
+  green: '#D9A54A',
   white: '#FFFFFF',
   blue: '#3B82F6',
   red: '#EF4444',
