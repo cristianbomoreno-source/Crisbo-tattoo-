@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
-import { Archive, Search } from 'lucide-react'
+import { Archive, BellRing, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WaConversation } from '@/queries/whatsapp'
-import { formatListTime, formatWaPhone } from './format'
+import { LEAD_STAGES, followUpDue, leadStageInfo, type LeadStage } from '@/lib/whatsapp-cloud/lead'
+import { chatInitials, formatListTime, formatWaPhone } from './format'
+
+type Filter = 'todos' | 'seguimiento' | LeadStage
 
 /**
  * Bandeja de WhatsApp: lista de chats a la izquierda + chat abierto a la
@@ -31,6 +34,7 @@ export function InboxShell({
   const activeId = useSelectedLayoutSegment()
   const [query, setQuery] = useState('')
   const [showArchived, setShowArchived] = useState(false)
+  const [filter, setFilter] = useState<Filter>('todos')
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -64,14 +68,32 @@ export function InboxShell({
     const q = query.trim().toLowerCase()
     return conversations.filter((c) => {
       if (c.archived !== showArchived) return false
+      if (filter === 'seguimiento' ? !c.follow_up_at : filter !== 'todos' && c.lead_stage !== filter) return false
       if (!q) return true
       return [c.client?.name, c.contact_name, c.wa_id, c.last_message_preview]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q))
     })
-  }, [conversations, query, showArchived])
+  }, [conversations, query, showArchived, filter])
+  // Recordatorios primero (los vencidos arriba) cuando se filtra por seguimiento.
+  const sorted =
+    filter === 'seguimiento'
+      ? [...visible].sort((a, b) => Date.parse(a.follow_up_at!) - Date.parse(b.follow_up_at!))
+      : visible
 
   const archivedCount = conversations.filter((c) => c.archived).length
+  const inbox = conversations.filter((c) => c.archived === showArchived)
+  const dueCount = inbox.filter((c) => followUpDue(c.follow_up_at)).length
+  const filters: { key: Filter; label: string; count: number; dot?: string }[] = [
+    { key: 'todos', label: 'Todos', count: inbox.length },
+    { key: 'seguimiento', label: 'Seguimiento', count: inbox.filter((c) => c.follow_up_at).length },
+    ...LEAD_STAGES.map((st) => ({
+      key: st.key,
+      label: st.short,
+      dot: st.dot,
+      count: inbox.filter((c) => c.lead_stage === st.key).length,
+    })),
+  ]
 
   return (
     <div className="-mx-4 -mt-4 flex h-[calc(100dvh-12.5rem)] overflow-hidden border-border/60 bg-card sm:mx-0 sm:mt-0 sm:rounded-2xl sm:border lg:h-[calc(100dvh-4rem)]">
@@ -83,8 +105,19 @@ export function InboxShell({
       >
         <div className="space-y-2 border-b border-border/60 p-3">
           <div className="flex items-center justify-between">
-            <h1 className="font-display text-sm font-semibold">
+            <h1 className="flex items-center gap-2 font-display text-base font-semibold">
               {showArchived ? 'Archivados' : 'Mensajes'}
+              {dueCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setFilter('seguimiento')}
+                  className="flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-[11px] font-semibold text-destructive"
+                  title="Chats con seguimiento pendiente"
+                >
+                  <BellRing className="size-3" />
+                  {dueCount}
+                </button>
+              )}
             </h1>
             {(archivedCount > 0 || showArchived) && (
               <button
@@ -97,7 +130,7 @@ export function InboxShell({
               </button>
             )}
           </div>
-          <label className="flex items-center gap-2 rounded-lg bg-muted px-2.5 py-1.5">
+          <label className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
             <Search className="size-4 text-muted-foreground" />
             <input
               value={query}
@@ -106,18 +139,47 @@ export function InboxShell({
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
+          {/* Filtros por etapa del lead. */}
+          <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-0.5 [scrollbar-width:none]">
+            {filters.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                aria-pressed={filter === f.key}
+                className={cn(
+                  'flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition-colors',
+                  filter === f.key
+                    ? 'bg-foreground text-background'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {f.key === 'seguimiento' ? (
+                  <BellRing className="size-3" />
+                ) : (
+                  f.dot && <span className={cn('size-1.5 rounded-full', f.dot)} />
+                )}
+                {f.label}
+                {f.count > 0 && <span className="tabular-nums opacity-60">{f.count}</span>}
+              </button>
+            ))}
+          </div>
         </div>
 
         <ul className="flex-1 overflow-y-auto">
-          {visible.length === 0 ? (
+          {sorted.length === 0 ? (
             <li className="p-6 text-center text-sm text-muted-foreground">
               {conversations.length === 0
                 ? 'Aún no hay chats. Cuando un cliente le escriba a tu número de WhatsApp, aparecerá aquí.'
-                : 'Sin resultados.'}
+                : filter !== 'todos'
+                  ? 'No hay chats en esta etapa.'
+                  : 'Sin resultados.'}
             </li>
           ) : (
-            visible.map((c) => {
+            sorted.map((c) => {
               const name = c.client?.name || c.contact_name || formatWaPhone(c.wa_id)
+              const stage = leadStageInfo(c.lead_stage)
+              const due = followUpDue(c.follow_up_at)
               return (
                 <li key={c.id}>
                   <Link
@@ -128,7 +190,7 @@ export function InboxShell({
                     )}
                   >
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 font-display text-sm font-semibold text-primary">
-                      {name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2) || '#'}
+                      {chatInitials(name)}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-2">
@@ -155,11 +217,26 @@ export function InboxShell({
                           </span>
                         )}
                       </span>
-                      {!c.client && !c.answered_from_phone && (
-                        <span className="mt-1 inline-block rounded bg-amber-400/15 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-amber-400">
-                          Nuevo contacto
+                      <span className="mt-1.5 flex items-center gap-1.5">
+                        <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium', stage.chip)}>
+                          <span className={cn('size-1.5 rounded-full', stage.dot)} />
+                          {stage.short}
                         </span>
-                      )}
+                        {c.follow_up_at && (
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                              due ? 'bg-destructive/15 text-destructive' : 'bg-muted text-muted-foreground'
+                            )}
+                          >
+                            <BellRing className="size-3" />
+                            {due ? 'Pendiente' : formatListTime(c.follow_up_at)}
+                          </span>
+                        )}
+                        {!c.client && !c.answered_from_phone && (
+                          <span className="text-[11px] text-muted-foreground">Sin guardar</span>
+                        )}
+                      </span>
                     </span>
                   </Link>
                 </li>

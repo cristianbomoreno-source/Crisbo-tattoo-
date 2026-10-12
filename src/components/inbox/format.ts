@@ -56,3 +56,21 @@ export function formatWindowRemaining(lastInboundAt: string, now = Date.now()) {
   const hours = Math.floor(ms / 3_600_000)
   return hours >= 1 ? `${hours} h` : `${Math.max(1, Math.floor(ms / 60_000))} min`
 }
+
+/** Recordatorio de seguimiento: "Hoy, 3:00 p. m.", "Mañana, 10:00 a. m." o "15 oct, 10:00 a. m.". */
+export function formatFollowUp(iso: string, now = new Date()) {
+  const d = new Date(iso)
+  const diffDays = startOfDay(d) - startOfDay(now)
+  const time = timeFmt.format(d)
+  if (diffDays === 0) return `Hoy, ${time}`
+  if (diffDays === 1) return `Mañana, ${time}`
+  if (diffDays === -1) return `Ayer, ${time}`
+  return `${dayFmt.format(d)}, ${time}`
+}
+
+/** Iniciales para el avatar del chat ("Ana Pérez" → "AP"). */
+export function chatInitials(name: string) {
+  const words = name.split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}]/gu, '')).filter(Boolean)
+  if (words.length >= 2) return (words[0]!.charAt(0) + words[1]!.charAt(0)).toUpperCase()
+  return (words[0] ?? '').slice(0, 2).toUpperCase() || '#'
+}

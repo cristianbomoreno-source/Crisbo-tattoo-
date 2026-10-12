@@ -21,6 +21,7 @@ import {
   FileText,
   Link2,
   MapPin,
+  MoreVertical,
   Send,
   Sparkles,
   UserPlus,
@@ -45,8 +46,17 @@ import { Button } from '@/components/ui/button'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { todayKey } from '@/lib/calendar/utils'
 import { CHAT_SHORTCUTS, suggestReplies } from '@/lib/whatsapp-cloud/chat-shortcuts'
-import { ClientLinkDialog } from './client-link-dialog'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { ClientLinkDialog } from './client-link-dialog'
+import { LeadBar } from './lead-bar'
+import {
+  chatInitials,
   formatDayLabel,
   formatMessageTime,
   formatWaPhone,
@@ -261,63 +271,86 @@ export function ChatView({
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* Header */}
-      <header className="flex items-center gap-2 border-b border-border/60 px-2 py-2 sm:px-3">
+      {/* Header: contacto + acciones principales. */}
+      <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
         <Link
           href="/dashboard/inbox"
-          className="grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-accent/60 lg:hidden"
+          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 lg:hidden"
           aria-label="Volver a los chats"
         >
           <ArrowLeft className="size-5" />
         </Link>
+        <span className="relative shrink-0">
+          <span className="grid size-10 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+            {chatInitials(name)}
+          </span>
+          <span
+            aria-hidden
+            className={cn(
+              'absolute right-0 bottom-0 size-3 rounded-full ring-2 ring-card',
+              windowOpen ? 'bg-emerald-500' : 'bg-muted-foreground/50'
+            )}
+          />
+        </span>
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-sm font-semibold">{name}</p>
-            <button
-              type="button"
-              onClick={() => setScheduleOpen(true)}
-              className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              <CalendarPlus className="size-3.5" />
-              Agendar cita
-            </button>
-          </div>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="truncate text-[15px] leading-tight font-semibold">{name}</p>
+          <p suppressHydrationWarning className="mt-0.5 truncate text-xs text-muted-foreground">
             {formatWaPhone(conversation.wa_id)}
-            {conversation.contact_name && conversation.client && conversation.contact_name !== conversation.client.name
-              ? ` · ${conversation.contact_name}`
-              : ''}
+            <span className="mx-1.5 opacity-50">·</span>
+            {windowOpen && remaining ? (
+              <span className="text-emerald-600 dark:text-emerald-400">Responde libre · {remaining}</span>
+            ) : (
+              <span>Solo plantillas</span>
+            )}
           </p>
         </div>
-        {conversation.client ? (
+        <Button size="sm" onClick={() => setScheduleOpen(true)} className="shrink-0">
+          <CalendarPlus />
+          <span className="hidden sm:inline">Agendar cita</span>
+        </Button>
+        {client ? (
           <Link
-            href={`/dashboard/clients/${conversation.client.id}`}
-            className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
+            href={`/dashboard/clients/${client.id}`}
+            className="hidden h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium ring-1 ring-border hover:bg-accent sm:flex"
           >
             <UserRound className="size-3.5" />
-            <span className="hidden sm:inline">Ver ficha</span>
+            Ver ficha
           </Link>
         ) : (
-          <Button size="sm" variant="outline" onClick={() => setLinkOpen(true)}>
+          <Button size="sm" variant="outline" onClick={() => setLinkOpen(true)} className="shrink-0">
             <UserPlus />
             <span className="hidden sm:inline">Guardar cliente</span>
           </Button>
         )}
-        {conversation.client && (
-          <Button size="icon-sm" variant="ghost" onClick={() => setLinkOpen(true)} aria-label="Cambiar cliente vinculado">
-            <Link2 />
-          </Button>
-        )}
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          onClick={toggleArchive}
-          disabled={archiving}
-          aria-label={conversation.archived ? 'Desarchivar' : 'Archivar'}
-        >
-          {conversation.archived ? <ArchiveRestore /> : <Archive />}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="Más opciones"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <MoreVertical className="size-4.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {client && (
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/clients/${client.id}`)}>
+                <UserRound />
+                Ver ficha del cliente
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => setLinkOpen(true)}>
+              <Link2 />
+              {client ? 'Cambiar cliente vinculado' : 'Vincular a un cliente'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={toggleArchive} disabled={archiving}>
+              {conversation.archived ? <ArchiveRestore /> : <Archive />}
+              {conversation.archived ? 'Mover a la bandeja' : 'Archivar chat'}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
+
+      {/* Seguimiento del lead: etapa del embudo + recordatorio. */}
+      <LeadBar conversationId={conversation.id} stage={conversation.lead_stage} followUpAt={conversation.follow_up_at} />
 
       {/* Mensajes */}
       <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto bg-background/40 px-3 py-4">
@@ -383,11 +416,6 @@ export function ChatView({
                 </Button>
               ))}
             </div>
-            {remaining && (
-              <p suppressHydrationWarning className="mt-1.5 px-1 text-[12px] text-muted-foreground">
-                Puedes responder libremente durante {remaining} más.
-              </p>
-            )}
           </>
         ) : (
           <div className="space-y-2">

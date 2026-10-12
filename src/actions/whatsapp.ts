@@ -33,6 +33,7 @@ import type { WaMessage } from '@/queries/whatsapp'
 import { buildBookingConfirmation } from '@/actions/sessions'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { findShortcut } from '@/lib/whatsapp-cloud/chat-shortcuts'
+import { LEAD_STAGE_KEYS } from '@/lib/whatsapp-cloud/lead'
 
 /* ─────────────── Conexión del número (Ajustes → WhatsApp) ─────────────── */
 
@@ -260,6 +261,33 @@ export async function setConversationArchived(conversationId: string, archived: 
   const { error } = await supabase.from('wa_conversations').update({ archived }).eq('id', conversationId)
   if (error) return dbError(error)
   revalidatePath('/dashboard/inbox')
+  return ok(null)
+}
+
+/** Botones de seguimiento del chat: mueve el lead de etapa en el embudo. */
+export async function setLeadStage(conversationId: string, stage: unknown): Promise<Result<null>> {
+  const parsed = z.enum(LEAD_STAGE_KEYS).safeParse(stage)
+  if (!parsed.success) return err('VALIDATION_ERROR', 'Etapa no válida')
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('wa_conversations')
+    .update({ lead_stage: parsed.data, lead_stage_at: new Date().toISOString() })
+    .eq('id', conversationId)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok(null)
+}
+
+/** Recordatorio de seguimiento: fecha ISO o `null` para quitarlo. */
+export async function setFollowUp(conversationId: string, at: string | null): Promise<Result<null>> {
+  if (at !== null && Number.isNaN(Date.parse(at))) return err('VALIDATION_ERROR', 'Fecha no válida')
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('wa_conversations')
+    .update({ follow_up_at: at })
+    .eq('id', conversationId)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard/inbox', 'layout')
   return ok(null)
 }
 
@@ -505,8 +533,13 @@ export async function sendBookingConfirmationToChat(
   const clientId = (session as { projects: { client_id: string | null } | null } | null)?.projects?.client_id
   if (clientId) {
     await supabase.from('wa_conversations').update({ client_id: clientId }).eq('id', conversationId).is('client_id', null)
-    revalidatePath(`/dashboard/inbox/${conversationId}`)
   }
+  // Cita agendada desde el chat: el lead pasa a "Agendado" y se cierra el seguimiento.
+  await supabase
+    .from('wa_conversations')
+    .update({ lead_stage: 'agendado', lead_stage_at: new Date().toISOString(), follow_up_at: null })
+    .eq('id', conversationId)
+  revalidatePath('/dashboard/inbox', 'layout')
 
   const confirmation = await buildBookingConfirmation(sessionId)
   if (!confirmation.success) return confirmation

@@ -225,3 +225,12 @@ ALTER TABLE public.auth_attempts ENABLE ROW LEVEL SECURITY;
 
 -- (2026-10-12) Calificación de funciones eliminada de la app a pedido del usuario.
 DROP TABLE IF EXISTS public.feature_feedback;
+
+-- (2026-10-12) Seguimiento de leads en la bandeja de WhatsApp
+-- (migración Supabase "wa_conversations_lead_tracking").
+ALTER TABLE public.wa_conversations
+  ADD COLUMN IF NOT EXISTS lead_stage text NOT NULL DEFAULT 'nuevo'
+    CHECK (lead_stage IN ('nuevo','cotizando','abono','agendado','perdido')),
+  ADD COLUMN IF NOT EXISTS lead_stage_at timestamptz,
+  ADD COLUMN IF NOT EXISTS follow_up_at timestamptz;
+CREATE INDEX IF NOT EXISTS wa_conversations_follow_up_idx ON public.wa_conversations(studio_id, follow_up_at) WHERE follow_up_at IS NOT NULL;

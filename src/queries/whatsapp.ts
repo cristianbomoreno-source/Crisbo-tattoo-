@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
+import type { LeadStage } from '@/lib/whatsapp-cloud/lead'
 
 /** Estado de la conexión del estudio — SIN el token (ese nunca sale del
  * servidor). `whatsapp_accounts` no tiene políticas RLS, por eso se lee con
@@ -52,6 +53,11 @@ export type WaConversation = {
   archived: boolean
   /** El estudio ya respondió este chat desde la app del celular: no es un posible cliente. */
   answered_from_phone: boolean
+  /** Embudo del lead (`lib/whatsapp-cloud/lead.ts`). */
+  lead_stage: LeadStage
+  lead_stage_at: string | null
+  /** Recordatorio de seguimiento; null = sin recordatorio. */
+  follow_up_at: string | null
   created_at: string
   client: { id: string; name: string; phone: string | null } | null
 }
