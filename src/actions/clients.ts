@@ -143,9 +143,37 @@ export async function deleteClientAction(id: string): Promise<Result<void>> {
  * para no fallar por indicativo o formato) y trae sus proyectos activos —
  * la usa el popup de "Agendar cita" del calendario para ofrecer reutilizar un
  * proyecto ya existente en vez de crear siempre uno nuevo. */
+export type ClientBookingMatch = {
+  clientId: string
+  clientName: string
+  phone: string | null
+  projects: { id: string; name: string }[]
+}
+
+/** Proyectos activos (no completados) del cliente, para agendar en uno de ellos. */
+async function clientBookingMatch(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  studioId: string,
+  client: { id: string; name: string; phone: string | null }
+): Promise<ClientBookingMatch> {
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('id, name, status')
+    .eq('studio_id', studioId)
+    .eq('client_id', client.id)
+    .neq('status', 'completed')
+    .order('updated_at', { ascending: false })
+  return {
+    clientId: client.id,
+    clientName: client.name,
+    phone: client.phone,
+    projects: (projects ?? []).map((p) => ({ id: p.id, name: p.name })),
+  }
+}
+
 export async function findClientProjectsByPhoneAction(
   phone: string
-): Promise<Result<{ clientId: string; clientName: string; projects: { id: string; name: string }[] } | null>> {
+): Promise<Result<ClientBookingMatch | null>> {
   const studio = await getCurrentStudio()
   if (!studio) return err('AUTH_ERROR', 'No autenticado')
   const studioId = studio.id
@@ -153,7 +181,6 @@ export async function findClientProjectsByPhoneAction(
   const digits = phone.replace(/\D/g, '')
   if (digits.length < 7) return ok(null)
   const last10 = digits.slice(-10)
-
   const pattern = phoneSuffixPattern(digits)
   if (!pattern) return ok(null)
 
@@ -168,17 +195,47 @@ export async function findClientProjectsByPhoneAction(
     (c) => c.phone && c.phone.replace(/\D/g, '').slice(-10) === last10
   )
   if (!match) return ok(null)
+  return ok(await clientBookingMatch(supabase, studioId, match))
+}
 
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id, name, status')
-    .eq('studio_id', studioId)
-    .eq('client_id', match.id)
-    .neq('status', 'completed')
+/** Cliente ya conocido (ej. el vinculado a un chat) con sus proyectos activos. */
+export async function getClientBookingMatchAction(clientId: string): Promise<Result<ClientBookingMatch>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  const supabase = await createClient()
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, name, phone')
+    .eq('id', clientId)
+    .eq('studio_id', studio.id)
+    .maybeSingle()
+  if (!client) return err('NOT_FOUND', 'Cliente no encontrado')
+  return ok(await clientBookingMatch(supabase, studio.id, client))
+}
 
-  return ok({
-    clientId: match.id,
-    clientName: match.name,
-    projects: (projects ?? []).map((p) => ({ id: p.id, name: p.name })),
-  })
+/** Autocompletar por nombre (o teléfono) en "Agendar cita": hasta 8 coincidencias. */
+export async function searchClientsAction(
+  query: string
+): Promise<Result<{ id: string; name: string; phone: string | null }[]>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  const q = query.trim()
+  if (q.length < 2) return ok([])
+
+  const supabase = await createClient()
+  let request = supabase.from('clients').select('id, name, phone').eq('studio_id', studio.id)
+  // Un member solo ve sus propios clientes (igual que en getClients).
+  if (studio.role !== 'owner') request = request.eq('artist_id', studio.artistId)
+  const digits = q.replace(/\D/g, '')
+  if (digits.length >= 4 && digits.length === q.replace(/[\s+()-]/g, '').length) {
+    request = request.ilike('phone', `%${digits.split('').join('%')}%`)
+  } else {
+    // Cada palabra debe aparecer en el nombre, en cualquier orden ("mora fer").
+    for (const word of q.split(/\s+/).slice(0, 4)) {
+      request = request.ilike('name', `%${word.replace(/[%_\\]/g, '')}%`)
+    }
+  }
+  const { data, error } = await request.order('name').limit(8)
+  if (error) return dbError(error)
+  return ok(data)
 }

@@ -443,6 +443,7 @@ export function ChatView({
         initialDay={todayKey()}
         presetClientName={client?.name ?? conversation.contact_name ?? ''}
         presetPhone={client?.phone ?? `+${conversation.wa_id}`}
+        presetClientId={client?.id}
         onBooked={(sessionId) => {
           setScheduleOpen(false)
           confirmBooking(sessionId)

@@ -28,6 +28,7 @@ export function HomeCalendarDialog({
   presetProjectId,
   presetClientName,
   presetPhone,
+  presetClientId,
   onScheduled,
   onBooked,
 }: {
@@ -40,6 +41,8 @@ export function HomeCalendarDialog({
   presetProjectId?: string
   presetClientName?: string
   presetPhone?: string
+  /** Ver `QuickScheduleDialog.presetClientId`. */
+  presetClientId?: string
   onScheduled?: () => void
   /** Ver `QuickScheduleDialog.onBooked`. */
   onBooked?: (sessionId: string) => void
@@ -168,6 +171,7 @@ export function HomeCalendarDialog({
         presetProjectId={presetProjectId}
         presetClientName={presetClientName}
         presetPhone={presetPhone}
+        presetClientId={presetClientId}
         onScheduled={onScheduled}
         onBooked={onBooked}
       />
