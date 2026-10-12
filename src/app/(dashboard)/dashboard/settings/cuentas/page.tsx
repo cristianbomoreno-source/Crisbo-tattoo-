@@ -2,7 +2,6 @@ import { PageHeader } from '@/components/shared/page-header'
 import { listMyAccounts } from '@/actions/accounts'
 import { getCurrentStudio } from '@/queries/studio'
 import { AccountsManager } from '@/components/settings/accounts-manager'
-import { FeedbackBanner } from '@/components/feedback/feedback-banner'
 import { DeleteAccountSection } from '@/components/settings/delete-account-section'
 
 /**
@@ -18,7 +17,6 @@ export default async function AccountsSettingsPage() {
     <div>
       <PageHeader kicker="Cuenta" title="Cuentas Crisbo Tattoo" />
       <div className="mx-auto max-w-lg">
-        <FeedbackBanner />
         <AccountsManager accounts={accounts} />
         {studio && <DeleteAccountSection isOwner={studio.role === 'owner'} studioName={studio.name} />}
       </div>

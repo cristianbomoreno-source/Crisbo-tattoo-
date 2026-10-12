@@ -222,3 +222,6 @@ CREATE TABLE IF NOT EXISTS public.auth_attempts (
 );
 CREATE INDEX IF NOT EXISTS auth_attempts_identifier_idx ON public.auth_attempts(identifier, created_at);
 ALTER TABLE public.auth_attempts ENABLE ROW LEVEL SECURITY;
+
+-- (2026-10-12) Calificación de funciones eliminada de la app a pedido del usuario.
+DROP TABLE IF EXISTS public.feature_feedback;

@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
-import { FeedbackBanner } from '@/components/feedback/feedback-banner'
 import { InvitationBanner } from '@/components/settings/invitation-banner'
 import { listMyPendingInvitations } from '@/actions/collaborators'
 import { getCurrentStudio } from '@/queries/studio'
@@ -43,7 +42,6 @@ export default async function SettingsPage() {
         <PageHeader kicker={studio.accountKind === 'estudio' ? 'Estudio' : 'Tatuador'} title="Ajustes del estudio" />
         <div className="mx-auto max-w-lg space-y-4">
           <InvitationBanner invitations={myInvitations} />
-          <FeedbackBanner />
           <div className="flex items-center gap-4 rounded-2xl bg-card p-4">
             <StudioBrand name={studio.name} logoUrl={studio.logoUrl} />
           </div>
@@ -84,7 +82,6 @@ export default async function SettingsPage() {
   return (
     <div>
       <InvitationBanner invitations={myInvitations} />
-      <FeedbackBanner />
       <StudioControlCenter
         studio={studio}
         status={status}
