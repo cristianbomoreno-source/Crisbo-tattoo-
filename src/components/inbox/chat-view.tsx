@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ import {
   Link2,
   MapPin,
   Send,
+  Sparkles,
   UserPlus,
   UserRound,
   Wallet,
@@ -43,7 +44,7 @@ import type { WaConversation, WaMessage } from '@/queries/whatsapp'
 import { Button } from '@/components/ui/button'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { todayKey } from '@/lib/calendar/utils'
-import { CHAT_SHORTCUTS } from '@/lib/whatsapp-cloud/chat-shortcuts'
+import { CHAT_SHORTCUTS, suggestReplies } from '@/lib/whatsapp-cloud/chat-shortcuts'
 import { ClientLinkDialog } from './client-link-dialog'
 import {
   formatDayLabel,
@@ -204,6 +205,36 @@ export function ChatView({
     </Button>
   ) : null
 
+  // Lo que el cliente escribió desde nuestra última respuesta: de ahí salen
+  // las palabras clave que resaltan el botón más adecuado.
+  const pendingClientText = useMemo(() => {
+    const lastOut = messages.findLastIndex((m) => m.direction === 'out')
+    return messages
+      .slice(lastOut + 1)
+      .filter((m) => m.direction === 'in' && m.body)
+      .map((m) => m.body)
+      .join('\n')
+  }, [messages])
+  const suggestions = useMemo(() => suggestReplies(pendingClientText), [pendingClientText])
+  const suggested = new Set<string>(suggestions)
+
+  const actions: { key: string; label: string; Icon: LucideIcon; onClick: () => void; disabled: boolean }[] = [
+    { key: 'ubicacion', label: 'Ubicación', Icon: MapPin, onClick: sendLocation, disabled: sending },
+    ...CHAT_SHORTCUTS.map((s) => ({
+      key: s.key,
+      label: s.label,
+      Icon: SHORTCUT_ICONS[s.key] ?? Send,
+      onClick: () => sendShortcut(s.key),
+      disabled: sending,
+    })),
+    ...(formTemplateStatus
+      ? [{ key: 'formulario', label: sendingForm ? 'Enviando…' : 'Enviar formulario', Icon: ClipboardList, onClick: sendForm, disabled: sendingForm }]
+      : []),
+  ]
+  // Las sugeridas primero, en orden de relevancia; el resto como siempre.
+  const rank = (key: string) => (suggested.has(key) ? suggestions.indexOf(key) : suggestions.length)
+  actions.sort((a, b) => rank(a.key) - rank(b.key))
+
   /** Cita creada desde el chat: la confirmación sale por este mismo chat. */
   async function confirmBooking(sessionId: string) {
     const result = await sendBookingConfirmationToChat(conversation.id, sessionId)
@@ -332,21 +363,25 @@ export function ChatView({
                 <Send />
               </Button>
             </div>
+            {suggested.size > 0 && (
+              <p className="mt-2 flex items-center gap-1 px-1 text-[11px] text-primary">
+                <Sparkles className="size-3" />
+                Sugerido según lo que escribió el cliente
+              </p>
+            )}
             <div className="mt-2 -mx-2 flex gap-2 overflow-x-auto px-2 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 *:shrink-0">
-              <Button size="sm" variant="outline" onClick={sendLocation} disabled={sending}>
-                <MapPin />
-                Ubicación
-              </Button>
-              {CHAT_SHORTCUTS.map((s) => {
-                const Icon = SHORTCUT_ICONS[s.key] ?? Send
-                return (
-                  <Button key={s.key} size="sm" variant="outline" onClick={() => sendShortcut(s.key)} disabled={sending}>
-                    <Icon />
-                    {s.label}
-                  </Button>
-                )
-              })}
-              {formButton}
+              {actions.map(({ key, label, Icon, onClick, disabled }) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={suggested.has(key) ? 'default' : 'outline'}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  <Icon />
+                  {label}
+                </Button>
+              ))}
             </div>
             {remaining && (
               <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">

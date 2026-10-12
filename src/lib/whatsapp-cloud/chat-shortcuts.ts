@@ -44,3 +44,42 @@ export const CHAT_SHORTCUTS: ChatShortcut[] = [
 export function findShortcut(key: string) {
   return CHAT_SHORTCUTS.find((s) => s.key === key) ?? null
 }
+
+/* ───────────── Sugerencias por palabras clave ───────────── */
+
+/** Claves sugeribles: los botones de arriba + Ubicación y Enviar formulario. */
+export type SuggestionKey = ChatShortcut['key'] | 'ubicacion' | 'formulario'
+
+/** Palabras/frases (sin tildes, en minúscula) que delatan qué necesita el
+ * cliente. Salen de las conversaciones reales del estudio. */
+const KEYWORDS: Record<SuggestionKey, (string | RegExp)[]> = {
+  abono: ['separar', 'apartar', 'reservar', 'como pago', 'como hago para', 'hay que pagar', 'pagar algo', 'abono', 'adelanto', 'transferencia', 'nequi', 'bre-b', 'breb', 'llave', 'cuenta'],
+  comprobante: ['ya te hice el abono', 'ya hice el abono', 'ya pague', 'ya te pague', 'ya transferi', 'ya consigne', 'ya te transferi', 'ya te envie la plata', 'ya abone'],
+  formulario: ['comprobante', 'ya pague', 'ya te pague', 'ya hice el abono', 'ya te hice el abono', 'ya transferi', 'ya abone', 'mis datos', 'que datos'],
+  recomendaciones: ['antes de la cita', 'recomendacion', 'puedo tomar', 'puedo beber', 'puedo comer', 'que debo hacer antes', 'algun cuidado antes', 'primer tatuaje', 'nervios'],
+  horario: ['horario', 'a que hora', 'que horas', 'que dias', 'abren', 'atienden', 'cierran', 'domingo', 'festivo'],
+  menores: ['menor de edad', 'soy menor', /\b1[0-7]\s*anos\b/, 'mi mama', 'mi papa', 'mis papas', 'mis padres', 'permiso'],
+  cuidados: ['como lo cuido', 'como cuidar', 'cuidados', 'crema', 'rojito', 'rojo', 'inflamad', 'hinchad', 'pelando', 'bota tinta', 'botando tinta', 'pica', 'vendaje', 'vinipel', 'costra', 'es normal'],
+  ubicacion: ['donde queda', 'donde quedan', 'donde estan', 'direccion', 'ubicacion', 'ubicados', 'como llego', 'en que parte', 'barrio'],
+}
+
+function normalize(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+}
+
+/** Botones que mejor responden a lo que escribió el cliente, del más al
+ * menos probable (por número de coincidencias). */
+export function suggestReplies(clientText: string): SuggestionKey[] {
+  const text = normalize(clientText)
+  if (!text.trim()) return []
+  const scored = (Object.keys(KEYWORDS) as SuggestionKey[])
+    .map((key) => ({
+      key,
+      score: (KEYWORDS[key] ?? []).filter((k) => (typeof k === 'string' ? text.includes(k) : k.test(text))).length,
+    }))
+    .filter((s) => s.score > 0)
+  return scored.sort((a, b) => b.score - a.score).map((s) => s.key)
+}
