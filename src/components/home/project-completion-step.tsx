@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { CheckCircle2, ImagePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { uploadGalleryItemAction } from '@/actions/gallery'
+import { compressImage } from '@/lib/images/compress'
 import { updateProjectStatusAction, updateProjectProgressAction } from '@/actions/projects'
 
 type Step = 'ask' | 'photo' | 'percent'
@@ -62,8 +63,15 @@ export function ProjectCompletionStep({
     const fd = new FormData()
     fd.set('project_id', projectId)
     fd.set('type', 'final')
-    fd.set('file', file)
-    const result = await uploadGalleryItemAction(fd)
+    fd.set('file', await compressImage(file))
+    let result: Awaited<ReturnType<typeof uploadGalleryItemAction>>
+    try {
+      result = await uploadGalleryItemAction(fd)
+    } catch {
+      setSaving(false)
+      toast.error('No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
     if (!result.success) {
       setSaving(false)
       toast.error(result.error.message)

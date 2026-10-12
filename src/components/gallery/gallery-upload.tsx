@@ -6,6 +6,7 @@ import { ImagePlus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { uploadGalleryItemAction } from '@/actions/gallery'
+import { compressImage } from '@/lib/images/compress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,12 +63,19 @@ export function GalleryUpload({
 
     setLoading(true)
     const fd = new FormData()
-    fd.append('file', file)
+    fd.append('file', await compressImage(file))
     fd.append('project_id', activeProjectId)
     fd.append('type', DEFAULT_GALLERY_TYPE)
     fd.append('caption', caption)
 
-    const result = await uploadGalleryItemAction(fd)
+    let result: Awaited<ReturnType<typeof uploadGalleryItemAction>>
+    try {
+      result = await uploadGalleryItemAction(fd)
+    } catch {
+      setLoading(false)
+      toast.error('No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
     setLoading(false)
 
     if (!result.success) {
