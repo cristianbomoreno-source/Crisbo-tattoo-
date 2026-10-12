@@ -136,6 +136,15 @@ export function QuickScheduleDialog({
 
     if (!projectId) {
       let clientId = match?.clientId ?? null
+      // La búsqueda por teléfono pudo no haber terminado (o no haberse
+      // disparado) antes de tocar "Agendar": se repite aquí para no intentar
+      // crear un cliente que ya existe (el teléfono es único por estudio).
+      if (!clientId && phone.replace(/\D/g, '').length >= 7) {
+        const found = await findClientProjectsByPhoneAction(phone)
+        if (found.success && found.data) {
+          clientId = found.data.clientId
+        }
+      }
       if (!clientId) {
         const clientRes = await createClientAction({ name: name.trim(), phone: phone || undefined })
         if (!clientRes.success) {

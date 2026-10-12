@@ -3,6 +3,7 @@ import { sendPushToStudio } from '@/lib/push/send'
 import {
   messagePreview,
   normalizeWaPhone,
+  phoneSuffixPattern,
   shouldAdvanceStatus,
   type ParsedInbound,
   type ParsedStatus,
@@ -31,11 +32,13 @@ async function studioForPhoneNumber(admin: Admin, cache: Map<string, string | nu
 /** Busca el cliente del estudio con ese teléfono (los teléfonos se guardan
  * en formatos variados: "300 123 4567", "+57 300…", así que se normaliza). */
 export async function findClientByPhone(admin: Admin, studioId: string, waId: string) {
+  const pattern = phoneSuffixPattern(waId)
+  if (!pattern) return null
   const { data } = await admin
     .from('clients')
     .select('id, phone')
     .eq('studio_id', studioId)
-    .not('phone', 'is', null)
+    .ilike('phone', pattern)
   const match = (data ?? []).find((c) => normalizeWaPhone(c.phone as string) === waId)
   return (match?.id as string | undefined) ?? null
 }

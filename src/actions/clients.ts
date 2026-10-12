@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import type { Client } from '@/queries/clients'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCurrentPermissions } from '@/queries/permissions'
+import { phoneSuffixPattern } from '@/lib/whatsapp-cloud/parse'
 
 export async function createClientAction(input: unknown): Promise<Result<Client>> {
   const parsed = createClientSchema.safeParse(input)
@@ -74,11 +75,18 @@ export async function bulkCreateClientsAction(
 
   const supabase = await createClient()
 
-  const { data: existing } = await supabase
-    .from('clients')
-    .select('phone')
-    .eq('studio_id', studioId)
-  const existingPhones = new Set((existing ?? []).map((c) => c.phone).filter(Boolean))
+  // Paginado: Supabase devuelve máximo 1.000 filas por consulta.
+  const existingPhones = new Set<string>()
+  for (let from = 0; ; from += 1000) {
+    const { data: page } = await supabase
+      .from('clients')
+      .select('phone')
+      .eq('studio_id', studioId)
+      .not('phone', 'is', null)
+      .range(from, from + 999)
+    for (const c of page ?? []) if (c.phone) existingPhones.add(c.phone)
+    if (!page || page.length < 1000) break
+  }
 
   const rows = contacts
     .filter((c) => c.name?.trim())
@@ -133,11 +141,15 @@ export async function findClientProjectsByPhoneAction(
   if (digits.length < 7) return ok(null)
   const last10 = digits.slice(-10)
 
+  const pattern = phoneSuffixPattern(digits)
+  if (!pattern) return ok(null)
+
   const supabase = await createClient()
   const { data: clients } = await supabase
     .from('clients')
     .select('id, name, phone')
     .eq('studio_id', studioId)
+    .ilike('phone', pattern)
 
   const match = (clients ?? []).find(
     (c) => c.phone && c.phone.replace(/\D/g, '').slice(-10) === last10

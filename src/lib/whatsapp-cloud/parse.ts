@@ -195,3 +195,15 @@ export function shouldAdvanceStatus(current: string, next: string) {
   if (next === 'failed') return current !== 'read'
   return (STATUS_RANK[next] ?? 0) > (STATUS_RANK[current] ?? 0) && current !== 'failed'
 }
+
+/**
+ * Patrón ILIKE que encuentra un teléfono por sus últimos 10 dígitos sin
+ * importar espacios, guiones o indicativo ("+57 311 573 3203" → '%3%1%1…%3').
+ * Se filtra en la base de datos: traer todos los clientes y comparar en JS
+ * fallaba con más de 1.000 clientes (límite de filas de Supabase).
+ */
+export function phoneSuffixPattern(phone: string): string | null {
+  const digits = phone.replace(/\D/g, '').slice(-10)
+  if (digits.length < 7) return null
+  return `%${digits.split('').join('%')}`
+}

@@ -21,14 +21,20 @@ export type Client = {
 export async function getClients(): Promise<Result<Client[]>> {
   const studio = await getCurrentStudio()
   const supabase = await createClient()
-  let query = supabase.from('clients').select('*').order('name')
-  if (studio && studio.role !== 'owner') {
-    query = query.eq('artist_id', studio.artistId)
+  // Supabase devuelve máximo 1.000 filas por consulta: se pide por páginas
+  // (con más de 1.000 clientes, los últimos del alfabeto no aparecían).
+  const all: Client[] = []
+  for (let from = 0; ; from += 1000) {
+    let query = supabase.from('clients').select('*').order('name').order('id').range(from, from + 999)
+    if (studio && studio.role !== 'owner') {
+      query = query.eq('artist_id', studio.artistId)
+    }
+    const { data, error } = await query
+    if (error) return dbError(error)
+    all.push(...(data as Client[]))
+    if (data.length < 1000) break
   }
-  const { data, error } = await query
-
-  if (error) return dbError(error)
-  return ok(data as Client[])
+  return ok(all)
 }
 
 export async function getClient(id: string): Promise<Result<Client>> {
