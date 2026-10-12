@@ -55,11 +55,10 @@ import {
  */
 
 
-/** Geometría de la barra inferior (ver mobile-nav.tsx): estilo Instagram,
- * pegada al borde inferior (offset 0), 64px de alto de contenido (el
- * safe-area es padding interno de la barra). El botón-núcleo (84px)
+/** Geometría de la barra inferior (ver mobile-nav.tsx): píldora flotante
+ * 8px sobre el borde inferior (más el safe-area), 64px de alto. El botón-núcleo (84px)
  * sobresale la mitad por encima del borde superior de la barra. */
-const BAR_OFFSET = 0 // px — la barra va pegada al borde inferior
+const BAR_OFFSET = 8 // px — la barra flota 8px sobre el borde inferior
 const BAR_H = 64 // px — alto del contenido de la barra
 const TRIGGER_SIZE = 84 // px — diámetro del núcleo
 

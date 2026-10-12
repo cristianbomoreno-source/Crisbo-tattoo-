@@ -2,20 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid } from 'lucide-react'
+import { LayoutGrid, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 
 /**
- * Navegación móvil de Crisbo Tattoo (<lg): barra inferior opaca pegada al borde
- * (estilo Instagram) de 5 posiciones (Inicio, Proyectos, hueco central para
- * el pulpo de octopus-menu.tsx, Cotizaciones, Estudio). En escritorio (lg+)
- * se oculta; ahí manda el sidebar. Ver DESIGN.md §5, §7.
+ * Navegación móvil de Crisbo Tattoo (<lg): barra flotante en forma de
+ * píldora (estilo YouVersion) separada del borde inferior, de 5 posiciones
+ * (Inicio, Proyectos, hueco central para el pulpo de octopus-menu.tsx,
+ * Cotizaciones, Estudio). Íconos y etiquetas en el color del texto; la
+ * pestaña activa se marca con una píldora gris detrás, no con color. En
+ * escritorio (lg+) se oculta; ahí manda el sidebar.
  *
  * La pestaña "Estudio" navega directo a /dashboard/settings (el Centro de
- * control del estudio, ver studio-control-center.tsx) — antes abría una
- * hoja intermedia con accesos duplicados; se quitó porque tapaba la
- * pantalla con un popup innecesario sobre el contenido.
+ * control del estudio, ver studio-control-center.tsx).
  */
 export function MobileNav() {
   const pathname = usePathname()
@@ -29,119 +29,53 @@ export function MobileNav() {
   // (evita toques accidentales que saquen del flujo).
   if (pathname === '/dashboard/quotes/new' || pathname === '/dashboard/quotes/quick') return null
 
-  const settingsActive = isActive('/dashboard/settings')
+  const tourTag = (href: string) =>
+    href === '/dashboard' ? 'nav-home' : href === '/dashboard/quotes' ? 'nav-quotes' : undefined
 
   return (
     <nav
       aria-label="Navegación principal"
       data-tour="nav-bar"
-      className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(64px+env(safe-area-inset-bottom))] items-stretch border-t border-border bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-16 items-stretch gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_8px_30px_-6px_rgb(0_0_0/0.35)] lg:hidden"
     >
-      {MOBILE_TAB_ITEMS.slice(0, 2).map((item) => {
-        const Icon = item.icon
-        const active = isActive(item.href)
-        const tourTag = item.href === '/dashboard' ? 'nav-home' : item.href === '/dashboard/quotes' ? 'nav-quotes' : undefined
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            data-tour={tourTag}
-            aria-current={active ? 'page' : undefined}
-            className="relative flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[26px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-          >
-            <Icon
-              className={cn(
-                'size-5 transition-colors duration-200',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}
-              strokeWidth={active ? 2 : 1.6}
-            />
-            <span
-              className={cn(
-                'text-[11px] font-medium transition-colors duration-200',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              {item.label}
-            </span>
-            <span
-              aria-hidden="true"
-              className={cn(
-                'absolute bottom-2 h-[3px] rounded-full bg-primary transition-all duration-300',
-                active ? 'w-7 opacity-100' : 'w-0 opacity-0'
-              )}
-            />
-          </Link>
-        )
-      })}
+      {MOBILE_TAB_ITEMS.slice(0, 2).map((item) => (
+        <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
+      ))}
       {/* Hueco central: aquí vive el pulpo (octopus-menu.tsx, fixed + z-40) */}
-      <div className="w-[96px] shrink-0" aria-hidden="true" />
-      {MOBILE_TAB_ITEMS.slice(2).map((item) => {
-        const Icon = item.icon
-        const active = isActive(item.href)
-        const tourTag = item.href === '/dashboard/quotes' ? 'nav-quotes' : undefined
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            data-tour={tourTag}
-            aria-current={active ? 'page' : undefined}
-            className="relative flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[26px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-          >
-            <Icon
-              className={cn(
-                'size-5 transition-colors duration-200',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}
-              strokeWidth={active ? 2 : 1.6}
-            />
-            <span
-              className={cn(
-                'text-[11px] font-medium transition-colors duration-200',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              {item.label}
-            </span>
-            <span
-              aria-hidden="true"
-              className={cn(
-                'absolute bottom-2 h-[3px] rounded-full bg-primary transition-all duration-300',
-                active ? 'w-7 opacity-100' : 'w-0 opacity-0'
-              )}
-            />
-          </Link>
-        )
-      })}
-      <Link
-        href="/dashboard/settings"
-        aria-current={settingsActive ? 'page' : undefined}
-        aria-label="Estudio"
-        className="relative flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[26px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      >
-        <LayoutGrid
-          className={cn(
-            'size-5 transition-colors duration-200',
-            settingsActive ? 'text-primary' : 'text-muted-foreground'
-          )}
-          strokeWidth={settingsActive ? 2 : 1.6}
-        />
-        <span
-          className={cn(
-            'text-[11px] font-medium transition-colors duration-200',
-            settingsActive ? 'text-primary' : 'text-muted-foreground'
-          )}
-        >
-          Estudio
-        </span>
-        <span
-          aria-hidden="true"
-          className={cn(
-            'absolute bottom-2 h-[3px] rounded-full bg-primary transition-all duration-300',
-            settingsActive ? 'w-7 opacity-100' : 'w-0 opacity-0'
-          )}
-        />
-      </Link>
+      <div className="w-[84px] shrink-0" aria-hidden="true" />
+      {MOBILE_TAB_ITEMS.slice(2).map((item) => (
+        <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
+      ))}
+      <TabLink href="/dashboard/settings" label="Estudio" icon={LayoutGrid} active={isActive('/dashboard/settings')} />
     </nav>
+  )
+}
+
+function TabLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+  tour,
+}: {
+  href: string
+  label: string
+  icon: LucideIcon
+  active: boolean
+  tour?: string
+}) {
+  return (
+    <Link
+      href={href}
+      data-tour={tour}
+      aria-current={active ? 'page' : undefined}
+      className={cn(
+        'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+        active ? 'bg-muted' : 'hover:bg-muted/60'
+      )}
+    >
+      <Icon className="size-[22px]" />
+      <span className="max-w-full truncate text-[11px] font-semibold leading-none tracking-tight">{label}</span>
+    </Link>
   )
 }
