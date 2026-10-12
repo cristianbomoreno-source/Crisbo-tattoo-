@@ -207,8 +207,27 @@ export default async function DashboardPage() {
   const nextIndex = todayOrdered.findIndex((s) => new Date(s.scheduled_at).getTime() >= nowMs)
   const initialIndex =
     inProgressIndex >= 0 ? inProgressIndex : nextIndex >= 0 ? nextIndex : todayOrdered.length - 1
+  // Hoy sin citas: la tarjeta muestra la próxima cita agendada (cualquier
+  // fecha futura) con cuántos días faltan.
+  let upcoming: (typeof sessions)[number] | null = null
+  let daysUntil: number | undefined
+  if (todayOrdered.length === 0) {
+    const tomorrow = new Date(`${today}T00:00:00Z`)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+    const fromTomorrow = new Date(tomorrow.getTime() + 5 * 3600000) // 00:00 Bogotá
+    const yearAhead = new Date(fromTomorrow.getTime() + 365 * 86400000)
+    const upcomingResult = await getSessions(fromTomorrow.toISOString(), yearAhead.toISOString())
+    upcoming = upcomingResult.success ? upcomingResult.data.find((s) => s.status !== 'cancelled') ?? null : null
+    if (upcoming) {
+      const diff = Date.parse(`${dayKey(upcoming.scheduled_at)}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)
+      daysUntil = Math.round(diff / 86400000)
+    }
+  }
+  const cardSessions = todayOrdered.length > 0 ? todayOrdered : upcoming ? [upcoming] : []
+  const cardIndex = todayOrdered.length > 0 ? initialIndex : 0
+
   const photoUrls: Record<string, string | null> = {}
-  for (const s of todayOrdered) {
+  for (const s of cardSessions) {
     const g = projectsById[s.project_id]?.gallery
     photoUrls[s.id] = g?.length
       ? [...g].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]!
@@ -237,11 +256,13 @@ export default async function DashboardPage() {
         blockedDays={blockedKeys}
       />
 
-      {todayOrdered.length > 0 && (
+      {cardSessions.length > 0 && (
         <NextSessionCard
-          sessions={todayOrdered}
+          key={daysUntil ? 'upcoming' : 'today'}
+          sessions={cardSessions}
+          daysUntil={daysUntil}
           photoUrls={photoUrls}
-          initialIndex={initialIndex}
+          initialIndex={cardIndex}
           template={studio?.reminderSessionTemplate}
           inventoryItems={inventoryItems}
           activeShifts={activeSessionShifts}
@@ -298,9 +319,10 @@ export default async function DashboardPage() {
           dateLabel={dateLabel}
           coverPhotoUrl={studio?.coverPhotoUrl ?? null}
           activeShift={activeShift}
-          todayOrdered={todayOrdered}
+          todayOrdered={cardSessions}
+          daysUntil={daysUntil}
           photoUrls={photoUrls}
-          initialIndex={initialIndex}
+          initialIndex={cardIndex}
           reminderSessionTemplate={studio?.reminderSessionTemplate}
           days={days}
           today={today}

@@ -38,6 +38,8 @@ export type HomeDesktopProps = {
   todayOrdered: SessionWithProject[]
   photoUrls: Record<string, string | null>
   initialIndex: number
+  /** Hoy sin citas: `todayOrdered` trae la próxima cita y esto los días que faltan. */
+  daysUntil?: number
   reminderSessionTemplate?: string | null
   days: { key: string; count: number }[]
   today: string
@@ -66,6 +68,7 @@ export function HomeDesktop({
   todayOrdered,
   photoUrls,
   initialIndex,
+  daysUntil,
   reminderSessionTemplate,
   days,
   today,
@@ -98,6 +101,8 @@ export function HomeDesktop({
 
       {todayOrdered.length > 0 && (
         <NextSessionCard
+          key={daysUntil ? 'upcoming' : 'today'}
+          daysUntil={daysUntil}
           sessions={todayOrdered}
           photoUrls={photoUrls}
           initialIndex={initialIndex}

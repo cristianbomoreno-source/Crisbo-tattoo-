@@ -69,8 +69,12 @@ export function NextSessionCard({
   inventoryItems = [],
   activeShifts = {},
   consentSignedProjectIds,
+  daysUntil,
 }: {
   sessions: SessionWithProject[]
+  /** Días que faltan para la cita (solo cuando hoy no hay citas y se
+   * muestra la próxima agendada de otro día). */
+  daysUntil?: number
   photoUrls: Record<string, string | null>
   initialIndex?: number
   template?: string | null
@@ -206,9 +210,18 @@ export function NextSessionCard({
             <div className="flex items-center gap-1.5">
               <CalendarCheck2 className="size-4" strokeWidth={2} aria-hidden="true" />
               <span className="text-xs font-semibold uppercase tracking-[0.15em]">
-                {sessions.length > 1 ? `Sesión de hoy ${index + 1}/${sessions.length}` : 'Próxima sesión'}
+                {daysUntil
+                  ? 'Próxima cita'
+                  : sessions.length > 1
+                    ? `Sesión de hoy ${index + 1}/${sessions.length}`
+                    : 'Próxima sesión'}
               </span>
             </div>
+            {daysUntil ? (
+              <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground tabular-nums">
+                {daysUntil === 1 ? 'Mañana' : `Faltan ${daysUntil} días`}
+              </span>
+            ) : null}
             {sessions.length > 1 && (
               <div className="flex items-center gap-1">
                 <button
@@ -243,6 +256,11 @@ export function NextSessionCard({
             <p className="font-title font-bold text-4xl leading-none tabular-nums">
               {formatTime(session.scheduled_at)}
             </p>
+            {daysUntil ? (
+              <p className="mt-1 text-sm font-medium capitalize text-primary">
+                {dayLabel(dayKey(session.scheduled_at))}
+              </p>
+            ) : null}
 
             <p className="mt-2 truncate text-base font-semibold uppercase tracking-tight">{clientName}</p>
             <p className="truncate text-xs text-muted-foreground">{session.projects?.name ?? 'Sesión'}</p>
@@ -292,6 +310,7 @@ export function NextSessionCard({
                 Antes de arrancar, popup de materiales gastados (se precargan
                 del mínimo configurado y descuentan del inventario apenas se
                 confirma). */}
+            {!daysUntil && (
             <button
               type="button"
               data-tour="session-timer"
@@ -322,6 +341,7 @@ export function NextSessionCard({
                 <Play className="size-4" strokeWidth={2} fill="currentColor" aria-hidden="true" />
               )}
             </button>
+            )}
           </div>
 
           {sessions.length > 1 && (
