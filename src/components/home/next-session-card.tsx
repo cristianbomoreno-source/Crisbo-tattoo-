@@ -180,12 +180,26 @@ export function NextSessionCard({
             />
           )}
           {photoUrl && (
-            <RemotePhoto
-              src={photoUrl}
-              width={320}
-              eager
-              className="pointer-events-none absolute -right-5 -top-5 size-28 rounded-2xl object-cover opacity-90 sm:size-32"
-            />
+            <>
+              {/* Foto del proyecto grande, ocupando el lado derecho a lo alto
+                  de toda la tarjeta, fundida hacia la izquierda (y un poco
+                  abajo) con el color de la tarjeta para que el texto y los
+                  botones se lean encima. */}
+              <RemotePhoto
+                src={photoUrl}
+                width={720}
+                eager
+                className="pointer-events-none absolute inset-y-0 right-0 h-full w-[75%] object-cover"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card from-25% via-card/80 via-55% to-card/0"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-card/90 to-transparent"
+              />
+            </>
           )}
 
           <div className="relative flex items-center justify-between gap-2 text-primary">
