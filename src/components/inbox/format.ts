@@ -1,17 +1,24 @@
-/** Formatos de hora/fecha de la bandeja (zona horaria del navegador). */
+/** Formatos de hora/fecha de la bandeja, SIEMPRE en hora de Colombia: el
+ * servidor (UTC en Vercel) y el navegador deben producir el mismo texto, o
+ * React lanza un error de hidratación (#418). */
 
-const timeFmt = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit' })
-const dayFmt = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' })
-const longDayFmt = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })
+const TIME_ZONE = 'America/Bogota'
+/** Colombia no tiene horario de verano: UTC−5 todo el año. */
+const BOGOTA_OFFSET_MS = -5 * 3_600_000
 
+const timeFmt = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit', timeZone: TIME_ZONE })
+const dayFmt = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', timeZone: TIME_ZONE })
+const longDayFmt = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TIME_ZONE })
+
+/** Número de día (en hora de Colombia), para comparar "hoy"/"ayer". */
 function startOfDay(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  return Math.floor((d.getTime() + BOGOTA_OFFSET_MS) / 86_400_000)
 }
 
 /** Lista de chats: "3:45 p. m." hoy, "Ayer", o "12 oct". */
 export function formatListTime(iso: string, now = new Date()) {
   const d = new Date(iso)
-  const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86_400_000)
+  const diffDays = startOfDay(now) - startOfDay(d)
   if (diffDays === 0) return timeFmt.format(d)
   if (diffDays === 1) return 'Ayer'
   return dayFmt.format(d)
@@ -24,7 +31,7 @@ export function formatMessageTime(iso: string) {
 /** Separador de día dentro del chat. */
 export function formatDayLabel(iso: string, now = new Date()) {
   const d = new Date(iso)
-  const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86_400_000)
+  const diffDays = startOfDay(now) - startOfDay(d)
   if (diffDays === 0) return 'Hoy'
   if (diffDays === 1) return 'Ayer'
   return longDayFmt.format(d)

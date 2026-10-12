@@ -384,7 +384,7 @@ export function ChatView({
               ))}
             </div>
             {remaining && (
-              <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
+              <p suppressHydrationWarning className="mt-1.5 px-1 text-[11px] text-muted-foreground">
                 Puedes responder libremente durante {remaining} más.
               </p>
             )}

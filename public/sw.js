@@ -105,15 +105,18 @@ self.addEventListener('fetch', (event) => {
   // Nunca interferir con Supabase ni con otros orígenes ajenos.
   if (url.origin !== self.location.origin) return
   if (url.hostname.endsWith('supabase.co')) return
+  // APIs (p. ej. el proxy de audios/videos de WhatsApp) y peticiones por
+  // rangos (206): directo a red. La caché no acepta respuestas parciales.
+  if (url.pathname.startsWith('/api/') || request.headers.has('range')) return
 
   // Navegaciones (HTML/RSC): network-first con fallback a caché y /offline.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.status === 200) {
             const copy = response.clone()
-            caches.open(CACHE).then((cache) => cache.put(request, copy))
+            caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {})
           }
           return response
         })
@@ -151,9 +154,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response.ok) {
+        if (response.status === 200) {
           const copy = response.clone()
-          caches.open(CACHE).then((cache) => cache.put(request, copy))
+          caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {})
         }
         return response
       })
