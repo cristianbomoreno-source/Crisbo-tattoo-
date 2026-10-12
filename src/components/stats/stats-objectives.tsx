@@ -24,9 +24,9 @@ function GoalBar({ goal }: { goal: Goal }) {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{pct}%</span>
+        <span className="w-9 shrink-0 text-right text-[12px] tabular-nums text-muted-foreground">{pct}%</span>
       </div>
-      <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{goal.format(goal.current)}</p>
+      <p className="mt-0.5 text-[12px] tabular-nums text-muted-foreground">{goal.format(goal.current)}</p>
     </div>
   )
 }

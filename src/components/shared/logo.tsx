@@ -34,7 +34,7 @@ export function Logo({
         />
       )}
       {subtitle ? (
-        <span className="mt-1.5 block font-display text-[10px] font-medium text-muted-foreground">
+        <span className="mt-1.5 block font-display text-[11px] font-medium text-muted-foreground">
           {subtitle}
         </span>
       ) : null}

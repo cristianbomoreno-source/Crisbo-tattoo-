@@ -71,7 +71,7 @@ export function TemplateColorPicker({ initialColor }: { initialColor: string | n
                 className="size-6 shrink-0 rounded-full border border-foreground/15"
                 style={{ backgroundColor: hex }}
               />
-              <span className="text-[10px] leading-none text-muted-foreground">{opt.label}</span>
+              <span className="text-[11px] leading-none text-muted-foreground">{opt.label}</span>
             </button>
           )
         })}

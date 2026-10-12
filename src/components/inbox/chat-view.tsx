@@ -328,7 +328,7 @@ export function ChatView({
             <div key={m.id}>
               {showDay && (
                 <div className="my-3 flex justify-center">
-                  <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium capitalize text-muted-foreground">
+                  <span className="rounded-full bg-muted px-3 py-1 text-[12px] font-medium capitalize text-muted-foreground">
                     {formatDayLabel(m.created_at)}
                   </span>
                 </div>
@@ -364,7 +364,7 @@ export function ChatView({
               </Button>
             </div>
             {suggested.size > 0 && (
-              <p className="mt-2 flex items-center gap-1 px-1 text-[11px] text-primary">
+              <p className="mt-2 flex items-center gap-1 px-1 text-[12px] text-primary">
                 <Sparkles className="size-3" />
                 Sugerido según lo que escribió el cliente
               </p>
@@ -384,7 +384,7 @@ export function ChatView({
               ))}
             </div>
             {remaining && (
-              <p suppressHydrationWarning className="mt-1.5 px-1 text-[11px] text-muted-foreground">
+              <p suppressHydrationWarning className="mt-1.5 px-1 text-[12px] text-muted-foreground">
                 Puedes responder libremente durante {remaining} más.
               </p>
             )}
@@ -477,11 +477,11 @@ function MessageBubble({ message: m }: { message: WaMessage }) {
           <p className="italic text-muted-foreground">Mensaje no soportado (ábrelo en el teléfono).</p>
         )}
         {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
-        <div className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
+        <div className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
           <span>{formatMessageTime(m.created_at)}</span>
           {out && <StatusIcon status={m.status} />}
         </div>
-        {m.status === 'failed' && m.error && <p className="mt-1 text-[11px] text-destructive">{m.error}</p>}
+        {m.status === 'failed' && m.error && <p className="mt-1 text-[12px] text-destructive">{m.error}</p>}
       </div>
     </div>
   )

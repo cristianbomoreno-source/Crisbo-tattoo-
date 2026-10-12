@@ -210,7 +210,7 @@ export function PhotoPicker({ onDone }: { onDone: (files: File[]) => void }) {
             className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-2 focus-visible:outline-ring"
           >
             <ImagePlus className="size-6" aria-hidden />
-            <span className="font-heading text-[10px] font-semibold">Agregar más</span>
+            <span className="font-heading text-[11px] font-semibold">Agregar más</span>
           </button>
         )}
       </div>

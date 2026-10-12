@@ -450,7 +450,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     </span>
                     <span className="font-display text-sm font-semibold text-foreground">Agregar referencia</span>
                     <span className="text-xs text-muted-foreground">Toma una foto o elige de la galería</span>
-                    <span className="mt-1 text-[11px] text-muted-foreground/70">
+                    <span className="mt-1 text-[12px] text-muted-foreground/70">
                       Arrastra tu imagen aquí · hasta {INTAKE_MAX_PHOTOS}
                     </span>
                   </label>
@@ -535,7 +535,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                     {recording ? <Square className="size-3.5" strokeWidth={2.5} /> : <Mic className="size-4" strokeWidth={1.8} />}
                   </button>
                   {transcribing && (
-                    <span className="absolute bottom-3 right-14 text-[11px] text-muted-foreground">Transcribiendo…</span>
+                    <span className="absolute bottom-3 right-14 text-[12px] text-muted-foreground">Transcribiendo…</span>
                   )}
                 </div>
                 <TinyTip>✨ Sé específico para obtener un mejor diseño.</TinyTip>
@@ -613,7 +613,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   </span>
                   {precisionZone || precisionSize ? (
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[10px] uppercase tracking-wide text-muted-foreground">Zona seleccionada</span>
+                      <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">Zona seleccionada</span>
                       <span className="block truncate text-sm font-semibold text-primary">{precisionZone || 'Sin definir'}</span>
                       {sizeShortLabel && (
                         <span className="mt-1 block text-xs text-muted-foreground">
@@ -625,7 +625,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   ) : (
                     <span className="min-w-0 flex-1 text-sm text-muted-foreground">Elegir en el mapa del cuerpo</span>
                   )}
-                  <span className="shrink-0 rounded-lg border border-foreground/15 px-2.5 py-1.5 font-display text-[10px] font-bold text-muted-foreground">
+                  <span className="shrink-0 rounded-lg border border-foreground/15 px-2.5 py-1.5 font-display text-[11px] font-bold text-muted-foreground">
                     Editar
                   </span>
                 </button>
@@ -639,7 +639,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                 className="flex flex-col justify-center bg-gradient-to-b from-primary/[0.07] to-transparent"
               >
                 <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-2 text-center">
-                  <span className="font-display text-[10px] font-semibold text-muted-foreground">
+                  <span className="font-display text-[11px] font-semibold text-muted-foreground">
                     Total
                   </span>
                   <AnimatedPrice value={effectivePrice} className="font-title font-bold text-4xl leading-none text-primary sm:text-5xl" />
@@ -650,7 +650,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
                   </TinyTip>
                 </div>
                 <div className="space-y-1.5 border-t border-foreground/8 pt-3">
-                  <label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <label className="text-[12px] uppercase tracking-wide text-muted-foreground">
                     Ajustar precio manualmente
                   </label>
                   <input
@@ -701,7 +701,7 @@ export function QuickQuoteForm({ styles, presets }: { styles: string[]; presets:
               />
             </div>
 
-            <p className="flex items-center justify-center gap-1.5 pb-4 pt-1 text-center text-[11px] text-muted-foreground/70">
+            <p className="flex items-center justify-center gap-1.5 pb-4 pt-1 text-center text-[12px] text-muted-foreground/70">
               <ShieldCheck className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
               Tu información está segura y protegida
             </p>

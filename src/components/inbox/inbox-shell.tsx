@@ -137,7 +137,7 @@ export function InboxShell({
                         </span>
                         <span
                           className={cn(
-                            'shrink-0 text-[11px] tabular-nums',
+                            'shrink-0 text-[12px] tabular-nums',
                             c.unread_count > 0 ? 'text-primary' : 'text-muted-foreground'
                           )}
                         >
@@ -150,13 +150,13 @@ export function InboxShell({
                           {c.last_message_preview || '…'}
                         </span>
                         {c.unread_count > 0 && (
-                          <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                          <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[12px] font-bold text-primary-foreground">
                             {c.unread_count}
                           </span>
                         )}
                       </span>
                       {!c.client && !c.answered_from_phone && (
-                        <span className="mt-1 inline-block rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-400">
+                        <span className="mt-1 inline-block rounded bg-amber-400/15 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-amber-400">
                           Nuevo contacto
                         </span>
                       )}

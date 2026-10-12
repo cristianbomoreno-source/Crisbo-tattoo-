@@ -291,7 +291,7 @@ export function PublicConsentForm({
                   <s.icon className="size-3.5" strokeWidth={2} />
                 )}
               </span>
-              <span className="hidden text-[10px] text-muted-foreground sm:block">{s.label}</span>
+              <span className="hidden text-[11px] text-muted-foreground sm:block">{s.label}</span>
             </div>
             {i < STEPS.length - 1 && (
               <div className={cn('mx-1 h-0.5 flex-1', stepValid[i] ? 'bg-primary' : 'bg-border')} />

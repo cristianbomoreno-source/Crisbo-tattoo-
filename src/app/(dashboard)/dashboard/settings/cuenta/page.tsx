@@ -24,9 +24,9 @@ export default async function CuentaHubPage() {
           ok={status.checks.artista}
           label={status.checks.artista ? 'Perfil de artista' : 'Completa tu perfil de artista'}
         />
-        <div className="flex min-h-9 items-center gap-2.5 px-1.5 py-1 text-[13px] text-foreground/90">
+        <div className="flex min-h-9 items-center gap-2.5 px-1.5 py-1 text-[14px] text-foreground/90">
           Suscripción
-          <span className="rounded-full bg-primary px-1.5 py-0.5 font-display text-[9px] font-bold text-primary-foreground">
+          <span className="rounded-full bg-primary px-1.5 py-0.5 font-display text-[10px] font-bold text-primary-foreground">
             Pro
           </span>
         </div>

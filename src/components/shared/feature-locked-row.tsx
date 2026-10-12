@@ -23,7 +23,7 @@ export function FeatureLockedRow({ label }: { label: string }) {
         >
           <Lock className="size-2.5" strokeWidth={2.2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-[14px] text-muted-foreground">{label}</span>
       </button>
 
       {open && (

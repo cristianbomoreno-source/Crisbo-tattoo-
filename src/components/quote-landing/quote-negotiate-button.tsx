@@ -62,7 +62,7 @@ export function QuoteNegotiateButton({
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
           placeholder="Ej. 500.000"
-          className="h-11 flex-1 rounded-xl border border-white/12 bg-black/40 px-3 text-[15px] text-white outline-none placeholder:text-white/30"
+          className="h-11 flex-1 rounded-xl border border-white/12 bg-black/40 px-3 text-[16px] text-white outline-none placeholder:text-white/30"
         />
         <button
           type="button"

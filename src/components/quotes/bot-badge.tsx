@@ -9,7 +9,7 @@ export function BotBadge({ source }: { source: 'manual' | 'bot' }) {
   const isBot = source === 'bot'
   const Icon = isBot ? Bot : PenLine
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[11px] font-medium text-white">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[12px] font-medium text-white">
       <Icon className="size-3" aria-hidden />
       {isBot ? 'Desde bot' : 'Creada por mí'}
     </span>

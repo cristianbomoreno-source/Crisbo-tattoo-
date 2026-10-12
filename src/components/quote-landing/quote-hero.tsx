@@ -27,7 +27,7 @@ export function QuoteHero({
       <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pt-24 pb-10">
         {isProject && (
           <span
-            className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 font-display text-[10px] font-semibold"
+            className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 font-display text-[11px] font-semibold"
             style={{ borderColor: quote.templateColor, color: quote.templateColor }}
           >
             <span className="size-1.5 rounded-full" style={{ backgroundColor: quote.templateColor }} />

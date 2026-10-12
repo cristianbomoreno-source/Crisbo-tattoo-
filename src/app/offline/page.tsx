@@ -21,7 +21,7 @@ export default function OfflinePage() {
         <h1 className="font-display text-2xl font-semibold text-foreground">
           Sin conexión
         </h1>
-        <p className="mx-auto max-w-sm text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mx-auto max-w-sm text-[16px] leading-relaxed text-muted-foreground">
           No pudimos cargar esta vista. Revisá tu conexión a internet y volvé a
           intentarlo; tus datos te esperan.
         </p>

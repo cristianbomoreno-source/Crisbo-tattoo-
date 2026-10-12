@@ -113,8 +113,8 @@ export function GalleryCard({
                   <span
                     className={
                       g.type === 'reference'
-                        ? 'absolute bottom-1.5 left-1.5 z-10 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium text-foreground'
-                        : 'absolute bottom-1.5 left-1.5 z-10 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground'
+                        ? 'absolute bottom-1.5 left-1.5 z-10 rounded-full bg-background/90 px-2 py-0.5 text-[11px] font-medium text-foreground'
+                        : 'absolute bottom-1.5 left-1.5 z-10 rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground'
                     }
                   >
                     {GALLERY_TYPE_LABELS[g.type] ?? g.type}

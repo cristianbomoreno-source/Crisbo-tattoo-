@@ -61,7 +61,7 @@ export function NavLinks({ onNavigate, collapsed = false }: { onNavigate?: () =>
             aria-current={active ? 'page' : undefined}
             title={collapsed ? item.label : undefined}
             className={cn(
-              'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[13px] font-medium transition-colors',
+              'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[14px] font-medium transition-colors',
               collapsed && 'justify-center px-0',
               active
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
@@ -97,7 +97,7 @@ export function SettingsNavLink({ onNavigate, collapsed = false }: { onNavigate?
       aria-current={active ? 'page' : undefined}
       title={collapsed ? 'Ajustes' : undefined}
       className={cn(
-        'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[13px] font-medium transition-colors',
+        'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[14px] font-medium transition-colors',
         collapsed && 'justify-center px-0',
         active
           ? 'bg-sidebar-accent text-sidebar-accent-foreground'

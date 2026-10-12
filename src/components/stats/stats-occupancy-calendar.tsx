@@ -23,7 +23,7 @@ export function StatsOccupancyCalendar({
 
       <div className="mt-3 grid grid-cols-7 gap-1">
         {WEEKDAY_LETTERS.map((l, i) => (
-          <span key={i} className="text-center text-[9px] font-medium uppercase text-muted-foreground/60">
+          <span key={i} className="text-center text-[10px] font-medium uppercase text-muted-foreground/60">
             {l}
           </span>
         ))}
@@ -54,11 +54,11 @@ export function StatsOccupancyCalendar({
       <div className="mt-4 flex items-center justify-between border-t border-foreground/8 pt-3">
         <div>
           <p className="font-title font-bold text-lg tabular-nums text-primary">{occupied}</p>
-          <p className="text-[11px] text-muted-foreground">Días ocupados</p>
+          <p className="text-[12px] text-muted-foreground">Días ocupados</p>
         </div>
         <div className="text-right">
           <p className="font-title font-bold text-lg tabular-nums text-foreground">{free}</p>
-          <p className="text-[11px] text-muted-foreground">Días libres</p>
+          <p className="text-[12px] text-muted-foreground">Días libres</p>
         </div>
       </div>
     </div>

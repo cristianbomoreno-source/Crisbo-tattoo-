@@ -244,7 +244,7 @@ function TypingBubble({ logoUrl }: { logoUrl: string | null }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="mt-0.5 size-7 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading text-white/70">
+        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[11px] font-heading text-white/70">
           B
         </div>
       )}
@@ -266,13 +266,13 @@ function BotBubble({ logoUrl, text, subtext }: { logoUrl: string | null; text: s
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="mt-0.5 size-7 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[10px] font-heading text-white/70">
+        <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-card text-[11px] font-heading text-white/70">
           B
         </div>
       )}
       <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-card px-4 py-2.5">
-        <p className="font-title font-bold text-[17px] leading-[1.2] text-white">{text}</p>
-        {subtext && <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{subtext}</p>}
+        <p className="font-title font-bold text-[18px] leading-[1.2] text-white">{text}</p>
+        {subtext && <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{subtext}</p>}
       </div>
     </div>
   )
@@ -289,7 +289,7 @@ function UserBubble({ text, editable, onClick }: { text: string; editable: boole
         onClick={editable ? onClick : undefined}
         disabled={!editable}
         aria-label={editable ? `Editar respuesta: ${text}` : undefined}
-        className="flex max-w-[85%] items-center gap-2 rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-left text-[15px] font-medium leading-snug text-primary-foreground transition-opacity disabled:cursor-default enabled:hover:opacity-90 enabled:active:opacity-80"
+        className="flex max-w-[85%] items-center gap-2 rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-left text-[16px] font-medium leading-snug text-primary-foreground transition-opacity disabled:cursor-default enabled:hover:opacity-90 enabled:active:opacity-80"
       >
         <span>{text}</span>
         {editable && <Pencil className="size-3 shrink-0 opacity-70" aria-hidden />}
@@ -552,7 +552,7 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
               </span>
             ))}
           </h2>
-          <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground">
+          <p className="mt-2.5 text-[14px] leading-relaxed text-muted-foreground">
             {STEP_HEADERS.service.subtitle}
           </p>
         </div>
@@ -594,10 +594,10 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
                 <Icon className="absolute right-3 top-3 size-5 text-primary/80" strokeWidth={1.8} aria-hidden />
               )}
               <div className="relative z-10 p-3.5">
-                <span className="block font-heading text-[15px] font-semibold text-white">
+                <span className="block font-heading text-[16px] font-semibold text-white">
                   {service}
                 </span>
-                <span className="mt-0.5 block text-[11px] leading-snug text-white/70">
+                <span className="mt-0.5 block text-[12px] leading-snug text-white/70">
                   {SERVICE_DESCRIPTION[service]}
                 </span>
               </div>
@@ -629,8 +629,8 @@ function ServiceCards({ onPick, waPhone, studioName }: { onPick: (v: string) => 
               <MoreHorizontal className="size-5" aria-hidden />
             </span>
             <span className="min-w-0">
-              <span className="block font-heading text-[15px] font-semibold text-white">Otro</span>
-              <span className="mt-0.5 block text-[11px] leading-snug text-white/70">{SERVICE_DESCRIPTION[otro]}</span>
+              <span className="block font-heading text-[16px] font-semibold text-white">Otro</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-white/70">{SERVICE_DESCRIPTION[otro]}</span>
             </span>
           </div>
           {picked === otro && (
@@ -803,10 +803,10 @@ function TextEntry({
             maxLength={maxLength}
             placeholder={placeholder}
             autoFocus
-            className="min-h-0 flex-1 resize-none bg-transparent text-[15px] leading-relaxed placeholder:text-muted-foreground/60 focus:outline-none"
+            className="min-h-0 flex-1 resize-none bg-transparent text-[16px] leading-relaxed placeholder:text-muted-foreground/60 focus:outline-none"
           />
           <div className="mt-1 flex shrink-0 items-center justify-between">
-            <p className="text-[11px] tabular-nums text-muted-foreground/70">
+            <p className="text-[12px] tabular-nums text-muted-foreground/70">
               {trimmed.length} / {maxLength}
             </p>
             <button
@@ -828,7 +828,7 @@ function TextEntry({
             maxLength={maxLength}
             placeholder={placeholder}
             autoFocus
-            className="w-full rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[15px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
+            className="w-full rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[16px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
           />
           <button
             type="submit"
@@ -890,7 +890,7 @@ function AgeEntry({ onSubmit }: { onSubmit: (value: number, birthdate: string) =
         max={maxDate}
         value={birthdate}
         onChange={e => { sentRef.current = false; setBirthdate(e.target.value) }}
-        className="w-full rounded-2xl border border-white/8 bg-card px-4 py-4 text-center text-[17px] text-white [color-scheme:dark] placeholder:text-muted-foreground/40 focus-visible:outline-2 focus-visible:outline-ring"
+        className="w-full rounded-2xl border border-white/8 bg-card px-4 py-4 text-center text-[18px] text-white [color-scheme:dark] placeholder:text-muted-foreground/40 focus-visible:outline-2 focus-visible:outline-ring"
       />
 
       {age !== null && (
@@ -946,7 +946,7 @@ function PhoneEntry({
         onChange={e => setPhone(e.target.value)}
         placeholder="WhatsApp · ej. 350 204 6957"
         autoFocus
-        className="w-full rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[15px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
+        className="w-full rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[16px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
       />
       <button
         type="submit"
@@ -984,7 +984,7 @@ function EmailEntry({ onSubmit }: { onSubmit: (email: string) => void }) {
         onChange={e => setEmail(e.target.value)}
         placeholder="Email · ej. andres@gmail.com"
         autoFocus
-        className="rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[15px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
+        className="rounded-2xl border border-white/8 bg-card py-4 pl-4 pr-14 text-[16px] placeholder:text-muted-foreground/60 focus-visible:outline-2 focus-visible:outline-ring"
       />
       <button
         type="submit"

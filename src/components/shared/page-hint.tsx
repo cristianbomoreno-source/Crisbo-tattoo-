@@ -50,7 +50,7 @@ export function PageHint() {
           <p className="font-display text-xs font-semibold text-foreground">
             {content.title}
           </p>
-          <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{content.body}</p>
+          <p className="mt-0.5 text-[14px] leading-snug text-muted-foreground">{content.body}</p>
         </div>
         <button
           type="button"

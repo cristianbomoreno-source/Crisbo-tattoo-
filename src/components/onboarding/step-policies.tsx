@@ -61,7 +61,7 @@ function PaymentPolicyCard({
       >
         {title}
       </span>
-      <span className="line-clamp-2 text-[0.62rem] leading-tight text-muted-foreground">{subtitle}</span>
+      <span className="line-clamp-2 text-[0.6825rem] leading-tight text-muted-foreground">{subtitle}</span>
     </button>
   )
 }

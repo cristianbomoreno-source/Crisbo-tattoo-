@@ -60,7 +60,7 @@ export function SplashScreen() {
       {/* Versión del build corriendo AHORA MISMO — verificación instantánea de
           que un deploy llegó al dispositivo (clave con PWA + service worker,
           donde el teléfono puede quedarse sirviendo un build viejo). */}
-      <span className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] font-mono text-[11px] tracking-widest text-muted-foreground/70">
+      <span className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] font-mono text-[12px] tracking-widest text-muted-foreground/70">
         v{process.env.NEXT_PUBLIC_APP_VERSION}
       </span>
     </div>

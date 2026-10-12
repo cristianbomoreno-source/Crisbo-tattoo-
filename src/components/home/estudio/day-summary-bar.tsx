@@ -20,7 +20,7 @@ function Item({
       </span>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold tabular-nums">{value}</p>
-        <p className="truncate text-[11px] text-muted-foreground">{label}</p>
+        <p className="truncate text-[12px] text-muted-foreground">{label}</p>
       </div>
     </div>
   )

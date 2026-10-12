@@ -125,7 +125,7 @@ export function QuotesList({
                 <BotBadge source={q.source} />
                 <span
                   className={cn(
-                    'inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium text-white',
+                    'inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[12px] font-medium text-white',
                     config.tone === 'active' && 'border-primary/40'
                   )}
                 >

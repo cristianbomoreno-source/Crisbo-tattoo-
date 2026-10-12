@@ -33,7 +33,7 @@ export function WorkingTodayRow({ team }: { team: ArtistToday[] }) {
             </span>
             <span className="max-w-14 truncate text-center text-xs font-medium">{member.name}</span>
             {member.presence === 'off' && (
-              <span className="text-[10px] text-muted-foreground">Descanso</span>
+              <span className="text-[11px] text-muted-foreground">Descanso</span>
             )}
           </div>
         ))}

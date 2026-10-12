@@ -258,7 +258,7 @@ export function QuoteForm({
   if (isEdit) {
     const fieldCardClass = 'flex items-center gap-3 space-y-0 rounded-3xl border border-foreground/15 bg-foreground/[0.09] p-4 transition-colors duration-200'
     const iconWrapClass = 'grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary'
-    const fieldLabelClass = 'font-display text-[11px] font-semibold text-muted-foreground'
+    const fieldLabelClass = 'font-display text-[12px] font-semibold text-muted-foreground'
     const bareInputClass = 'h-auto border-0 bg-transparent p-0 text-base font-medium text-foreground shadow-none outline-none focus-visible:ring-0'
 
     return (

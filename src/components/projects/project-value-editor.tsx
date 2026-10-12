@@ -47,7 +47,7 @@ export function ProjectValueEditor({
     return (
       <div className="rounded-lg border bg-background/40 p-3">
         <div className="flex items-center justify-between">
-          <p className="font-display text-[9px] font-medium text-muted-foreground">
+          <p className="font-display text-[10px] font-medium text-muted-foreground">
             Valor del proyecto
           </p>
           <button
@@ -67,7 +67,7 @@ export function ProjectValueEditor({
   return (
     <div className="space-y-2 rounded-lg border bg-background/40 p-3">
       <div className="space-y-1">
-        <Label htmlFor="edit-total-value" className="text-[9px] uppercase tracking-[0.2em]">
+        <Label htmlFor="edit-total-value" className="text-[10px] uppercase tracking-[0.2em]">
           Valor total
         </Label>
         <Input

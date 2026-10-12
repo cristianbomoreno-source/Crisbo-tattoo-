@@ -33,7 +33,7 @@ export function RestDayGate({
           Hoy es tu día de descanso
         </h1>
         {reason && (
-          <p className="mx-auto max-w-sm text-[15px] leading-relaxed text-muted-foreground">{reason}</p>
+          <p className="mx-auto max-w-sm text-[16px] leading-relaxed text-muted-foreground">{reason}</p>
         )}
       </div>
 

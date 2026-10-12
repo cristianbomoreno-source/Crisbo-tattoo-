@@ -11,7 +11,7 @@ function initials(name: string): string {
 function Avatar({ name }: { name: string }) {
   return (
     <span
-      className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-card bg-secondary text-[10px] font-semibold text-foreground"
+      className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-card bg-secondary text-[11px] font-semibold text-foreground"
       title={name}
     >
       {initials(name)}
@@ -102,7 +102,7 @@ export function StatsInsightCards({
         <p className="mt-0.5 text-xs text-muted-foreground">Valor promedio por proyecto</p>
         {ticketDelta !== null && (
           <p
-            className={`mt-1 text-[11px] tabular-nums ${
+            className={`mt-1 text-[12px] tabular-nums ${
               ticketDelta > 0 ? 'text-[color:var(--success)]' : ticketDelta < 0 ? 'text-destructive' : 'text-muted-foreground'
             }`}
           >

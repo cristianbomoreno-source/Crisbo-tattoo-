@@ -110,7 +110,7 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
         >
           {/* Header: HORA + una columna por tatuador con sus stats */}
           <div className="sticky left-0 z-10 flex items-end border-b border-border/60 bg-card px-2 pb-2.5 pt-4">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Hora
             </span>
           </div>
@@ -122,7 +122,7 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
                 </span>
                 <p className="truncate text-sm font-semibold">{member.name}</p>
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">
+              <p className="mt-1.5 text-[12px] text-muted-foreground">
                 {member.sessionCount} citas • {formatCOP(member.projectedIncome)}
               </p>
               <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-background">
@@ -143,7 +143,7 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
               <div key={hour} className="contents">
                 <div className="sticky left-0 z-10 flex flex-col items-start justify-start border-b border-border/40 bg-card px-2 py-2.5">
                   <span className="text-xs font-semibold tabular-nums">{h}:00</span>
-                  <span className="text-[10px] text-muted-foreground">{suffix}</span>
+                  <span className="text-[11px] text-muted-foreground">{suffix}</span>
                 </div>
                 {visibleTeam.map((member) => {
                   const cellSessions = member.sessions.filter((s) => hourOf(s.scheduled_at) === hour)
@@ -166,11 +166,11 @@ export function EstudioAgendaGrid({ team }: { team: ArtistToday[] }) {
                           >
                             <div className="flex items-center justify-between gap-1.5">
                               <p className="truncate text-xs font-semibold">{s.projects?.name ?? 'Sesión'}</p>
-                              <span aria-hidden="true" className="shrink-0 text-[10px]">
+                              <span aria-hidden="true" className="shrink-0 text-[11px]">
                                 {style.icon}
                               </span>
                             </div>
-                            <p className="truncate text-[11px] text-muted-foreground">
+                            <p className="truncate text-[12px] text-muted-foreground">
                               {s.projects?.clients?.name ?? 'Cliente'}
                             </p>
                           </div>

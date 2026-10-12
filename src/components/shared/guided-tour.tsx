@@ -410,7 +410,7 @@ export function GuidedTour() {
         style={hasSpotlight && cardPos ? { top: cardPos.top, left: cardPos.left } : undefined}
       >
         <div className="flex items-start justify-between gap-3">
-          <span className="rounded-full bg-primary/15 px-2.5 py-1 font-display text-[10px] font-bold text-primary">
+          <span className="rounded-full bg-primary/15 px-2.5 py-1 font-display text-[11px] font-bold text-primary">
             Paso {stepIndex + 1} de {total}
           </span>
           <button

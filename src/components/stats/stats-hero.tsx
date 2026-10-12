@@ -91,7 +91,7 @@ export function StatsHero({
       {goalPct !== null && monthlyGoal !== null && (
         <div className="p-4 pt-3.5 sm:p-6 sm:pt-4">
           <div className="flex items-center justify-between">
-            <p className="font-display text-[10px] font-semibold text-muted-foreground">
+            <p className="font-display text-[11px] font-semibold text-muted-foreground">
               Meta mensual
             </p>
             <p className="font-title font-bold text-sm tabular-nums text-foreground">{cop(monthlyGoal)}</p>

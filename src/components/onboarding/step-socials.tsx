@@ -92,7 +92,7 @@ function SocialRow({
       <div className="min-w-0 flex-1">
         <label
           htmlFor={id}
-          className="mb-0.5 block font-display text-[0.62rem] font-medium text-muted-foreground"
+          className="mb-0.5 block font-display text-[0.6825rem] font-medium text-muted-foreground"
         >
           {label}
         </label>

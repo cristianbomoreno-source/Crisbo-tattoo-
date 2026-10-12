@@ -106,7 +106,7 @@ export function StatsTrendChart({ monthKey, data }: { monthKey: string; data: Da
         </svg>
       </div>
 
-      <p className="mt-1 text-right text-[11px] text-muted-foreground">
+      <p className="mt-1 text-right text-[12px] text-muted-foreground">
         Máx. {copShort(maxValue)} cotizado en un día
       </p>
     </section>

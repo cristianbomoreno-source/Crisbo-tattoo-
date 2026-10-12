@@ -156,7 +156,7 @@ export function LinkPageDesignPanel({
                   className="size-9 rounded-full border"
                   style={{ backgroundColor: previewColor, borderColor: tpl.theme.colors.accent }}
                 />
-                <span className="text-[10px] font-medium">{tpl.label}</span>
+                <span className="text-[11px] font-medium">{tpl.label}</span>
               </button>
             )
           })}

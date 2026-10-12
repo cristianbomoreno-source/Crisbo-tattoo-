@@ -53,7 +53,7 @@ export function FinanceHero({
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-6">
-      <p className="font-display text-[11px] font-semibold text-muted-foreground">
+      <p className="font-display text-[12px] font-semibold text-muted-foreground">
         Facturación del mes
       </p>
       <div className="mt-2 flex items-start justify-between gap-4">

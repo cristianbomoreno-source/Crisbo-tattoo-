@@ -36,13 +36,13 @@ export function StatusRow({
       <span
         aria-hidden="true"
         className={cn(
-          'grid size-4.5 shrink-0 place-items-center rounded-full text-[10px] font-bold',
+          'grid size-4.5 shrink-0 place-items-center rounded-full text-[11px] font-bold',
           ok ? 'bg-primary/20 text-primary' : 'bg-amber-400/15 text-amber-400'
         )}
       >
         {ok ? '✓' : '!'}
       </span>
-      <span className="min-w-0 flex-1 truncate text-[13px] text-foreground/90">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-[14px] text-foreground/90">{label}</span>
       {value ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{value}</span> : null}
     </Link>
   )

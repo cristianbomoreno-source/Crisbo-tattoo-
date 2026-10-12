@@ -38,7 +38,7 @@ export function MonthGrid({
       <p className="text-center text-sm font-medium capitalize text-muted-foreground">{monthLabel}</p>
       <div className="grid grid-cols-7 gap-1 text-center">
         {WEEKDAYS.map((w, i) => (
-          <span key={i} className="pb-0.5 text-[10px] font-medium text-muted-foreground">
+          <span key={i} className="pb-0.5 text-[11px] font-medium text-muted-foreground">
             {w}
           </span>
         ))}
@@ -87,7 +87,7 @@ export function MonthGrid({
                 </span>
               )}
               {busy && !paid && !blocked && !isToday && d.count > 1 && (
-                <span className="absolute bottom-0.5 right-1 text-[9px] font-semibold text-primary">
+                <span className="absolute bottom-0.5 right-1 text-[10px] font-semibold text-primary">
                   {d.count}
                 </span>
               )}

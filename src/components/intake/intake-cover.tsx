@@ -49,7 +49,7 @@ export function IntakeCover({
           <h1 className="mt-2 font-title font-bold text-[26px] leading-[1.12] text-white">
             Gracias por interesarte en tatuarte <span className="text-primary">conmigo</span>.
           </h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-white/60">
+          <p className="mt-3 text-[15px] leading-relaxed text-white/60">
             Para darte una cotización acertada, quiero conocer tu idea y crear juntos un proyecto
             increíble.
           </p>

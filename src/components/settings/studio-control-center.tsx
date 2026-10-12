@@ -90,7 +90,7 @@ function ProgressRing({ pct }: { pct: number }) {
           {pct}
           <span className="text-xs text-muted-foreground">%</span>
         </span>
-        <span className="mt-0.5 text-[8px] uppercase tracking-wide text-muted-foreground">Listo</span>
+        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">Listo</span>
       </span>
     </div>
   )
@@ -101,7 +101,7 @@ function MetricPill({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 text-center">
       <span className="font-title font-bold text-lg tabular-nums leading-none sm:text-xl">{value}</span>
-      <span className="text-[10px] leading-tight text-muted-foreground">{label}</span>
+      <span className="text-[11px] leading-tight text-muted-foreground">{label}</span>
     </div>
   )
 }
@@ -169,7 +169,7 @@ function StatusChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium',
+        'inline-flex items-center gap-1 rounded-full px-2 py-1 text-[12px] font-medium',
         ok ? 'bg-primary/15 text-primary' : 'bg-amber-400/15 text-amber-400'
       )}
     >
@@ -236,7 +236,7 @@ export function StudioControlCenter({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="truncate font-title font-bold text-xl leading-none sm:text-2xl">{studio.name}</h1>
-                <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 font-display text-[10px] font-bold text-primary-foreground">
+                <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 font-display text-[11px] font-bold text-primary-foreground">
                   Pro
                 </span>
               </div>
@@ -307,7 +307,7 @@ export function StudioControlCenter({
               className="size-4 shrink-0 rounded-full border border-border/60"
               style={{ backgroundColor: studio.quoteTemplateColor || 'var(--primary)' }}
             />
-            <span className="text-[11px] text-muted-foreground">Tema oscuro</span>
+            <span className="text-[12px] text-muted-foreground">Tema oscuro</span>
           </div>
         </CompactCard>
 
@@ -327,7 +327,7 @@ export function StudioControlCenter({
 
       {/* ═══ Accesos rápidos ═══ */}
       <div>
-        <p className="mb-2 px-1 font-display text-[11px] font-semibold text-muted-foreground">
+        <p className="mb-2 px-1 font-display text-[12px] font-semibold text-muted-foreground">
           Accesos rápidos
         </p>
         <QuickActionsRow slug={studio.slug} whatsappConnected={checks.whatsapp} />
@@ -337,7 +337,7 @@ export function StudioControlCenter({
       <section className="rounded-[1.75rem] border border-border/60 bg-card p-2">
         <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-1">
           <HelpCircle className="size-3.5 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
-          <p className="font-display text-[11px] font-semibold text-muted-foreground">
+          <p className="font-display text-[12px] font-semibold text-muted-foreground">
             Ayuda y soporte
           </p>
         </div>

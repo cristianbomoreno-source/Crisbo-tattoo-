@@ -39,7 +39,7 @@ function IgGlyph({ className }: { className?: string }) {
 function Tile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-lg border bg-background/40 p-3">
-      <p className="font-display text-[9px] font-medium text-muted-foreground">
+      <p className="font-display text-[10px] font-medium text-muted-foreground">
         {label}
       </p>
       <p className={`mt-1.5 text-sm font-semibold tabular-nums ${accent ? 'text-primary' : ''}`}>

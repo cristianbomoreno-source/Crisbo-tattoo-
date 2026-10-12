@@ -79,7 +79,7 @@ function Content({
           </span>
         )}
         <div
-          className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[11px] font-bold ${
+          className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[12px] font-bold ${
             complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
           }`}
         >

@@ -74,7 +74,7 @@ export function WhatsAppDataFormCard({
           <h2 className="font-display text-sm font-semibold">Formulario de datos</h2>
         </div>
         {badge && (
-          <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium', badge.className)}>
+          <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium', badge.className)}>
             {badge.label}
           </span>
         )}

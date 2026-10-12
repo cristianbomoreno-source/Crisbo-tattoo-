@@ -45,10 +45,10 @@ export function IntakeProgress({ current }: { current: StepId }) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <p className="font-heading text-[10px] font-semibold text-white/90">
+        <p className="font-heading text-[11px] font-semibold text-white/90">
           Tu proyecto
         </p>
-        <p className="font-heading text-[10px] tabular-nums text-muted-foreground">
+        <p className="font-heading text-[11px] tabular-nums text-muted-foreground">
           {active + 1} / {PHASES.length}
         </p>
       </div>
@@ -82,7 +82,7 @@ export function IntakeProgress({ current }: { current: StepId }) {
                 {state === 'done' ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : <Icon className="size-3.5" aria-hidden />}
               </span>
               <span
-                className="text-center text-[7.5px] font-semibold uppercase tracking-wider transition-colors"
+                className="text-center text-[8.5px] font-semibold uppercase tracking-wider transition-colors"
                 style={{ color: state === 'todo' ? 'rgba(255,255,255,0.3)' : 'var(--primary)' }}
               >
                 {p.label}

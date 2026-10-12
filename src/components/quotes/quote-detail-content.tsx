@@ -83,7 +83,7 @@ export function QuoteDetailContent({
         <div className="absolute inset-0 bg-black/60" aria-hidden />
 
         <div className="relative z-10 flex items-start justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[11px] font-medium text-white">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2.5 py-1 font-display text-[12px] font-medium text-white">
             {isBot ? <Bot className="size-3" aria-hidden /> : <PenLine className="size-3" aria-hidden />}
             {isBot ? 'Desde bot' : 'Creada por mí'}
           </span>
@@ -117,7 +117,7 @@ export function QuoteDetailContent({
               {q.style}
             </p>
           )}
-          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[11px] font-medium text-white">
+          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1 font-display text-[12px] font-medium text-white">
             <span className={cn('size-1.5 rounded-full', DOT[config.tone])} />
             {config.label}
           </span>

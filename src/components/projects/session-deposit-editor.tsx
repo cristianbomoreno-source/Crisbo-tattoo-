@@ -47,7 +47,7 @@ export function SessionDepositEditor({
     return (
       <div className="rounded-lg border bg-background/40 p-3">
         <div className="flex items-center justify-between">
-          <p className="font-display text-[9px] font-medium text-muted-foreground">
+          <p className="font-display text-[10px] font-medium text-muted-foreground">
             Sesiones / Abono
           </p>
           <button
@@ -70,7 +70,7 @@ export function SessionDepositEditor({
     <div className="col-span-2 space-y-2 rounded-lg border bg-background/40 p-3">
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label htmlFor="edit-sessions" className="text-[9px] uppercase tracking-[0.2em]">
+          <Label htmlFor="edit-sessions" className="text-[10px] uppercase tracking-[0.2em]">
             Sesiones
           </Label>
           <Input
@@ -82,7 +82,7 @@ export function SessionDepositEditor({
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="edit-deposit" className="text-[9px] uppercase tracking-[0.2em]">
+          <Label htmlFor="edit-deposit" className="text-[10px] uppercase tracking-[0.2em]">
             Abono (%)
           </Label>
           <Input

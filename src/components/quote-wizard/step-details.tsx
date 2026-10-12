@@ -143,7 +143,7 @@ export function StepDetails({ draft, patch }: StepDetailsProps) {
             {SKIN_TONE_NO_ANSWER}
           </button>
         </div>
-        <div className="mt-2 flex items-center justify-between text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+        <div className="mt-2 flex items-center justify-between text-[0.7125rem] uppercase tracking-wide text-muted-foreground">
           <span>← Más claro</span>
           <span>Más oscuro →</span>
         </div>

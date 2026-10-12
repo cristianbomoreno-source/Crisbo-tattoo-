@@ -185,7 +185,7 @@ export function CalendarNav({
           </div>
           <div className="grid grid-cols-7 gap-1 text-center">
             {WEEKDAYS.map((w, i) => (
-              <span key={i} className="text-[10px] font-medium text-muted-foreground">
+              <span key={i} className="text-[11px] font-medium text-muted-foreground">
                 {w}
               </span>
             ))}
@@ -233,7 +233,7 @@ export function CalendarNav({
                 }
               >
                 <div className="w-11 shrink-0 text-center">
-                  <p className="text-[10px] font-medium uppercase text-muted-foreground">{label}</p>
+                  <p className="text-[11px] font-medium uppercase text-muted-foreground">{label}</p>
                   <p className="text-lg font-semibold tabular-nums leading-none">{day}</p>
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5">
@@ -256,12 +256,12 @@ export function CalendarNav({
                   (allSessionsPaid(items) ? (
                     <span className="flex shrink-0 items-center gap-1">
                       <PaidBadge />
-                      <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold">
+                      <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[12px] font-semibold">
                         {items.length}
                       </span>
                     </span>
                   ) : (
-                    <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                    <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[12px] font-semibold text-primary">
                       {items.length}
                     </span>
                   ))}
@@ -410,7 +410,7 @@ const SNAP_MINUTES = 15
 /** Chip verde "Pagado" para las citas cuyo proyecto ya se pagó completo. */
 export function PaidBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-px text-[10px] font-semibold text-white">
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-px text-[11px] font-semibold text-white">
       <Check className="size-3" strokeWidth={3} aria-hidden="true" />
       Pagado
     </span>
@@ -564,7 +564,7 @@ function DayTimeline({
       <div className="relative" style={{ height: hours.length * HOUR_PX }}>
         {hours.map((h, i) => (
           <div key={h} className="absolute inset-x-0 flex items-start gap-2" style={{ top: i * HOUR_PX }}>
-            <span className="w-12 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+            <span className="w-12 shrink-0 text-right text-[12px] tabular-nums text-muted-foreground">
               {labelHour(h * 60)}
             </span>
             <div className="mt-2 h-px flex-1 bg-border" />
@@ -636,7 +636,7 @@ function DayTimeline({
                 </p>
                 {paid && <PaidBadge />}
               </div>
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-[12px] text-muted-foreground">
                 {formatTime(s.scheduled_at)} · {s.projects?.name ?? ''}
               </p>
             </button>

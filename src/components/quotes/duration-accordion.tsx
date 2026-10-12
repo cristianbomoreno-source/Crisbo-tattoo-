@@ -145,7 +145,7 @@ export function DurationAccordion({
           <Clock className="size-5" strokeWidth={1.75} aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-[11px] font-semibold text-muted-foreground">
+          <span className="block font-display text-[12px] font-semibold text-muted-foreground">
             Duración aproximada por sesión
           </span>
           <span className="mt-0.5 block truncate text-base font-medium text-foreground">
@@ -223,7 +223,7 @@ export function DurationAccordion({
                   {TICKS.map((t) => {
                     const p = pointOnCircle(angleForMinutes(t), R + 20)
                     return (
-                      <text key={t} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground text-[12px]">
+                      <text key={t} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground text-[13px]">
                         {t}
                       </text>
                     )
@@ -232,7 +232,7 @@ export function DurationAccordion({
                   <text x={CENTER} y={CENTER - 4} textAnchor="middle" className="fill-white text-[32px] font-semibold tabular-nums">
                     {minutes}
                   </text>
-                  <text x={CENTER} y={CENTER + 20} textAnchor="middle" className="fill-muted-foreground text-[12px]">
+                  <text x={CENTER} y={CENTER + 20} textAnchor="middle" className="fill-muted-foreground text-[13px]">
                     min.
                   </text>
                 </svg>

@@ -36,8 +36,8 @@ export function QuickActionsRow({ slug, whatsappConnected }: { slug: string; wha
           className="flex flex-col items-center gap-1.5 px-1 py-4 text-center transition-colors hover:bg-accent/40"
         >
           <MessageCircle className="size-5 text-primary" strokeWidth={1.8} aria-hidden="true" />
-          <span className="text-[11px] font-medium text-foreground">WhatsApp</span>
-          <span className="text-[10px] text-muted-foreground">{whatsappConnected ? 'Conectado' : 'Conectar'}</span>
+          <span className="text-[12px] font-medium text-foreground">WhatsApp</span>
+          <span className="text-[11px] text-muted-foreground">{whatsappConnected ? 'Conectado' : 'Conectar'}</span>
         </Link>
 
         <button
@@ -50,8 +50,8 @@ export function QuickActionsRow({ slug, whatsappConnected }: { slug: string; wha
           ) : (
             <Link2 className="size-5 text-primary" strokeWidth={1.8} aria-hidden="true" />
           )}
-          <span className="text-[11px] font-medium text-foreground">Link público</span>
-          <span className="text-[10px] text-muted-foreground">{copied ? '¡Copiado!' : 'Copiar link'}</span>
+          <span className="text-[12px] font-medium text-foreground">Link público</span>
+          <span className="text-[11px] text-muted-foreground">{copied ? '¡Copiado!' : 'Copiar link'}</span>
         </button>
 
         <button
@@ -60,8 +60,8 @@ export function QuickActionsRow({ slug, whatsappConnected }: { slug: string; wha
           className="flex flex-col items-center gap-1.5 px-1 py-4 text-center transition-colors hover:bg-accent/40"
         >
           <QrCode className="size-5 text-primary" strokeWidth={1.8} aria-hidden="true" />
-          <span className="text-[11px] font-medium text-foreground">Código QR</span>
-          <span className="text-[10px] text-muted-foreground">Ver código</span>
+          <span className="text-[12px] font-medium text-foreground">Código QR</span>
+          <span className="text-[11px] text-muted-foreground">Ver código</span>
         </button>
 
         <button
@@ -70,8 +70,8 @@ export function QuickActionsRow({ slug, whatsappConnected }: { slug: string; wha
           className="flex flex-col items-center gap-1.5 px-1 py-4 text-center transition-colors hover:bg-accent/40"
         >
           <Share2 className="size-5 text-primary" strokeWidth={1.8} aria-hidden="true" />
-          <span className="text-[11px] font-medium text-foreground">Compartir</span>
-          <span className="text-[10px] text-muted-foreground">Enviar link</span>
+          <span className="text-[12px] font-medium text-foreground">Compartir</span>
+          <span className="text-[11px] text-muted-foreground">Enviar link</span>
         </button>
       </div>
 

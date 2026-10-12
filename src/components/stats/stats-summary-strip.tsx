@@ -9,7 +9,7 @@ function DeltaLabel({ cur, prev }: { cur: number; prev: number }) {
   const color = pct > 0 ? 'text-[color:var(--success)]' : pct < 0 ? 'text-destructive' : 'text-muted-foreground'
   const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : ''
   return (
-    <p className={`mt-1 text-[11px] tabular-nums ${color}`}>
+    <p className={`mt-1 text-[12px] tabular-nums ${color}`}>
       {arrow} {Math.abs(pct)}%
     </p>
   )

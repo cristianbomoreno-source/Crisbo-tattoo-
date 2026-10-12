@@ -339,7 +339,7 @@ function ActionButton({
         }}
       >
         <Icon className="size-6" style={{ color: MENU_ACCENT }} strokeWidth={2} />
-        <span className="text-[11px] font-medium leading-none text-white">{action.label}</span>
+        <span className="text-[12px] font-medium leading-none text-white">{action.label}</span>
       </Link>
     </motion.div>
   )

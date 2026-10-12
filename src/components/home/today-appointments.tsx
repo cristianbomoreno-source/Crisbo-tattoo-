@@ -260,7 +260,7 @@ function Row({
 
       {money && (
         <div className="shrink-0 text-right leading-tight">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
             {money.label}
           </p>
           <p className="text-sm font-semibold tabular-nums">{cop(money.value)}</p>

@@ -83,7 +83,7 @@ export function BodySizeCards({
               )}
             </span>
             <span className="block shrink-0 px-1.5 py-1.5 text-center">
-              <span className="block font-heading text-[11px] font-semibold leading-tight text-white">
+              <span className="block font-heading text-[12px] font-semibold leading-tight text-white">
                 {SIZE_SHORT_LABELS[size]}
               </span>
             </span>

@@ -212,7 +212,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
 
       <div className="shrink-0">
         <h2 className="font-title font-bold text-[28px] leading-[1.08] text-white">Casi terminamos.</h2>
-        <p className="mt-2.5 text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mt-2.5 text-[16px] leading-relaxed text-muted-foreground">
           Revisa tu proyecto antes de enviarlo y comenzar a crear tu cotización.
         </p>
       </div>
@@ -231,7 +231,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
                 <Icon className="size-4 text-primary" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-heading text-[10px] font-semibold text-muted-foreground">{label}</span>
+                <span className="block font-heading text-[11px] font-semibold text-muted-foreground">{label}</span>
                 <span className="block truncate text-sm text-white">{value || '—'}</span>
               </span>
               {onEditStep && (
@@ -245,7 +245,7 @@ export function IntakeSummary({ slug, studioName, answers, instagram, onSent, on
                 <Images className="size-4 text-primary" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-heading text-[10px] font-semibold text-muted-foreground">Referencias</span>
+                <span className="block font-heading text-[11px] font-semibold text-muted-foreground">Referencias</span>
                 <span className="mt-1 flex gap-1.5">
                   {answers.photos!.map((f, i) => (
                     // eslint-disable-next-line @next/next/no-img-element

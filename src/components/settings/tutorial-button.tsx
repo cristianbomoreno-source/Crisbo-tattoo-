@@ -25,7 +25,7 @@ export function TutorialButton() {
       className="group flex min-h-9 items-center gap-2.5 rounded-lg px-1.5 py-1 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <HelpCircle className="size-4 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate text-[13px] text-foreground/90">Repetir tutorial guiado</span>
+      <span className="min-w-0 flex-1 truncate text-[14px] text-foreground/90">Repetir tutorial guiado</span>
     </button>
   )
 }

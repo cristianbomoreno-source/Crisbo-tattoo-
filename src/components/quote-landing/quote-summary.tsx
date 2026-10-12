@@ -20,7 +20,7 @@ function Item({
         {icon}
       </div>
       <p className="text-xs tracking-wide text-white/45 uppercase">{label}</p>
-      <p className="mt-0.5 text-[15px] font-medium text-white">{value}</p>
+      <p className="mt-0.5 text-[16px] font-medium text-white">{value}</p>
     </div>
   )
 }

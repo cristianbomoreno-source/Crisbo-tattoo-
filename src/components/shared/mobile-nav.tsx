@@ -75,7 +75,7 @@ function TabLink({
       )}
     >
       <Icon className="size-[22px]" />
-      <span className="max-w-full truncate text-[11px] font-semibold leading-none tracking-tight">{label}</span>
+      <span className="max-w-full truncate text-[12px] font-semibold leading-none tracking-tight">{label}</span>
     </Link>
   )
 }

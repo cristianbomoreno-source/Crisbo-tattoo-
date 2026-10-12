@@ -21,7 +21,7 @@ function ActionButton({
       <span className="grid size-9 place-items-center rounded-full bg-primary/15 text-primary">
         <Icon className="size-4.5" strokeWidth={1.9} aria-hidden="true" />
       </span>
-      <span className="text-[11px] font-medium leading-tight text-foreground/90">{label}</span>
+      <span className="text-[12px] font-medium leading-tight text-foreground/90">{label}</span>
     </Link>
   )
 }
@@ -44,7 +44,7 @@ export function EstudioQuickActions() {
             <span className="grid size-9 place-items-center rounded-full bg-primary/15 text-primary">
               <UserPlus className="size-4.5" strokeWidth={1.9} aria-hidden="true" />
             </span>
-            <span className="text-[11px] font-medium leading-tight text-foreground/90">Nuevo cliente</span>
+            <span className="text-[12px] font-medium leading-tight text-foreground/90">Nuevo cliente</span>
           </button>
         }
       />

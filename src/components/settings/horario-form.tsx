@@ -68,7 +68,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
                   onClick={() => toggleDay(day.value)}
                   aria-pressed={active}
                   className={cn(
-                    'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.65rem] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border font-display text-[0.7125rem] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-muted-foreground hover:border-primary/40'

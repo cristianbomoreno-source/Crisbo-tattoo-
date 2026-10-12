@@ -71,13 +71,13 @@ export function BotIntakeSummary({
           <Bot className="size-4" strokeWidth={1.8} aria-hidden />
           Información del bot
         </h3>
-        <span className="text-[11px] text-muted-foreground">{formatBotTime(q.created_at)}</span>
+        <span className="text-[12px] text-muted-foreground">{formatBotTime(q.created_at)}</span>
       </div>
 
       <div className="flex flex-col gap-2.5">
         {items.map((item, i) => (
           <div key={i} className="flex flex-col gap-1.5">
-            <div className="max-w-[88%] self-start rounded-xl rounded-bl-sm bg-card px-3.5 py-2.5 text-[13px] leading-snug text-muted-foreground">
+            <div className="max-w-[88%] self-start rounded-xl rounded-bl-sm bg-card px-3.5 py-2.5 text-[14px] leading-snug text-muted-foreground">
               {item.question}
             </div>
             <div className="flex max-w-[88%] items-center gap-2 self-end rounded-xl rounded-br-sm bg-secondary px-3.5 py-2.5 text-right text-sm leading-snug text-foreground">

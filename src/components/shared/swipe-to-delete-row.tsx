@@ -165,7 +165,7 @@ export function SwipeToDeleteRow({
           className="flex shrink-0 flex-col items-center justify-center gap-1 bg-destructive text-destructive-foreground"
         >
           <Trash2 className="size-5" strokeWidth={2} />
-          <span className="text-[11px] font-medium">Eliminar</span>
+          <span className="text-[12px] font-medium">Eliminar</span>
         </button>
       </div>
     </div>

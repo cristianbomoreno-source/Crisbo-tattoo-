@@ -64,7 +64,7 @@ export function QuoteSessionCta({ quote, artistName, session }: Props) {
   return (
     <section className="mx-auto mt-4 w-full max-w-md px-5">
       <div className="rounded-2xl border border-primary/25 bg-card p-4">
-        <p className="font-display text-[10px] font-semibold text-primary">
+        <p className="font-display text-[11px] font-semibold text-primary">
           Tu próxima sesión
         </p>
         <p className="mt-1.5 text-sm capitalize text-white/90">{dateLabel}</p>

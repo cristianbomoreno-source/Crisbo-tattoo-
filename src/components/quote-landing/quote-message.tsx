@@ -14,7 +14,7 @@ export function QuoteMessage({ quote, artistName }: { quote: QuoteTemplateData; 
           </span>
         </div>
 
-        <div className="space-y-3 whitespace-pre-line text-[15px] leading-relaxed text-white/80">
+        <div className="space-y-3 whitespace-pre-line text-[16px] leading-relaxed text-white/80">
           {quote.letterMessage}
         </div>
 

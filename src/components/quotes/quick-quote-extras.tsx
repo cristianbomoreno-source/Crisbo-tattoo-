@@ -84,7 +84,7 @@ export function StyleGridPicker({
             className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-foreground/15 text-muted-foreground transition-colors duration-200 hover:border-primary/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
           >
             <Grid3x3 className="size-5" strokeWidth={1.8} aria-hidden="true" />
-            <span className="font-display text-[11px] font-semibold">Ver más</span>
+            <span className="font-display text-[12px] font-semibold">Ver más</span>
           </button>
         )}
       </div>
@@ -153,7 +153,7 @@ function StyleTile({
       )}
       <span
         className={cn(
-          'relative mt-auto px-2.5 py-2 font-display text-[11px] font-bold leading-tight',
+          'relative mt-auto px-2.5 py-2 font-display text-[12px] font-bold leading-tight',
           active ? 'text-primary' : 'text-white'
         )}
       >
@@ -236,7 +236,7 @@ function SummaryChip({
         <img src={thumb} alt="" className="size-8 shrink-0 rounded-lg object-cover" />
       ) : null}
       <div className="min-w-0 leading-tight">
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
         <p className={cn('truncate text-sm font-semibold', emphasis ? 'text-primary' : 'text-foreground')}>{value}</p>
       </div>
     </div>

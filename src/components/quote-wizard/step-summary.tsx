@@ -90,7 +90,7 @@ function SummaryCard({
         <Icon className="size-4.5" strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1 pt-0.5">
-        <p className="font-display text-[0.65rem] font-medium text-muted-foreground">
+        <p className="font-display text-[0.7125rem] font-medium text-muted-foreground">
           {label}
         </p>
         <div className="mt-0.5 break-words text-sm font-medium">{value}</div>
@@ -376,7 +376,7 @@ export function StepSummary({
           <div className="rounded-2xl bg-card p-4">
             <div className="flex items-center gap-2">
               <Wallet className="size-4 text-primary" strokeWidth={1.8} aria-hidden="true" />
-              <p className="font-display text-[0.65rem] font-medium text-muted-foreground">
+              <p className="font-display text-[0.7125rem] font-medium text-muted-foreground">
                 Valor total
               </p>
             </div>

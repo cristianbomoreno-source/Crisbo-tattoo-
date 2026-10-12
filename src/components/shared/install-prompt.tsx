@@ -79,7 +79,7 @@ export function InstallPrompt() {
           <p className="font-display text-sm font-semibold text-foreground">
             Instalá Crisbo Tattoo
           </p>
-          <p className="truncate text-[13px] text-muted-foreground">
+          <p className="truncate text-[14px] text-muted-foreground">
             De la idea a la piel, desde tu pantalla de inicio.
           </p>
         </div>

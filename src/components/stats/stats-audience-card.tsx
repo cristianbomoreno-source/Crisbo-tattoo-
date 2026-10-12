@@ -52,7 +52,7 @@ export function StatsAudienceCard({
             {age.average !== null && (
               <div className="shrink-0 border-l border-foreground/8 pl-4 text-center">
                 <p className="font-title font-bold text-2xl tabular-nums text-foreground">{age.average}</p>
-                <p className="text-[11px] text-muted-foreground">años en promedio</p>
+                <p className="text-[12px] text-muted-foreground">años en promedio</p>
               </div>
             )}
           </div>
@@ -67,7 +67,7 @@ export function StatsAudienceCard({
                       style={{ height: `${Math.max(4, b.pct)}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-muted-foreground">{b.label}</span>
+                  <span className="text-[10px] text-muted-foreground">{b.label}</span>
                 </div>
               ))}
             </div>

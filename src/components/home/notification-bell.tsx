@@ -158,7 +158,7 @@ export function NotificationBell() {
               {n.body && (
                 <span className="line-clamp-2 pl-3 text-xs text-muted-foreground">{n.body}</span>
               )}
-              <span className="pl-3 text-[11px] text-muted-foreground/70">
+              <span className="pl-3 text-[12px] text-muted-foreground/70">
                 {timeAgo(n.created_at)}
               </span>
             </DropdownMenuItem>

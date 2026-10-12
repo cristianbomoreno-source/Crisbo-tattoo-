@@ -83,7 +83,7 @@ export function WorkShiftCard({
         <span className="text-white/30">:</span>
         <span>{s}</span>
       </div>
-      <div className="mt-1 flex items-center justify-center gap-6 text-[10px] uppercase tracking-wide text-white/40">
+      <div className="mt-1 flex items-center justify-center gap-6 text-[11px] uppercase tracking-wide text-white/40">
         <span>Horas</span>
         <span>Minutos</span>
         <span>Segundos</span>
@@ -111,7 +111,7 @@ export function WorkShiftCard({
         </button>
       )}
       {!shift && (
-        <p className="mt-3 text-[11px] text-white/40">Inicia tu jornada para registrar el tiempo trabajado.</p>
+        <p className="mt-3 text-[12px] text-white/40">Inicia tu jornada para registrar el tiempo trabajado.</p>
       )}
     </div>
   )

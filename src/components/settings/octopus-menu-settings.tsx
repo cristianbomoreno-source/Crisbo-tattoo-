@@ -73,14 +73,14 @@ export function OctopusMenuSettings({ accountKind }: { accountKind?: 'tatuador' 
               )}
             >
               <Icon className="size-4.5" strokeWidth={1.8} aria-hidden="true" />
-              <span className="text-[10px] leading-none">{action.label}</span>
+              <span className="text-[11px] leading-none">{action.label}</span>
             </button>
           )
         })}
       </div>
 
       {/* Catálogo de acciones disponibles para el brazo seleccionado. */}
-      <p className="mt-3 text-[11px] text-muted-foreground">{SLOT_LABELS[activeSlot]} mostrará:</p>
+      <p className="mt-3 text-[12px] text-muted-foreground">{SLOT_LABELS[activeSlot]} mostrará:</p>
       <div className="mt-1.5 flex flex-wrap gap-1.5">
         {OCTOPUS_ACTIONS.map((a) => {
           const Icon = a.icon
@@ -104,7 +104,7 @@ export function OctopusMenuSettings({ accountKind }: { accountKind?: 'tatuador' 
           )
         })}
       </div>
-      <p className="mt-2.5 text-[11px] text-muted-foreground/70">
+      <p className="mt-2.5 text-[12px] text-muted-foreground/70">
         Esta preferencia se guarda en este dispositivo.
       </p>
     </div>

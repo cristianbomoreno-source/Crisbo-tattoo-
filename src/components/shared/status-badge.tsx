@@ -40,7 +40,7 @@ export function StatusBadge({ status }: { status: string }) {
     <span
       className={cn(
         'inline-flex items-center gap-2 rounded-full border bg-card px-2.5 py-1',
-        'font-display text-[11px] font-medium text-foreground',
+        'font-display text-[12px] font-medium text-foreground',
         config.tone === 'active' && 'border-primary/30'
       )}
     >

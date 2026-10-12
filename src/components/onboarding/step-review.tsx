@@ -51,7 +51,7 @@ function ReviewRow({
         <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-[0.62rem] font-medium text-muted-foreground">
+        <span className="block font-display text-[0.6825rem] font-medium text-muted-foreground">
           {label}
         </span>
         <span className="block truncate text-sm text-foreground">{value}</span>
@@ -68,7 +68,7 @@ function ReviewRow({
 function DetailBlock({ kicker, children }: { kicker: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-card/40 p-4">
-      <p className="mb-2 font-display text-[0.65rem] font-semibold text-primary">
+      <p className="mb-2 font-display text-[0.7125rem] font-semibold text-primary">
         {kicker}
       </p>
       {children}
@@ -248,7 +248,7 @@ export function StepReview({
               {draft.openDays.map((day) => (
                 <span
                   key={day}
-                  className="rounded-md border border-border bg-secondary px-2 py-1 font-display text-[0.62rem] font-semibold text-foreground"
+                  className="rounded-md border border-border bg-secondary px-2 py-1 font-display text-[0.6825rem] font-semibold text-foreground"
                 >
                   {day}
                 </span>

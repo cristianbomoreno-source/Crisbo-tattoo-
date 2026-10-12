@@ -242,7 +242,7 @@ export function InventarioPanel({
         <div className="relative mt-5 max-w-[80%] sm:max-w-[70%]">
           <p className="font-heading text-xs font-semibold text-primary">Nuevo insumo</p>
           <h1 className="mt-1 font-title font-bold text-[2.75rem] leading-[0.95] text-foreground sm:text-6xl">INVENTARIO</h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
             Organiza tus insumos y mantén tu estudio{' '}
             <span className="text-primary">siempre listo</span>.
           </p>
@@ -256,7 +256,7 @@ export function InventarioPanel({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej. Tinta negra, Agujas RL 1203…"
-              className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+              className="w-full bg-transparent text-[16px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
           </FieldShell>
 
@@ -272,7 +272,7 @@ export function InventarioPanel({
               }
             >
               <button type="button" onClick={() => setCategoryPickerOpen((v) => !v)} className="w-full text-left">
-                <span className={categoryName ? 'text-[15px] text-foreground' : 'text-[15px] text-muted-foreground/50'}>
+                <span className={categoryName ? 'text-[16px] text-foreground' : 'text-[16px] text-muted-foreground/50'}>
                   {categoryName || 'Ej. Tintas, Agujas, Cartuchos, Otros…'}
                 </span>
               </button>
@@ -297,7 +297,7 @@ export function InventarioPanel({
                       <span className="text-lg leading-none" style={{ filter: `drop-shadow(0 0 6px ${preset.color}55)` }}>
                         {preset.icon}
                       </span>
-                      <span className="truncate text-[10px] text-muted-foreground">{preset.name}</span>
+                      <span className="truncate text-[11px] text-muted-foreground">{preset.name}</span>
                     </button>
                   ))}
                   <button
@@ -306,7 +306,7 @@ export function InventarioPanel({
                     className="flex flex-col items-center gap-1 rounded-xl border border-dashed border-foreground/15 px-2 py-2.5 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
                   >
                     <Plus className="size-4" aria-hidden />
-                    <span className="text-[10px]">Crear</span>
+                    <span className="text-[11px]">Crear</span>
                   </button>
                 </div>
 
@@ -393,7 +393,7 @@ export function InventarioPanel({
               label="Unidades"
             >
               <Select value={unit} onValueChange={(v) => v !== null && setUnit(v)}>
-                <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[15px] text-foreground shadow-none focus-visible:ring-0">
+                <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-[16px] text-foreground shadow-none focus-visible:ring-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -413,7 +413,7 @@ export function InventarioPanel({
               onChange={(e) => setMinStock(e.target.value.replace(/[^0-9]/g, ''))}
               inputMode="numeric"
               placeholder="Ej. 5 unidades"
-              className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+              className="w-full bg-transparent text-[16px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
           </FieldShell>
 
@@ -422,8 +422,8 @@ export function InventarioPanel({
               <Sparkles className="size-4" aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Tip profesional</p>
-              <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">
+              <p className="text-[12px] font-semibold uppercase tracking-wide text-primary">Tip profesional</p>
+              <p className="mt-0.5 text-[14px] leading-snug text-muted-foreground">
                 Define una alerta de stock para evitar quedarte sin insumos durante una sesión.
               </p>
             </div>
@@ -480,7 +480,7 @@ export function InventarioPanel({
                     </div>
                     <span
                       className={cn(
-                        'flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[11px] font-medium',
+                        'flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[12px] font-medium',
                         status.text
                       )}
                     >
@@ -606,7 +606,7 @@ function FieldShell({
         <Icon className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
         <div className="mt-0.5">{children}</div>
       </div>
       {trailing}

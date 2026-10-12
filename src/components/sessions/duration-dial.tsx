@@ -168,7 +168,7 @@ export function DurationDial({
                   y={p.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="fill-muted-foreground text-[13px]"
+                  className="fill-muted-foreground text-[14px]"
                 >
                   {t}
                 </text>
@@ -183,7 +183,7 @@ export function DurationDial({
             >
               {total}
             </text>
-            <text x={CENTER} y={CENTER + 20} textAnchor="middle" className="fill-muted-foreground text-[13px]">
+            <text x={CENTER} y={CENTER + 20} textAnchor="middle" className="fill-muted-foreground text-[14px]">
               min.
             </text>
           </svg>

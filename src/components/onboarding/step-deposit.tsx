@@ -110,7 +110,7 @@ function SuggestedCard({
         {label}
       </span>
       {badge && (
-        <span className="font-display text-[0.55rem] font-bold text-primary">{badge}</span>
+        <span className="font-display text-[0.6125rem] font-bold text-primary">{badge}</span>
       )}
     </button>
   )
@@ -268,7 +268,7 @@ export function StepDeposit({ draft, patch }: OnboardingStepProps) {
             <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} aria-hidden="true" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">Se mostrará en tus cotizaciones así:</p>
-              <p className="mt-2 font-display text-[0.65rem] font-semibold text-muted-foreground">
+              <p className="mt-2 font-display text-[0.7125rem] font-semibold text-muted-foreground">
                 Abono para reservar
               </p>
               <p className="mt-0.5 font-title font-bold text-2xl tabular-nums text-foreground">

@@ -20,7 +20,7 @@ export function StepBadge({ n, done }: { n: number; done?: boolean }) {
     <span
       aria-hidden="true"
       className={cn(
-        'grid size-6 shrink-0 place-items-center rounded-lg font-display text-[11px] font-bold transition-colors duration-200',
+        'grid size-6 shrink-0 place-items-center rounded-lg font-display text-[12px] font-bold transition-colors duration-200',
         done ? 'bg-primary text-primary-foreground' : 'bg-primary/15 text-primary'
       )}
     >
@@ -61,7 +61,7 @@ export function QuickSection({
       <div className="flex items-center gap-2.5">
         <StepBadge n={n} done={done} />
         <h2 className="font-display text-xs font-semibold text-foreground">{title}</h2>
-        {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
+        {hint && <span className="text-[12px] text-muted-foreground">{hint}</span>}
       </div>
       {children}
     </section>
@@ -196,5 +196,5 @@ export function PresetCard({
 }
 
 export function TinyTip({ children }: { children: React.ReactNode }) {
-  return <p className="text-[11px] leading-relaxed text-muted-foreground">{children}</p>
+  return <p className="text-[12px] leading-relaxed text-muted-foreground">{children}</p>
 }

@@ -43,7 +43,7 @@ export function QuoteArtist({
           <p className="mt-4 font-display text-xl text-white">
             Hola, soy <span className="italic">{artistName}</span>.
           </p>
-          <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+          <p className="mt-3 text-[16px] leading-relaxed text-white/70">
             Cada tatuaje que realizo tiene una historia detrás. Mi objetivo es que salgas orgulloso de llevar una
             pieza única, hecha pensando en ti.
           </p>

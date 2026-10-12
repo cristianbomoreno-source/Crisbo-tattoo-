@@ -22,7 +22,7 @@ export function QuoteFinalCta({ quote }: { quote: QuoteTemplateData }) {
               href={quote.waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 flex h-12 w-full items-center justify-center rounded-full px-8 text-[15px] font-semibold text-black"
+              className="mt-8 flex h-12 w-full items-center justify-center rounded-full px-8 text-[16px] font-semibold text-black"
               style={{ backgroundColor: quote.templateColor }}
             >
               Reservar mi proyecto

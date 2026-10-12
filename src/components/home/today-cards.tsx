@@ -27,7 +27,7 @@ export function TodayCards({
           </span>
           <div>
             <p className="font-title font-bold text-xl leading-none tabular-nums">{it.value}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{it.label}</p>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">{it.label}</p>
           </div>
         </div>
       ))}

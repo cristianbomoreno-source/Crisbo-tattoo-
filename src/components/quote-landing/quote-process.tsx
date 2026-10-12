@@ -26,7 +26,7 @@ export function QuoteProcess({ color }: { color: string }) {
                 <step.icon className="size-4" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold tracking-wide" style={{ color }}>
+                <p className="text-[12px] font-semibold tracking-wide" style={{ color }}>
                   {i + 1}
                 </p>
                 <p className="font-medium text-white">{step.title}</p>

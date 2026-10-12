@@ -49,7 +49,7 @@ function StatBlock({
       </span>
       <div>
         <p className="text-base font-semibold leading-none tabular-nums">{value}</p>
-        <p className="mt-1 text-[10px] text-muted-foreground">{label}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">{label}</p>
       </div>
     </div>
   )
