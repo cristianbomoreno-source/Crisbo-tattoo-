@@ -111,8 +111,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone()
-          caches.open(CACHE).then((cache) => cache.put(request, copy))
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE).then((cache) => cache.put(request, copy))
+          }
           return response
         })
         .catch(async () => {
@@ -133,21 +135,28 @@ self.addEventListener('fetch', (event) => {
             if (response && response.status === 200) cache.put(request, response.clone())
             return response
           })
-          .catch(() => cached)
+          // Sin red ni copia en caché: error de red explícito. Devolver
+          // `undefined` hace que el navegador lance "Failed to convert
+          // value to 'Response'".
+          .catch(() => cached || Response.error())
         return cached || network
       })
     )
     return
   }
 
-  // Resto de GET same-origin (datos/RSC): network-first → caché.
+  // Resto de GET same-origin (datos/RSC): network-first → caché. Next.js
+  // cancela a menudo estas peticiones (navegar, router.refresh): si no hay
+  // copia en caché se responde un error de red, nunca `undefined`.
   event.respondWith(
     fetch(request)
       .then((response) => {
-        const copy = response.clone()
-        caches.open(CACHE).then((cache) => cache.put(request, copy))
+        if (response.ok) {
+          const copy = response.clone()
+          caches.open(CACHE).then((cache) => cache.put(request, copy))
+        }
         return response
       })
-      .catch(() => caches.match(request))
+      .catch(async () => (await caches.match(request)) || Response.error())
   )
 })
