@@ -51,14 +51,14 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
   // Citas del último mes o futuras (no canceladas): esos clientes salen.
   const { data: sessions, error: sessionsError } = await supabase
     .from('sessions')
-    .select('client_id, project:projects(client_id)')
+    .select('projects(client_id)')
     .gte('scheduled_at', monthAgo)
     .neq('status', 'cancelled')
   if (sessionsError) return dbError(sessionsError)
   const busy = new Set<string>()
-  for (const s of sessions as unknown as { client_id: string | null; project: { client_id: string | null } | null }[]) {
-    if (s.client_id) busy.add(s.client_id)
-    if (s.project?.client_id) busy.add(s.project.client_id)
+  // En la DB real `sessions` no tiene client_id: el cliente sale del proyecto.
+  for (const s of sessions as unknown as { projects: { client_id: string | null } | null }[]) {
+    if (s.projects?.client_id) busy.add(s.projects.client_id)
   }
 
   const eligible = clients.filter((c) => c.phone?.trim() && !busy.has(c.id))
