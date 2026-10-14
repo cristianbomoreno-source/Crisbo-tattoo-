@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
-import { Archive, BellRing, MessageCircle, Search } from 'lucide-react'
+import { Archive, BellRing, Megaphone, MessageCircle, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WaConversation } from '@/queries/whatsapp'
@@ -127,16 +127,28 @@ export function InboxShell({
                 </button>
               )}
             </h1>
-            {(archivedCount > 0 || showArchived) && (
-              <button
-                type="button"
-                onClick={() => setShowArchived((v) => !v)}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+            <div className="flex items-center gap-1">
+              <Link
+                href="/dashboard/inbox/campaigns"
+                className={cn(
+                  'flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-accent/60 hover:text-foreground',
+                  activeId === 'campaigns' ? 'bg-accent/70 text-foreground' : 'text-muted-foreground'
+                )}
               >
-                <Archive className="size-3.5" />
-                {showArchived ? 'Ver bandeja' : `Archivados (${archivedCount})`}
-              </button>
-            )}
+                <Megaphone className="size-3.5" />
+                Campañas
+              </Link>
+              {(archivedCount > 0 || showArchived) && (
+                <button
+                  type="button"
+                  onClick={() => setShowArchived((v) => !v)}
+                  className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                >
+                  <Archive className="size-3.5" />
+                  {showArchived ? 'Ver bandeja' : `Archivados (${archivedCount})`}
+                </button>
+              )}
+            </div>
           </div>
           <label className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
             <Search className="size-4 text-muted-foreground" />
