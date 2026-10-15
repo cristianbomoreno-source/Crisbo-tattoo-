@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { BUTTON_NO, BUTTON_YES, CAMPAIGN_AUTO_REPLY } from '@/lib/campaigns/nuevos-trazos'
+import { BUTTON_NO, BUTTON_YES, CAMPAIGN_AUTO_REPLY, CAMPAIGN_AUTO_REPLY_NO } from '@/lib/campaigns/nuevos-trazos'
 import { sendTextMessage } from './api'
 import { sendPushToStudio } from '@/lib/push/send'
 import {
@@ -135,16 +135,16 @@ async function applyFormToClient(
   }
 }
 
-/** "Quiero mi cupo" → manda los datos del abono. Una sola vez por chat (si
+/** Botones de la campaña → respuesta automática (abono / despedida). Una sola vez por chat (si
  * vuelve a tocar el botón no se repite). Un fallo no frena el webhook. */
-async function sendCampaignAutoReply(admin: Admin, studioId: string, conversationId: string, waId: string) {
+async function sendCampaignAutoReply(admin: Admin, studioId: string, conversationId: string, waId: string, text: string) {
   try {
     const { count } = await admin
       .from('wa_messages')
       .select('id', { count: 'exact', head: true })
       .eq('conversation_id', conversationId)
       .eq('direction', 'out')
-      .eq('body', CAMPAIGN_AUTO_REPLY)
+      .eq('body', text)
     if (count) return
 
     const { data: acc } = await admin
@@ -154,7 +154,7 @@ async function sendCampaignAutoReply(admin: Admin, studioId: string, conversatio
       .maybeSingle()
     if (!acc) return
 
-    const waMessageId = await sendTextMessage(acc, waId, CAMPAIGN_AUTO_REPLY)
+    const waMessageId = await sendTextMessage(acc, waId, text)
     const now = new Date().toISOString()
     await admin.from('wa_messages').insert({
       conversation_id: conversationId,
@@ -162,13 +162,13 @@ async function sendCampaignAutoReply(admin: Admin, studioId: string, conversatio
       wa_message_id: waMessageId,
       direction: 'out',
       type: 'text',
-      body: CAMPAIGN_AUTO_REPLY,
+      body: text,
       status: 'sent',
       created_at: now,
     })
     await admin
       .from('wa_conversations')
-      .update({ last_message_at: now, last_message_preview: CAMPAIGN_AUTO_REPLY.slice(0, 120), last_message_direction: 'out' })
+      .update({ last_message_at: now, last_message_preview: text.slice(0, 120), last_message_direction: 'out' })
       .eq('id', conversationId)
   } catch (e) {
     console.error('[campaign] respuesta automática', (e as Error).message)
@@ -234,7 +234,8 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
       .eq('id', conv.id)
     conv.unread_count = (conv.unread_count ?? 0) + 1
 
-    if (m.body === BUTTON_YES) await sendCampaignAutoReply(admin, studioId, conv.id, m.waId)
+    const autoReply = m.body === BUTTON_YES ? CAMPAIGN_AUTO_REPLY : m.body === BUTTON_NO ? CAMPAIGN_AUTO_REPLY_NO : null
+    if (autoReply) await sendCampaignAutoReply(admin, studioId, conv.id, m.waId, autoReply)
 
     notify.set(conv.id, {
       studioId,

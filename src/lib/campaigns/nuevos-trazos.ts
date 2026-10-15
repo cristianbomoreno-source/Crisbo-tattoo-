@@ -29,6 +29,10 @@ export const CAMPAIGN_AUTO_REPLY = [
   '¡Quedo atento a tu comprobante! 🙌',
 ].join('\n')
 
+/** Respuesta automática al tocar "No me interesa". Una sola vez por chat. */
+export const CAMPAIGN_AUTO_REPLY_NO =
+  '¡Gracias por responder! 🙏 Sin problema. Cuando quieras tu próximo tatuaje, aquí estoy.'
+
 /** Cada mensaje guardado en el chat empieza así: identifica los envíos de la
  * campaña sin columnas nuevas (y en el chat se lee como el encabezado). */
 export const CAMPAIGN_MARKER = `🖼️ ${CAMPAIGN_NAME}`
