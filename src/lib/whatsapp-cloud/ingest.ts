@@ -169,8 +169,9 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
     if (answers) await applyFormToClient(admin, studioId, conv, m.waId, answers)
 
     // Botones de la campaña: "Quiero mi cupo" → cotizando, "No me interesa" → perdido.
+    // (parse.ts guarda los botones como type 'text': se reconocen por el texto.)
     const campaignStage = m.body === BUTTON_YES ? 'cotizando' : m.body === BUTTON_NO ? 'perdido' : null
-    if (campaignStage && (m.type === 'button' || m.type === 'interactive')) {
+    if (campaignStage) {
       await admin
         .from('wa_conversations')
         .update({ lead_stage: campaignStage, lead_stage_at: m.timestamp })
