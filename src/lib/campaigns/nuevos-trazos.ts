@@ -14,6 +14,21 @@ export const BUTTON_YES = 'Quiero mi cupo'
 export const BUTTON_NO = 'No me interesa'
 export const CAMPAIGN_SLOTS = 15
 
+/** Respuesta automática al tocar "Quiero mi cupo" (texto del estudio).
+ * Se envía una sola vez por chat. */
+export const CAMPAIGN_AUTO_REPLY = [
+  'Perfecto 🙌 Para separar tu cita y asegurar tu espacio, solicitamos un abono mínimo de $100.000. Si lo prefieres, también puedes realizar el pago completo.',
+  '',
+  'Puedes hacer el pago por Llave Bre-B:',
+  '🔑 1019126345',
+  '',
+  'Una vez realices el pago, envíame el comprobante por este medio y tu cupo quedará oficialmente reservado. ✅',
+  '',
+  '📅 Los cupos comenzaremos a agendarlos a partir de la próxima semana, según disponibilidad.',
+  '',
+  '¡Quedo atento a tu comprobante! 🙌',
+].join('\n')
+
 /** Cada mensaje guardado en el chat empieza así: identifica los envíos de la
  * campaña sin columnas nuevas (y en el chat se lee como el encabezado). */
 export const CAMPAIGN_MARKER = `🖼️ ${CAMPAIGN_NAME}`
