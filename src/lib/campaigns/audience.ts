@@ -1,4 +1,4 @@
-/** Campaña "Segundo capítulo": a quién le llega y cómo se saluda.
+/** Campaña "Nuevos Trazos": a quién le llega y cómo se saluda.
  * Lógica pura (sin Supabase) para poder probarla. */
 
 export type CampaignGroup = 'A' | 'B'

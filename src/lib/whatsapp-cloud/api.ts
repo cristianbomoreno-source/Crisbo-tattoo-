@@ -233,3 +233,93 @@ export async function sendImageMessage(account: WaAccountCredentials, to: string
   if (!id) throw new Error('Meta no devolvió el id del mensaje')
   return id
 }
+
+/* ───────────── Campañas (plantillas de Marketing con imagen) ───────────── */
+
+/** App de Meta dueña del token (para subir la imagen de ejemplo). */
+async function fetchAppId(token: string) {
+  if (process.env.WHATSAPP_APP_ID) return process.env.WHATSAPP_APP_ID
+  const json = await graph<{ id?: string }>('/app?fields=id', token)
+  if (!json.id) throw new Error('No se pudo identificar la app de Meta')
+  return json.id
+}
+
+/** Sube la imagen con la API de carga reanudable y devuelve el "handle" que
+ * Meta pide como ejemplo del encabezado al crear la plantilla. */
+export async function uploadTemplateMedia(token: string, file: { bytes: ArrayBuffer; mime: string }) {
+  const appId = await fetchAppId(token)
+  const session = await graph<{ id?: string }>(
+    `/${encodeURIComponent(appId)}/uploads?file_length=${file.bytes.byteLength}&file_type=${encodeURIComponent(file.mime)}`,
+    token,
+    { method: 'POST' }
+  )
+  if (!session.id) throw new Error('Meta no abrió la carga de la imagen')
+  const res = await fetch(`${GRAPH}/${session.id}`, {
+    method: 'POST',
+    headers: { Authorization: `OAuth ${token}`, file_offset: '0' },
+    body: file.bytes,
+    cache: 'no-store',
+  })
+  const json = (await res.json().catch(() => ({}))) as { h?: string } & GraphError
+  if (!res.ok || !json.h) throw new Error(json.error?.message || `Meta no recibió la imagen (${res.status})`)
+  return json.h
+}
+
+/** Envía a revisión una plantilla de Marketing: imagen, texto con variables,
+ * pie en letra pequeña y botones de respuesta rápida. */
+export async function createMarketingTemplate(
+  wabaId: string,
+  token: string,
+  t: { name: string; language: string; headerHandle: string; body: string; example: string[]; footer: string; buttons: string[] }
+) {
+  return graph<{ id: string; status?: string; category?: string }>(
+    `/${encodeURIComponent(wabaId)}/message_templates`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name: t.name,
+        language: t.language,
+        category: 'MARKETING',
+        components: [
+          { type: 'HEADER', format: 'IMAGE', example: { header_handle: [t.headerHandle] } },
+          { type: 'BODY', text: t.body, example: { body_text: [t.example] } },
+          { type: 'FOOTER', text: t.footer },
+          { type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) },
+        ],
+      }),
+    }
+  )
+}
+
+/** Envía una plantilla con imagen en el encabezado y variables en el texto. */
+export async function sendImageTemplate(
+  account: WaAccountCredentials,
+  to: string,
+  t: { name: string; language: string; imageLink: string; params: string[] }
+) {
+  const json = await graph<{ messages?: { id: string }[] }>(
+    `/${encodeURIComponent(account.phone_number_id)}/messages`,
+    account.access_token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'template',
+        template: {
+          name: t.name,
+          language: { code: t.language },
+          components: [
+            { type: 'header', parameters: [{ type: 'image', image: { link: t.imageLink } }] },
+            { type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) },
+          ],
+        },
+      }),
+    }
+  )
+  const id = json.messages?.[0]?.id
+  if (!id) throw new Error('Meta no devolvió el id del mensaje')
+  return id
+}

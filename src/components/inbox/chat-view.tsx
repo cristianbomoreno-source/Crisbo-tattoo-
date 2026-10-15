@@ -502,7 +502,7 @@ function MessageBubble({ message: m }: { message: WaMessage }) {
           m.status === 'failed' && 'ring-1 ring-destructive/60'
         )}
       >
-        {mediaSrc && (m.type === 'image' || m.type === 'sticker') && (
+        {mediaSrc && (m.type === 'image' || m.type === 'sticker' || m.type === 'template') && (
           <a href={mediaSrc} target="_blank" rel="noreferrer" className="mb-1 block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

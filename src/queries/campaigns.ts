@@ -3,6 +3,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import { campaignGroup, firstName, type CampaignGroup } from '@/lib/campaigns/audience'
+import { BUTTON_NO, BUTTON_YES, CAMPAIGN_MARKER } from '@/lib/campaigns/nuevos-trazos'
 
 export type CampaignRecipient = {
   clientId: string
@@ -13,11 +14,15 @@ export type CampaignRecipient = {
   group: CampaignGroup
   /** Chat de WhatsApp ya vinculado al cliente, si existe. */
   conversationId: string | null
+  /** Estado del mensaje de la campaña (sent/delivered/read/failed); null = no enviado. */
+  sentStatus: string | null
+  /** Botón que tocó el cliente. */
+  reply: 'yes' | 'no' | null
 }
 
 const DAY = 24 * 60 * 60 * 1000
 
-/** Clientes de la campaña "Segundo capítulo": tienen última visita de hace
+/** Clientes de la campaña "Nuevos Trazos": tienen última visita de hace
  * 3+ meses, teléfono, y NO tienen cita agendada ni se tatuaron en el último
  * mes en la app. Se recalcula en cada visita, así que si alguien agenda sale
  * de la lista solo. */
@@ -77,6 +82,35 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
     }
   }
 
+  // Mensaje de la campaña y respuesta con los botones, por chat.
+  const sentStatus = new Map<string, string>()
+  const replies = new Map<string, 'yes' | 'no'>()
+  const convIds = [...chats.values()]
+  for (let i = 0; i < convIds.length; i += 200) {
+    const slice = convIds.slice(i, i + 200)
+    const [{ data: outs }, { data: ins }] = await Promise.all([
+      supabase
+        .from('wa_messages')
+        .select('conversation_id, status')
+        .in('conversation_id', slice)
+        .eq('direction', 'out')
+        .like('body', `${CAMPAIGN_MARKER}%`),
+      supabase
+        .from('wa_messages')
+        .select('conversation_id, body')
+        .in('conversation_id', slice)
+        .eq('direction', 'in')
+        .in('body', [BUTTON_YES, BUTTON_NO])
+        .order('created_at', { ascending: true }),
+    ])
+    for (const m of (outs ?? []) as { conversation_id: string; status: string }[]) {
+      sentStatus.set(m.conversation_id, m.status)
+    }
+    for (const m of (ins ?? []) as { conversation_id: string; body: string }[]) {
+      replies.set(m.conversation_id, m.body === BUTTON_YES ? 'yes' : 'no')
+    }
+  }
+
   const recipients: CampaignRecipient[] = []
   for (const c of eligible) {
     const group = campaignGroup(c.last_session_date, now)
@@ -89,6 +123,8 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
       lastVisit: c.last_session_date,
       group,
       conversationId: chats.get(c.id) ?? null,
+      sentStatus: sentStatus.get(chats.get(c.id) ?? '') ?? null,
+      reply: replies.get(chats.get(c.id) ?? '') ?? null,
     })
   }
   return ok(recipients)

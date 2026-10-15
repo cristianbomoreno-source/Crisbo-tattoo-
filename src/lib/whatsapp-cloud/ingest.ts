@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { BUTTON_NO, BUTTON_YES } from '@/lib/campaigns/nuevos-trazos'
 import { sendPushToStudio } from '@/lib/push/send'
 import {
   messagePreview,
@@ -166,6 +167,15 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
     }
 
     if (answers) await applyFormToClient(admin, studioId, conv, m.waId, answers)
+
+    // Botones de la campaña: "Quiero mi cupo" → cotizando, "No me interesa" → perdido.
+    const campaignStage = m.body === BUTTON_YES ? 'cotizando' : m.body === BUTTON_NO ? 'perdido' : null
+    if (campaignStage && (m.type === 'button' || m.type === 'interactive')) {
+      await admin
+        .from('wa_conversations')
+        .update({ lead_stage: campaignStage, lead_stage_at: m.timestamp })
+        .eq('id', conv.id)
+    }
 
     const preview = messagePreview(m.type, m.body)
     await admin
