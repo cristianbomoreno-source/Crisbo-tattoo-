@@ -7,14 +7,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { dbError } from '@/lib/errors/db'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { getCurrentStudio } from '@/queries/studio'
-import { getCampaignRecipients } from '@/queries/campaigns'
+import { sendCampaignGroupCore, type CampaignSendResult } from '@/lib/campaigns/send'
 import {
   createMarketingTemplate,
   fetchTemplateStatus,
-  sendImageTemplate,
   uploadTemplateMedia,
 } from '@/lib/whatsapp-cloud/api'
-import { normalizeWaPhone } from '@/lib/whatsapp-cloud/parse'
 import type { CampaignGroup } from '@/lib/campaigns/audience'
 import {
   BUTTON_NO,
@@ -26,7 +24,6 @@ import {
   CAMPAIGN_NAME,
   CAMPAIGN_SLOTS,
   CAMPAIGN_TEMPLATES,
-  campaignMessageText,
   type CampaignTemplateKey,
 } from '@/lib/campaigns/nuevos-trazos'
 
@@ -120,98 +117,21 @@ export async function setupCampaignTemplates(): Promise<Result<CampaignTemplateS
   return ok(await readStatuses(acc.waba_id, acc.access_token))
 }
 
-export type CampaignSendResult = { sent: number; failed: { name: string; error: string }[] }
+export type { CampaignSendResult } from '@/lib/campaigns/send'
 
-/** Envía el mensaje del grupo a quienes todavía no lo han recibido. Cada
- * envío crea (o reutiliza) el chat del cliente y queda guardado en él. */
+/** Botón "Enviar Grupo A/B" (el cron usa el mismo núcleo). */
 export async function sendCampaignGroup(group: CampaignGroup): Promise<Result<CampaignSendResult>> {
   if (group !== 'A' && group !== 'B') return err('VALIDATION_ERROR', 'Grupo inválido')
   const owner = await ownerAccount()
   if ('error' in owner) return owner.error
-  const { studio, acc } = owner
-  const def = CAMPAIGN_TEMPLATES[group]
-
-  try {
-    const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, def.name)
-    if (t.status !== 'APPROVED') {
-      return err('VALIDATION_ERROR', `Meta todavía no aprueba la plantilla del ${def.label} (estado: ${t.status}).`)
-    }
-  } catch {
-    return err('VALIDATION_ERROR', 'Primero crea las plantillas de la campaña.')
-  }
-
-  const recipients = await getCampaignRecipients()
-  if (!recipients.success) return recipients
-  const pending = recipients.data.filter((r) => r.group === group && !r.sentStatus && !r.excluded)
-
-  const admin = createAdminClient()
-  const imageLink = `${await publicOrigin()}${CAMPAIGN_IMAGE_PATH}`
-  const failed: CampaignSendResult['failed'] = []
-  let sent = 0
-
-  async function sendOne(r: (typeof pending)[number]) {
-    const waId = normalizeWaPhone(r.phone)
-    if (!waId) {
-      failed.push({ name: r.name, error: 'Número inválido' })
-      return
-    }
-    try {
-      const waMessageId = await sendImageTemplate(acc, waId, {
-        name: def.name,
-        language: CAMPAIGN_LANGUAGE,
-        imageLink,
-        params: [r.firstName],
-      })
-
-      await admin
-        .from('wa_conversations')
-        .upsert(
-          { studio_id: studio.id, wa_id: waId, contact_name: r.name, client_id: r.clientId },
-          { onConflict: 'studio_id,wa_id', ignoreDuplicates: true }
-        )
-      const { data: conv, error: convError } = await admin
-        .from('wa_conversations')
-        .select('id, client_id')
-        .eq('studio_id', studio.id)
-        .eq('wa_id', waId)
-        .single()
-      if (convError) throw convError
-      if (!conv.client_id) await admin.from('wa_conversations').update({ client_id: r.clientId }).eq('id', conv.id)
-
-      const now = new Date().toISOString()
-      await admin.from('wa_messages').insert({
-        conversation_id: conv.id,
-        studio_id: studio.id,
-        wa_message_id: waMessageId,
-        direction: 'out',
-        type: 'template',
-        body: campaignMessageText(group, [r.firstName]),
-        media_url: CAMPAIGN_IMAGE_PATH,
-        status: 'sent',
-        sent_by: studio.artistId,
-        created_at: now,
-      })
-      await admin
-        .from('wa_conversations')
-        .update({
-          last_message_at: now,
-          last_message_preview: `📣 ${CAMPAIGN_NAME}`,
-          last_message_direction: 'out',
-        })
-        .eq('id', conv.id)
-      sent++
-    } catch (e) {
-      failed.push({ name: r.name, error: (e as Error).message })
-    }
-  }
-
-  // De a 5 en paralelo: rápido sin chocar con los límites de Meta.
-  for (let i = 0; i < pending.length; i += 5) {
-    await Promise.all(pending.slice(i, i + 5).map(sendOne))
-  }
-
+  const res = await sendCampaignGroupCore(createAdminClient(), {
+    studioId: owner.studio.id,
+    group,
+    origin: await publicOrigin(),
+    sentBy: owner.studio.artistId,
+  })
   revalidatePath('/dashboard/inbox', 'layout')
-  return ok({ sent, failed })
+  return res
 }
 
 /** Quita (o devuelve) a un cliente de la lista de la campaña. */

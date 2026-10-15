@@ -1,4 +1,6 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { err } from '@/lib/errors/types'
 import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
@@ -41,7 +43,20 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
  * aparezca en la lista). */
 export async function getCampaignData(): Promise<Result<CampaignData>> {
   const studio = await getCurrentStudio()
-  const supabase = await createClient()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  return loadCampaignData(await createClient(), {
+    studioId: studio.id,
+    artistId: studio.role === 'owner' ? null : studio.artistId,
+  })
+}
+
+/** Núcleo de la lista. Recibe el cliente de Supabase para poder correr
+ * también desde el cron (cliente admin, sin sesión): por eso filtra por
+ * estudio explícitamente en vez de confiar solo en RLS. */
+export async function loadCampaignData(
+  supabase: SupabaseClient,
+  scope: { studioId: string; artistId: string | null }
+): Promise<Result<CampaignData>> {
   const now = new Date()
   const threeMonthsAgo = new Date(now.getTime() - 91 * DAY).toISOString().slice(0, 10)
   const monthAgo = new Date(now.getTime() - 30 * DAY).toISOString()
@@ -53,13 +68,14 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
     let query = supabase
       .from('clients')
       .select('id, name, phone, last_session_date')
+      .eq('studio_id', scope.studioId)
       .not('last_session_date', 'is', null)
       .lte('last_session_date', threeMonthsAgo)
       .not('phone', 'is', null)
       .order('last_session_date', { ascending: false })
       .order('id')
       .range(from, from + 999)
-    if (studio && studio.role !== 'owner') query = query.eq('artist_id', studio.artistId)
+    if (scope.artistId) query = query.eq('artist_id', scope.artistId)
     const { data, error } = await query
     if (error) return dbError(error)
     clients.push(...(data as Row[]))
@@ -70,6 +86,7 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
   const { data: sessions, error: sessionsError } = await supabase
     .from('sessions')
     .select('projects(client_id)')
+    .eq('studio_id', scope.studioId)
     .gte('scheduled_at', monthAgo)
     .neq('status', 'cancelled')
   if (sessionsError) return dbError(sessionsError)
@@ -81,8 +98,8 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
 
   // Quitados a mano y cupos tomados.
   const [{ data: exclusions }, { data: slots }] = await Promise.all([
-    supabase.from('campaign_exclusions').select('client_id').eq('campaign', CAMPAIGN_KEY),
-    supabase.from('campaign_slots').select('client_id').eq('campaign', CAMPAIGN_KEY),
+    supabase.from('campaign_exclusions').select('client_id').eq('studio_id', scope.studioId).eq('campaign', CAMPAIGN_KEY),
+    supabase.from('campaign_slots').select('client_id').eq('studio_id', scope.studioId).eq('campaign', CAMPAIGN_KEY),
   ])
   const excluded = new Set(((exclusions ?? []) as { client_id: string }[]).map((e) => e.client_id))
   const slotTaken = new Set(((slots ?? []) as { client_id: string }[]).map((e) => e.client_id))
@@ -96,6 +113,7 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
     const { data } = await supabase
       .from('wa_conversations')
       .select('id, client_id')
+      .eq('studio_id', scope.studioId)
       .in('client_id', ids.slice(i, i + 200))
       .order('last_message_at', { ascending: false })
     for (const c of (data ?? []) as { id: string; client_id: string }[]) {
