@@ -3,16 +3,17 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Copy, Gift, Loader2, Megaphone, MessageCircle, RefreshCw, Search, Send, Undo2, X } from 'lucide-react'
+import { ArrowLeft, Copy, Gift, Loader2, Megaphone, MessageCircle, RefreshCw, Search, Send, Ticket, Undo2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CAMPAIGN_GROUPS, timeAwayLabel, type CampaignGroup } from '@/lib/campaigns/audience'
-import { CAMPAIGN_IMAGE_PATH, CAMPAIGN_NAME, CAMPAIGN_TEMPLATES } from '@/lib/campaigns/nuevos-trazos'
+import { CAMPAIGN_IMAGE_PATH, CAMPAIGN_NAME, CAMPAIGN_SLOTS, CAMPAIGN_TEMPLATES } from '@/lib/campaigns/nuevos-trazos'
 import type { CampaignRecipient } from '@/queries/campaigns'
 import {
   getCampaignTemplateStatuses,
   sendCampaignGroup,
   setCampaignExcluded,
+  setCampaignSlot,
   setupCampaignTemplates,
   type CampaignTemplateStatus,
 } from '@/actions/campaigns'
@@ -39,8 +40,10 @@ export function CampaignView({
   error,
   isOwner,
   templates: initialTemplates,
+  slotsTaken: initialSlotsTaken,
 }: {
   recipients: CampaignRecipient[]
+  slotsTaken: number
   error: string | null
   isOwner: boolean
   templates: CampaignTemplateStatus[]
@@ -54,10 +57,18 @@ export function CampaignView({
   const [busy, setBusy] = useState<string | null>(null)
   // Quitar/devolver se refleja al instante; si falla, se revierte.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({})
+  const [slotOverrides, setSlotOverrides] = useState<Record<string, boolean>>({})
+  const [slotsTaken, setSlotsTaken] = useState(initialSlotsTaken)
   const recipients = useMemo(
-    () => initialRecipients.map((r) => (r.clientId in overrides ? { ...r, excluded: overrides[r.clientId] === true } : r)),
-    [initialRecipients, overrides]
+    () =>
+      initialRecipients.map((r) => ({
+        ...r,
+        excluded: r.clientId in overrides ? overrides[r.clientId] === true : r.excluded,
+        slotTaken: r.clientId in slotOverrides ? slotOverrides[r.clientId] === true : r.slotTaken,
+      })),
+    [initialRecipients, overrides, slotOverrides]
   )
+  const slotsLeft = CAMPAIGN_SLOTS - slotsTaken
   const active = recipients.filter((r) => !r.excluded)
   const removed = recipients.filter((r) => r.excluded)
 
@@ -124,6 +135,20 @@ export function CampaignView({
     toast.success(excluded ? `${r.firstName} salió de la lista` : `${r.firstName} volvió a la lista`)
   }
 
+  function toggleSlot(r: CampaignRecipient) {
+    startTransition(async () => {
+      const res = await setCampaignSlot(r.clientId, !r.slotTaken)
+      if (!res.success) return void toast.error(res.error.message)
+      setSlotOverrides((o) => ({ ...o, [r.clientId]: !r.slotTaken }))
+      setSlotsTaken(res.data.slotsTaken)
+      toast.success(
+        !r.slotTaken
+          ? `Cupo de ${r.firstName} · quedan ${CAMPAIGN_SLOTS - res.data.slotsTaken}`
+          : `Cupo de ${r.firstName} liberado`
+      )
+    })
+  }
+
   function send(group: CampaignGroup) {
     setConfirming(null)
     setBusy(`send-${group}`)
@@ -173,6 +198,31 @@ export function CampaignView({
 
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-3 border-b border-border/60 p-3 sm:px-4">
+          <div className="rounded-xl border border-border/60 p-3">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="flex items-center gap-1.5 text-xs font-semibold">
+                <Ticket className="size-3.5 text-primary" />
+                Cupos
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {slotsLeft > 0 ? (
+                  <>
+                    <span className="font-display text-lg font-semibold text-foreground">{slotsLeft}</span> disponibles
+                  </>
+                ) : (
+                  <span className="font-semibold text-destructive">Agotados</span>
+                )}
+              </p>
+            </div>
+            <div className="mt-2 flex gap-1" aria-label={`${slotsTaken} de ${CAMPAIGN_SLOTS} cupos tomados`}>
+              {Array.from({ length: CAMPAIGN_SLOTS }, (_, i) => (
+                <span key={i} className={cn('h-2 flex-1 rounded-full', i < slotsTaken ? 'bg-primary' : 'bg-muted')} />
+              ))}
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              {slotsTaken} de {CAMPAIGN_SLOTS} tomados · márcalos cuando el cliente pague el abono de $92.000
+            </p>
+          </div>
           <div className="overflow-hidden rounded-xl bg-primary/10 text-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={CAMPAIGN_IMAGE_PATH} alt={CAMPAIGN_NAME} className="aspect-[1200/628] w-full object-cover" />
@@ -311,11 +361,16 @@ export function CampaignView({
                   <p className="truncate text-xs text-muted-foreground">
                     {r.phone} · última visita {timeAwayLabel(r.lastVisit)}
                   </p>
-                  {(sent || r.reply) && (
+                  {(sent || r.reply || r.slotTaken) && (
                     <p className="mt-1 flex flex-wrap gap-1">
                       {sent && (
                         <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', sent.className)}>
                           {sent.label}
+                        </span>
+                      )}
+                      {r.slotTaken && (
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                          Cupo tomado
                         </span>
                       )}
                       {r.reply === 'yes' && (
@@ -339,7 +394,22 @@ export function CampaignView({
                 >
                   {r.group}
                 </span>
-                {isOwner && !r.sentStatus && (
+                {isOwner && !r.excluded && (r.sentStatus || r.slotTaken) && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSlot(r)}
+                    disabled={pending || (!r.slotTaken && slotsLeft <= 0)}
+                    className={cn(
+                      'grid size-8 shrink-0 place-items-center rounded-full disabled:opacity-40',
+                      r.slotTaken ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+                    )}
+                    aria-label={r.slotTaken ? `Liberar cupo de ${r.firstName}` : `Marcar cupo tomado por ${r.firstName}`}
+                    title={r.slotTaken ? 'Liberar cupo' : 'Marcar cupo tomado (pagó el abono)'}
+                  >
+                    <Ticket className="size-4" />
+                  </button>
+                )}
+                {isOwner && !r.sentStatus && !r.slotTaken && (
                   <button
                     type="button"
                     onClick={() => toggleExcluded(r, !r.excluded)}

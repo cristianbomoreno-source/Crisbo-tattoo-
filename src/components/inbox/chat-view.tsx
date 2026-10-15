@@ -58,6 +58,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ClientLinkDialog } from './client-link-dialog'
 import { LeadBar } from './lead-bar'
+import { CampaignSlotBar } from './campaign-slot-bar'
+import type { CampaignChatInfo } from '@/queries/campaigns'
 import {
   chatInitials,
   chatName,
@@ -85,12 +87,15 @@ export function ChatView({
   initialMessages,
   clients,
   formTemplateStatus,
+  campaign,
 }: {
   conversation: WaConversation
   initialMessages: WaMessage[]
   clients: ClientOption[]
   /** Estado en Meta de la plantilla del formulario de datos (null = no creada). */
   formTemplateStatus: string | null
+  /** Barra de cupos si al chat le llegó la campaña. */
+  campaign?: CampaignChatInfo | null
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
@@ -367,6 +372,7 @@ export function ChatView({
 
       {/* Seguimiento del lead: etapa del embudo + recordatorio. */}
       <LeadBar conversationId={conversation.id} stage={conversation.lead_stage} followUpAt={conversation.follow_up_at} />
+      {campaign && <CampaignSlotBar info={campaign} />}
 
       {/* Mensajes */}
       <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto bg-background/40 px-3 py-4">

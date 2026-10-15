@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { getConversation, getMessages, getWhatsAppAccountStatus } from '@/queries/whatsapp'
 import { getClients } from '@/queries/clients'
 import { ChatView } from '@/components/inbox/chat-view'
+import { getCampaignChatInfo } from '@/queries/campaigns'
+import { getCurrentStudio } from '@/queries/studio'
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -12,6 +14,11 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
     getWhatsAppAccountStatus(),
   ])
   if (!conversationResult.success) notFound()
+  const studio = await getCurrentStudio()
+  const campaign =
+    studio?.role === 'owner'
+      ? await getCampaignChatInfo(id, conversationResult.data.client_id).catch(() => null)
+      : null
 
   const clients = clientsResult.success
     ? clientsResult.data.map((c) => ({ id: c.id, name: c.name, phone: c.phone }))
@@ -25,6 +32,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       initialMessages={messagesResult.success ? messagesResult.data : []}
       clients={clients}
       formTemplateStatus={account?.formTemplateStatus ?? null}
+      campaign={campaign}
     />
   )
 }

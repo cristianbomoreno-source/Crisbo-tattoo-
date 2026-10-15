@@ -24,6 +24,7 @@ import {
   CAMPAIGN_KEY,
   CAMPAIGN_LANGUAGE,
   CAMPAIGN_NAME,
+  CAMPAIGN_SLOTS,
   CAMPAIGN_TEMPLATES,
   campaignMessageText,
   type CampaignTemplateKey,
@@ -238,4 +239,45 @@ export async function setCampaignExcluded(clientId: string, excluded: boolean): 
   }
   revalidatePath('/dashboard/inbox/campaigns')
   return ok(null)
+}
+
+/** Marca (o desmarca) que el cliente pagó el abono y tomó un cupo. Los cupos
+ * son reales: no deja pasar de CAMPAIGN_SLOTS. */
+export async function setCampaignSlot(clientId: string, taken: boolean): Promise<Result<{ slotsTaken: number }>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (studio.role !== 'owner') return err('FORBIDDEN', 'Solo el dueño del estudio puede marcar cupos')
+  const supabase = await createClient()
+
+  const countSlots = async () => {
+    const { count } = await supabase
+      .from('campaign_slots')
+      .select('client_id', { count: 'exact', head: true })
+      .eq('campaign', CAMPAIGN_KEY)
+    return count ?? 0
+  }
+
+  if (taken) {
+    if ((await countSlots()) >= CAMPAIGN_SLOTS) {
+      return err('VALIDATION_ERROR', `Ya se tomaron los ${CAMPAIGN_SLOTS} cupos de ${CAMPAIGN_NAME}`)
+    }
+    const { error } = await supabase
+      .from('campaign_slots')
+      .upsert(
+        { studio_id: studio.id, campaign: CAMPAIGN_KEY, client_id: clientId },
+        { onConflict: 'studio_id,campaign,client_id', ignoreDuplicates: true }
+      )
+    if (error) return dbError(error)
+  } else {
+    const { error } = await supabase
+      .from('campaign_slots')
+      .delete()
+      .eq('studio_id', studio.id)
+      .eq('campaign', CAMPAIGN_KEY)
+      .eq('client_id', clientId)
+    if (error) return dbError(error)
+  }
+
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok({ slotsTaken: await countSlots() })
 }

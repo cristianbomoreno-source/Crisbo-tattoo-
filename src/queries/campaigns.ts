@@ -20,7 +20,11 @@ export type CampaignRecipient = {
   reply: 'yes' | 'no' | null
   /** Quitado a mano de la lista: no recibe el envío. */
   excluded: boolean
+  /** Pagó el abono: ocupa uno de los cupos. */
+  slotTaken: boolean
 }
+
+export type CampaignData = { recipients: CampaignRecipient[]; slotsTaken: number }
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -29,6 +33,13 @@ const DAY = 24 * 60 * 60 * 1000
  * mes en la app. Se recalcula en cada visita, así que si alguien agenda sale
  * de la lista solo. */
 export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[]>> {
+  const data = await getCampaignData()
+  return data.success ? ok(data.data.recipients) : data
+}
+
+/** Lista + cupos tomados (contados de la tabla, aunque el cliente ya no
+ * aparezca en la lista). */
+export async function getCampaignData(): Promise<Result<CampaignData>> {
   const studio = await getCurrentStudio()
   const supabase = await createClient()
   const now = new Date()
@@ -68,18 +79,19 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
     if (s.projects?.client_id) busy.add(s.projects.client_id)
   }
 
-  // Quitados a mano. Si la tabla aún no existe (SQL pendiente), no hay ninguno.
-  const { data: exclusions } = await supabase
-    .from('campaign_exclusions')
-    .select('client_id')
-    .eq('campaign', CAMPAIGN_KEY)
+  // Quitados a mano y cupos tomados.
+  const [{ data: exclusions }, { data: slots }] = await Promise.all([
+    supabase.from('campaign_exclusions').select('client_id').eq('campaign', CAMPAIGN_KEY),
+    supabase.from('campaign_slots').select('client_id').eq('campaign', CAMPAIGN_KEY),
+  ])
   const excluded = new Set(((exclusions ?? []) as { client_id: string }[]).map((e) => e.client_id))
+  const slotTaken = new Set(((slots ?? []) as { client_id: string }[]).map((e) => e.client_id))
 
-  const eligible = clients.filter((c) => c.phone?.trim() && !busy.has(c.id))
+  const withPhone = clients.filter((c) => c.phone?.trim())
 
   // Chats ya vinculados, para abrirlos directo desde la lista.
   const chats = new Map<string, string>()
-  const ids = eligible.map((c) => c.id)
+  const ids = withPhone.map((c) => c.id)
   for (let i = 0; i < ids.length; i += 200) {
     const { data } = await supabase
       .from('wa_conversations')
@@ -121,9 +133,13 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
   }
 
   const recipients: CampaignRecipient[] = []
-  for (const c of eligible) {
+  for (const c of withPhone) {
     const group = campaignGroup(c.last_session_date, now)
     if (!group) continue
+    const conv = chats.get(c.id) ?? ''
+    // Con cita agendada sale de la lista — salvo si ya recibió la campaña o
+    // tomó cupo (agendar es justo el objetivo: debe seguir apareciendo).
+    if (busy.has(c.id) && !sentStatus.has(conv) && !slotTaken.has(c.id)) continue
     recipients.push({
       clientId: c.id,
       name: c.name,
@@ -132,10 +148,30 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
       lastVisit: c.last_session_date,
       group,
       conversationId: chats.get(c.id) ?? null,
-      sentStatus: sentStatus.get(chats.get(c.id) ?? '') ?? null,
-      reply: replies.get(chats.get(c.id) ?? '') ?? null,
+      sentStatus: sentStatus.get(conv) ?? null,
+      reply: replies.get(conv) ?? null,
       excluded: excluded.has(c.id),
+      slotTaken: slotTaken.has(c.id),
     })
   }
-  return ok(recipients)
+  return ok({ recipients, slotsTaken: slotTaken.size })
+}
+
+export type CampaignChatInfo = { clientId: string; slotTaken: boolean; slotsTaken: number }
+
+/** Para la barra de cupos del chat: solo si al chat le llegó la campaña y
+ * está vinculado a un cliente. */
+export async function getCampaignChatInfo(conversationId: string, clientId: string | null): Promise<CampaignChatInfo | null> {
+  if (!clientId) return null
+  const supabase = await createClient()
+  const { count: sent } = await supabase
+    .from('wa_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId)
+    .eq('direction', 'out')
+    .like('body', `${CAMPAIGN_MARKER}%`)
+  if (!sent) return null
+  const { data: slots } = await supabase.from('campaign_slots').select('client_id').eq('campaign', CAMPAIGN_KEY)
+  const ids = ((slots ?? []) as { client_id: string }[]).map((s) => s.client_id)
+  return { clientId, slotTaken: ids.includes(clientId), slotsTaken: ids.length }
 }
