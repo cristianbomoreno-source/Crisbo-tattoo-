@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Copy, Gift, Loader2, Megaphone, MessageCircle, RefreshCw, Search, Send } from 'lucide-react'
+import { ArrowLeft, Copy, Gift, Loader2, Megaphone, MessageCircle, RefreshCw, Search, Send, Undo2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CAMPAIGN_GROUPS, timeAwayLabel, type CampaignGroup } from '@/lib/campaigns/audience'
@@ -12,11 +12,12 @@ import type { CampaignRecipient } from '@/queries/campaigns'
 import {
   getCampaignTemplateStatuses,
   sendCampaignGroup,
+  setCampaignExcluded,
   setupCampaignTemplates,
   type CampaignTemplateStatus,
 } from '@/actions/campaigns'
 
-type Tab = 'todos' | CampaignGroup
+type Tab = 'todos' | CampaignGroup | 'quitados'
 
 const TEMPLATE_STATUS: Record<string, { label: string; className: string }> = {
   MISSING: { label: 'Sin crear', className: 'bg-muted text-muted-foreground' },
@@ -34,7 +35,7 @@ const SEND_STATUS: Record<string, { label: string; className: string }> = {
 
 /** Campaña "Nuevos Trazos": plantillas, envío por grupo y lista de clientes. */
 export function CampaignView({
-  recipients,
+  recipients: initialRecipients,
   error,
   isOwner,
   templates: initialTemplates,
@@ -51,11 +52,20 @@ export function CampaignView({
   const [confirming, setConfirming] = useState<CampaignGroup | null>(null)
   const [pending, startTransition] = useTransition()
   const [busy, setBusy] = useState<string | null>(null)
+  // Quitar/devolver se refleja al instante; si falla, se revierte.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({})
+  const recipients = useMemo(
+    () => initialRecipients.map((r) => (r.clientId in overrides ? { ...r, excluded: overrides[r.clientId] === true } : r)),
+    [initialRecipients, overrides]
+  )
+  const active = recipients.filter((r) => !r.excluded)
+  const removed = recipients.filter((r) => r.excluded)
 
   const counts = {
-    todos: recipients.length,
-    A: recipients.filter((r) => r.group === 'A').length,
-    B: recipients.filter((r) => r.group === 'B').length,
+    todos: active.length,
+    A: active.filter((r) => r.group === 'A').length,
+    B: active.filter((r) => r.group === 'B').length,
+    quitados: removed.length,
   }
   const sentCount = recipients.filter((r) => r.sentStatus).length
   const yesCount = recipients.filter((r) => r.reply === 'yes').length
@@ -64,7 +74,9 @@ export function CampaignView({
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
     return recipients.filter(
-      (r) => (tab === 'todos' || r.group === tab) && (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q))
+      (r) =>
+        (tab === 'quitados' ? r.excluded : !r.excluded && (tab === 'todos' || r.group === tab)) &&
+        (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q))
     )
   }, [recipients, tab, query])
 
@@ -100,6 +112,16 @@ export function CampaignView({
       if (!res.success) return void toast.error(res.error.message)
       setTemplates(res.data)
     })
+  }
+
+  async function toggleExcluded(r: CampaignRecipient, excluded: boolean) {
+    setOverrides((o) => ({ ...o, [r.clientId]: excluded }))
+    const res = await setCampaignExcluded(r.clientId, excluded)
+    if (!res.success) {
+      setOverrides((o) => ({ ...o, [r.clientId]: !excluded }))
+      return void toast.error(res.error.message)
+    }
+    toast.success(excluded ? `${r.firstName} salió de la lista` : `${r.firstName} volvió a la lista`)
   }
 
   function send(group: CampaignGroup) {
@@ -208,7 +230,7 @@ export function CampaignView({
               )}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 {(['A', 'B'] as const).map((g) => {
-                  const remaining = recipients.filter((r) => r.group === g && !r.sentStatus).length
+                  const remaining = active.filter((r) => r.group === g && !r.sentStatus).length
                   const approved = statusOf(g) === 'APPROVED'
                   return confirming === g ? (
                     <button
@@ -237,24 +259,27 @@ export function CampaignView({
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
-            {(['todos', 'A', 'B'] as const).map((key) => (
+          <div className="grid grid-cols-4 gap-1 rounded-xl bg-muted p-1">
+            {(['todos', 'A', 'B', 'quitados'] as const).map((key) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
                 aria-pressed={tab === key}
-                title={key === 'todos' ? undefined : CAMPAIGN_GROUPS[key].hint}
+                title={key === 'A' || key === 'B' ? CAMPAIGN_GROUPS[key].hint : undefined}
                 className={cn(
                   'rounded-lg py-1.5 text-xs font-medium transition-colors',
                   tab === key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {key === 'todos' ? 'Todos' : CAMPAIGN_GROUPS[key].label} ({counts[key]})
+                {key === 'todos' ? 'Todos' : key === 'quitados' ? 'Quitados' : CAMPAIGN_GROUPS[key].label} ({counts[key]})
               </button>
             ))}
           </div>
-          {tab !== 'todos' && <p className="text-xs text-muted-foreground">{CAMPAIGN_GROUPS[tab].hint}</p>}
+          {(tab === 'A' || tab === 'B') && <p className="text-xs text-muted-foreground">{CAMPAIGN_GROUPS[tab].hint}</p>}
+          {tab === 'quitados' && (
+            <p className="text-xs text-muted-foreground">No reciben la campaña. Toca ↩ para devolver a alguien a la lista.</p>
+          )}
           <label className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
             <Search className="size-4 text-muted-foreground" />
             <input
@@ -314,6 +339,17 @@ export function CampaignView({
                 >
                   {r.group}
                 </span>
+                {isOwner && !r.sentStatus && (
+                  <button
+                    type="button"
+                    onClick={() => toggleExcluded(r, !r.excluded)}
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    aria-label={r.excluded ? `Devolver a ${r.firstName} a la lista` : `Quitar a ${r.firstName} de la lista`}
+                    title={r.excluded ? 'Devolver a la lista' : 'Quitar de la lista'}
+                  >
+                    {r.excluded ? <Undo2 className="size-4" /> : <X className="size-4" />}
+                  </button>
+                )}
                 {r.conversationId ? (
                   <Link
                     href={`/dashboard/inbox/${r.conversationId}`}

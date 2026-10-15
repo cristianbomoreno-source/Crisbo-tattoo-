@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { dbError } from '@/lib/errors/db'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { getCurrentStudio } from '@/queries/studio'
 import { getCampaignRecipients } from '@/queries/campaigns'
@@ -19,6 +21,7 @@ import {
   BUTTON_YES,
   CAMPAIGN_FOOTER,
   CAMPAIGN_IMAGE_PATH,
+  CAMPAIGN_KEY,
   CAMPAIGN_LANGUAGE,
   CAMPAIGN_NAME,
   CAMPAIGN_TEMPLATES,
@@ -138,7 +141,7 @@ export async function sendCampaignGroup(group: CampaignGroup): Promise<Result<Ca
 
   const recipients = await getCampaignRecipients()
   if (!recipients.success) return recipients
-  const pending = recipients.data.filter((r) => r.group === group && !r.sentStatus)
+  const pending = recipients.data.filter((r) => r.group === group && !r.sentStatus && !r.excluded)
 
   const admin = createAdminClient()
   const imageLink = `${await publicOrigin()}${CAMPAIGN_IMAGE_PATH}`
@@ -208,4 +211,31 @@ export async function sendCampaignGroup(group: CampaignGroup): Promise<Result<Ca
 
   revalidatePath('/dashboard/inbox', 'layout')
   return ok({ sent, failed })
+}
+
+/** Quita (o devuelve) a un cliente de la lista de la campaña. */
+export async function setCampaignExcluded(clientId: string, excluded: boolean): Promise<Result<null>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (studio.role !== 'owner') return err('FORBIDDEN', 'Solo el dueño del estudio puede editar la lista')
+  const supabase = await createClient()
+  const { error } = excluded
+    ? await supabase
+        .from('campaign_exclusions')
+        .upsert({ studio_id: studio.id, campaign: CAMPAIGN_KEY, client_id: clientId },
+          { onConflict: 'studio_id,campaign,client_id', ignoreDuplicates: true })
+    : await supabase
+        .from('campaign_exclusions')
+        .delete()
+        .eq('studio_id', studio.id)
+        .eq('campaign', CAMPAIGN_KEY)
+        .eq('client_id', clientId)
+  if (error) {
+    if (error.code === '42P01' || error.code === 'PGRST205') {
+      return err('DB_ERROR', 'Falta crear la tabla campaign_exclusions en Supabase (campaign-exclusions.sql)')
+    }
+    return dbError(error)
+  }
+  revalidatePath('/dashboard/inbox/campaigns')
+  return ok(null)
 }

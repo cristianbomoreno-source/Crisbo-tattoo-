@@ -3,7 +3,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import { campaignGroup, firstName, type CampaignGroup } from '@/lib/campaigns/audience'
-import { BUTTON_NO, BUTTON_YES, CAMPAIGN_MARKER } from '@/lib/campaigns/nuevos-trazos'
+import { BUTTON_NO, BUTTON_YES, CAMPAIGN_KEY, CAMPAIGN_MARKER } from '@/lib/campaigns/nuevos-trazos'
 
 export type CampaignRecipient = {
   clientId: string
@@ -18,6 +18,8 @@ export type CampaignRecipient = {
   sentStatus: string | null
   /** Botón que tocó el cliente. */
   reply: 'yes' | 'no' | null
+  /** Quitado a mano de la lista: no recibe el envío. */
+  excluded: boolean
 }
 
 const DAY = 24 * 60 * 60 * 1000
@@ -65,6 +67,13 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
   for (const s of sessions as unknown as { projects: { client_id: string | null } | null }[]) {
     if (s.projects?.client_id) busy.add(s.projects.client_id)
   }
+
+  // Quitados a mano. Si la tabla aún no existe (SQL pendiente), no hay ninguno.
+  const { data: exclusions } = await supabase
+    .from('campaign_exclusions')
+    .select('client_id')
+    .eq('campaign', CAMPAIGN_KEY)
+  const excluded = new Set(((exclusions ?? []) as { client_id: string }[]).map((e) => e.client_id))
 
   const eligible = clients.filter((c) => c.phone?.trim() && !busy.has(c.id))
 
@@ -125,6 +134,7 @@ export async function getCampaignRecipients(): Promise<Result<CampaignRecipient[
       conversationId: chats.get(c.id) ?? null,
       sentStatus: sentStatus.get(chats.get(c.id) ?? '') ?? null,
       reply: replies.get(chats.get(c.id) ?? '') ?? null,
+      excluded: excluded.has(c.id),
     })
   }
   return ok(recipients)

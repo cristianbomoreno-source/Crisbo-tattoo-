@@ -4,6 +4,8 @@
 import type { CampaignGroup } from './audience'
 
 export const CAMPAIGN_NAME = 'Nuevos Trazos'
+/** Clave en `campaign_exclusions`. */
+export const CAMPAIGN_KEY = 'nuevos_trazos'
 export const CAMPAIGN_LANGUAGE = 'es'
 /** Imagen del encabezado (1200×628). Meta la descarga de esta URL al enviar. */
 export const CAMPAIGN_IMAGE_PATH = '/whatsapp/nuevos-trazos.jpg'
