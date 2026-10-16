@@ -5,7 +5,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { getCurrentStudio } from '@/queries/studio'
 import { campaignGroup, firstName, type CampaignGroup } from '@/lib/campaigns/audience'
-import { BUTTON_NO, BUTTON_YES, CAMPAIGN_KEY, CAMPAIGN_MARKER } from '@/lib/campaigns/nuevos-trazos'
+import { BUTTON_NO, BUTTON_YES, CAMPAIGN_KEY, CAMPAIGN_MARKER, REMINDER_MARKER } from '@/lib/campaigns/nuevos-trazos'
 
 export type CampaignRecipient = {
   clientId: string
@@ -24,11 +24,17 @@ export type CampaignRecipient = {
   excluded: boolean
   /** Pagó el abono: ocupa uno de los cupos. */
   slotTaken: boolean
+  /** Escribió algo (botón o texto) después de recibir la campaña. */
+  wroteBack: boolean
+  /** Ya le llegó el recordatorio del día 5. */
+  reminded: boolean
 }
 
 export type CampaignData = { recipients: CampaignRecipient[]; slotsTaken: number }
 
 const DAY = 24 * 60 * 60 * 1000
+/** Primer envío de la campaña (grupo A, 2026-10-15). */
+const CAMPAIGN_START = '2026-10-15T00:00:00Z'
 
 /** Clientes de la campaña "Nuevos Trazos": tienen última visita de hace
  * 3+ meses, teléfono, y NO tienen cita agendada ni se tatuaron en el último
@@ -123,6 +129,9 @@ export async function loadCampaignData(
 
   // Mensaje de la campaña y respuesta con los botones, por chat.
   const sentStatus = new Map<string, string>()
+  const sentAt = new Map<string, string>()
+  const reminded = new Set<string>()
+  const wroteBack = new Set<string>()
   const replies = new Map<string, 'yes' | 'no'>()
   const convIds = [...chats.values()]
   for (let i = 0; i < convIds.length; i += 200) {
@@ -130,23 +139,32 @@ export async function loadCampaignData(
     const [{ data: outs }, { data: ins }] = await Promise.all([
       supabase
         .from('wa_messages')
-        .select('conversation_id, status')
+        .select('conversation_id, status, body, created_at')
         .in('conversation_id', slice)
         .eq('direction', 'out')
         .like('body', `${CAMPAIGN_MARKER}%`),
+      // Todo lo entrante desde que arrancó la campaña: botones y texto libre.
       supabase
         .from('wa_messages')
-        .select('conversation_id, body')
+        .select('conversation_id, body, created_at')
         .in('conversation_id', slice)
         .eq('direction', 'in')
-        .in('body', [BUTTON_YES, BUTTON_NO])
+        .gte('created_at', CAMPAIGN_START)
         .order('created_at', { ascending: true }),
     ])
-    for (const m of (outs ?? []) as { conversation_id: string; status: string }[]) {
+    for (const m of (outs ?? []) as { conversation_id: string; status: string; body: string; created_at: string }[]) {
+      // El recordatorio también empieza con el marcador: no pisa el estado del primer envío.
+      if (m.body.startsWith(REMINDER_MARKER)) {
+        reminded.add(m.conversation_id)
+        continue
+      }
       sentStatus.set(m.conversation_id, m.status)
+      sentAt.set(m.conversation_id, m.created_at)
     }
-    for (const m of (ins ?? []) as { conversation_id: string; body: string }[]) {
-      replies.set(m.conversation_id, m.body === BUTTON_YES ? 'yes' : 'no')
+    for (const m of (ins ?? []) as { conversation_id: string; body: string | null; created_at: string }[]) {
+      const at = sentAt.get(m.conversation_id)
+      if (at && new Date(m.created_at) > new Date(at)) wroteBack.add(m.conversation_id)
+      if (m.body === BUTTON_YES || m.body === BUTTON_NO) replies.set(m.conversation_id, m.body === BUTTON_YES ? 'yes' : 'no')
     }
   }
 
@@ -170,6 +188,8 @@ export async function loadCampaignData(
       reply: replies.get(conv) ?? null,
       excluded: excluded.has(c.id),
       slotTaken: slotTaken.has(c.id),
+      wroteBack: wroteBack.has(conv),
+      reminded: reminded.has(conv),
     })
   }
   return ok({ recipients, slotsTaken: slotTaken.size })

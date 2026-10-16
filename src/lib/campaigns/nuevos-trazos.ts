@@ -36,6 +36,8 @@ export const CAMPAIGN_AUTO_REPLY_NO =
 /** Cada mensaje guardado en el chat empieza así: identifica los envíos de la
  * campaña sin columnas nuevas (y en el chat se lee como el encabezado). */
 export const CAMPAIGN_MARKER = `🖼️ ${CAMPAIGN_NAME}`
+/** El recordatorio se guarda con este encabezado (empieza con CAMPAIGN_MARKER). */
+export const REMINDER_MARKER = `${CAMPAIGN_MARKER} · Recordatorio`
 
 export type CampaignTemplateKey = CampaignGroup | 'recordatorio'
 
@@ -101,7 +103,7 @@ export function renderTemplate(body: string, params: string[]): string {
 /** Lo que queda guardado en el chat: encabezado, texto, pie y botones. */
 export function campaignMessageText(key: CampaignTemplateKey, params: string[]): string {
   return [
-    CAMPAIGN_MARKER,
+    key === 'recordatorio' ? REMINDER_MARKER : CAMPAIGN_MARKER,
     '',
     renderTemplate(CAMPAIGN_TEMPLATES[key].body, params),
     '',

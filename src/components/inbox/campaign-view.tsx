@@ -361,7 +361,7 @@ export function CampaignView({
                   <p className="truncate text-xs text-muted-foreground">
                     {r.phone} · última visita {timeAwayLabel(r.lastVisit)}
                   </p>
-                  {(sent || r.reply || r.slotTaken) && (
+                  {(sent || r.reply || r.slotTaken || r.wroteBack || r.reminded) && (
                     <p className="mt-1 flex flex-wrap gap-1">
                       {sent && (
                         <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', sent.className)}>
@@ -376,6 +376,16 @@ export function CampaignView({
                       {r.reply === 'yes' && (
                         <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-white">
                           Quiere cupo
+                        </span>
+                      )}
+                      {r.wroteBack && !r.reply && (
+                        <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-300">
+                          Escribió
+                        </span>
+                      )}
+                      {r.reminded && (
+                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                          Recordatorio
                         </span>
                       )}
                       {r.reply === 'no' && (

@@ -8,9 +8,12 @@ import {
   CAMPAIGN_IMAGE_PATH,
   CAMPAIGN_LANGUAGE,
   CAMPAIGN_NAME,
+  CAMPAIGN_SLOTS,
   CAMPAIGN_TEMPLATES,
   campaignMessageText,
+  type CampaignTemplateKey,
 } from './nuevos-trazos'
+import type { CampaignRecipient } from '@/queries/campaigns'
 
 export type CampaignSendResult = { sent: number; failed: { name: string; error: string }[] }
 
@@ -21,8 +24,51 @@ export async function sendCampaignGroupCore(
   admin: SupabaseClient,
   opts: { studioId: string; group: CampaignGroup; origin: string; sentBy: string | null }
 ): Promise<Result<CampaignSendResult>> {
-  const { studioId, group } = opts
-  const def = CAMPAIGN_TEMPLATES[group]
+  const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null })
+  if (!data.success) return data
+  const pending = data.data.recipients.filter((r) => r.group === opts.group && !r.sentStatus && !r.excluded)
+  return sendTemplateTo(admin, { ...opts, key: opts.group, recipients: pending, params: (r) => [r.firstName] })
+}
+
+/** Recordatorio del día 5: a quienes les llegó la campaña (no falló) y no
+ * han escrito nada — ni botón ni texto —, sin cupo, no quitados y sin
+ * recordatorio previo. {{2}} = cupos que quedan; sin cupos no se envía. */
+export async function sendCampaignReminderCore(
+  admin: SupabaseClient,
+  opts: { studioId: string; group: CampaignGroup; origin: string; sentBy: string | null }
+): Promise<Result<CampaignSendResult>> {
+  const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null })
+  if (!data.success) return data
+  const left = CAMPAIGN_SLOTS - data.data.slotsTaken
+  if (left <= 0) return err('VALIDATION_ERROR', 'Ya no quedan cupos: no se envía el recordatorio.')
+  const pending = data.data.recipients.filter(
+    (r) =>
+      r.group === opts.group &&
+      r.sentStatus &&
+      r.sentStatus !== 'failed' &&
+      !r.wroteBack &&
+      !r.reply &&
+      !r.slotTaken &&
+      !r.excluded &&
+      !r.reminded
+  )
+  return sendTemplateTo(admin, { ...opts, key: 'recordatorio', recipients: pending, params: (r) => [r.firstName, String(left)] })
+}
+
+/** Envía la plantilla a cada destinatario y la guarda en su chat. */
+async function sendTemplateTo(
+  admin: SupabaseClient,
+  opts: {
+    studioId: string
+    key: CampaignTemplateKey
+    origin: string
+    sentBy: string | null
+    recipients: CampaignRecipient[]
+    params: (r: CampaignRecipient) => string[]
+  }
+): Promise<Result<CampaignSendResult>> {
+  const { studioId, key } = opts
+  const def = CAMPAIGN_TEMPLATES[key]
 
   const { data: acc } = await admin
     .from('whatsapp_accounts')
@@ -40,26 +86,24 @@ export async function sendCampaignGroupCore(
     return err('VALIDATION_ERROR', 'Primero crea las plantillas de la campaña.')
   }
 
-  const data = await loadCampaignData(admin, { studioId, artistId: null })
-  if (!data.success) return data
-  const pending = data.data.recipients.filter((r) => r.group === group && !r.sentStatus && !r.excluded)
-
+  const pending = opts.recipients
   const imageLink = `${opts.origin}${CAMPAIGN_IMAGE_PATH}`
   const failed: CampaignSendResult['failed'] = []
   let sent = 0
 
-  async function sendOne(r: (typeof pending)[number]) {
+  async function sendOne(r: CampaignRecipient) {
     const waId = normalizeWaPhone(r.phone)
     if (!waId) {
       failed.push({ name: r.name, error: 'Número inválido' })
       return
     }
+    const params = opts.params(r)
     try {
       const waMessageId = await sendImageTemplate(acc!, waId, {
         name: def.name,
         language: CAMPAIGN_LANGUAGE,
         imageLink,
-        params: [r.firstName],
+        params,
       })
 
       await admin
@@ -84,7 +128,7 @@ export async function sendCampaignGroupCore(
         wa_message_id: waMessageId,
         direction: 'out',
         type: 'template',
-        body: campaignMessageText(group, [r.firstName]),
+        body: campaignMessageText(key, params),
         media_url: CAMPAIGN_IMAGE_PATH,
         status: 'sent',
         sent_by: opts.sentBy,
