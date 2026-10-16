@@ -3,7 +3,6 @@ import { getSessions } from '@/queries/sessions'
 import { getProjects } from '@/queries/projects'
 import { getBlockedDayKeys, getBlockedDays } from '@/queries/blocked-days'
 import { getProjectIdsWithMedicalAlert } from '@/queries/consent-links'
-import { getProjectIdsWithSignedConsent } from '@/queries/consents'
 import { getActiveWorkShift } from '@/queries/work-shifts'
 import { getQuotes } from '@/queries/quotes'
 import { getConsents } from '@/queries/consents'
@@ -162,9 +161,6 @@ export default async function DashboardPage() {
   const medicalAlertProjectIds = await getProjectIdsWithMedicalAlert(
     [...new Set(todaySessions.map((s) => s.project_id))]
   )
-  const consentSignedProjectIds = await getProjectIdsWithSignedConsent(
-    [...new Set(todaySessions.map((s) => s.project_id))]
-  )
 
   const citasHoy = todaySessions.length
   const clientesHoy = new Set(
@@ -265,7 +261,6 @@ export default async function DashboardPage() {
           photoUrls={photoUrls}
           initialIndex={cardIndex}
           template={studio?.reminderSessionTemplate}
-          consentSignedProjectIds={consentSignedProjectIds}
         />
       )}
 
@@ -336,7 +331,6 @@ export default async function DashboardPage() {
           projects={projects}
           paymentMethods={studio?.paymentMethods}
           medicalAlertProjectIds={medicalAlertProjectIds}
-          consentSignedProjectIds={consentSignedProjectIds}
           expenseAlerts={expenseAlerts}
         />
       </div>

@@ -3,11 +3,10 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck2, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
-import { ConsentSendDialog } from '@/components/home/consent-send-dialog'
 import type { SessionWithProject } from '@/queries/sessions'
 import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { TimeQuickMenu } from '@/components/sessions/time-quick-menu'
@@ -30,8 +29,7 @@ const cardVariants = {
 /**
  * Tarjeta destacada de sesiones de HOY: desliza izquierda/derecha (o con las
  * flechitas) entre todas las citas del día, no solo la próxima. Tocar la
- * tarjeta (fuera de los botones) va directo al proyecto. "Consentimiento"
- * abre un popup para generarlo y enviarlo por WhatsApp. El botón principal
+ * tarjeta (fuera de los botones) va directo al proyecto. El botón principal
  * muestra si la cita está confirmada, cancelada o por confirmar (respuesta
  * al recordatorio de WhatsApp) y abre el chat del cliente. Tocar la hora
  * despliega las horas del día para mover la cita.
@@ -41,7 +39,6 @@ export function NextSessionCard({
   photoUrls,
   initialIndex = 0,
   template,
-  consentSignedProjectIds,
   daysUntil,
 }: {
   sessions: SessionWithProject[]
@@ -51,8 +48,6 @@ export function NextSessionCard({
   photoUrls: Record<string, string | null>
   initialIndex?: number
   template?: string | null
-  /** project_id con consentimiento ya firmado (insignia "Consentimiento firmado"). */
-  consentSignedProjectIds?: Set<string>
 }) {
   const router = useRouter()
   const [index, setIndex] = useState(Math.min(initialIndex, sessions.length - 1))
@@ -61,7 +56,6 @@ export function NextSessionCard({
   // deslice hacia el lado correcto, sin importar si vino de las flechitas
   // o de un swipe táctil.
   const [direction, setDirection] = useState(1)
-  const [consentOpen, setConsentOpen] = useState(false)
   const touchStartX = useRef<number | null>(null)
 
   // `sessions` nunca está vacío al montar (ambos callers lo condicionan a
@@ -70,7 +64,6 @@ export function NextSessionCard({
   const session = sessions[index]!
   const photoUrl = photoUrls[session.id] ?? null
   const clientName = session.projects?.clients?.name ?? 'Cliente'
-  const clientId = session.projects?.clients?.id
   const phone = session.projects?.clients?.phone
   const wa = waLink(
     phone,
@@ -237,26 +230,6 @@ export function NextSessionCard({
               waHref={wa}
               onChanged={() => router.refresh()}
             />
-            {clientId && (
-              consentSignedProjectIds?.has(session.project_id) ? (
-                <span className="flex items-center gap-2 rounded-full bg-primary/15 px-4 py-2.5 text-sm font-medium text-primary">
-                  <BadgeCheck className="size-4" strokeWidth={2} aria-hidden="true" />
-                  Consentimiento firmado
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setConsentOpen(true)
-                  }}
-                  className="flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <FileSignature className="size-4" strokeWidth={2} aria-hidden="true" />
-                  Consentimiento
-                </button>
-              )
-            )}
 
           </div>
 
@@ -273,18 +246,6 @@ export function NextSessionCard({
         </motion.div>
       </AnimatePresence>
 
-      {clientId && (
-        <div onClick={(e) => e.stopPropagation()}>
-          <ConsentSendDialog
-            projectId={session.project_id}
-            clientId={clientId}
-            clientName={clientName}
-            phone={phone}
-            open={consentOpen}
-            onOpenChange={setConsentOpen}
-          />
-        </div>
-      )}
 
     </article>
   )

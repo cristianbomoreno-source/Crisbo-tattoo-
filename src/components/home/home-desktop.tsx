@@ -53,7 +53,6 @@ export type HomeDesktopProps = {
   projects: ProjectSummary[]
   paymentMethods?: string[] | null
   medicalAlertProjectIds?: Set<string>
-  consentSignedProjectIds?: Set<string>
   expenseAlerts?: UpcomingExpenseAlert[]
 }
 
@@ -81,7 +80,6 @@ export function HomeDesktop({
   projects,
   paymentMethods,
   medicalAlertProjectIds,
-  consentSignedProjectIds,
   expenseAlerts = [],
 }: HomeDesktopProps) {
   return (
@@ -104,7 +102,6 @@ export function HomeDesktop({
           photoUrls={photoUrls}
           initialIndex={initialIndex}
           template={reminderSessionTemplate}
-          consentSignedProjectIds={consentSignedProjectIds}
         />
       )}
 
