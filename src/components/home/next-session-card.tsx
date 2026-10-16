@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, Clock3, Wallet, BadgeCheck, TriangleAlert, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck2, Clock3, Wallet, BadgeCheck, TriangleAlert, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
@@ -11,7 +11,10 @@ import type { SessionWithProject } from '@/queries/sessions'
 import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { TimeQuickMenu } from '@/components/sessions/time-quick-menu'
 import { SessionConfirmDialog } from '@/components/calendar/session-confirm-dialog'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+import { updateSessionStatusAction } from '@/actions/sessions'
+import { ProjectCompletionStep } from '@/components/home/project-completion-step'
 import { cop } from '@/lib/projects/metrics'
 import type { ProjectBalance } from '@/components/home/today-appointments'
 import type { MedicalAlert } from '@/queries/consent-links'
@@ -71,6 +74,10 @@ export function NextSessionCard({
   const touchStartX = useRef<number | null>(null)
   const [payOpen, setPayOpen] = useState(false)
   const [alertOpen, setAlertOpen] = useState(false)
+  const [finishing, setFinishing] = useState(false)
+  // Proyecto al que preguntar "¿cómo va el proyecto?" tras finalizar (solo
+  // si ya tenía algún pago, igual que en "Sesiones de hoy").
+  const [completionFor, setCompletionFor] = useState<string | null>(null)
 
   // `sessions` nunca está vacío al montar (ambos callers lo condicionan a
   // `todayOrdered.length > 0`) y `index` siempre queda acotado a
@@ -82,6 +89,22 @@ export function NextSessionCard({
   const balance = balances?.[session.project_id]
   const paidUp = !!balance && balance.pending <= 0 && balance.deposits > 0
   const alerts = medicalAlerts?.[session.project_id] ?? []
+  const finished = session.status === 'completed'
+  const canFinish = !daysUntil && !finished && session.status !== 'cancelled'
+
+  /** Mismo flujo que "Finalizar" de "Sesiones de hoy". */
+  async function handleFinish() {
+    setFinishing(true)
+    const result = await updateSessionStatusAction(session.id, 'completed')
+    setFinishing(false)
+    if (!result.success) {
+      toast.error(result.error.message)
+      return
+    }
+    toast.success('Sesión finalizada')
+    if ((balance?.deposits ?? 0) > 0) setCompletionFor(session.project_id)
+    else router.refresh()
+  }
   const wa = waLink(
     phone,
     buildMessage(template || DEFAULT_SESSION_TEMPLATE, {
@@ -272,6 +295,26 @@ export function NextSessionCard({
                 )}
               </button>
             )}
+            {canFinish && (
+              <button
+                type="button"
+                disabled={finishing}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleFinish()
+                }}
+                className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+              >
+                <CheckCircle2 className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                {finishing ? 'Finalizando…' : 'Finalizar'}
+              </button>
+            )}
+            {finished && (
+              <span className="flex items-center gap-2 rounded-full bg-primary/15 px-4 py-2.5 text-sm font-semibold text-primary">
+                <CheckCircle2 className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                Finalizada
+              </span>
+            )}
             {alerts.length > 0 && (
               <button
                 type="button"
@@ -316,6 +359,33 @@ export function NextSessionCard({
           initialMode="pay"
           onGoToProject={(s) => router.push(`/dashboard/projects/${s.project_id}`)}
         />
+        <Dialog
+          open={completionFor !== null}
+          onOpenChange={(o) => {
+            if (!o) {
+              setCompletionFor(null)
+              router.refresh()
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Sesión finalizada</DialogTitle>
+              <DialogDescription>
+                Este proyecto ya tiene un pago registrado — cuéntanos cómo va antes de seguir.
+              </DialogDescription>
+            </DialogHeader>
+            {completionFor && (
+              <ProjectCompletionStep
+                projectId={completionFor}
+                onDone={() => {
+                  setCompletionFor(null)
+                  router.refresh()
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
         <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
