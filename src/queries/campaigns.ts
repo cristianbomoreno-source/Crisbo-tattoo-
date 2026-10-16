@@ -142,7 +142,9 @@ export async function loadCampaignData(
         .select('conversation_id, status, body, created_at')
         .in('conversation_id', slice)
         .eq('direction', 'out')
-        .like('body', `${CAMPAIGN_MARKER}%`),
+        .like('body', `${CAMPAIGN_MARKER}%`)
+        // El más reciente gana (p. ej. un reenvío tras un envío fallido).
+        .order('created_at', { ascending: true }),
       // Todo lo entrante desde que arrancó la campaña: botones y texto libre.
       supabase
         .from('wa_messages')

@@ -15,6 +15,8 @@ import {
 } from './nuevos-trazos'
 import type { CampaignRecipient } from '@/queries/campaigns'
 
+const PUBLIC_ORIGIN = 'https://www.crisbotattoo.com'
+
 export type CampaignSendResult = { sent: number; failed: { name: string; error: string }[] }
 
 /** Envía el mensaje del grupo a quienes todavía no lo han recibido (ni fueron
@@ -22,11 +24,13 @@ export type CampaignSendResult = { sent: number; failed: { name: string; error: 
  * guardado en él. Usa el cliente admin: lo llaman el botón y el cron. */
 export async function sendCampaignGroupCore(
   admin: SupabaseClient,
-  opts: { studioId: string; group: CampaignGroup; origin: string; sentBy: string | null }
+  opts: { studioId: string; group: CampaignGroup; origin: string; sentBy: string | null; retryFailed?: boolean }
 ): Promise<Result<CampaignSendResult>> {
   const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null })
   if (!data.success) return data
-  const pending = data.data.recipients.filter((r) => r.group === opts.group && !r.sentStatus && !r.excluded)
+  const pending = data.data.recipients.filter(
+    (r) => r.group === opts.group && !r.excluded && (!r.sentStatus || (opts.retryFailed && r.sentStatus === 'failed'))
+  )
   return sendTemplateTo(admin, { ...opts, key: opts.group, recipients: pending, params: (r) => [r.firstName] })
 }
 
@@ -87,7 +91,10 @@ async function sendTemplateTo(
   }
 
   const pending = opts.recipients
-  const imageLink = `${opts.origin}${CAMPAIGN_IMAGE_PATH}`
+  // Siempre el dominio público: el cron de Vercel llega por la URL interna
+  // del deployment (*.vercel.app, protegida) y Meta no puede bajar la imagen
+  // de ahí — el 2026-10-16 el grupo B falló entero con "Media upload error".
+  const imageLink = `${PUBLIC_ORIGIN}${CAMPAIGN_IMAGE_PATH}`
   const failed: CampaignSendResult['failed'] = []
   let sent = 0
 
