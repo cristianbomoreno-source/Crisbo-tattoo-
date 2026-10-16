@@ -15,6 +15,7 @@ import {
   type SessionPopupInfo,
 } from '@/actions/sessions'
 import { createPaymentAction } from '@/actions/payments'
+import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
 import { formatTime } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
@@ -40,6 +41,7 @@ export function SessionConfirmDialog({
   onGoToProject,
   onDeleted,
   onPaid,
+  onStatusChanged,
 }: {
   session: SessionWithProject | null
   open: boolean
@@ -48,6 +50,8 @@ export function SessionConfirmDialog({
   onDeleted?: () => void
   /** Tras registrar un pago (el calendario marca las sesiones ya pagadas). */
   onPaid?: () => void
+  /** Tras cambiar a mano el estado (confirmada / por confirmar / cancelada). */
+  onStatusChanged?: () => void
 }) {
   const router = useRouter()
   const [sending, setSending] = useState(false)
@@ -200,6 +204,18 @@ export function SessionConfirmDialog({
         <div className="space-y-4 p-4">
           {mode === 'menu' && (
             <>
+              {session.status !== 'completed' && (
+                <ConfirmationMenu
+                  sessionId={session.id}
+                  confirmation={session.confirmation ?? null}
+                  onChanged={() => {
+                    onStatusChanged?.()
+                    router.refresh()
+                  }}
+                  className="w-full justify-center"
+                />
+              )}
+
               {info && info.totalValue > 0 && (
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <Stat label="Valor" value={cop(info.totalValue)} />

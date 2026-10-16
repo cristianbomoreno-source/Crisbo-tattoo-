@@ -398,3 +398,39 @@ export async function getSessionPopupInfoAction(projectId: string): Promise<Resu
     paymentMethods: studio.paymentMethods,
   })
 }
+
+/** Cambia a mano el estado de confirmación de una cita (botón de estado en
+ * Inicio y en el popup de la cita). Cancelada también cancela la cita
+ * (libera el espacio); volver a confirmada/por confirmar la reactiva. No
+ * envía mensajes al cliente. */
+export async function setSessionConfirmationAction(
+  id: string,
+  confirmation: 'pending' | 'confirmed' | 'cancelled'
+): Promise<Result<void>> {
+  if (!['pending', 'confirmed', 'cancelled'].includes(confirmation))
+    return err('VALIDATION_ERROR', 'Estado inválido')
+  const gate = await getCurrentPermissions()
+  if (confirmation === 'cancelled' && gate && !gate.permissions.can_cancel_sessions)
+    return err('FORBIDDEN', 'No tienes permiso para cancelar sesiones')
+
+  const supabase = await createClient()
+  const { data: current, error: readErr } = await supabase
+    .from('sessions')
+    .select('status, project_id')
+    .eq('id', id)
+    .maybeSingle()
+  if (readErr) return dbError(readErr)
+  if (!current) return err('NOT_FOUND', 'Cita no encontrada')
+  if (current.status === 'completed') return err('VALIDATION_ERROR', 'Esta cita ya se realizó')
+
+  const update: Record<string, unknown> = { confirmation, confirmation_at: new Date().toISOString() }
+  if (confirmation === 'cancelled') update.status = 'cancelled'
+  else if (current.status === 'cancelled') update.status = 'scheduled'
+
+  const { error } = await supabase.from('sessions').update(update).eq('id', id)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/stats')
+  if (current.project_id) revalidatePath(`/dashboard/projects/${current.project_id}`)
+  return ok(undefined)
+}

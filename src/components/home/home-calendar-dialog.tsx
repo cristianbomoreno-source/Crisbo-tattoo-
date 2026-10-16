@@ -197,6 +197,7 @@ export function HomeCalendarDialog({
         }}
         onDeleted={refetch}
         onPaid={refetch}
+        onStatusChanged={refetch}
       />
     </Dialog>
   )

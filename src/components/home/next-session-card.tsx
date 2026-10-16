@@ -3,13 +3,13 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight, CircleCheck, CircleX, CircleDashed } from 'lucide-react'
+import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
 import { ConsentSendDialog } from '@/components/home/consent-send-dialog'
 import type { SessionWithProject } from '@/queries/sessions'
-import type { Confirmation } from '@/lib/appointments/confirmation'
+import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { RemotePhoto } from '@/components/shared/remote-photo'
 
 /** Variantes de la transición al deslizar entre citas del día: la tarjeta
@@ -224,8 +224,13 @@ export function NextSessionCard({
 
           <div className="relative mt-3.5 flex flex-wrap gap-2">
             {/* Estado de la confirmación (recordatorio de WhatsApp 24 h antes).
-                Toca para abrir el chat del cliente en WhatsApp. */}
-            <ConfirmationChip confirmation={session.confirmation ?? null} href={wa} />
+                Al tocarlo se cambia a mano o se abre el WhatsApp del cliente. */}
+            <ConfirmationMenu
+              sessionId={session.id}
+              confirmation={session.confirmation ?? null}
+              waHref={wa}
+              onChanged={() => router.refresh()}
+            />
             {clientId && (
               consentSignedProjectIds?.has(session.project_id) ? (
                 <span className="flex items-center gap-2 rounded-full bg-primary/15 px-4 py-2.5 text-sm font-medium text-primary">
@@ -276,32 +281,5 @@ export function NextSessionCard({
       )}
 
     </article>
-  )
-}
-
-const CONFIRMATION_CHIP = {
-  confirmed: { label: 'Cita confirmada', icon: CircleCheck, className: 'bg-emerald-500 text-white' },
-  cancelled: { label: 'Cita cancelada', icon: CircleX, className: 'bg-destructive text-white' },
-  pending: { label: 'Cita por confirmar', icon: CircleDashed, className: 'bg-amber-400 text-amber-950' },
-} as const
-
-/** Reemplaza "Contactar cliente": estado de la cita según la respuesta al
- * recordatorio (sin respuesta o sin recordatorio aún = por confirmar). */
-function ConfirmationChip({ confirmation, href }: { confirmation: Confirmation | null; href: string | null }) {
-  const chip = CONFIRMATION_CHIP[confirmation ?? 'pending']
-  const Icon = chip.icon
-  const className = `flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${chip.className}`
-  const content = (
-    <>
-      <Icon className="size-4" strokeWidth={2.2} aria-hidden="true" />
-      {chip.label}
-    </>
-  )
-  return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className={className}>
-      {content}
-    </a>
-  ) : (
-    <span className={className}>{content}</span>
   )
 }
