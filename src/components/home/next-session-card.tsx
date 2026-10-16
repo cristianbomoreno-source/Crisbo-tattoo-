@@ -3,13 +3,18 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck2, Clock3, Wallet, BadgeCheck, TriangleAlert, ChevronLeft, ChevronRight } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
 import type { SessionWithProject } from '@/queries/sessions'
 import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { TimeQuickMenu } from '@/components/sessions/time-quick-menu'
+import { SessionConfirmDialog } from '@/components/calendar/session-confirm-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { cop } from '@/lib/projects/metrics'
+import type { ProjectBalance } from '@/components/home/today-appointments'
+import type { MedicalAlert } from '@/queries/consent-links'
 import { RemotePhoto } from '@/components/shared/remote-photo'
 
 /** Variantes de la transición al deslizar entre citas del día: la tarjeta
@@ -40,6 +45,8 @@ export function NextSessionCard({
   initialIndex = 0,
   template,
   daysUntil,
+  balances,
+  medicalAlerts,
 }: {
   sessions: SessionWithProject[]
   /** Días que faltan para la cita (solo cuando hoy no hay citas y se
@@ -48,6 +55,11 @@ export function NextSessionCard({
   photoUrls: Record<string, string | null>
   initialIndex?: number
   template?: string | null
+  /** Saldo por proyecto: botón "Cobrar" (o "Pagado"). */
+  balances?: Record<string, ProjectBalance>
+  /** Lo que el cliente reportó en salud al firmar el consentimiento; solo
+   * hay entrada si marcó algo, y solo entonces sale "Alerta médica". */
+  medicalAlerts?: Record<string, MedicalAlert[]>
 }) {
   const router = useRouter()
   const [index, setIndex] = useState(Math.min(initialIndex, sessions.length - 1))
@@ -57,6 +69,8 @@ export function NextSessionCard({
   // o de un swipe táctil.
   const [direction, setDirection] = useState(1)
   const touchStartX = useRef<number | null>(null)
+  const [payOpen, setPayOpen] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
 
   // `sessions` nunca está vacío al montar (ambos callers lo condicionan a
   // `todayOrdered.length > 0`) y `index` siempre queda acotado a
@@ -65,6 +79,9 @@ export function NextSessionCard({
   const photoUrl = photoUrls[session.id] ?? null
   const clientName = session.projects?.clients?.name ?? 'Cliente'
   const phone = session.projects?.clients?.phone
+  const balance = balances?.[session.project_id]
+  const paidUp = !!balance && balance.pending <= 0 && balance.deposits > 0
+  const alerts = medicalAlerts?.[session.project_id] ?? []
   const wa = waLink(
     phone,
     buildMessage(template || DEFAULT_SESSION_TEMPLATE, {
@@ -230,6 +247,44 @@ export function NextSessionCard({
               waHref={wa}
               onChanged={() => router.refresh()}
             />
+            {/* Saldo del proyecto: cobrar ahí mismo (pago ligado a esta cita). */}
+            {paidUp ? (
+              <span className="flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2.5 text-sm font-semibold text-emerald-500">
+                <BadgeCheck className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                Pagado
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setPayOpen(true)
+                }}
+                className="flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Wallet className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                {balance && balance.pending > 0 ? (
+                  <>
+                    Cobrar <span className="tabular-nums">{cop(balance.pending)}</span>
+                  </>
+                ) : (
+                  'Cobrar'
+                )}
+              </button>
+            )}
+            {alerts.length > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setAlertOpen(true)
+                }}
+                className="flex items-center gap-2 rounded-full bg-destructive/15 px-4 py-2.5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <TriangleAlert className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                Alerta médica
+              </button>
+            )}
 
           </div>
 
@@ -247,6 +302,40 @@ export function NextSessionCard({
       </AnimatePresence>
 
 
+      {/* Popups (en portal): sus toques no deben abrir el proyecto ni cambiar de cita. */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
+        <SessionConfirmDialog
+          session={payOpen ? session : null}
+          open={payOpen}
+          onOpenChange={setPayOpen}
+          initialMode="pay"
+          onGoToProject={(s) => router.push(`/dashboard/projects/${s.project_id}`)}
+        />
+        <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <TriangleAlert className="size-5" strokeWidth={2.2} aria-hidden="true" />
+                Alerta médica · {clientName}
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">Lo que reportó al firmar el consentimiento:</p>
+            <ul className="space-y-2">
+              {alerts.map((a) => (
+                <li key={a.label} className="rounded-xl bg-destructive/10 px-3 py-2.5">
+                  <p className="text-sm font-semibold">{a.label}</p>
+                  {a.detail && a.detail !== '—' && <p className="mt-0.5 text-sm text-muted-foreground">{a.detail}</p>}
+                </li>
+              ))}
+            </ul>
+          </DialogContent>
+        </Dialog>
+      </div>
     </article>
   )
 }

@@ -1,5 +1,6 @@
 import { HomeHero } from '@/components/home/home-hero'
 import { NextSessionCard } from '@/components/home/next-session-card'
+import type { MedicalAlert } from '@/queries/consent-links'
 import { CalendarCard } from '@/components/home/calendar-card'
 import { MonthSummaryCard } from '@/components/home/month-summary'
 import { TodayAppointments, type ProjectBalance } from '@/components/home/today-appointments'
@@ -53,6 +54,8 @@ export type HomeDesktopProps = {
   projects: ProjectSummary[]
   paymentMethods?: string[] | null
   medicalAlertProjectIds?: Set<string>
+  /** Detalle de la alerta médica por proyecto (tarjeta "Próxima sesión"). */
+  medicalAlerts?: Record<string, MedicalAlert[]>
   expenseAlerts?: UpcomingExpenseAlert[]
 }
 
@@ -80,6 +83,7 @@ export function HomeDesktop({
   projects,
   paymentMethods,
   medicalAlertProjectIds,
+  medicalAlerts,
   expenseAlerts = [],
 }: HomeDesktopProps) {
   return (
@@ -102,6 +106,8 @@ export function HomeDesktop({
           photoUrls={photoUrls}
           initialIndex={initialIndex}
           template={reminderSessionTemplate}
+          balances={balances}
+          medicalAlerts={medicalAlerts}
         />
       )}
 

@@ -2,7 +2,7 @@ import { getCurrentStudio } from '@/queries/studio'
 import { getSessions } from '@/queries/sessions'
 import { getProjects } from '@/queries/projects'
 import { getBlockedDayKeys, getBlockedDays } from '@/queries/blocked-days'
-import { getProjectIdsWithMedicalAlert } from '@/queries/consent-links'
+import { getProjectIdsWithMedicalAlert, getMedicalAlertsByProject } from '@/queries/consent-links'
 import { getActiveWorkShift } from '@/queries/work-shifts'
 import { getQuotes } from '@/queries/quotes'
 import { getConsents } from '@/queries/consents'
@@ -223,6 +223,8 @@ export default async function DashboardPage() {
   const cardSessions = todayOrdered.length > 0 ? todayOrdered : upcoming ? [upcoming] : []
   const cardIndex = todayOrdered.length > 0 ? initialIndex : 0
 
+  const medicalAlerts = await getMedicalAlertsByProject([...new Set(cardSessions.map((s) => s.project_id))])
+
   const photoUrls: Record<string, string | null> = {}
   for (const s of cardSessions) {
     const g = projectsById[s.project_id]?.gallery
@@ -261,6 +263,8 @@ export default async function DashboardPage() {
           photoUrls={photoUrls}
           initialIndex={cardIndex}
           template={studio?.reminderSessionTemplate}
+          balances={balances}
+          medicalAlerts={medicalAlerts}
         />
       )}
 
@@ -331,6 +335,7 @@ export default async function DashboardPage() {
           projects={projects}
           paymentMethods={studio?.paymentMethods}
           medicalAlertProjectIds={medicalAlertProjectIds}
+          medicalAlerts={medicalAlerts}
           expenseAlerts={expenseAlerts}
         />
       </div>

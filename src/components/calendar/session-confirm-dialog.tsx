@@ -42,6 +42,7 @@ export function SessionConfirmDialog({
   onDeleted,
   onPaid,
   onStatusChanged,
+  initialMode = 'menu',
 }: {
   session: SessionWithProject | null
   open: boolean
@@ -52,6 +53,9 @@ export function SessionConfirmDialog({
   onPaid?: () => void
   /** Tras cambiar a mano el estado (confirmada / por confirmar / cancelada). */
   onStatusChanged?: () => void
+  /** 'pay' abre directo en "Registrar pago" (botón Cobrar de la tarjeta de
+   * Inicio); al pagar o tocar Volver se cierra en vez de ir al menú. */
+  initialMode?: 'menu' | 'pay'
 }) {
   const router = useRouter()
   const [sending, setSending] = useState(false)
@@ -66,7 +70,12 @@ export function SessionConfirmDialog({
 
   function loadInfo(id: string) {
     getSessionPopupInfoAction(id).then((res) => {
-      if (res.success) setInfo(res.data)
+      if (!res.success) return
+      setInfo(res.data)
+      if (initialMode === 'pay') {
+        const pending = Math.max(res.data.totalValue - res.data.paid, 0)
+        setAmount(pending > 0 ? String(Math.round(pending)) : '')
+      }
     })
   }
 
@@ -75,12 +84,13 @@ export function SessionConfirmDialog({
       // Reinicia el popup cada vez que se abre con otra cita.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSending(false)
-      setMode('menu')
+      setMode(initialMode)
+      setAmount('')
       setMethod('')
       setInfo(null)
       if (projectId) loadInfo(projectId)
     }
-  }, [open, session?.id, projectId])
+  }, [open, session?.id, projectId, initialMode])
 
   if (!session) return null
 
@@ -150,6 +160,12 @@ export function SessionConfirmDialog({
       return
     }
     toast.success('Pago registrado')
+    if (initialMode === 'pay') {
+      onPaid?.()
+      onOpenChange(false)
+      router.refresh()
+      return
+    }
     setMode('menu')
     loadInfo(session.project_id)
     onPaid?.()
@@ -321,7 +337,9 @@ export function SessionConfirmDialog({
                 </div>
               )}
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setMode('menu')} disabled={paying}>
+                <Button type="button" variant="outline" onClick={() => (initialMode === 'pay' ? onOpenChange(false) : setMode('menu'))}
+                  disabled={paying}
+                >
                   <ChevronLeft className="size-4" />
                   Volver
                 </Button>

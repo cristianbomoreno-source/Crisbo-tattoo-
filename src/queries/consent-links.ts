@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
+import { medicalAlertDetails } from '@/lib/consents/consent-fields'
 
 export type ConsentLinkStatus = 'pending' | 'signed' | 'revoked'
 
@@ -52,6 +53,32 @@ export async function getProjectIdsWithMedicalAlert(
     .eq('has_medical_alert', true)
   if (error || !data) return new Set()
   return new Set(data.map((r) => r.project_id).filter((id): id is string => !!id))
+}
+
+export type MedicalAlert = { label: string; detail: string }
+
+/** Lo que el cliente reportó en salud (preguntas en "Sí" + su explicación)
+ * en el consentimiento firmado más reciente de cada proyecto con alerta —
+ * para la tarjeta "Próxima sesión". Mismo filtro de RLS que arriba. */
+export async function getMedicalAlertsByProject(
+  projectIds: string[]
+): Promise<Record<string, MedicalAlert[]>> {
+  if (projectIds.length === 0) return {}
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('consent_links')
+    .select('project_id, form_data, signed_at')
+    .in('project_id', projectIds)
+    .eq('has_medical_alert', true)
+    .order('signed_at', { ascending: false })
+  if (error || !data) return {}
+  const out: Record<string, MedicalAlert[]> = {}
+  for (const r of data) {
+    if (!r.project_id || out[r.project_id]) continue
+    const details = medicalAlertDetails(r.form_data as Record<string, unknown> | null)
+    if (details.length) out[r.project_id] = details
+  }
+  return out
 }
 
 export type PublicConsentClient = {
