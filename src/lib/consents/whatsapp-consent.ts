@@ -14,8 +14,8 @@ import { DOCUMENT_TYPES } from '@/lib/validations/consent-links'
 import { ACCEPT, HEALTH } from './consent-fields'
 
 export const CONSENT_FLOW_VERSION = '7.3'
-export const CONSENT_FLOW_NAME = 'Consentimiento informado v1'
-export const CONSENT_TEMPLATE_NAME = 'consentimiento_cita_v1'
+export const CONSENT_FLOW_NAME = 'Consentimiento informado v2'
+export const CONSENT_TEMPLATE_NAME = 'consentimiento_cita_v2'
 export const CONSENT_TEMPLATE_LANGUAGE = 'es'
 export const CONSENT_BUTTON_TEXT = 'Firmar consentimiento'
 export const CONSENT_FIRST_SCREEN = 'DATOS'
@@ -66,6 +66,8 @@ const SI_NO = [
   { id: 'si', title: 'Sí' },
 ]
 
+export const BODY_ZONES = ['Cabeza', 'Pecho', 'Espalda', 'Brazos', 'Piernas', 'Otro'] as const
+
 const DATOS_FIELDS = [
   'primer_nombre',
   'apellido',
@@ -73,10 +75,35 @@ const DATOS_FIELDS = [
   'numero_documento',
   'fecha_nacimiento',
   'correo',
-  'direccion',
   'zona',
   'descripcion_diseno',
 ] as const
+
+/** Datos personales que se precargan si el cliente ya los dio antes
+ * (salud, zona, diseño y declaraciones se responden en cada cita). */
+export const PREFILL_FIELDS = [
+  'primer_nombre',
+  'apellido',
+  'tipo_documento',
+  'numero_documento',
+  'fecha_nacimiento',
+  'correo',
+] as const
+export type ConsentPrefill = Partial<Record<(typeof PREFILL_FIELDS)[number], string>>
+
+/** `data` que recibe la primera pantalla: solo las claves con valor (el
+ * Form las usa como `init-values`). */
+export function consentFlowData(prefill: ConsentPrefill) {
+  const init: Record<string, string> = {}
+  for (const k of PREFILL_FIELDS) {
+    const v = prefill[k]?.trim()
+    if (!v) continue
+    if (k === 'tipo_documento' && !(DOCUMENT_TYPES as readonly string[]).includes(v)) continue
+    if (k === 'fecha_nacimiento' && !/^\d{4}-\d{2}-\d{2}$/.test(v)) continue
+    init[k] = v
+  }
+  return { init_values: init }
+}
 
 const HEALTH_KEYS = HEALTH.map(([k]) => k)
 
@@ -96,15 +123,22 @@ export function consentFlowJson() {
       {
         id: 'DATOS',
         title: 'Tus datos',
-        data: {},
+        data: {
+          init_values: {
+            type: 'object',
+            properties: Object.fromEntries(PREFILL_FIELDS.map((k) => [k, { type: 'string' }])),
+            __example__: { primer_nombre: 'Laura' },
+          },
+        },
         layout: {
           type: 'SingleColumnLayout',
           children: [
             { type: 'TextSubheading', text: 'Consentimiento informado' },
-            { type: 'TextBody', text: 'Completa tus datos y los de tu tatuaje de hoy.' },
+            { type: 'TextBody', text: 'Revisa tus datos y cuéntanos sobre tu tatuaje de hoy.' },
             {
               type: 'Form',
               name: 'datos',
+              'init-values': '${data.init_values}',
               children: [
                 { type: 'TextInput', name: 'primer_nombre', label: 'Nombre', 'input-type': 'text', required: true },
                 { type: 'TextInput', name: 'apellido', label: 'Apellido', 'input-type': 'text', required: true },
@@ -118,8 +152,13 @@ export function consentFlowJson() {
                 { type: 'TextInput', name: 'numero_documento', label: 'Número de documento', 'input-type': 'text', required: true },
                 { type: 'DatePicker', name: 'fecha_nacimiento', label: 'Fecha de nacimiento', required: true },
                 { type: 'TextInput', name: 'correo', label: 'Correo', 'input-type': 'email', required: true },
-                { type: 'TextInput', name: 'direccion', label: 'Dirección', 'input-type': 'text', required: true },
-                { type: 'TextInput', name: 'zona', label: 'Zona a tatuar', 'input-type': 'text', required: true },
+                {
+                  type: 'Dropdown',
+                  name: 'zona',
+                  label: 'Zona a tatuar',
+                  required: true,
+                  'data-source': BODY_ZONES.map((z) => ({ id: z, title: z })),
+                },
                 { type: 'TextArea', name: 'descripcion_diseno', label: 'Describe el diseño', required: true },
                 {
                   type: 'Footer',

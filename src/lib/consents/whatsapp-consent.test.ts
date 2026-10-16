@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ACCEPT, HEALTH } from './consent-fields'
-import { ageFrom, consentComplete, consentFlowJson, parseConsentFlowResponse } from './whatsapp-consent'
+import { ageFrom, consentComplete, consentFlowData, consentFlowJson, parseConsentFlowResponse } from './whatsapp-consent'
 
 const full = {
   flow_token: 'consent:tok123',
@@ -10,8 +10,7 @@ const full = {
   numero_documento: '1020',
   fecha_nacimiento: '2000-10-20',
   correo: 'laura@x.co',
-  direccion: 'Calle 1',
-  zona: 'Antebrazo',
+  zona: 'Brazos',
   descripcion_diseno: 'Rosa',
   ...Object.fromEntries(HEALTH.map(([k]) => [k, 'no'])),
   alergias: 'si',
@@ -73,5 +72,13 @@ describe('consentFlowJson', () => {
     }
     walk(consentFlowJson())
     expect(tooLong).toEqual([])
+  })
+})
+
+describe('consentFlowData', () => {
+  it('solo manda los datos que existen y son válidos', () => {
+    expect(
+      consentFlowData({ primer_nombre: 'Laura', apellido: ' ', tipo_documento: 'CC', fecha_nacimiento: '2000-01-02' })
+    ).toEqual({ init_values: { primer_nombre: 'Laura', fecha_nacimiento: '2000-01-02' } })
   })
 })

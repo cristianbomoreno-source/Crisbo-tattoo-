@@ -9,7 +9,9 @@ import {
   CONSENT_SEND_DELAY_MINUTES,
   CONSENT_TEMPLATE_LANGUAGE,
   CONSENT_TEMPLATE_NAME,
+  consentFlowData,
   consentSentText,
+  type ConsentPrefill,
 } from './whatsapp-consent'
 
 const MIN = 60_000
@@ -117,6 +119,7 @@ export async function sendDueConsents(admin: SupabaseClient, now = new Date()): 
           name: CONSENT_TEMPLATE_NAME,
           language: CONSENT_TEMPLATE_LANGUAGE,
           flowToken: `${CONSENT_FLOW_TOKEN_PREFIX}${token}`,
+          flowData: consentFlowData(await loadConsentPrefill(admin, client.id)),
         })
         await saveToChat(admin, { studioId, waId, client, waMessageId, body: consentSentText(studioName) })
         result.sent++
@@ -140,6 +143,37 @@ export async function sendDueConsents(admin: SupabaseClient, now = new Date()): 
     }
   }
   return result
+}
+
+/** Datos personales que el cliente ya dio: su último consentimiento
+ * firmado manda; si no hay, la ficha del cliente. */
+export async function loadConsentPrefill(admin: SupabaseClient, clientId: string): Promise<ConsentPrefill> {
+  const [{ data: client }, { data: last }] = await Promise.all([
+    admin
+      .from('clients')
+      .select('name, email, birthdate, document_type, document_number')
+      .eq('id', clientId)
+      .maybeSingle(),
+    admin
+      .from('consent_links')
+      .select('form_data')
+      .eq('client_id', clientId)
+      .eq('status', 'signed')
+      .order('signed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
+  const f = (last?.form_data ?? {}) as Record<string, unknown>
+  const s = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+  const [first, ...rest] = s(client?.name).split(/\s+/)
+  return {
+    primer_nombre: s(f.primer_nombre) || first || '',
+    apellido: s(f.apellido) || rest.join(' '),
+    tipo_documento: s(f.tipo_documento) || s(client?.document_type),
+    numero_documento: s(f.numero_documento) || s(client?.document_number),
+    fecha_nacimiento: s(f.fecha_nacimiento) || s(client?.birthdate).slice(0, 10),
+    correo: s(f.correo) || s(client?.email),
+  }
 }
 
 /** Deja el mensaje enviado en el chat del cliente (lo crea si no existe). */

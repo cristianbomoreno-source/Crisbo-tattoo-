@@ -167,7 +167,7 @@ export async function fetchTemplateStatus(wabaId: string, token: string, name: s
 export async function sendFlowTemplate(
   account: WaAccountCredentials,
   to: string,
-  t: { name: string; language: string; flowToken: string }
+  t: { name: string; language: string; flowToken: string; flowData?: Record<string, unknown> }
 ) {
   const json = await graph<{ messages?: { id: string }[] }>(
     `/${encodeURIComponent(account.phone_number_id)}/messages`,
@@ -187,7 +187,12 @@ export async function sendFlowTemplate(
               type: 'button',
               sub_type: 'flow',
               index: '0',
-              parameters: [{ type: 'action', action: { flow_token: t.flowToken } }],
+              parameters: [
+                {
+                  type: 'action',
+                  action: { flow_token: t.flowToken, ...(t.flowData ? { flow_action_data: t.flowData } : {}) },
+                },
+              ],
             },
           ],
         },
