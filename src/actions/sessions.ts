@@ -185,12 +185,19 @@ export async function rescheduleSessionAction(
   if (conflict) return err('VALIDATION_ERROR', conflictMessage(conflict))
 
   const supabase = await createClient()
+  const { data: before } = await supabase.from('sessions').select('scheduled_at').eq('id', id).maybeSingle()
+  // Otra hora → el recordatorio de WhatsApp vuelve a salir con la hora nueva
+  // y la cita queda otra vez por confirmar.
+  const moved = !before || before.scheduled_at.slice(0, 16) !== parsed.data.scheduled_at.slice(0, 16)
   const { data, error } = await supabase
     .from('sessions')
     .update({
       scheduled_at: parsed.data.scheduled_at,
       duration_minutes: parsed.data.duration_minutes,
       status: 'rescheduled',
+      ...(moved
+        ? { reminder_sent_at: null, confirmation: null, confirmation_at: null, confirmation_followup_at: null }
+        : {}),
     })
     .eq('id', id)
     .select()

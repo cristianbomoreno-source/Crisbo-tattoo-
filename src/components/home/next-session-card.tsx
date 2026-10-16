@@ -3,7 +3,9 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight, Pencil } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { RescheduleSessionForm } from '@/components/sessions/reschedule-session'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
@@ -32,7 +34,8 @@ const cardVariants = {
  * tarjeta (fuera de los botones) va directo al proyecto. "Consentimiento"
  * abre un popup para generarlo y enviarlo por WhatsApp. El botón principal
  * muestra si la cita está confirmada, cancelada o por confirmar (respuesta
- * al recordatorio de WhatsApp) y abre el chat del cliente.
+ * al recordatorio de WhatsApp) y abre el chat del cliente. Tocar la hora
+ * abre "Reagendar".
  */
 export function NextSessionCard({
   sessions,
@@ -60,6 +63,7 @@ export function NextSessionCard({
   // o de un swipe táctil.
   const [direction, setDirection] = useState(1)
   const [consentOpen, setConsentOpen] = useState(false)
+  const [rescheduleOpen, setRescheduleOpen] = useState(false)
   const touchStartX = useRef<number | null>(null)
 
   // `sessions` nunca está vacío al montar (ambos callers lo condicionan a
@@ -204,9 +208,26 @@ export function NextSessionCard({
           </div>
 
           <div className="relative mt-2.5 max-w-[65%] sm:max-w-[60%]">
-            <p className="font-title font-bold text-4xl leading-none tabular-nums">
-              {formatTime(session.scheduled_at)}
-            </p>
+            {/* Tocar la hora abre "Reagendar" (día, hora exacta y duración). */}
+            <button
+              type="button"
+              aria-label="Cambiar horario de la cita"
+              onClick={(e) => {
+                e.stopPropagation()
+                setRescheduleOpen(true)
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="group flex items-center gap-2 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="font-title font-bold text-4xl leading-none tabular-nums">
+                {formatTime(session.scheduled_at)}
+              </span>
+              <Pencil
+                className="size-4 text-muted-foreground transition-colors group-hover:text-foreground"
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </button>
             {daysUntil ? (
               <p className="mt-1 text-sm font-medium capitalize text-primary">
                 {dayLabel(dayKey(session.scheduled_at))}
@@ -280,6 +301,25 @@ export function NextSessionCard({
         </div>
       )}
 
+      {/* Los eventos del diálogo (en portal) no deben abrir el proyecto. */}
+      <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+          <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Cambiar horario · {clientName}</DialogTitle>
+            </DialogHeader>
+            {rescheduleOpen && (
+              <RescheduleSessionForm
+                sessionId={session.id}
+                scheduledAt={session.scheduled_at}
+                durationMinutes={session.duration_minutes ?? 60}
+                projectId={session.project_id}
+                onDone={() => setRescheduleOpen(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
     </article>
   )
 }
