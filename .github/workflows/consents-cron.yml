@@ -1,11 +1,9 @@
-# Cada 5 min: envía el consentimiento por WhatsApp a las citas que empezaron
-# hace 5 min (/api/cron/consents). Se autentica con el token OIDC de GitHub
-# (sin secretos): la app verifica la firma de GitHub, el repo y la rama.
-# GitHub puede retrasar los crons unos minutos; el envío es idempotente.
+# Respaldo MANUAL del envío de consentimientos (/api/cron/consents). El
+# envío automático lo hace pg_cron cada minuto (consents-cron.sql): una cita
+# de las 10:00 recibe el consentimiento a las 10:05. Se autentica con el
+# token OIDC de GitHub (sin secretos): la app verifica firma, repo y rama.
 name: Consentimientos por WhatsApp
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions:
   id-token: write
