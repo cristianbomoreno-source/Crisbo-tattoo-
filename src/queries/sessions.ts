@@ -13,6 +13,8 @@ export type Session = {
   scheduled_at: string
   duration_minutes: number
   status: SessionStatus
+  /** Respuesta al recordatorio de WhatsApp (null = aún sin recordatorio). */
+  confirmation?: 'pending' | 'confirmed' | 'cancelled' | null
   notes: string | null
   created_at: string
   updated_at: string

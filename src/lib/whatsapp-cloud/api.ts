@@ -328,3 +328,56 @@ export async function sendImageTemplate(
   if (!id) throw new Error('Meta no devolvió el id del mensaje')
   return id
 }
+
+/** Plantilla de Utilidad: texto con variables + botones de respuesta rápida. */
+export async function createUtilityTemplate(
+  wabaId: string,
+  token: string,
+  t: { name: string; language: string; body: string; example: string[]; buttons: string[] }
+) {
+  return graph<{ id: string; status?: string; category?: string }>(
+    `/${encodeURIComponent(wabaId)}/message_templates`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name: t.name,
+        language: t.language,
+        category: 'UTILITY',
+        components: [
+          { type: 'BODY', text: t.body, example: { body_text: [t.example] } },
+          { type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) },
+        ],
+      }),
+    }
+  )
+}
+
+/** Envía una plantilla de solo texto con variables en el cuerpo. */
+export async function sendBodyTemplate(
+  account: WaAccountCredentials,
+  to: string,
+  t: { name: string; language: string; params: string[] }
+) {
+  const json = await graph<{ messages?: { id: string }[] }>(
+    `/${encodeURIComponent(account.phone_number_id)}/messages`,
+    account.access_token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'template',
+        template: {
+          name: t.name,
+          language: { code: t.language },
+          components: [{ type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) }],
+        },
+      }),
+    }
+  )
+  const id = json.messages?.[0]?.id
+  if (!id) throw new Error('Meta no devolvió el id del mensaje')
+  return id
+}

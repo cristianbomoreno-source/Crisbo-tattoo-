@@ -3,12 +3,13 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight, CircleCheck, CircleX, CircleDashed } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
 import { ConsentSendDialog } from '@/components/home/consent-send-dialog'
 import type { SessionWithProject } from '@/queries/sessions'
+import type { Confirmation } from '@/lib/appointments/confirmation'
 import { RemotePhoto } from '@/components/shared/remote-photo'
 
 /** Variantes de la transición al deslizar entre citas del día: la tarjeta
@@ -25,27 +26,13 @@ const cardVariants = {
   exit: (dir: number) => ({ x: dir >= 0 ? '-100%' : '100%', opacity: 0, scale: 0.97 }),
 }
 
-/** Glifo de WhatsApp (marca). */
-function WaGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  )
-}
-
 /**
  * Tarjeta destacada de sesiones de HOY: desliza izquierda/derecha (o con las
  * flechitas) entre todas las citas del día, no solo la próxima. Tocar la
  * tarjeta (fuera de los botones) va directo al proyecto. "Consentimiento"
- * abre un popup para generarlo y enviarlo por WhatsApp.
- *
- * Botón ▶ "iniciar sesión": antes esto solo existía como jornada general del
- * día en el Home de escritorio — ahora es por CITA puntual, aquí y en cada
- * fila de escritorio (mismo popup de materiales, misma acción del servidor).
- * Antes de arrancar el cronómetro, pide confirmar los materiales gastados
- * (precargados con el mínimo configurado por insumo en Ajustes → Inventario)
- * y descuenta el stock apenas se confirma.
+ * abre un popup para generarlo y enviarlo por WhatsApp. El botón principal
+ * muestra si la cita está confirmada, cancelada o por confirmar (respuesta
+ * al recordatorio de WhatsApp) y abre el chat del cliente.
  */
 export function NextSessionCard({
   sessions,
@@ -236,18 +223,9 @@ export function NextSessionCard({
           </div>
 
           <div className="relative mt-3.5 flex flex-wrap gap-2">
-            {wa ? (
-              <a
-                href={wa}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <WaGlyph />
-                Contactar cliente
-              </a>
-            ) : null}
+            {/* Estado de la confirmación (recordatorio de WhatsApp 24 h antes).
+                Toca para abrir el chat del cliente en WhatsApp. */}
+            <ConfirmationChip confirmation={session.confirmation ?? null} href={wa} />
             {clientId && (
               consentSignedProjectIds?.has(session.project_id) ? (
                 <span className="flex items-center gap-2 rounded-full bg-primary/15 px-4 py-2.5 text-sm font-medium text-primary">
@@ -298,5 +276,32 @@ export function NextSessionCard({
       )}
 
     </article>
+  )
+}
+
+const CONFIRMATION_CHIP = {
+  confirmed: { label: 'Cita confirmada', icon: CircleCheck, className: 'bg-emerald-500 text-white' },
+  cancelled: { label: 'Cita cancelada', icon: CircleX, className: 'bg-destructive text-white' },
+  pending: { label: 'Cita por confirmar', icon: CircleDashed, className: 'bg-amber-400 text-amber-950' },
+} as const
+
+/** Reemplaza "Contactar cliente": estado de la cita según la respuesta al
+ * recordatorio (sin respuesta o sin recordatorio aún = por confirmar). */
+function ConfirmationChip({ confirmation, href }: { confirmation: Confirmation | null; href: string | null }) {
+  const chip = CONFIRMATION_CHIP[confirmation ?? 'pending']
+  const Icon = chip.icon
+  const className = `flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${chip.className}`
+  const content = (
+    <>
+      <Icon className="size-4" strokeWidth={2.2} aria-hidden="true" />
+      {chip.label}
+    </>
+  )
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className={className}>
+      {content}
+    </a>
+  ) : (
+    <span className={className}>{content}</span>
   )
 }

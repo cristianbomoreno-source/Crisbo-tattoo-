@@ -188,7 +188,12 @@ export default async function DashboardPage() {
 
   // Sesiones de HOY ordenadas por hora, con la foto más reciente de cada
   // proyecto — la tarjeta "Próxima sesión" desliza entre todas ellas.
-  const todayOrdered = [...todaySessions].sort(
+  // La tarjeta también muestra las citas que el cliente canceló desde el
+  // recordatorio de WhatsApp ("Cita cancelada"); el resto de Inicio no.
+  const cardToday = sessions.filter(
+    (s) => (s.status !== 'cancelled' || s.confirmation === 'cancelled') && dayKey(s.scheduled_at) === today
+  )
+  const todayOrdered = [...cardToday].sort(
     (a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
   )
   const nowMs = nowAsWallClock().getTime()
@@ -213,7 +218,7 @@ export default async function DashboardPage() {
     const fromTomorrow = new Date(tomorrow.getTime() + 5 * 3600000) // 00:00 Bogotá
     const yearAhead = new Date(fromTomorrow.getTime() + 365 * 86400000)
     const upcomingResult = await getSessions(fromTomorrow.toISOString(), yearAhead.toISOString())
-    upcoming = upcomingResult.success ? upcomingResult.data.find((s) => s.status !== 'cancelled') ?? null : null
+    upcoming = upcomingResult.success ? upcomingResult.data.find((s) => s.status !== 'cancelled' || s.confirmation === 'cancelled') ?? null : null
     if (upcoming) {
       const diff = Date.parse(`${dayKey(upcoming.scheduled_at)}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)
       daysUntil = Math.round(diff / 86400000)

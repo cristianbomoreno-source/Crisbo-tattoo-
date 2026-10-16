@@ -13,6 +13,7 @@ import {
 import { formAnswersText, parseFormResponse, type FormAnswers } from './data-form'
 import { consentComplete, parseConsentFlowResponse } from '@/lib/consents/whatsapp-consent'
 import { signConsentFromWhatsApp } from '@/lib/consents/whatsapp-sign'
+import { handleAppointmentReply, isAppointmentReply } from '@/lib/appointments/reply'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -250,6 +251,11 @@ Firma: ${consent.signerName}`
       })
       .eq('id', conv.id)
     conv.unread_count = (conv.unread_count ?? 0) + 1
+
+    // Recordatorio de cita: "Confirmo mi cita" / "Cancelar cita".
+    if (isAppointmentReply(m.body)) {
+      await handleAppointmentReply(admin, { studioId, clientId: conv.client_id, waId: m.waId, body: m.body! })
+    }
 
     const autoReply = m.body === BUTTON_YES ? CAMPAIGN_AUTO_REPLY : m.body === BUTTON_NO ? CAMPAIGN_AUTO_REPLY_NO : null
     if (autoReply) await sendCampaignAutoReply(admin, studioId, conv.id, m.waId, autoReply)

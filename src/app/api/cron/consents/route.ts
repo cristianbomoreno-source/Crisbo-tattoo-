@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { timingSafeEqual } from 'node:crypto'
-import { createRemoteJWKSet, jwtVerify } from 'jose'
+import { authorizedCron } from '@/lib/cron/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendDueConsents } from '@/lib/consents/send-due'
 
@@ -14,30 +13,8 @@ import { sendDueConsents } from '@/lib/consents/send-due'
  * Es idempotente: una cita nunca recibe dos. */
 export const maxDuration = 60
 
-const GITHUB_ISSUER = 'https://token.actions.githubusercontent.com'
-const GITHUB_REPO = 'cristianbomoreno-source/Crisbo-tattoo-'
-const CONSENTS_OIDC_AUDIENCE = 'crisbotattoo-consents'
-const githubKeys = createRemoteJWKSet(new URL(`${GITHUB_ISSUER}/.well-known/jwks`))
-
-async function fromGitHubActions(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, githubKeys, { issuer: GITHUB_ISSUER, audience: CONSENTS_OIDC_AUDIENCE })
-    return payload.repository === GITHUB_REPO && payload.ref === 'refs/heads/main'
-  } catch {
-    return false
-  }
-}
-
-async function authorized(req: Request) {
-  const got = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
-  if (!got) return false
-  const secret = process.env.CRON_SECRET?.trim()
-  if (secret && secret.length === got.length && timingSafeEqual(Buffer.from(got), Buffer.from(secret))) return true
-  return got.split('.').length === 3 && fromGitHubActions(got)
-}
-
 async function run(req: Request) {
-  if (!(await authorized(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!(await authorizedCron(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   try {
     const res = await sendDueConsents(createAdminClient())
     if (res.sent || res.failed.length || res.skipped) console.log('[consent-cron]', res)
