@@ -6,6 +6,10 @@ alter table public.sessions
   add column if not exists confirmation_at timestamptz,
   add column if not exists confirmation_followup_at timestamptz;
 
+-- 2026-10-16: reminder_sent_at estaba en los tipos pero no en la base (el
+-- cron de recordatorios y reagendar fallaban). APLICADO (sessions_reminder_sent_at).
+alter table public.sessions add column if not exists reminder_sent_at timestamptz;
+
 -- select cron.schedule('recordatorios-citas', '* * * * *', $job$
 --   select net.http_post(
 --     url := 'https://www.crisbotattoo.com/api/cron/reminders',
