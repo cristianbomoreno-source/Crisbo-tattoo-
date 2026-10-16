@@ -14,6 +14,7 @@ import { findSessionConflict, findBlockedDay, isWeekdayClosed } from '@/lib/sess
 import { blockDaySchema } from '@/lib/validations/blocked-days'
 import type { Session, SessionStatus } from '@/queries/sessions'
 import { getCurrentPermissions } from '@/queries/permissions'
+import { getCurrentStudio } from '@/queries/studio'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage } from '@/lib/quotes/message'
 import { DEFAULT_BOOKING_CONFIRMATION_TEMPLATE } from '@/lib/messages/templates'
@@ -355,4 +356,45 @@ export async function buildBookingConfirmation(
   })
 
   return ok({ message, phone: client?.phone ?? null })
+}
+
+export type SessionPopupInfo = {
+  /** Foto más reciente del proyecto (encabezado del popup), o null. */
+  coverUrl: string | null
+  totalValue: number
+  paid: number
+  payments: { id: string; amount: number; paid_at: string; payment_method: string | null }[]
+  paymentMethods: string[] | null
+}
+
+/** Datos extra del popup de una cita: foto del proyecto y pagos. */
+export async function getSessionPopupInfoAction(projectId: string): Promise<Result<SessionPopupInfo>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  const supabase = await createClient()
+  const [{ data: project, error }, { data: photos }] = await Promise.all([
+    supabase
+      .from('projects')
+      .select('total_value, payments(id, amount, paid_at, payment_method)')
+      .eq('id', projectId)
+      .maybeSingle(),
+    supabase
+      .from('gallery')
+      .select('url')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(1),
+  ])
+  if (error) return dbError(error)
+  if (!project) return err('NOT_FOUND', 'Proyecto no encontrado')
+  const payments = ((project.payments ?? []) as SessionPopupInfo['payments']).sort((a, b) =>
+    b.paid_at.localeCompare(a.paid_at)
+  )
+  return ok({
+    coverUrl: (photos?.[0]?.url as string | undefined) ?? null,
+    totalValue: (project.total_value as number | null) ?? 0,
+    paid: payments.reduce((s, p) => s + (p.amount ?? 0), 0),
+    payments,
+    paymentMethods: studio.paymentMethods,
+  })
 }

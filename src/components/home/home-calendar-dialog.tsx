@@ -196,6 +196,7 @@ export function HomeCalendarDialog({
           goToProject(s)
         }}
         onDeleted={refetch}
+        onPaid={refetch}
       />
     </Dialog>
   )
