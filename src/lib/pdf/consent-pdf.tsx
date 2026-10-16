@@ -48,6 +48,13 @@ export function ConsentPdf({
   signedAt: string | null
   signerIp: string | null
 }) {
+  // Consentimiento firmado por WhatsApp (sin firma dibujada).
+  const eSignature = (formData?.['firma_electronica'] ?? null) as {
+    canal: string
+    numero: string
+    nombre: string
+    mensaje_id: string
+  } | null
   const signedText = signedAt
     ? new Date(signedAt).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' })
     : '—'
@@ -135,6 +142,13 @@ export function ConsentPdf({
           {signatureData ? (
             // eslint-disable-next-line jsx-a11y/alt-text
             <Image style={styles.sigImg} src={signatureData} />
+          ) : eSignature ? (
+            <View>
+              <Text style={styles.declLine}>Firmado electrónicamente vía {eSignature.canal}</Text>
+              <Text style={styles.declLine}>Nombre escrito como firma: {eSignature.nombre}</Text>
+              <Text style={styles.declLine}>Número de WhatsApp verificado: {eSignature.numero}</Text>
+              <Text style={styles.declLine}>Id del mensaje: {eSignature.mensaje_id}</Text>
+            </View>
           ) : (
             <Text style={styles.label}>Sin firma registrada.</Text>
           )}

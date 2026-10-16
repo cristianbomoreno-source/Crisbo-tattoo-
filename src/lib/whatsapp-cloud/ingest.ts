@@ -11,6 +11,8 @@ import {
   type ParsedStatus,
 } from './parse'
 import { formAnswersText, parseFormResponse, type FormAnswers } from './data-form'
+import { consentComplete, parseConsentFlowResponse } from '@/lib/consents/whatsapp-consent'
+import { signConsentFromWhatsApp } from '@/lib/consents/whatsapp-sign'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -185,8 +187,16 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
     if (!studioId) continue
 
     const conv = await getOrCreateConversation(admin, studioId, m.waId, m.contactName)
-    const answers = m.type === 'form' ? parseFormResponse(m.flowResponse) : null
+    // Formularios de WhatsApp: consentimiento de la cita o datos del cliente.
+    const consent = m.type === 'form' ? parseConsentFlowResponse(m.flowResponse) : null
+    const answers = m.type === 'form' && !consent ? parseFormResponse(m.flowResponse) : null
     if (answers) m.body = formAnswersText(answers)
+    if (consent) {
+      m.body = consentComplete(consent)
+        ? `📝 Consentimiento firmado ✓
+Firma: ${consent.signerName}`
+        : '📝 Consentimiento incompleto'
+    }
 
     const { error: insertError } = await admin.from('wa_messages').insert({
       conversation_id: conv.id,
@@ -208,6 +218,13 @@ export async function ingestInbound(admin: Admin, messages: ParsedInbound[]) {
     }
 
     if (answers) await applyFormToClient(admin, studioId, conv, m.waId, answers)
+    if (consent) {
+      await signConsentFromWhatsApp(
+        admin,
+        { studioId, conversationId: conv.id, waId: m.waId, waMessageId: m.waMessageId, timestamp: m.timestamp },
+        consent
+      )
+    }
 
     // Botones de la campaña: "Quiero mi cupo" → cotizando, "No me interesa" → perdido.
     // (parse.ts guarda los botones como type 'text': se reconocen por el texto.)

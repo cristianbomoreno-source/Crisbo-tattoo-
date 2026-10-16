@@ -1,0 +1,17 @@
+# Cada 5 min: envía el consentimiento por WhatsApp a las citas que empezaron
+# hace 5 min (/api/cron/consents). GitHub puede retrasar los crons unos
+# minutos; el envío es idempotente.
+name: Consentimientos por WhatsApp
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Llamar al endpoint
+        run: |
+          curl -fsS -X POST https://www.crisbotattoo.com/api/cron/consents \
+            -H "Authorization: Bearer ${{ secrets.CONSENT_CRON_SECRET }}"
