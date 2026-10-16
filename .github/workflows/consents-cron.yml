@@ -1,11 +1,15 @@
 # Cada 5 min: envía el consentimiento por WhatsApp a las citas que empezaron
-# hace 5 min (/api/cron/consents). GitHub puede retrasar los crons unos
-# minutos; el envío es idempotente.
+# hace 5 min (/api/cron/consents). Se autentica con el token OIDC de GitHub
+# (sin secretos): la app verifica la firma de GitHub, el repo y la rama.
+# GitHub puede retrasar los crons unos minutos; el envío es idempotente.
 name: Consentimientos por WhatsApp
 on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -13,5 +17,7 @@ jobs:
     steps:
       - name: Llamar al endpoint
         run: |
+          TOKEN=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=crisbotattoo-consents" | jq -r .value)
           curl -fsS -X POST https://www.crisbotattoo.com/api/cron/consents \
-            -H "Authorization: Bearer ${{ secrets.CONSENT_CRON_SECRET }}"
+            -H "Authorization: Bearer $TOKEN"
