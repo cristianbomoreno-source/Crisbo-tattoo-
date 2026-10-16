@@ -8,6 +8,8 @@
  *   el abono (la nueva fecha queda sujeta a disponibilidad).
  * `scheduled_at` es hora de Bogotá "disfrazada" de UTC (ver nowAsWallClock). */
 
+import { RECOMENDACIONES } from '@/lib/whatsapp-cloud/chat-shortcuts'
+
 export const REMINDER_TEMPLATE = 'cita_recordatorio_v1'
 export const FOLLOWUP_TEMPLATE = 'cita_por_confirmar_v1'
 export const REMINDER_LANGUAGE = 'es'
@@ -56,20 +58,8 @@ export function confirmedText(name: string, iso: string, studio: { address: stri
   return lines.join('\n')
 }
 
-export const RECOMMENDATIONS_TEXT = [
-  'Recomendaciones para tu tatuaje 🖋️',
-  '',
-  '• Duerme bien la noche anterior y come algo antes de venir.',
-  '• Hidrátate bien desde el día anterior.',
-  '• No tomes alcohol en las 24 horas antes de tu cita.',
-  '• Evita la aspirina y otros medicamentos que adelgazan la sangre, salvo que tu médico lo indique.',
-  '• Llega con la piel de la zona limpia, sin cremas y sin quemaduras de sol.',
-  '• Usa ropa cómoda que deje fácil acceso a la zona a tatuar.',
-  '• Trae tu documento de identidad.',
-  '• Si te sientes enfermo o tienes fiebre, avísanos para reprogramar.',
-  '',
-  '¡Nos vemos pronto!',
-].join('\n')
+/** Las mismas recomendaciones del atajo "Recomendaciones" del chat. */
+export const RECOMMENDATIONS_TEXT = RECOMENDACIONES
 
 /** Fecha límite para reprogramar: RESCHEDULE_DAYS días desde hoy (Bogotá). */
 export function rescheduleDeadline(now = new Date()) {

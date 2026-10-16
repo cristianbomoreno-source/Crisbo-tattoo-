@@ -12,7 +12,8 @@ export type ChatShortcut = {
   image?: string
 }
 
-const RECOMENDACIONES = [
+/** También se envía sola cuando el cliente confirma su cita (recordatorio). */
+export const RECOMENDACIONES = [
   'Gracias por elegirnos para tu primer tatuaje, ¡es un momento emocionante! Aquí tienes algunas recomendaciones importantes para que sea una gran experiencia:',
   '',
   '1. *Descansa bien la noche anterior:* dormir lo suficiente te ayudará a sentirte relajado y preparado.',
