@@ -1,18 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'motion/react'
-import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight, Play, Square } from 'lucide-react'
+import { CalendarCheck2, FileSignature, BadgeCheck, Clock3, ChevronLeft, ChevronRight } from 'lucide-react'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage, DEFAULT_SESSION_TEMPLATE } from '@/lib/messages/templates'
 import { formatTime, dayLabel, dayKey } from '@/lib/calendar/utils'
 import { ConsentSendDialog } from '@/components/home/consent-send-dialog'
-import { SessionMaterialsDialog } from '@/components/home/session-materials-dialog'
-import { endSessionShift } from '@/actions/session-materials'
 import type { SessionWithProject } from '@/queries/sessions'
-import type { InventoryItem } from '@/queries/inventory'
 import { RemotePhoto } from '@/components/shared/remote-photo'
 
 /** Variantes de la transición al deslizar entre citas del día: la tarjeta
@@ -38,16 +34,6 @@ function WaGlyph() {
   )
 }
 
-/** "1:04:32" o "04:32" según pase o no de una hora — cronómetro de la sesión en curso. */
-function formatElapsed(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
-  const h = Math.floor(totalSeconds / 3600)
-  const m = Math.floor((totalSeconds % 3600) / 60)
-  const s = totalSeconds % 60
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`
-}
-
 /**
  * Tarjeta destacada de sesiones de HOY: desliza izquierda/derecha (o con las
  * flechitas) entre todas las citas del día, no solo la próxima. Tocar la
@@ -66,8 +52,6 @@ export function NextSessionCard({
   photoUrls,
   initialIndex = 0,
   template,
-  inventoryItems = [],
-  activeShifts = {},
   consentSignedProjectIds,
   daysUntil,
 }: {
@@ -78,12 +62,7 @@ export function NextSessionCard({
   photoUrls: Record<string, string | null>
   initialIndex?: number
   template?: string | null
-  /** Insumos del inventario, para precargar el popup de materiales. */
-  inventoryItems?: InventoryItem[]
-  /** Cronómetros de sesión abiertos, indexados por `session_id` (desde el server). */
-  activeShifts?: Record<string, { id: string; startedAt: string }>
-  /** project_id con consentimiento ya firmado — "Iniciar sesión" no deja
-   * avanzar (ni abre el popup de materiales) si el proyecto no está acá. */
+  /** project_id con consentimiento ya firmado (insignia "Consentimiento firmado"). */
   consentSignedProjectIds?: Set<string>
 }) {
   const router = useRouter()
@@ -94,27 +73,12 @@ export function NextSessionCard({
   // o de un swipe táctil.
   const [direction, setDirection] = useState(1)
   const [consentOpen, setConsentOpen] = useState(false)
-  const [materialsOpen, setMaterialsOpen] = useState(false)
-  // Overrides locales por sesión — reflejan de inmediato iniciar/finalizar
-  // sin esperar al revalidate del server. `undefined` = usar `activeShifts`
-  // tal cual vino del server; `null` = se cerró localmente (aunque el prop
-  // todavía no se haya actualizado).
-  const [shiftOverrides, setShiftOverrides] = useState<Record<string, { id: string; startedAt: string } | null>>({})
-  const [now, setNow] = useState(() => Date.now())
   const touchStartX = useRef<number | null>(null)
 
   // `sessions` nunca está vacío al montar (ambos callers lo condicionan a
   // `todayOrdered.length > 0`) y `index` siempre queda acotado a
   // `[0, sessions.length - 1]` por el estado inicial y por `go()`.
   const session = sessions[index]!
-  const activeShift =
-    session.id in shiftOverrides ? shiftOverrides[session.id] : (activeShifts[session.id] ?? null)
-
-  useEffect(() => {
-    if (!activeShift) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [activeShift])
   const photoUrl = photoUrls[session.id] ?? null
   const clientName = session.projects?.clients?.name ?? 'Cliente'
   const clientId = session.projects?.clients?.id
@@ -305,43 +269,6 @@ export function NextSessionCard({
               )
             )}
 
-            {/* ▶ Iniciar sesión / ■ Finalizar — a la derecha, justo debajo de la
-                foto del proyecto (antes flotaba encima de la foto, arriba).
-                Antes de arrancar, popup de materiales gastados (se precargan
-                del mínimo configurado y descuentan del inventario apenas se
-                confirma). */}
-            {!daysUntil && (
-            <button
-              type="button"
-              data-tour="session-timer"
-              onClick={(e) => {
-                e.stopPropagation()
-                if (activeShift) {
-                  endSessionShift(activeShift.id)
-                  setShiftOverrides((m) => ({ ...m, [session.id]: null }))
-                } else if (consentSignedProjectIds && !consentSignedProjectIds.has(session.project_id)) {
-                  toast.error('Falta firmar el consentimiento para iniciar esta sesión')
-                } else {
-                  setMaterialsOpen(true)
-                }
-              }}
-              aria-label={activeShift ? 'Finalizar sesión' : 'Iniciar sesión'}
-              className={
-                activeShift
-                  ? 'ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-primary/15 px-3.5 py-2.5 text-primary'
-                  : 'ml-auto flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 size-11'
-              }
-            >
-              {activeShift ? (
-                <>
-                  <Square className="size-4" strokeWidth={2} fill="currentColor" aria-hidden="true" />
-                  <span className="font-mono text-sm tabular-nums">{formatElapsed(now - new Date(activeShift.startedAt).getTime())}</span>
-                </>
-              ) : (
-                <Play className="size-4" strokeWidth={2} fill="currentColor" aria-hidden="true" />
-              )}
-            </button>
-            )}
           </div>
 
           {sessions.length > 1 && (
@@ -370,23 +297,6 @@ export function NextSessionCard({
         </div>
       )}
 
-      <div onClick={(e) => e.stopPropagation()}>
-        <SessionMaterialsDialog
-          open={materialsOpen}
-          onOpenChange={setMaterialsOpen}
-          sessionId={session.id}
-          items={inventoryItems}
-          // La acción devuelve `shiftId`; acá el turno se guarda como `id`
-          // (mismo shape que `activeShifts` del servidor). Sin este mapeo
-          // `activeShift.id` queda undefined y "Detener" no cierra el turno.
-          onStarted={(shift) =>
-            setShiftOverrides((m) => ({
-              ...m,
-              [session.id]: { id: shift.shiftId, startedAt: shift.startedAt },
-            }))
-          }
-        />
-      </div>
     </article>
   )
 }

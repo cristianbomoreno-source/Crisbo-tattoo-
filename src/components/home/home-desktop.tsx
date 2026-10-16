@@ -8,7 +8,6 @@ import { ExpenseAlertsCard } from '@/components/home/expense-alerts-card'
 import type { SessionWithProject } from '@/queries/sessions'
 import type { ProjectSummary } from '@/queries/projects'
 import type { MonthSummary } from '@/lib/home/day-metrics'
-import type { InventoryItem } from '@/queries/inventory'
 import type { UpcomingExpenseAlert } from '@/lib/finance/alerts'
 
 /**
@@ -51,8 +50,6 @@ export type HomeDesktopProps = {
   pendingQuotes: number
   pendingConsents: number
   unscheduledApproved: number
-  inventoryItems?: InventoryItem[]
-  activeSessionShifts?: Record<string, { id: string; startedAt: string }>
   projects: ProjectSummary[]
   paymentMethods?: string[] | null
   medicalAlertProjectIds?: Set<string>
@@ -81,8 +78,6 @@ export function HomeDesktop({
   pendingQuotes,
   pendingConsents,
   unscheduledApproved,
-  inventoryItems = [],
-  activeSessionShifts = {},
   projects,
   paymentMethods,
   medicalAlertProjectIds,
@@ -109,8 +104,6 @@ export function HomeDesktop({
           photoUrls={photoUrls}
           initialIndex={initialIndex}
           template={reminderSessionTemplate}
-          inventoryItems={inventoryItems}
-          activeShifts={activeSessionShifts}
           consentSignedProjectIds={consentSignedProjectIds}
         />
       )}
@@ -138,11 +131,7 @@ export function HomeDesktop({
             <TodayAppointments
               sessions={todaySessions}
               balances={balances}
-              enableTimer
-              inventoryItems={inventoryItems}
-              activeShifts={activeSessionShifts}
               medicalAlertProjectIds={medicalAlertProjectIds}
-              consentSignedProjectIds={consentSignedProjectIds}
             />
           </section>
         </div>

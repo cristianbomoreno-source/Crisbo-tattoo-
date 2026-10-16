@@ -1,32 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ChevronRight, UserRound, CalendarCheck, Play, Square, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ChevronRight, UserRound, CalendarCheck, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { cop } from '@/lib/projects/metrics'
 import { formatTime } from '@/lib/calendar/utils'
-import { endSessionShift } from '@/actions/session-materials'
 import { updateSessionStatusAction } from '@/actions/sessions'
-import { SessionMaterialsDialog } from '@/components/home/session-materials-dialog'
 import { ProjectCompletionStep } from '@/components/home/project-completion-step'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import type { SessionWithProject } from '@/queries/sessions'
-import type { InventoryItem } from '@/queries/inventory'
 
 /** Saldo por proyecto para mostrar en la fila de la cita. */
 export type ProjectBalance = { deposits: number; pending: number }
-
-function formatElapsed(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
-  const h = Math.floor(totalSeconds / 3600)
-  const m = Math.floor((totalSeconds % 3600) / 60)
-  const s = totalSeconds % 60
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`
-}
 
 /**
  * Lista "Sesiones de hoy": hora · avatar · nombre+proyecto · saldo · botón
@@ -52,28 +40,13 @@ function formatElapsed(ms: number): string {
 export function TodayAppointments({
   sessions,
   balances,
-  enableTimer = false,
-  inventoryItems = [],
-  activeShifts = {},
   medicalAlertProjectIds,
-  consentSignedProjectIds,
 }: {
   sessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
-  enableTimer?: boolean
-  inventoryItems?: InventoryItem[]
-  activeShifts?: Record<string, { id: string; startedAt: string }>
-  /** project_id de las citas cuyo cliente reportó una condición médica —
-   * pinta el ícono rojo de alerta en la fila (ver `MedicalAlertBanner` en
-   * el proyecto para el detalle, privado al tatuador asignado/dueño). */
   medicalAlertProjectIds?: Set<string>
-  /** project_id con consentimiento ya firmado — el botón ▶ de la fila no
-   * deja avanzar (ni abre el popup de materiales) si el proyecto no está acá. */
-  consentSignedProjectIds?: Set<string>
 }) {
   const router = useRouter()
-  const [overrides, setOverrides] = useState<Record<string, { id: string; startedAt: string } | null>>({})
-  const [materialsFor, setMaterialsFor] = useState<string | null>(null)
   const [finishingId, setFinishingId] = useState<string | null>(null)
   // Proyecto para el que hay que preguntar "¿cómo va el proyecto?" justo
   // después de finalizar una sesión — solo se llena cuando ESE proyecto ya
@@ -129,43 +102,11 @@ export function TodayAppointments({
           key={s.id}
           session={s}
           balance={balances[s.project_id]}
-          enableTimer={enableTimer}
           hasMedicalAlert={medicalAlertProjectIds?.has(s.project_id) ?? false}
-          activeShift={(s.id in overrides ? overrides[s.id] : activeShifts[s.id]) ?? null}
-          onStop={(shiftId) => {
-            endSessionShift(shiftId)
-            setOverrides((m) => ({ ...m, [s.id]: null }))
-          }}
-          onRequestStart={() => {
-            if (consentSignedProjectIds && !consentSignedProjectIds.has(s.project_id)) {
-              toast.error('Falta firmar el consentimiento para iniciar esta sesión')
-              return
-            }
-            setMaterialsFor(s.id)
-          }}
           onFinish={() => handleFinish(s)}
           finishing={finishingId === s.id}
         />
       ))}
-
-      {enableTimer && (
-        <SessionMaterialsDialog
-          open={materialsFor !== null}
-          onOpenChange={(open) => !open && setMaterialsFor(null)}
-          sessionId={materialsFor ?? ''}
-          items={inventoryItems}
-          onStarted={(shift) => {
-            // La acción devuelve `shiftId`; acá el turno se guarda como `id`
-            // (mismo shape que `activeShifts` del servidor). Sin este mapeo
-            // `activeShift.id` queda undefined y "Detener" no cierra el turno.
-            if (materialsFor)
-              setOverrides((m) => ({
-                ...m,
-                [materialsFor]: { id: shift.shiftId, startedAt: shift.startedAt },
-              }))
-          }}
-        />
-      )}
 
       <Dialog
         open={completionFor !== null}
@@ -195,33 +136,17 @@ export function TodayAppointments({
 function Row({
   session,
   balance,
-  enableTimer,
   hasMedicalAlert,
-  activeShift,
-  onStop,
-  onRequestStart,
   onFinish,
   finishing,
 }: {
   session: SessionWithProject
   balance?: ProjectBalance
-  enableTimer: boolean
   hasMedicalAlert?: boolean
-  activeShift: { id: string; startedAt: string } | null
-  onStop: (shiftId: string) => void
-  onRequestStart: () => void
   onFinish: () => void
   finishing: boolean
 }) {
   const clientName = session.projects?.clients?.name ?? '—'
-  const [now, setNow] = useState(() => Date.now())
-
-  useEffect(() => {
-    if (!activeShift) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [activeShift])
-
   const money =
     balance && balance.pending > 0
       ? { label: 'Pendiente', value: balance.pending }
@@ -265,36 +190,6 @@ function Row({
           </p>
           <p className="text-sm font-semibold tabular-nums">{cop(money.value)}</p>
         </div>
-      )}
-
-      {enableTimer && (
-        <button
-          type="button"
-          data-tour="session-timer"
-          aria-label={activeShift ? 'Detener cronómetro' : 'Iniciar sesión'}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            if (activeShift) onStop(activeShift.id)
-            else onRequestStart()
-          }}
-          className={
-            activeShift
-              ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1.5 text-primary'
-              : 'grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90'
-          }
-        >
-          {activeShift ? (
-            <>
-              <Square className="size-3.5" strokeWidth={2} fill="currentColor" aria-hidden="true" />
-              <span className="font-mono text-xs tabular-nums">
-                {formatElapsed(now - new Date(activeShift.startedAt).getTime())}
-              </span>
-            </>
-          ) : (
-            <Play className="size-4" strokeWidth={2} fill="currentColor" aria-hidden="true" />
-          )}
-        </button>
       )}
 
       {session.status !== 'completed' && session.status !== 'cancelled' && (

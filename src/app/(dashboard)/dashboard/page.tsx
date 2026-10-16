@@ -4,10 +4,9 @@ import { getProjects } from '@/queries/projects'
 import { getBlockedDayKeys, getBlockedDays } from '@/queries/blocked-days'
 import { getProjectIdsWithMedicalAlert } from '@/queries/consent-links'
 import { getProjectIdsWithSignedConsent } from '@/queries/consents'
-import { getActiveWorkShift, getActiveSessionShifts } from '@/queries/work-shifts'
+import { getActiveWorkShift } from '@/queries/work-shifts'
 import { getQuotes } from '@/queries/quotes'
 import { getConsents } from '@/queries/consents'
-import { getInventoryItems, type InventoryItem } from '@/queries/inventory'
 import { getFixedExpenses } from '@/queries/expenses'
 import { getStudioHomeData } from '@/queries/studio-home'
 import { HomeGreeting } from '@/components/home/home-greeting'
@@ -124,17 +123,13 @@ export default async function DashboardPage() {
   let pendingQuotes = 0
   let quoteStatuses: { status: string | null }[] = []
   let pendingConsents = 0
-  let activeSessionShifts: Record<string, { id: string; startedAt: string }> = {}
-  let inventoryItems: InventoryItem[] = []
   let expenseAlerts: UpcomingExpenseAlert[] = []
   try {
-    const [activeShiftResult, quotesResult, consentsResult, sessionShiftsResult, inventoryResult, fixedExpensesResult] =
+    const [activeShiftResult, quotesResult, consentsResult, fixedExpensesResult] =
       await Promise.all([
         studio ? getActiveWorkShift(studio.artistId) : null,
         getQuotes(),
         getConsents(),
-        studio ? getActiveSessionShifts(studio.artistId) : null,
-        getInventoryItems(),
         getFixedExpenses(),
       ])
     activeShift = activeShiftResult?.success ? activeShiftResult.data : null
@@ -143,8 +138,6 @@ export default async function DashboardPage() {
     pendingQuotes = quotes.filter((q) => q.status === 'new').length
     quoteStatuses = quotes
     pendingConsents = consents.filter((c) => !c.signed_at).length
-    activeSessionShifts = sessionShiftsResult?.success ? sessionShiftsResult.data : {}
-    inventoryItems = inventoryResult.success ? inventoryResult.data : []
 
     // Calcular alertas de gastos fijos
     if (fixedExpensesResult.success) {
@@ -267,8 +260,6 @@ export default async function DashboardPage() {
           photoUrls={photoUrls}
           initialIndex={cardIndex}
           template={studio?.reminderSessionTemplate}
-          inventoryItems={inventoryItems}
-          activeShifts={activeSessionShifts}
           consentSignedProjectIds={consentSignedProjectIds}
         />
       )}
@@ -301,7 +292,6 @@ export default async function DashboardPage() {
           sessions={todaySessions}
           balances={balances}
           medicalAlertProjectIds={medicalAlertProjectIds}
-          consentSignedProjectIds={consentSignedProjectIds}
         />
       </section>
     </div>
@@ -338,8 +328,6 @@ export default async function DashboardPage() {
           pendingQuotes={pendingQuotes}
           pendingConsents={pendingConsents}
           unscheduledApproved={unscheduledApproved}
-          inventoryItems={inventoryItems}
-          activeSessionShifts={activeSessionShifts}
           projects={projects}
           paymentMethods={studio?.paymentMethods}
           medicalAlertProjectIds={medicalAlertProjectIds}
