@@ -1,9 +1,25 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Copy, Gift, Loader2, Megaphone, MessageCircle, RefreshCw, Search, Send, Ticket, Undo2, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  Check,
+  CheckSquare,
+  Copy,
+  Gift,
+  Loader2,
+  Megaphone,
+  MessageCircle,
+  Plus,
+  RefreshCw,
+  Search,
+  Send,
+  Ticket,
+  Undo2,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CAMPAIGN_GROUPS, timeAwayLabel, type CampaignGroup } from '@/lib/campaigns/audience'
@@ -12,11 +28,14 @@ import type { CampaignRecipient } from '@/queries/campaigns'
 import {
   getCampaignTemplateStatuses,
   sendCampaignGroup,
+  sendCampaignToClients,
+  setCampaignAdded,
   setCampaignExcluded,
   setCampaignSlot,
   setupCampaignTemplates,
   type CampaignTemplateStatus,
 } from '@/actions/campaigns'
+import { searchClientsAction } from '@/actions/clients'
 
 type Tab = 'todos' | CampaignGroup | 'quitados'
 
@@ -59,6 +78,12 @@ export function CampaignView({
   const [overrides, setOverrides] = useState<Record<string, boolean>>({})
   const [slotOverrides, setSlotOverrides] = useState<Record<string, boolean>>({})
   const [slotsTaken, setSlotsTaken] = useState(initialSlotsTaken)
+  // Modo "Elegir a quién enviar": marcar clientes de la lista (y agregar
+  // contactos que no estaban) para mandarles la campaña solo a ellos.
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [confirmSelected, setConfirmSelected] = useState(false)
+  const [others, setOthers] = useState<{ id: string; name: string; phone: string | null }[]>([])
   const recipients = useMemo(
     () =>
       initialRecipients.map((r) => ({
@@ -90,6 +115,94 @@ export function CampaignView({
         (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q))
     )
   }, [recipients, tab, query])
+
+  /** Se puede elegir: no quitado y sin la campaña ya entregada (los fallidos sí). */
+  const selectable = (r: CampaignRecipient) => !r.excluded && (!r.sentStatus || r.sentStatus === 'failed')
+  const selectedList = recipients.filter((r) => selected.has(r.clientId) && selectable(r))
+  const visibleSelectable = visible.filter(selectable)
+  const allVisibleOn = visibleSelectable.length > 0 && visibleSelectable.every((r) => selected.has(r.clientId))
+  const inListIds = useMemo(() => new Set(recipients.map((r) => r.clientId)), [recipients])
+
+  function toggleSelected(id: string) {
+    setConfirmSelected(false)
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAllVisible() {
+    setConfirmSelected(false)
+    setSelected((prev) => {
+      const next = new Set(prev)
+      for (const r of visibleSelectable) {
+        if (allVisibleOn) next.delete(r.clientId)
+        else next.add(r.clientId)
+      }
+      return next
+    })
+  }
+
+  // Mientras se elige, la búsqueda también mira TODOS los contactos.
+  useEffect(() => {
+    const q = query.trim()
+    if (!selecting || q.length < 2) return
+    const t = setTimeout(async () => {
+      const res = await searchClientsAction(q)
+      setOthers(res.success ? res.data.filter((c) => c.phone && !inListIds.has(c.id)) : [])
+    }, 300)
+    return () => clearTimeout(t)
+  }, [query, selecting, inListIds])
+  const shownOthers = selecting && query.trim().length >= 2 ? others : []
+
+  function addContact(c: { id: string; name: string }) {
+    startTransition(async () => {
+      const res = await setCampaignAdded(c.id, true)
+      if (!res.success) return void toast.error(res.error.message)
+      setSelected((prev) => new Set(prev).add(c.id))
+      setOthers((o) => o.filter((x) => x.id !== c.id))
+      toast.success(`${c.name} agregado y seleccionado`)
+      router.refresh()
+    })
+  }
+
+  function removeAdded(r: CampaignRecipient) {
+    startTransition(async () => {
+      const res = await setCampaignAdded(r.clientId, false)
+      if (!res.success) return void toast.error(res.error.message)
+      toast.success(`${r.firstName} salió de la lista`)
+      router.refresh()
+    })
+  }
+
+  function sendSelected() {
+    const ids = selectedList.map((r) => r.clientId)
+    setConfirmSelected(false)
+    setBusy('send-selected')
+    startTransition(async () => {
+      const res = await sendCampaignToClients(ids)
+      setBusy(null)
+      if (!res.success) return void toast.error(res.error.message)
+      const { sent, failed } = res.data
+      if (sent) toast.success(`${sent} mensajes enviados`)
+      if (failed.length) {
+        toast.error(`${failed.length} no se enviaron: ${failed.slice(0, 3).map((f) => `${f.name} (${f.error})`).join(', ')}`)
+      }
+      if (!sent && !failed.length) toast.info('Ninguno de los elegidos estaba pendiente')
+      setSelected(new Set())
+      setSelecting(false)
+      router.refresh()
+    })
+  }
+
+  function toggleSelecting() {
+    setSelecting((v) => !v)
+    setSelected(new Set())
+    setConfirmSelected(false)
+    if (tab === 'quitados') setTab('todos')
+  }
 
   const statusOf = (key: CampaignGroup) => templates.find((t) => t.key === key)?.status ?? 'MISSING'
   const anyMissing = templates.length === 0 || templates.some((t) => t.status === 'MISSING')
@@ -306,6 +419,18 @@ export function CampaignView({
                   )
                 })}
               </div>
+              <button
+                type="button"
+                onClick={toggleSelecting}
+                disabled={statusOf('A') !== 'APPROVED'}
+                className={cn(
+                  'flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold disabled:opacity-50',
+                  selecting ? 'bg-muted hover:bg-accent' : 'bg-primary text-primary-foreground hover:bg-primary/85'
+                )}
+              >
+                {selecting ? <X className="size-3.5" /> : <CheckSquare className="size-3.5" />}
+                {selecting ? 'Cancelar selección' : 'Elegir a quién enviar'}
+              </button>
             </div>
           )}
 
@@ -335,11 +460,53 @@ export function CampaignView({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar cliente o número"
+              placeholder={selecting ? 'Buscar en la lista o en todos tus contactos' : 'Buscar cliente o número'}
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </label>
+          {selecting && (
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="text-muted-foreground">
+                Toca a cada cliente para marcarlo. A quien ya le llegó no se le vuelve a enviar.
+              </span>
+              <button
+                type="button"
+                onClick={toggleAllVisible}
+                disabled={visibleSelectable.length === 0}
+                className="shrink-0 rounded-md px-2 py-1 font-semibold text-primary hover:bg-accent/60 disabled:opacity-40"
+              >
+                {allVisibleOn ? 'Desmarcar todos' : `Marcar todos (${visibleSelectable.length})`}
+              </button>
+            </div>
+          )}
         </div>
+
+        {shownOthers.length > 0 && (
+          <div className="border-b border-border/60 px-3 py-2 sm:px-4">
+            <p className="pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Otros contactos
+            </p>
+            <ul className="divide-y divide-border/60">
+              {shownOthers.map((c) => (
+                <li key={c.id} className="flex items-center gap-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{c.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{c.phone}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => addContact(c)}
+                    disabled={pending}
+                    className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/25 disabled:opacity-50"
+                  >
+                    <Plus className="size-3.5" />
+                    Agregar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <ul className="divide-y divide-border/60">
           {error && <li className="p-6 text-center text-sm text-destructive">No se pudo cargar la lista: {error}</li>}
@@ -348,21 +515,51 @@ export function CampaignView({
           )}
           {visible.map((r) => {
             const sent = r.sentStatus ? SEND_STATUS[r.sentStatus] ?? SEND_STATUS.sent : null
+            const canPick = selecting && selectable(r)
+            const picked = canPick && selected.has(r.clientId)
             return (
-              <li key={r.clientId} className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold">
-                  {r.firstName.charAt(0)}
-                </span>
+              <li
+                key={r.clientId}
+                onClick={canPick ? () => toggleSelected(r.clientId) : undefined}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 sm:px-4',
+                  canPick && 'cursor-pointer hover:bg-accent/40',
+                  picked && 'bg-primary/10',
+                  selecting && !canPick && 'opacity-50'
+                )}
+              >
+                {selecting ? (
+                  <span
+                    role="checkbox"
+                    aria-checked={picked}
+                    aria-label={`Elegir a ${r.firstName}`}
+                    className={cn(
+                      'grid size-9 shrink-0 place-items-center rounded-full border-2 transition-colors',
+                      picked ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-transparent'
+                    )}
+                  >
+                    <Check className="size-4" strokeWidth={3} />
+                  </span>
+                ) : (
+                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold">
+                    {r.firstName.charAt(0)}
+                  </span>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {r.firstName}
                     <span className="ml-1.5 font-normal text-muted-foreground">{r.name}</span>
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {r.phone} · última visita {timeAwayLabel(r.lastVisit)}
+                    {r.phone} · {r.lastVisit ? `última visita ${timeAwayLabel(r.lastVisit)}` : 'agregado a mano'}
                   </p>
-                  {(sent || r.reply || r.slotTaken || r.wroteBack || r.reminded) && (
+                  {(sent || r.reply || r.slotTaken || r.wroteBack || r.reminded || r.added) && (
                     <p className="mt-1 flex flex-wrap gap-1">
+                      {r.added && (
+                        <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:text-violet-300">
+                          Agregado
+                        </span>
+                      )}
                       {sent && (
                         <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', sent.className)}>
                           {sent.label}
@@ -419,7 +616,19 @@ export function CampaignView({
                     <Ticket className="size-4" />
                   </button>
                 )}
-                {isOwner && !r.sentStatus && !r.slotTaken && (
+                {!selecting && isOwner && r.added && !r.sentStatus && !r.slotTaken && (
+                  <button
+                    type="button"
+                    onClick={() => removeAdded(r)}
+                    disabled={pending}
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    aria-label={`Sacar a ${r.firstName} de la lista`}
+                    title="Sacar de la lista"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+                {!selecting && isOwner && !r.added && !r.sentStatus && !r.slotTaken && (
                   <button
                     type="button"
                     onClick={() => toggleExcluded(r, !r.excluded)}
@@ -451,6 +660,40 @@ export function CampaignView({
           })}
         </ul>
       </div>
+
+      {selecting && (
+        <div className="border-t border-border/60 bg-card p-3 sm:px-4">
+          {confirmSelected ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmSelected(false)}
+                className="rounded-xl bg-muted px-4 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                Volver
+              </button>
+              <button
+                type="button"
+                onClick={sendSelected}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-destructive py-2.5 text-sm font-semibold text-white hover:bg-destructive/85"
+              >
+                <Send className="size-4" />
+                ¿Enviar a {selectedList.length}? Confirmar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmSelected(true)}
+              disabled={selectedList.length === 0 || pending}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-50"
+            >
+              {busy === 'send-selected' ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+              {selectedList.length === 0 ? 'Elige a quién enviar' : `Enviar a ${selectedList.length} seleccionados`}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

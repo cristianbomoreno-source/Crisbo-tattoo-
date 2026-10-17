@@ -51,3 +51,17 @@ create policy "campaign_slots_delete" on public.campaign_slots
 -- $job$);
 -- (igual para el grupo B: 'nuevos-trazos-grupo-b', '0 16 17 10 *', "group":"B")
 -- Ver tareas: select jobname, schedule from cron.job;  Cancelar: select cron.unschedule('<jobname>');
+
+-- Contactos agregados a mano a la campaña (además de los grupos A/B).
+-- APLICADO 2026-10-16 (migraciones campaign_extra_recipients + _policies).
+create table if not exists public.campaign_extra_recipients (
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  campaign text not null,
+  client_id uuid not null references public.clients(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (studio_id, campaign, client_id)
+);
+alter table public.campaign_extra_recipients enable row level security;
+create policy campaign_extra_recipients_select on public.campaign_extra_recipients for select using (studio_id = get_studio_id());
+create policy campaign_extra_recipients_insert on public.campaign_extra_recipients for insert with check (studio_id = get_studio_id() and is_owner());
+create policy campaign_extra_recipients_delete on public.campaign_extra_recipients for delete using (studio_id = get_studio_id() and is_owner());

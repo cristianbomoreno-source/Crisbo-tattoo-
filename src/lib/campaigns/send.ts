@@ -34,6 +34,31 @@ export async function sendCampaignGroupCore(
   return sendTemplateTo(admin, { ...opts, key: opts.group, recipients: pending, params: (r) => [r.firstName] })
 }
 
+/** Envío a quienes el dueño eligió a mano (de la lista o agregados). Cada
+ * uno recibe el texto de su grupo; nunca a quitados ni a quien ya le llegó
+ * (sí reintenta los que fallaron). */
+export async function sendCampaignToCore(
+  admin: SupabaseClient,
+  opts: { studioId: string; clientIds: string[]; origin: string; sentBy: string | null }
+): Promise<Result<CampaignSendResult>> {
+  const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null })
+  if (!data.success) return data
+  const ids = new Set(opts.clientIds)
+  const chosen = data.data.recipients.filter(
+    (r) => ids.has(r.clientId) && !r.excluded && (!r.sentStatus || r.sentStatus === 'failed')
+  )
+  const total: CampaignSendResult = { sent: 0, failed: [] }
+  for (const group of ['A', 'B'] as const) {
+    const recipients = chosen.filter((r) => r.group === group)
+    if (recipients.length === 0) continue
+    const res = await sendTemplateTo(admin, { ...opts, key: group, recipients, params: (r) => [r.firstName] })
+    if (!res.success) return res
+    total.sent += res.data.sent
+    total.failed.push(...res.data.failed)
+  }
+  return ok(total)
+}
+
 /** Recordatorio del día 5: a quienes les llegó la campaña (no falló) y no
  * han escrito nada — ni botón ni texto —, sin cupo, no quitados y sin
  * recordatorio previo. {{2}} = cupos que quedan; sin cupos no se envía. */

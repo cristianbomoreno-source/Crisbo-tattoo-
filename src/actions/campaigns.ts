@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { dbError } from '@/lib/errors/db'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { getCurrentStudio } from '@/queries/studio'
-import { sendCampaignGroupCore, type CampaignSendResult } from '@/lib/campaigns/send'
+import { sendCampaignGroupCore, sendCampaignToCore, type CampaignSendResult } from '@/lib/campaigns/send'
 import {
   createMarketingTemplate,
   fetchTemplateStatus,
@@ -132,6 +132,45 @@ export async function sendCampaignGroup(group: CampaignGroup): Promise<Result<Ca
   })
   revalidatePath('/dashboard/inbox', 'layout')
   return res
+}
+
+/** "Enviar a seleccionados": solo a los clientes que el dueño marcó. */
+export async function sendCampaignToClients(clientIds: string[]): Promise<Result<CampaignSendResult>> {
+  if (!Array.isArray(clientIds) || clientIds.length === 0) return err('VALIDATION_ERROR', 'Elige al menos un cliente')
+  if (clientIds.length > 500) return err('VALIDATION_ERROR', 'Máximo 500 por envío')
+  const owner = await ownerAccount()
+  if ('error' in owner) return owner.error
+  const res = await sendCampaignToCore(createAdminClient(), {
+    studioId: owner.studio.id,
+    clientIds: clientIds.filter((id) => typeof id === 'string'),
+    origin: await publicOrigin(),
+    sentBy: owner.studio.artistId,
+  })
+  revalidatePath('/dashboard/inbox', 'layout')
+  return res
+}
+
+/** Agrega (o saca) un contacto a la lista de la campaña aunque no esté en
+ * los grupos A/B por fecha. */
+export async function setCampaignAdded(clientId: string, added: boolean): Promise<Result<null>> {
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (studio.role !== 'owner') return err('FORBIDDEN', 'Solo el dueño del estudio puede editar la lista')
+  const supabase = await createClient()
+  const { error } = added
+    ? await supabase
+        .from('campaign_extra_recipients')
+        .upsert({ studio_id: studio.id, campaign: CAMPAIGN_KEY, client_id: clientId },
+          { onConflict: 'studio_id,campaign,client_id', ignoreDuplicates: true })
+    : await supabase
+        .from('campaign_extra_recipients')
+        .delete()
+        .eq('studio_id', studio.id)
+        .eq('campaign', CAMPAIGN_KEY)
+        .eq('client_id', clientId)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard/inbox/campaigns')
+  return ok(null)
 }
 
 /** Quita (o devuelve) a un cliente de la lista de la campaña. */

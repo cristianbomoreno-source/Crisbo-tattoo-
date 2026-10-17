@@ -12,8 +12,11 @@ export type CampaignRecipient = {
   name: string
   firstName: string
   phone: string
-  lastVisit: string
+  /** null = contacto agregado a mano sin visitas registradas. */
+  lastVisit: string | null
   group: CampaignGroup
+  /** Agregado a mano (no entraba por fecha de última visita). */
+  added: boolean
   /** Chat de WhatsApp ya vinculado al cliente, si existe. */
   conversationId: string | null
   /** Estado del mensaje de la campaña (sent/delivered/read/failed); null = no enviado. */
@@ -68,7 +71,7 @@ export async function loadCampaignData(
   const monthAgo = new Date(now.getTime() - 30 * DAY).toISOString()
 
   // Paginado: Supabase devuelve máximo 1.000 filas por consulta.
-  type Row = { id: string; name: string; phone: string | null; last_session_date: string }
+  type Row = { id: string; name: string; phone: string | null; last_session_date: string | null }
   const clients: Row[] = []
   for (let from = 0; ; from += 1000) {
     let query = supabase
@@ -103,10 +106,26 @@ export async function loadCampaignData(
   }
 
   // Quitados a mano y cupos tomados.
-  const [{ data: exclusions }, { data: slots }] = await Promise.all([
+  const [{ data: exclusions }, { data: slots }, { data: extras }] = await Promise.all([
     supabase.from('campaign_exclusions').select('client_id').eq('studio_id', scope.studioId).eq('campaign', CAMPAIGN_KEY),
     supabase.from('campaign_slots').select('client_id').eq('studio_id', scope.studioId).eq('campaign', CAMPAIGN_KEY),
+    supabase.from('campaign_extra_recipients').select('client_id').eq('studio_id', scope.studioId).eq('campaign', CAMPAIGN_KEY),
   ])
+  // Contactos agregados a mano: entran aunque no cumplan la regla de fechas.
+  const added = new Set(((extras ?? []) as { client_id: string }[]).map((e) => e.client_id))
+  const inList = new Set(clients.map((c) => c.id))
+  const missing = [...added].filter((id) => !inList.has(id))
+  for (let i = 0; i < missing.length; i += 200) {
+    let q = supabase
+      .from('clients')
+      .select('id, name, phone, last_session_date')
+      .eq('studio_id', scope.studioId)
+      .in('id', missing.slice(i, i + 200))
+      .not('phone', 'is', null)
+    if (scope.artistId) q = q.eq('artist_id', scope.artistId)
+    const { data } = await q
+    clients.push(...((data ?? []) as Row[]))
+  }
   const excluded = new Set(((exclusions ?? []) as { client_id: string }[]).map((e) => e.client_id))
   const slotTaken = new Set(((slots ?? []) as { client_id: string }[]).map((e) => e.client_id))
 
@@ -172,12 +191,14 @@ export async function loadCampaignData(
 
   const recipients: CampaignRecipient[] = []
   for (const c of withPhone) {
-    const group = campaignGroup(c.last_session_date, now)
+    const isAdded = added.has(c.id)
+    // Los agregados a mano reciben el texto del grupo A si no tienen grupo.
+    const group = (c.last_session_date ? campaignGroup(c.last_session_date, now) : null) ?? (isAdded ? 'A' : null)
     if (!group) continue
     const conv = chats.get(c.id) ?? ''
-    // Con cita agendada sale de la lista — salvo si ya recibió la campaña o
-    // tomó cupo (agendar es justo el objetivo: debe seguir apareciendo).
-    if (busy.has(c.id) && !sentStatus.has(conv) && !slotTaken.has(c.id)) continue
+    // Con cita agendada sale de la lista — salvo si ya recibió la campaña,
+    // tomó cupo (agendar es justo el objetivo) o lo agregaron a mano.
+    if (busy.has(c.id) && !sentStatus.has(conv) && !slotTaken.has(c.id) && !isAdded) continue
     recipients.push({
       clientId: c.id,
       name: c.name,
@@ -185,6 +206,7 @@ export async function loadCampaignData(
       phone: c.phone!.trim(),
       lastVisit: c.last_session_date,
       group,
+      added: isAdded,
       conversationId: chats.get(c.id) ?? null,
       sentStatus: sentStatus.get(conv) ?? null,
       reply: replies.get(conv) ?? null,
