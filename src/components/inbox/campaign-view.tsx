@@ -311,6 +311,19 @@ export function CampaignView({
 
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-3 border-b border-border/60 p-3 sm:px-4">
+          {isOwner && (
+            <Link
+              href="/dashboard/inbox/campaigns/bono"
+              className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/5 p-3 text-xs hover:bg-primary/10"
+            >
+              <Gift className="size-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1">
+                <span className="font-semibold">Campaña “Bono de agradecimiento”</span>
+                <span className="block text-muted-foreground">$100.000 para su próximo tatuaje grande · tú eliges a quién</span>
+              </span>
+              <span className="text-primary">→</span>
+            </Link>
+          )}
           <div className="rounded-xl border border-border/60 p-3">
             <div className="flex items-baseline justify-between gap-2">
               <p className="flex items-center gap-1.5 text-xs font-semibold">

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { loadCampaignData } from '@/queries/campaigns'
-import { fetchTemplateStatus, sendImageTemplate } from '@/lib/whatsapp-cloud/api'
+import { fetchTemplateStatus, sendBodyTemplate, sendImageTemplate } from '@/lib/whatsapp-cloud/api'
 import { normalizeWaPhone } from '@/lib/whatsapp-cloud/parse'
 import type { CampaignGroup } from './audience'
 import {
@@ -84,7 +84,7 @@ export async function sendCampaignReminderCore(
   return sendTemplateTo(admin, { ...opts, key: 'recordatorio', recipients: pending, params: (r) => [r.firstName, String(left)] })
 }
 
-/** Envía la plantilla a cada destinatario y la guarda en su chat. */
+/** Nuevos Trazos: su plantilla, su imagen y su texto en el chat. */
 async function sendTemplateTo(
   admin: SupabaseClient,
   opts: {
@@ -96,8 +96,37 @@ async function sendTemplateTo(
     params: (r: CampaignRecipient) => string[]
   }
 ): Promise<Result<CampaignSendResult>> {
-  const { studioId, key } = opts
-  const def = CAMPAIGN_TEMPLATES[key]
+  const def = CAMPAIGN_TEMPLATES[opts.key]
+  return sendCampaignTemplate(admin, {
+    studioId: opts.studioId,
+    sentBy: opts.sentBy,
+    recipients: opts.recipients,
+    params: opts.params,
+    template: { name: def.name, label: def.label, language: CAMPAIGN_LANGUAGE, imagePath: CAMPAIGN_IMAGE_PATH },
+    chatText: (params) => campaignMessageText(opts.key, params),
+    preview: `📣 ${CAMPAIGN_NAME}`,
+  })
+}
+
+type Target = { name: string; phone: string; clientId: string }
+
+/** Envía una plantilla de Marketing (con imagen opcional) a cada destinatario
+ * y la guarda en su chat. Lo usan todas las campañas. */
+export async function sendCampaignTemplate<R extends Target>(
+  admin: SupabaseClient,
+  opts: {
+    studioId: string
+    sentBy: string | null
+    recipients: R[]
+    params: (r: R) => string[]
+    template: { name: string; label: string; language: string; imagePath: string | null }
+    /** Texto que queda guardado en el chat (empieza con el marcador de la campaña). */
+    chatText: (params: string[]) => string
+    /** Vista previa en la lista de chats. */
+    preview: string
+  }
+): Promise<Result<CampaignSendResult>> {
+  const { studioId, template } = opts
 
   const { data: acc } = await admin
     .from('whatsapp_accounts')
@@ -107,23 +136,22 @@ async function sendTemplateTo(
   if (!acc) return err('VALIDATION_ERROR', 'Primero conecta tu número en Ajustes → WhatsApp')
 
   try {
-    const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, def.name)
+    const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, template.name)
     if (t.status !== 'APPROVED') {
-      return err('VALIDATION_ERROR', `Meta todavía no aprueba la plantilla del ${def.label} (estado: ${t.status}).`)
+      return err('VALIDATION_ERROR', `Meta todavía no aprueba la plantilla ${template.label} (estado: ${t.status}).`)
     }
   } catch {
-    return err('VALIDATION_ERROR', 'Primero crea las plantillas de la campaña.')
+    return err('VALIDATION_ERROR', 'Primero crea la plantilla de la campaña.')
   }
 
-  const pending = opts.recipients
   // Siempre el dominio público: el cron de Vercel llega por la URL interna
   // del deployment (*.vercel.app, protegida) y Meta no puede bajar la imagen
   // de ahí — el 2026-10-16 el grupo B falló entero con "Media upload error".
-  const imageLink = `${PUBLIC_ORIGIN}${CAMPAIGN_IMAGE_PATH}`
+  const imageLink = template.imagePath ? `${PUBLIC_ORIGIN}${template.imagePath}` : null
   const failed: CampaignSendResult['failed'] = []
   let sent = 0
 
-  async function sendOne(r: CampaignRecipient) {
+  async function sendOne(r: R) {
     const waId = normalizeWaPhone(r.phone)
     if (!waId) {
       failed.push({ name: r.name, error: 'Número inválido' })
@@ -131,12 +159,9 @@ async function sendTemplateTo(
     }
     const params = opts.params(r)
     try {
-      const waMessageId = await sendImageTemplate(acc!, waId, {
-        name: def.name,
-        language: CAMPAIGN_LANGUAGE,
-        imageLink,
-        params,
-      })
+      const waMessageId = imageLink
+        ? await sendImageTemplate(acc!, waId, { name: template.name, language: template.language, imageLink, params })
+        : await sendBodyTemplate(acc!, waId, { name: template.name, language: template.language, params })
 
       await admin
         .from('wa_conversations')
@@ -160,19 +185,15 @@ async function sendTemplateTo(
         wa_message_id: waMessageId,
         direction: 'out',
         type: 'template',
-        body: campaignMessageText(key, params),
-        media_url: CAMPAIGN_IMAGE_PATH,
+        body: opts.chatText(params),
+        media_url: template.imagePath,
         status: 'sent',
         sent_by: opts.sentBy,
         created_at: now,
       })
       await admin
         .from('wa_conversations')
-        .update({
-          last_message_at: now,
-          last_message_preview: `📣 ${CAMPAIGN_NAME}`,
-          last_message_direction: 'out',
-        })
+        .update({ last_message_at: now, last_message_preview: opts.preview, last_message_direction: 'out' })
         .eq('id', conv.id)
       sent++
     } catch (e) {
@@ -181,8 +202,8 @@ async function sendTemplateTo(
   }
 
   // De a 5 en paralelo: rápido sin chocar con los límites de Meta.
-  for (let i = 0; i < pending.length; i += 5) {
-    await Promise.all(pending.slice(i, i + 5).map(sendOne))
+  for (let i = 0; i < opts.recipients.length; i += 5) {
+    await Promise.all(opts.recipients.slice(i, i + 5).map(sendOne))
   }
   return ok({ sent, failed })
 }

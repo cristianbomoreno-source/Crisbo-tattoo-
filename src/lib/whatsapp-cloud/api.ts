@@ -275,7 +275,16 @@ export async function uploadTemplateMedia(token: string, file: { bytes: ArrayBuf
 export async function createMarketingTemplate(
   wabaId: string,
   token: string,
-  t: { name: string; language: string; headerHandle: string; body: string; example: string[]; footer: string; buttons: string[] }
+  t: {
+    name: string
+    language: string
+    /** Sin imagen: plantilla de solo texto. */
+    headerHandle: string | null
+    body: string
+    example: string[]
+    footer: string | null
+    buttons: string[]
+  }
 ) {
   return graph<{ id: string; status?: string; category?: string }>(
     `/${encodeURIComponent(wabaId)}/message_templates`,
@@ -287,10 +296,12 @@ export async function createMarketingTemplate(
         language: t.language,
         category: 'MARKETING',
         components: [
-          { type: 'HEADER', format: 'IMAGE', example: { header_handle: [t.headerHandle] } },
+          ...(t.headerHandle ? [{ type: 'HEADER', format: 'IMAGE', example: { header_handle: [t.headerHandle] } }] : []),
           { type: 'BODY', text: t.body, example: { body_text: [t.example] } },
-          { type: 'FOOTER', text: t.footer },
-          { type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) },
+          ...(t.footer ? [{ type: 'FOOTER', text: t.footer }] : []),
+          ...(t.buttons.length
+            ? [{ type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) }]
+            : []),
         ],
       }),
     }
