@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Check, Gift, Loader2, MessageCircle, RefreshCw, Search, Send, Undo2, X } from 'lucide-react'
+import { ArrowLeft, Check, Gift, Loader2, MessageCircle, RefreshCw, Search, Send, Trash2, Undo2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { BONO_IMAGE_PATH, BONO_NAME, BONO_TEMPLATE } from '@/lib/campaigns/bono'
@@ -16,6 +16,7 @@ import {
   setupBonoTemplate,
   type BonoTemplateStatus,
 } from '@/actions/bono-campaign'
+import { deleteClientsAction } from '@/actions/clients'
 
 type Tab = 'nuevos' | 'todos' | 'enviados' | 'quitados'
 
@@ -58,14 +59,18 @@ export function BonoCampaignView({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirming, setConfirming] = useState(false)
   const [limit, setLimit] = useState(PAGE)
+  // Borrado de la base: se esconden al instante; la X pide confirmar.
+  const [deleted, setDeleted] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
   const recipients = useMemo(
     () =>
-      initial.map((r) => ({
+      initial.filter((r) => !deleted.has(r.clientId)).map((r) => ({
         ...r,
         excluded: r.clientId in overrides ? overrides[r.clientId] === true : r.excluded,
       })),
-    [initial, overrides]
+    [initial, overrides, deleted]
   )
   const sent = (r: BonoRecipient) => !!r.sentStatus && r.sentStatus !== 'failed'
   const selectable = (r: BonoRecipient) => !r.excluded && !sent(r)
@@ -103,6 +108,7 @@ export function BonoCampaignView({
 
   function toggle(id: string) {
     setConfirming(false)
+    setConfirmBulkDelete(false)
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -113,6 +119,7 @@ export function BonoCampaignView({
 
   function toggleAll() {
     setConfirming(false)
+    setConfirmBulkDelete(false)
     setSelected((prev) => {
       const next = new Set(prev)
       for (const r of visibleSelectable) {
@@ -138,6 +145,30 @@ export function BonoCampaignView({
       return void toast.error(res.error.message)
     }
     toast.success(excluded ? `${r.firstName} salió de la lista` : `${r.firstName} volvió a la lista`)
+  }
+
+  /** Borra de la base de datos (con respaldo). Los que tienen historial no se tocan. */
+  function removeClients(ids: string[]) {
+    setConfirmDelete(null)
+    setConfirmBulkDelete(false)
+    setDeleted((prev) => new Set([...prev, ...ids]))
+    setBusy('delete')
+    startTransition(async () => {
+      const res = await deleteClientsAction(ids)
+      setBusy(null)
+      if (!res.success) {
+        setDeleted((prev) => new Set([...prev].filter((id) => !ids.includes(id))))
+        return void toast.error(res.error.message)
+      }
+      const { deleted: gone, skipped } = res.data
+      if (skipped.length) {
+        setDeleted((prev) => new Set([...prev].filter((id) => !skipped.includes(id))))
+        toast.error(`${skipped.length} no se borraron: tienen proyectos, cotizaciones o consentimientos`)
+      }
+      if (gone.length) toast.success(gone.length === 1 ? 'Cliente borrado' : `${gone.length} clientes borrados`)
+      setSelected((prev) => new Set([...prev].filter((id) => !gone.includes(id))))
+      router.refresh()
+    })
   }
 
   function createTemplate() {
@@ -283,7 +314,7 @@ export function BonoCampaignView({
           </label>
           {tab !== 'enviados' && tab !== 'quitados' && (
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="text-muted-foreground">Toca a cada cliente para marcarlo.</span>
+              <span className="text-muted-foreground">Toca a cada cliente para marcarlo. La X lo borra de la base de datos.</span>
               <button
                 type="button"
                 onClick={toggleAll}
@@ -356,18 +387,46 @@ export function BonoCampaignView({
                     </p>
                   )}
                 </div>
-                {!sent(r) && (
+                {r.excluded ? (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      toggleExcluded(r, !r.excluded)
+                      toggleExcluded(r, false)
                     }}
                     className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                    aria-label={r.excluded ? `Devolver a ${r.firstName}` : `Quitar a ${r.firstName}`}
-                    title={r.excluded ? 'Devolver a la lista' : 'Quitar (nunca le llega el bono)'}
+                    aria-label={`Devolver a ${r.firstName}`}
+                    title="Devolver a la lista"
                   >
-                    {r.excluded ? <Undo2 className="size-4" /> : <X className="size-4" />}
+                    <Undo2 className="size-4" />
+                  </button>
+                ) : confirmDelete === r.clientId ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeClients([r.clientId])
+                    }}
+                    onBlur={() => setConfirmDelete(null)}
+                    autoFocus
+                    className="flex shrink-0 items-center gap-1 rounded-full bg-destructive px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-destructive/85"
+                  >
+                    <Trash2 className="size-3.5" />
+                    ¿Borrar?
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setConfirmDelete(r.clientId)
+                    }}
+                    disabled={pending}
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    aria-label={`Borrar a ${r.firstName} de la base de datos`}
+                    title="Borrar de la base de datos"
+                  >
+                    <X className="size-4" />
                   </button>
                 )}
                 {r.conversationId && (
@@ -398,7 +457,25 @@ export function BonoCampaignView({
       </div>
 
       <div className="border-t border-border/60 bg-card p-3 sm:px-4">
-        {confirming ? (
+        {confirmBulkDelete ? (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmBulkDelete(false)}
+              className="rounded-xl bg-muted px-4 py-2.5 text-sm font-medium hover:bg-accent"
+            >
+              Volver
+            </button>
+            <button
+              type="button"
+              onClick={() => removeClients(selectedList.map((r) => r.clientId))}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-destructive py-2.5 text-sm font-semibold text-white hover:bg-destructive/85"
+            >
+              <Trash2 className="size-4" />
+              ¿Borrar {selectedList.length} de la base de datos? Confirmar
+            </button>
+          </div>
+        ) : confirming ? (
           <div className="flex gap-2">
             <button
               type="button"
@@ -417,12 +494,22 @@ export function BonoCampaignView({
             </button>
           </div>
         ) : (
+          <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmBulkDelete(true)}
+            disabled={selectedList.length === 0 || pending}
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/20 disabled:opacity-50"
+          >
+            {busy === 'delete' ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+            Borrar
+          </button>
           <button
             type="button"
             onClick={() => setConfirming(true)}
             disabled={!approved || selectedList.length === 0 || pending}
             title={!approved ? 'Meta todavía no aprueba la plantilla' : undefined}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-50"
           >
             {busy === 'send' ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
             {!approved
@@ -431,6 +518,7 @@ export function BonoCampaignView({
                 ? 'Elige a quién enviar'
                 : `Enviar a ${selectedList.length} · ~$${(selectedList.length * COST_PER_MESSAGE).toLocaleString('es-CO')}`}
           </button>
+          </div>
         )}
       </div>
     </div>

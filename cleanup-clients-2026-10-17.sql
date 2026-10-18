@@ -25,3 +25,14 @@ with target as (
   and not exists (select 1 from consents x where x.client_id=c.id)
 ), bk as (insert into clients_deleted_backup select c.*, now() from clients c where c.id in (select id from target) returning id)
 delete from clients where id in (select id from bk);
+
+-- Tercera pasada: los 65 que el dueño quitó con la X del Bono (esa X solo
+-- excluía; él quería borrarlos). Mismo respaldo y mismas reglas.
+with ex as (select client_id from campaign_exclusions where campaign='bono_agradecimiento' and created_at > '2026-10-17 23:00:00+00'),
+target as (
+  select c.id from clients c where c.id in (select client_id from ex)
+  and not exists (select 1 from projects p where p.client_id=c.id)
+  and not exists (select 1 from quotes q where q.client_id=c.id)
+  and not exists (select 1 from consents x where x.client_id=c.id)
+), bk as (insert into clients_deleted_backup select c.*, now() from clients c where c.id in (select id from target) returning id)
+delete from clients where id in (select id from bk);
