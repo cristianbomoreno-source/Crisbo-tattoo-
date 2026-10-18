@@ -197,8 +197,8 @@ export function CampaignView({
         toast.error(`${skipped.length} no se borraron: tienen proyectos, cotizaciones o consentimientos`)
       }
       if (gone.length) toast.success(gone.length === 1 ? 'Cliente borrado' : `${gone.length} clientes borrados`)
+      // Sin router.refresh: cada recarga consultaba a Meta y bloqueó la cuenta (#80008).
       setSelected((prev) => new Set([...prev].filter((id) => !gone.includes(id))))
-      router.refresh()
     })
   }
 
@@ -257,7 +257,7 @@ export function CampaignView({
   function refreshTemplates() {
     setBusy('refresh')
     startTransition(async () => {
-      const res = await getCampaignTemplateStatuses()
+      const res = await getCampaignTemplateStatuses(true)
       setBusy(null)
       if (!res.success) return void toast.error(res.error.message)
       setTemplates(res.data)

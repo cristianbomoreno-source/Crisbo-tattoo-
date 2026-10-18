@@ -129,6 +129,7 @@ export async function createFlowTemplate(
   token: string,
   t: { name: string; language: string; body: string; buttonText: string; flowId: string; firstScreen: string }
 ) {
+  templateStatusCache.delete(`${wabaId}:${t.name}`)
   return graph<{ id: string; status?: string; category?: string }>(
     `/${encodeURIComponent(wabaId)}/message_templates`,
     token,
@@ -153,13 +154,42 @@ export async function createFlowTemplate(
 }
 
 /** Estado de revisión de una plantilla (PENDING, APPROVED, REJECTED…). */
-export async function fetchTemplateStatus(wabaId: string, token: string, name: string) {
+/** Estado de plantillas recién consultado: las páginas de campañas lo piden en
+ * cada render y Meta corta la cuenta por exceso de llamadas (#80008). */
+const templateStatusCache = new Map<string, { at: number; value: { status: string; reason: string | null } }>()
+
+/** Aprobada casi nunca cambia; en revisión sí, así que se consulta más seguido. */
+const ttl = (status: string) => (status === 'APPROVED' ? 10 * 60 * 1000 : 60 * 1000)
+
+export async function fetchTemplateStatus(wabaId: string, token: string, name: string, opts?: { fresh?: boolean }) {
+  const key = `${wabaId}:${name}`
+  const hit = templateStatusCache.get(key)
+  if (!opts?.fresh && hit && Date.now() - hit.at < ttl(hit.value.status)) {
+    if (hit.value.status === MISSING) throw new Error(MISSING_MESSAGE)
+    return hit.value
+  }
+  try {
+    const value = await fetchTemplateStatusUncached(wabaId, token, name)
+    templateStatusCache.set(key, { at: Date.now(), value })
+    return value
+  } catch (e) {
+    if ((e as Error).message === MISSING_MESSAGE) {
+      templateStatusCache.set(key, { at: Date.now(), value: { status: MISSING, reason: null } })
+    }
+    throw e
+  }
+}
+
+const MISSING = '__MISSING__'
+const MISSING_MESSAGE = 'La plantilla ya no existe en Meta'
+
+async function fetchTemplateStatusUncached(wabaId: string, token: string, name: string) {
   const json = await graph<{ data?: { name: string; status: string; rejected_reason?: string }[] }>(
     `/${encodeURIComponent(wabaId)}/message_templates?name=${encodeURIComponent(name)}&fields=name,status,rejected_reason`,
     token
   )
   const t = json.data?.find((d) => d.name === name)
-  if (!t) throw new Error('La plantilla ya no existe en Meta')
+  if (!t) throw new Error(MISSING_MESSAGE)
   return { status: t.status, reason: t.rejected_reason && t.rejected_reason !== 'NONE' ? t.rejected_reason : null }
 }
 
@@ -286,6 +316,7 @@ export async function createMarketingTemplate(
     buttons: string[]
   }
 ) {
+  templateStatusCache.delete(`${wabaId}:${t.name}`)
   return graph<{ id: string; status?: string; category?: string }>(
     `/${encodeURIComponent(wabaId)}/message_templates`,
     token,
@@ -346,6 +377,7 @@ export async function createUtilityTemplate(
   token: string,
   t: { name: string; language: string; body: string; example: string[]; buttons: string[] }
 ) {
+  templateStatusCache.delete(`${wabaId}:${t.name}`)
   return graph<{ id: string; status?: string; category?: string }>(
     `/${encodeURIComponent(wabaId)}/message_templates`,
     token,

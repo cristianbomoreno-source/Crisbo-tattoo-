@@ -54,12 +54,12 @@ async function publicOrigin() {
   return `https://${host}`
 }
 
-async function readStatuses(wabaId: string, token: string): Promise<CampaignTemplateStatus[]> {
+async function readStatuses(wabaId: string, token: string, fresh = false): Promise<CampaignTemplateStatus[]> {
   return Promise.all(
     (Object.keys(CAMPAIGN_TEMPLATES) as CampaignTemplateKey[]).map(async (key) => {
       const name = CAMPAIGN_TEMPLATES[key].name
       try {
-        const t = await fetchTemplateStatus(wabaId, token, name)
+        const t = await fetchTemplateStatus(wabaId, token, name, { fresh })
         return { key, name, status: t.status, reason: t.reason }
       } catch {
         return { key, name, status: 'MISSING', reason: null }
@@ -68,11 +68,12 @@ async function readStatuses(wabaId: string, token: string): Promise<CampaignTemp
   )
 }
 
-/** Estado de las 3 plantillas en Meta (MISSING = todavía no se ha creado). */
-export async function getCampaignTemplateStatuses(): Promise<Result<CampaignTemplateStatus[]>> {
+/** Estado de las 3 plantillas en Meta (MISSING = todavía no se ha creado).
+ * fresh: el botón "Actualizar" salta la caché. */
+export async function getCampaignTemplateStatuses(fresh = false): Promise<Result<CampaignTemplateStatus[]>> {
   const owner = await ownerAccount()
   if ('error' in owner) return owner.error
-  return ok(await readStatuses(owner.acc.waba_id, owner.acc.access_token))
+  return ok(await readStatuses(owner.acc.waba_id, owner.acc.access_token, fresh === true))
 }
 
 /** Crea en Meta las plantillas que faltan (imagen + texto + pie + botones). */

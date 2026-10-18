@@ -36,20 +36,21 @@ async function owner() {
   return { studio, acc: acc as { phone_number_id: string; waba_id: string; access_token: string } } as const
 }
 
-async function readStatus(wabaId: string, token: string): Promise<BonoTemplateStatus> {
+async function readStatus(wabaId: string, token: string, fresh = false): Promise<BonoTemplateStatus> {
   try {
-    const t = await fetchTemplateStatus(wabaId, token, BONO_TEMPLATE.name)
+    const t = await fetchTemplateStatus(wabaId, token, BONO_TEMPLATE.name, { fresh })
     return { name: BONO_TEMPLATE.name, status: t.status, reason: t.reason }
   } catch {
     return { name: BONO_TEMPLATE.name, status: 'MISSING', reason: null }
   }
 }
 
-/** Estado de la plantilla del bono en Meta (MISSING = sin crear). */
-export async function getBonoTemplateStatus(): Promise<Result<BonoTemplateStatus>> {
+/** Estado de la plantilla del bono en Meta (MISSING = sin crear).
+ * fresh: el botón "Actualizar" salta la caché. */
+export async function getBonoTemplateStatus(fresh = false): Promise<Result<BonoTemplateStatus>> {
   const o = await owner()
   if ('error' in o) return o.error!
-  return ok(await readStatus(o.acc.waba_id, o.acc.access_token))
+  return ok(await readStatus(o.acc.waba_id, o.acc.access_token, fresh === true))
 }
 
 /** Crea la plantilla en Meta (imagen + texto + pie, sin botones). */

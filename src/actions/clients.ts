@@ -168,8 +168,8 @@ export async function deleteClientsAction(
   })
   if (error) return dbError(error)
   const row = data?.[0] ?? { deleted: [], skipped: [] }
-  revalidatePath('/dashboard/clients')
-  revalidatePath('/dashboard/inbox/campaigns', 'layout')
+  // Sin revalidatePath: re-renderizaría la página de campañas en cada X, y esa
+  // página consulta a Meta (bloqueó la cuenta por exceso de llamadas).
   return ok({ deleted: row.deleted ?? [], skipped: row.skipped ?? [] })
 }
 
