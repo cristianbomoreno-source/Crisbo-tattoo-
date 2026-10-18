@@ -1660,6 +1660,10 @@ export type Database = {
       current_artist_id: { Args: never; Returns: string }
       current_studio_id: { Args: never; Returns: string }
       is_studio_owner: { Args: never; Returns: boolean }
+      delete_clients_with_backup: {
+        Args: { p_ids: string[] }
+        Returns: { deleted: string[]; skipped: string[] }[]
+      }
       list_my_accounts: {
         Args: never
         Returns: {

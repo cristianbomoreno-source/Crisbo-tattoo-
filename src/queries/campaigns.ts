@@ -14,7 +14,8 @@ export type CampaignRecipient = {
   phone: string
   /** null = contacto agregado a mano sin visitas registradas. */
   lastVisit: string | null
-  group: CampaignGroup
+  /** null = no entra a la campaña por fecha: solo aparece en "Todos". */
+  group: CampaignGroup | null
   /** Agregado a mano (no entraba por fecha de última visita). */
   added: boolean
   /** Chat de WhatsApp ya vinculado al cliente, si existe. */
@@ -56,6 +57,7 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
   return loadCampaignData(await createClient(), {
     studioId: studio.id,
     artistId: studio.role === 'owner' ? null : studio.artistId,
+    includeAll: true,
   })
 }
 
@@ -64,7 +66,9 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
  * estudio explícitamente en vez de confiar solo en RLS. */
 export async function loadCampaignData(
   supabase: SupabaseClient,
-  scope: { studioId: string; artistId: string | null }
+  /** includeAll: también todos los demás contactos con teléfono (group null),
+   * para la pestaña "Todos". El cron y los envíos no lo usan. */
+  scope: { studioId: string; artistId: string | null; includeAll?: boolean }
 ): Promise<Result<CampaignData>> {
   const now = new Date()
   const threeMonthsAgo = new Date(now.getTime() - 91 * DAY).toISOString().slice(0, 10)
@@ -78,12 +82,12 @@ export async function loadCampaignData(
       .from('clients')
       .select('id, name, phone, last_session_date')
       .eq('studio_id', scope.studioId)
-      .not('last_session_date', 'is', null)
-      .lte('last_session_date', threeMonthsAgo)
       .not('phone', 'is', null)
-      .order('last_session_date', { ascending: false })
+      .order('last_session_date', { ascending: false, nullsFirst: false })
       .order('id')
       .range(from, from + 999)
+    // lte también deja fuera a los que no tienen última visita.
+    if (!scope.includeAll) query = query.lte('last_session_date', threeMonthsAgo)
     if (scope.artistId) query = query.eq('artist_id', scope.artistId)
     const { data, error } = await query
     if (error) return dbError(error)
@@ -193,12 +197,12 @@ export async function loadCampaignData(
   for (const c of withPhone) {
     const isAdded = added.has(c.id)
     // Los agregados a mano reciben el texto del grupo A si no tienen grupo.
-    const group = (c.last_session_date ? campaignGroup(c.last_session_date, now) : null) ?? (isAdded ? 'A' : null)
-    if (!group) continue
+    let group = (c.last_session_date ? campaignGroup(c.last_session_date, now) : null) ?? (isAdded ? 'A' : null)
     const conv = chats.get(c.id) ?? ''
-    // Con cita agendada sale de la lista — salvo si ya recibió la campaña,
+    // Con cita agendada sale de la campaña — salvo si ya recibió la campaña,
     // tomó cupo (agendar es justo el objetivo) o lo agregaron a mano.
-    if (busy.has(c.id) && !sentStatus.has(conv) && !slotTaken.has(c.id) && !isAdded) continue
+    if (group && busy.has(c.id) && !sentStatus.has(conv) && !slotTaken.has(c.id) && !isAdded) group = null
+    if (!group && !scope.includeAll) continue
     recipients.push({
       clientId: c.id,
       name: c.name,

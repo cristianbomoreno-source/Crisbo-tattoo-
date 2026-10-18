@@ -35,13 +35,14 @@ export async function sendCampaignGroupCore(
 }
 
 /** Envío a quienes el dueño eligió a mano (de la lista o agregados). Cada
- * uno recibe el texto de su grupo; nunca a quitados ni a quien ya le llegó
+ * uno recibe el texto de su grupo (sin grupo → A); nunca a quitados ni a quien ya le llegó
  * (sí reintenta los que fallaron). */
 export async function sendCampaignToCore(
   admin: SupabaseClient,
   opts: { studioId: string; clientIds: string[]; origin: string; sentBy: string | null }
 ): Promise<Result<CampaignSendResult>> {
-  const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null })
+  // includeAll: desde "Todos" se puede elegir a cualquier contacto.
+  const data = await loadCampaignData(admin, { studioId: opts.studioId, artistId: null, includeAll: true })
   if (!data.success) return data
   const ids = new Set(opts.clientIds)
   const chosen = data.data.recipients.filter(
@@ -49,7 +50,8 @@ export async function sendCampaignToCore(
   )
   const total: CampaignSendResult = { sent: 0, failed: [] }
   for (const group of ['A', 'B'] as const) {
-    const recipients = chosen.filter((r) => r.group === group)
+    // Los que no tienen grupo por fecha reciben el texto del grupo A.
+    const recipients = chosen.filter((r) => (r.group ?? 'A') === group)
     if (recipients.length === 0) continue
     const res = await sendTemplateTo(admin, { ...opts, key: group, recipients, params: (r) => [r.firstName] })
     if (!res.success) return res

@@ -151,6 +151,28 @@ export async function deleteClientAction(id: string): Promise<Result<void>> {
   return ok(undefined)
 }
 
+/** Borrado desde Campañas (X o selección): solo el dueño, con copia en
+ * clients_deleted_backup. Los que tienen proyectos, cotizaciones o
+ * consentimientos no se borran (vuelven en `skipped`). */
+export async function deleteClientsAction(
+  ids: string[]
+): Promise<Result<{ deleted: string[]; skipped: string[] }>> {
+  if (!Array.isArray(ids) || ids.length === 0) return err('VALIDATION_ERROR', 'Elige al menos un cliente')
+  if (ids.length > 2500) return err('VALIDATION_ERROR', 'Demasiados clientes de una vez')
+  const studio = await getCurrentStudio()
+  if (!studio) return err('AUTH_ERROR', 'No autenticado')
+  if (studio.role !== 'owner') return err('FORBIDDEN', 'Solo el dueño del estudio puede borrar clientes')
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('delete_clients_with_backup', {
+    p_ids: ids.filter((id) => typeof id === 'string'),
+  })
+  if (error) return dbError(error)
+  const row = data?.[0] ?? { deleted: [], skipped: [] }
+  revalidatePath('/dashboard/clients')
+  revalidatePath('/dashboard/inbox/campaigns', 'layout')
+  return ok({ deleted: row.deleted ?? [], skipped: row.skipped ?? [] })
+}
+
 /** Busca un cliente del estudio por teléfono (compara los últimos 10 dígitos,
  * para no fallar por indicativo o formato) y trae sus proyectos activos —
  * la usa el popup de "Agendar cita" del calendario para ofrecer reutilizar un

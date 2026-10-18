@@ -17,6 +17,7 @@ import {
   Search,
   Send,
   Ticket,
+  Trash2,
   Undo2,
   X,
 } from 'lucide-react'
@@ -35,7 +36,7 @@ import {
   setupCampaignTemplates,
   type CampaignTemplateStatus,
 } from '@/actions/campaigns'
-import { searchClientsAction } from '@/actions/clients'
+import { deleteClientsAction, searchClientsAction } from '@/actions/clients'
 
 type Tab = 'todos' | CampaignGroup | 'quitados'
 
@@ -52,6 +53,9 @@ const SEND_STATUS: Record<string, { label: string; className: string }> = {
   read: { label: 'Leído', className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
   failed: { label: 'No llegó', className: 'bg-destructive/15 text-destructive' },
 }
+
+/** Cuántas filas se pintan de una ("Todos" trae a todos los contactos). */
+const PAGE = 200
 
 /** Campaña "Nuevos Trazos": plantillas, envío por grupo y lista de clientes. */
 export function CampaignView({
@@ -84,19 +88,25 @@ export function CampaignView({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirmSelected, setConfirmSelected] = useState(false)
   const [others, setOthers] = useState<{ id: string; name: string; phone: string | null }[]>([])
+  const [limit, setLimit] = useState(PAGE)
+  // Borrado de la base: se esconden al instante; la X pide confirmar.
+  const [deleted, setDeleted] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const recipients = useMemo(
     () =>
-      initialRecipients.map((r) => ({
+      initialRecipients.filter((r) => !deleted.has(r.clientId)).map((r) => ({
         ...r,
         excluded: r.clientId in overrides ? overrides[r.clientId] === true : r.excluded,
         slotTaken: r.clientId in slotOverrides ? slotOverrides[r.clientId] === true : r.slotTaken,
       })),
-    [initialRecipients, overrides, slotOverrides]
+    [initialRecipients, overrides, slotOverrides, deleted]
   )
   const slotsLeft = CAMPAIGN_SLOTS - slotsTaken
   const active = recipients.filter((r) => !r.excluded)
   const removed = recipients.filter((r) => r.excluded)
 
+  const inCampaign = active.filter((r) => r.group).length
   const counts = {
     todos: active.length,
     A: active.filter((r) => r.group === 'A').length,
@@ -125,6 +135,7 @@ export function CampaignView({
 
   function toggleSelected(id: string) {
     setConfirmSelected(false)
+    setConfirmBulkDelete(false)
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -135,6 +146,7 @@ export function CampaignView({
 
   function toggleAllVisible() {
     setConfirmSelected(false)
+    setConfirmBulkDelete(false)
     setSelected((prev) => {
       const next = new Set(prev)
       for (const r of visibleSelectable) {
@@ -168,11 +180,26 @@ export function CampaignView({
     })
   }
 
-  function removeAdded(r: CampaignRecipient) {
+  /** Borra de la base de datos (con respaldo). Los que tienen historial no se tocan. */
+  function removeClients(ids: string[]) {
+    setConfirmDelete(null)
+    setConfirmBulkDelete(false)
+    setDeleted((prev) => new Set([...prev, ...ids]))
+    setBusy('delete')
     startTransition(async () => {
-      const res = await setCampaignAdded(r.clientId, false)
-      if (!res.success) return void toast.error(res.error.message)
-      toast.success(`${r.firstName} salió de la lista`)
+      const res = await deleteClientsAction(ids)
+      setBusy(null)
+      if (!res.success) {
+        setDeleted((prev) => new Set([...prev].filter((id) => !ids.includes(id))))
+        return void toast.error(res.error.message)
+      }
+      const { deleted: gone, skipped } = res.data
+      if (skipped.length) {
+        setDeleted((prev) => new Set([...prev].filter((id) => !skipped.includes(id))))
+        toast.error(`${skipped.length} no se borraron: tienen proyectos, cotizaciones o consentimientos`)
+      }
+      if (gone.length) toast.success(gone.length === 1 ? 'Cliente borrado' : `${gone.length} clientes borrados`)
+      setSelected((prev) => new Set([...prev].filter((id) => !gone.includes(id))))
       router.refresh()
     })
   }
@@ -201,6 +228,7 @@ export function CampaignView({
     setSelecting((v) => !v)
     setSelected(new Set())
     setConfirmSelected(false)
+    setConfirmBulkDelete(false)
     if (tab === 'quitados') setTab('todos')
   }
 
@@ -208,7 +236,7 @@ export function CampaignView({
   const anyMissing = templates.length === 0 || templates.some((t) => t.status === 'MISSING')
 
   async function copyList() {
-    const text = visible.map((r) => `${r.firstName}\t${r.phone}\t${CAMPAIGN_GROUPS[r.group].label}`).join('\n')
+    const text = visible.map((r) => `${r.firstName}\t${r.phone}\t${r.group ? CAMPAIGN_GROUPS[r.group].label : 'Sin grupo'}`).join('\n')
     try {
       await navigator.clipboard.writeText(text)
       toast.success(`${visible.length} clientes copiados`)
@@ -295,7 +323,7 @@ export function CampaignView({
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-display text-sm font-semibold">Campaña “{CAMPAIGN_NAME}”</h2>
           <p className="truncate text-xs text-muted-foreground">
-            {counts.todos} clientes · {sentCount} enviados · {yesCount} quieren cupo · {noCount} no
+            {inCampaign} en campaña · {counts.todos} contactos · {sentCount} enviados · {yesCount} quieren cupo · {noCount} no
           </p>
         </div>
         <button
@@ -452,7 +480,10 @@ export function CampaignView({
               <button
                 key={key}
                 type="button"
-                onClick={() => setTab(key)}
+                onClick={() => {
+                  setTab(key)
+                  setLimit(PAGE)
+                }}
                 aria-pressed={tab === key}
                 title={key === 'A' || key === 'B' ? CAMPAIGN_GROUPS[key].hint : undefined}
                 className={cn(
@@ -464,6 +495,11 @@ export function CampaignView({
               </button>
             ))}
           </div>
+          {tab === 'todos' && isOwner && (
+            <p className="text-xs text-muted-foreground">
+              Todos tus contactos con teléfono. La X borra al cliente de la base de datos.
+            </p>
+          )}
           {(tab === 'A' || tab === 'B') && <p className="text-xs text-muted-foreground">{CAMPAIGN_GROUPS[tab].hint}</p>}
           {tab === 'quitados' && (
             <p className="text-xs text-muted-foreground">No reciben la campaña. Toca ↩ para devolver a alguien a la lista.</p>
@@ -472,7 +508,10 @@ export function CampaignView({
             <Search className="size-4 text-muted-foreground" />
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setLimit(PAGE)
+              }}
               placeholder={selecting ? 'Buscar en la lista o en todos tus contactos' : 'Buscar cliente o número'}
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
@@ -526,7 +565,7 @@ export function CampaignView({
           {!error && visible.length === 0 && (
             <li className="p-6 text-center text-sm text-muted-foreground">No hay clientes en esta lista.</li>
           )}
-          {visible.map((r) => {
+          {visible.slice(0, limit).map((r) => {
             const sent = r.sentStatus ? SEND_STATUS[r.sentStatus] ?? SEND_STATUS.sent : null
             const canPick = selecting && selectable(r)
             const picked = canPick && selected.has(r.clientId)
@@ -564,7 +603,8 @@ export function CampaignView({
                     <span className="ml-1.5 font-normal text-muted-foreground">{r.name}</span>
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {r.phone} · {r.lastVisit ? `última visita ${timeAwayLabel(r.lastVisit)}` : 'agregado a mano'}
+                    {r.phone} ·{' '}
+                    {r.lastVisit ? `última visita ${timeAwayLabel(r.lastVisit)}` : r.added ? 'agregado a mano' : 'sin visitas'}
                   </p>
                   {(sent || r.reply || r.slotTaken || r.wroteBack || r.reminded || r.added) && (
                     <p className="mt-1 flex flex-wrap gap-1">
@@ -606,14 +646,16 @@ export function CampaignView({
                     </p>
                   )}
                 </div>
-                <span
-                  className={cn(
-                    'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-                    r.group === 'A' ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  {r.group}
-                </span>
+                {r.group && (
+                  <span
+                    className={cn(
+                      'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                      r.group === 'A' ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {r.group}
+                  </span>
+                )}
                 {isOwner && !r.excluded && (r.sentStatus || r.slotTaken) && (
                   <button
                     type="button"
@@ -629,29 +671,41 @@ export function CampaignView({
                     <Ticket className="size-4" />
                   </button>
                 )}
-                {!selecting && isOwner && r.added && !r.sentStatus && !r.slotTaken && (
+                {!selecting && isOwner && r.excluded && (
                   <button
                     type="button"
-                    onClick={() => removeAdded(r)}
-                    disabled={pending}
+                    onClick={() => toggleExcluded(r, false)}
                     className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                    aria-label={`Sacar a ${r.firstName} de la lista`}
-                    title="Sacar de la lista"
+                    aria-label={`Devolver a ${r.firstName} a la lista`}
+                    title="Devolver a la lista"
                   >
-                    <X className="size-4" />
+                    <Undo2 className="size-4" />
                   </button>
                 )}
-                {!selecting && isOwner && !r.added && !r.sentStatus && !r.slotTaken && (
-                  <button
-                    type="button"
-                    onClick={() => toggleExcluded(r, !r.excluded)}
-                    className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                    aria-label={r.excluded ? `Devolver a ${r.firstName} a la lista` : `Quitar a ${r.firstName} de la lista`}
-                    title={r.excluded ? 'Devolver a la lista' : 'Quitar de la lista'}
-                  >
-                    {r.excluded ? <Undo2 className="size-4" /> : <X className="size-4" />}
-                  </button>
-                )}
+                {!selecting && isOwner && !r.excluded && !r.slotTaken &&
+                  (confirmDelete === r.clientId ? (
+                    <button
+                      type="button"
+                      onClick={() => removeClients([r.clientId])}
+                      onBlur={() => setConfirmDelete(null)}
+                      autoFocus
+                      className="flex shrink-0 items-center gap-1 rounded-full bg-destructive px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-destructive/85"
+                    >
+                      <Trash2 className="size-3.5" />
+                      ¿Borrar?
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(r.clientId)}
+                      disabled={pending}
+                      className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Borrar a ${r.firstName} de la base de datos`}
+                      title="Borrar de la base de datos"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  ))}
                 {r.conversationId ? (
                   <Link
                     href={`/dashboard/inbox/${r.conversationId}`}
@@ -671,12 +725,41 @@ export function CampaignView({
               </li>
             )
           })}
+          {visible.length > limit && (
+            <li className="p-3 text-center">
+              <button
+                type="button"
+                onClick={() => setLimit((l) => l + PAGE)}
+                className="rounded-xl bg-muted px-4 py-2 text-xs font-medium hover:bg-accent"
+              >
+                Mostrar más ({visible.length - limit} restantes)
+              </button>
+            </li>
+          )}
         </ul>
       </div>
 
       {selecting && (
         <div className="border-t border-border/60 bg-card p-3 sm:px-4">
-          {confirmSelected ? (
+          {confirmBulkDelete ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDelete(false)}
+                className="rounded-xl bg-muted px-4 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                Volver
+              </button>
+              <button
+                type="button"
+                onClick={() => removeClients(selectedList.map((r) => r.clientId))}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-destructive py-2.5 text-sm font-semibold text-white hover:bg-destructive/85"
+              >
+                <Trash2 className="size-4" />
+                ¿Borrar {selectedList.length} de la base de datos? Confirmar
+              </button>
+            </div>
+          ) : confirmSelected ? (
             <div className="flex gap-2">
               <button
                 type="button"
@@ -695,15 +778,26 @@ export function CampaignView({
               </button>
             </div>
           ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDelete(true)}
+                disabled={selectedList.length === 0 || pending}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/20 disabled:opacity-50"
+              >
+                {busy === 'delete' ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                Borrar
+              </button>
             <button
               type="button"
               onClick={() => setConfirmSelected(true)}
               disabled={selectedList.length === 0 || pending}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:opacity-50"
             >
               {busy === 'send-selected' ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               {selectedList.length === 0 ? 'Elige a quién enviar' : `Enviar a ${selectedList.length} seleccionados`}
             </button>
+            </div>
           )}
         </div>
       )}

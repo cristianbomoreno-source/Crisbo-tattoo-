@@ -15,3 +15,13 @@ with target as (
   insert into clients_deleted_backup select c.*, now() from clients c where c.id in (select id from target) returning id
 )
 delete from clients where id in (select id from bk);
+
+-- Segunda pasada: los que contienen primo/prima (13 borrados, mismo respaldo).
+with target as (
+  select c.id from clients c where c.studio_id='809b00a6-5040-43a8-a735-ab306fe5c163'
+  and lower(c.name) ~ '(^|[^a-záéíóúñ])prim[oa]s?([^a-záéíóúñ]|$)'
+  and not exists (select 1 from projects p where p.client_id=c.id)
+  and not exists (select 1 from quotes q where q.client_id=c.id)
+  and not exists (select 1 from consents x where x.client_id=c.id)
+), bk as (insert into clients_deleted_backup select c.*, now() from clients c where c.id in (select id from target) returning id)
+delete from clients where id in (select id from bk);
