@@ -51,7 +51,7 @@ const TEMPLATES = [
     name: 'booking_confirmation_template' as const,
     label: 'Confirmación de cita agendada',
     where: 'Botón "Confirmar cita" al tocar una cita en el calendario, y el mensaje que se abre automático al crear una cita nueva (calendario, cotización o proyecto).',
-    placeholders: ['nombre_cliente', 'fecha', 'hora', 'lugar', 'nombre_tatuador'],
+    placeholders: ['nombre_cliente', 'fecha', 'hora', 'duracion', 'nombre_proyecto', 'nombre_tatuador', 'lugar', 'mapa', 'valor_total', 'abonado', 'saldo'],
     example: DEFAULT_BOOKING_CONFIRMATION_TEMPLATE,
   },
   {

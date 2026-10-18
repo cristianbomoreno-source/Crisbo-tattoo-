@@ -21,8 +21,43 @@ export const DEFAULT_SESSION_TEMPLATE =
 /** Confirmación de cita agendada — se manda apenas se crea la cita (desde el
  * calendario, una cotización o un proyecto) y también es el mensaje del
  * botón "Confirmar cita" al tocar una cita ya agendada en el calendario. */
-export const DEFAULT_BOOKING_CONFIRMATION_TEMPLATE =
-  'Hola {nombre_cliente}! Tu cita quedó confirmada para el {fecha} a las {hora} en {lugar}, con {nombre_tatuador}. ¡Te esperamos!'
+export const DEFAULT_BOOKING_CONFIRMATION_TEMPLATE = [
+  '¡Hola {nombre_cliente}! 🖤 Tu cita quedó agendada ✅',
+  '',
+  '📌 *Detalles de tu cita*',
+  '🗓️ *Fecha:* {fecha}',
+  '🕐 *Hora:* {hora}',
+  '⏱️ *Duración aprox.:* {duracion}',
+  '🎨 *Proyecto:* {nombre_proyecto}',
+  '✍️ *Tatuador:* {nombre_tatuador}',
+  '',
+  '📍 *Dirección:* {lugar}',
+  '{mapa}',
+  '',
+  '💰 *Valor del tatuaje:* {valor_total}',
+  '✅ *Abonado:* {abonado}',
+  '💳 *Saldo el día de la cita:* {saldo}',
+  '',
+  '📝 *Antes de tu cita*',
+  '• Duerme bien y come algo antes de venir.',
+  '• Evita el alcohol las 24 h previas.',
+  '• Hidrata la piel de la zona los días anteriores.',
+  '• Llega 10 minutos antes.',
+  '',
+  'Si necesitas cambiar la hora, escríbeme por aquí. ¡Te esperamos! 🙌',
+].join('\n')
+
+/** Quita las líneas cuyo dato quedó vacío ("*Abonado:*" sin valor, `{mapa}`
+ * sin enlace) y los saltos de línea de sobra, para que la plantilla larga
+ * se vea bien aunque falte algún dato de la cita. */
+export function tidyMessage(text: string) {
+  return text
+    .split('\n')
+    .filter((line) => !/:\*?\s*$/.test(line.trim()))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 /** Contacto general desde la ficha o el popup de un proyecto. */
 export const DEFAULT_CONTACT_TEMPLATE =

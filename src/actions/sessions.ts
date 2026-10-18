@@ -17,7 +17,8 @@ import { getCurrentPermissions } from '@/queries/permissions'
 import { getCurrentStudio } from '@/queries/studio'
 import { waLink } from '@/lib/whatsapp'
 import { buildMessage } from '@/lib/quotes/message'
-import { DEFAULT_BOOKING_CONFIRMATION_TEMPLATE } from '@/lib/messages/templates'
+import { DEFAULT_BOOKING_CONFIRMATION_TEMPLATE, tidyMessage } from '@/lib/messages/templates'
+import { cop } from '@/lib/projects/metrics'
 
 function conflictMessage(conflict: { projectName: string | null; clientName: string | null }) {
   const detail = conflict.projectName
@@ -294,6 +295,15 @@ function formatBookingDate(iso: string): string {
   }).format(new Date(iso))
 }
 
+/** 90 → "1 h 30 min", 180 → "3 horas". */
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (!h) return `${m} min`
+  if (!m) return h === 1 ? '1 hora' : `${h} horas`
+  return `${h} h ${m} min`
+}
+
 function formatBookingTime(iso: string): string {
   return new Intl.DateTimeFormat('es-CO', {
     timeZone: 'UTC',
@@ -331,7 +341,7 @@ export async function buildBookingConfirmation(
   const { data: session } = await supabase
     .from('sessions')
     .select(
-      'scheduled_at, artist_id, projects(clients(name, phone)), artists(name), studios(name, address, city, booking_confirmation_template)'
+      'scheduled_at, duration_minutes, artist_id, projects(name, total_value, clients(name, phone), payments(amount)), artists(name), studios(name, address, city, maps_url, booking_confirmation_template)'
     )
     .eq('id', sessionId)
     .maybeSingle()
@@ -340,27 +350,46 @@ export async function buildBookingConfirmation(
 
   const row = session as unknown as {
     scheduled_at: string
-    projects: { clients: { name: string; phone: string | null } | null } | null
+    duration_minutes: number | null
+    projects: {
+      name: string | null
+      total_value: number | null
+      clients: { name: string; phone: string | null } | null
+      payments: { amount: number | null }[] | null
+    } | null
     artists: { name: string } | null
     studios: {
       name: string
       address: string | null
       city: string | null
+      maps_url: string | null
       booking_confirmation_template: string
     } | null
   }
 
-  const client = row.projects?.clients ?? null
+  const project = row.projects
+  const client = project?.clients ?? null
   const studio = row.studios
   const place = studio?.address || studio?.city || studio?.name || 'nuestro estudio'
+  const total = Number(project?.total_value ?? 0)
+  const paid = (project?.payments ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0)
 
-  const message = buildMessage(studio?.booking_confirmation_template || DEFAULT_BOOKING_CONFIRMATION_TEMPLATE, {
-    nombre_cliente: client?.name ?? '',
-    fecha: formatBookingDate(row.scheduled_at),
-    hora: formatBookingTime(row.scheduled_at),
-    lugar: place,
-    nombre_tatuador: row.artists?.name ?? '',
-  })
+  // Los datos que falten (sin valor, sin abono, sin mapa) dejan la línea vacía y tidyMessage la quita.
+  const message = tidyMessage(
+    buildMessage(studio?.booking_confirmation_template || DEFAULT_BOOKING_CONFIRMATION_TEMPLATE, {
+      nombre_cliente: client?.name?.trim().split(/\s+/)[0] ?? '',
+      fecha: formatBookingDate(row.scheduled_at),
+      hora: formatBookingTime(row.scheduled_at),
+      duracion: row.duration_minutes ? formatDuration(row.duration_minutes) : '',
+      nombre_proyecto: project?.name?.trim() ?? '',
+      lugar: place,
+      mapa: studio?.maps_url ? `🗺️ ${studio.maps_url}` : '',
+      nombre_tatuador: row.artists?.name ?? '',
+      valor_total: total > 0 ? cop(total) : '',
+      abonado: paid > 0 ? cop(paid) : '',
+      saldo: total > 0 ? (total - paid > 0 ? cop(total - paid) : 'Pagado ✅') : '',
+    })
+  )
 
   return ok({ message, phone: client?.phone ?? null })
 }
