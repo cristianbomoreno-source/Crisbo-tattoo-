@@ -14,6 +14,7 @@ import { formAnswersText, parseFormResponse, type FormAnswers } from './data-for
 import { consentComplete, parseConsentFlowResponse } from '@/lib/consents/whatsapp-consent'
 import { signConsentFromWhatsApp } from '@/lib/consents/whatsapp-sign'
 import { handleAppointmentReply, isAppointmentReply } from '@/lib/appointments/reply'
+import { dropAutomatedResponder, isAutomatedReplyToTemplate } from './auto-reply'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -262,6 +263,12 @@ Firma: ${consent.signerName}`
 
     // Reaccionar (❤️👍) a un mensaje no es responder: se guarda, sin push.
     if (m.type === 'reaction') continue
+    // Respuesta automática de un negocio a nuestra plantilla: fuera de la BD.
+    if (await isAutomatedReplyToTemplate(admin, { conversationId: conv.id, type: m.type, body: m.body, timestamp: m.timestamp })) {
+      await dropAutomatedResponder(admin, { studioId, conversationId: conv.id, waId: m.waId, clientId: conv.client_id })
+      notify.delete(conv.id)
+      continue
+    }
     notify.set(conv.id, {
       studioId,
       title: m.contactName || `+${m.waId}`,
