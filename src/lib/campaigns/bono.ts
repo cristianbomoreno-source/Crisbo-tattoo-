@@ -10,7 +10,7 @@ export const BONO_KEY = 'bono_agradecimiento'
 export const BONO_LANGUAGE = 'es'
 /** Imagen del encabezado. Meta la descarga de esta URL al enviar. */
 export const BONO_IMAGE_PATH = '/whatsapp/bono-agradecimiento.jpg'
-export const BONO_FOOTER = 'Aplican términos y condiciones'
+export const BONO_FOOTER = 'Aplican términos y condiciones.'
 /** Cada mensaje guardado en el chat empieza así (identifica los envíos). */
 export const BONO_MARKER = `🎁 ${BONO_NAME}`
 
@@ -23,11 +23,15 @@ export const BONO_TEMPLATE = {
   body: [
     'Hola {{1}}, te habla Crisbo 👋',
     '',
-    'Quiero darte las gracias por confiar siempre en Crisbo Tattoo. Cada tatuaje que hemos hecho juntos es parte de nuestra historia. 🖤',
+    'Quería escribirte para darte las gracias por *estar ahí y ser parte de Crisbo Tattoo.* 🖤',
     '',
-    'Por eso tienes un *bono de $100.000* para tu próximo tatuaje grande (desde 15 cm).',
+    'Ya sea que te hayas tatuado conmigo o que en algún momento hayas pensado en hacerlo, de alguna manera has sido parte de este camino.',
     '',
-    'Válido hasta el 30 de noviembre. Escríbeme por aquí para agendarlo.',
+    'Y como forma de agradecerte, quiero regalarte un *bono de $100.000* para tu próximo tatuaje conmigo. 🎁🖋️',
+    '',
+    'Puedes usarlo en tatuajes desde 15 cm hasta el *30 de noviembre*.',
+    '',
+    'Cuando tengas esa idea que quieres llevar a la piel, escríbeme por aquí. 🖤',
   ].join('\n'),
 }
 
