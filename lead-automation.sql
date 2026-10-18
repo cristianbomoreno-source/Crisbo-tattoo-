@@ -107,3 +107,15 @@ begin
      );
   return new;
 end $$;
+
+-- v3 (2026-10-17): lista completa de palabras clave. Generada desde
+-- src/lib/whatsapp-cloud/tattoo-keywords.ts (tattooInquirySqlRegex) — si
+-- cambias la lista allá, vuelve a generar y aplicar esta función.
+create or replace function public.is_tattoo_inquiry(p_text text)
+returns boolean language sql immutable set search_path = public as $$
+  select coalesce(
+    length(p_text) <= 600
+    and p_text !~ '^(↩️ Respondió a tu historia|🎬 Compartió|🔗 Compartió|📣|🎁)'
+    and translate(lower(p_text), 'áéíóúüñ', 'aeiouun') ~ '(\ytatu|\ytatt?oo|\ytattos?\y|\ytinta\y|\ypieza\y|\ymanga\y|\ysleeve|\ymedia manga|brazo completo|pierna completa|espalda completa|\ycierre del brazo|\ycotiz|\yprecio|\yvalor del|\yque valor|\ycual (es|seria) el valor|\ycuanto (vale|cuesta|cobr|sale|saldria|seria|me sale|me saldria|tendria|costaria|me cobr|me costaria|valdria|esta)|\ycuanto por\y|\ypresupuesto|\ytarifa|\ycosto\y|\ycostaria|\ydescuento|\ypromo|\ypromocion|\ycupo|\ydiseno|\ydisenar|\yboceto|\ysketch|\ystencil|\yreferencia|\ytengo una idea|\ymi idea\y|\yuna idea\y|\yme quiero hacer|\yquiero hacerme|\yquisiera hacerme|\yquiero un\y.*\y(en el|en la)\y|\yhacerme (un|una|algo)|\yhacerme\y|\yme gustaria hacerme|\ypienso hacerme|\yme lo quiero hacer|\yiniciales\y|\yuna frase\y|\yun nombre\y|\yfecha de nacimiento|\d+ ?cm\y|\ycentimetro|\ypequeno\y.*\ytatu|\ytamano\y|\yantebrazo|\ybrazo\y|\ybicep|\ytricep|\yhombro|\yespalda\y|\ycolumna\y|\ynuca\y|\ycuello\y|\ypecho\y|\yesternon|\yabdomen|\yestomago|\ycadera|\ygluteo|\ynalga|\ypierna\y|\ymuslo|\yrodilla|\ypantorrilla|\ygemelo|\ycanilla|\ytobillo|\yempeine|\yen la mano\y|\ydedos?\y|\ymuneca\y|\ycodo\y|\ycostilla|\ycostado\y|\yclavicula|\yomoplato|\ydetras de la oreja|\yrealismo|\yrealista|\ymicro ?realismo|fine ?line|\ylinea fina|\yminimalista|\ytradicional|old ?school|\yneo ?tradicional|black ?work|\ydot ?work|\ypuntillismo|\ygeometric|\yacuarela|\ylettering|\yletras\y|\ycaligrafia|\ytribal|\yjapones|\yoriental|\ychicano|\ysombread|\ysombras\y|\ymandala|\yanime\y|trash ?polka|\ybiomecanic|\yornamental|blanco y negro|\ya color\y|\yen color\y|\ya full color|\ysolo linea|cover ?up|\ycubrir\y|\ytapar\y|\yretoque|\yrepasar|\yrellenar|\yarreglar (un|mi) tatu|\yagendar|\yagenda\y|\ydisponibilidad|\yespacio para|\yseparar (cita|un espacio|fecha)|\ysacar (una )?cita|\yuna cita\y|\ysesion|\ycuanto (tiempo )?(se )?demora|\ycuantas horas|\ypiercing|\yperforacion)',
+    false)
+$$;

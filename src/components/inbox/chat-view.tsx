@@ -28,6 +28,7 @@ import {
   UserPlus,
   UserRound,
   Wallet,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -49,6 +50,7 @@ import { Button } from '@/components/ui/button'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { todayKey } from '@/lib/calendar/utils'
 import { CHAT_SHORTCUTS, suggestReplies } from '@/lib/whatsapp-cloud/chat-shortcuts'
+import { buildReplyDraft } from '@/lib/whatsapp-cloud/reply-draft'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -238,6 +240,14 @@ export function ChatView({
       .join('\n')
   }, [messages])
   const suggestions = useMemo(() => suggestReplies(pendingClientText), [pendingClientText])
+  // Respuesta sugerida escrita (sin IA): se descarta hasta el próximo mensaje del cliente.
+  const replyDraft = useMemo(
+    () => buildReplyDraft(messages, { clientName: client?.name ?? conversation.contact_name }),
+    [messages, client?.name, conversation.contact_name]
+  )
+  const lastMessageId = messages.at(-1)?.id ?? null
+  const [dismissedDraftFor, setDismissedDraftFor] = useState<string | null>(null)
+  const showReplyDraft = !!replyDraft && dismissedDraftFor !== lastMessageId && !draft.trim()
   const suggested = new Set<string>(suggestions)
 
   const actions: { key: string; label: string; Icon: LucideIcon; onClick: () => void; disabled: boolean }[] = [
@@ -398,6 +408,52 @@ export function ChatView({
       <footer className="border-t border-border/60 p-2 sm:p-3">
         {windowOpen ? (
           <>
+            {showReplyDraft && (
+              <div className="mb-2 rounded-xl border border-primary/30 bg-primary/5 p-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex items-center gap-1 text-[12px] font-semibold text-primary">
+                    <Sparkles className="size-3" />
+                    Respuesta sugerida
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedDraftFor(lastMessageId)}
+                    className="grid size-6 place-items-center rounded-full text-muted-foreground hover:bg-accent/60"
+                    aria-label="Descartar sugerencia"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-line text-sm">{replyDraft}</p>
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setDraft(replyDraft!)
+                      textareaRef.current?.focus()
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={sending}
+                    onClick={() => {
+                      if (sending) return
+                      startSending(async () => {
+                        const result = await sendWhatsAppMessage({ conversationId: conversation.id, body: replyDraft! })
+                        if (!result.success) return void toast.error(result.error.message)
+                        setMessages((prev) => (prev.some((p) => p.id === result.data.id) ? prev : [...prev, result.data]))
+                      })
+                    }}
+                  >
+                    <Send />
+                    Enviar así
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="flex items-end gap-2">
               <textarea
                 ref={textareaRef}
