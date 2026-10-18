@@ -78,3 +78,32 @@ revoke all on function public.client_has_pending_session(uuid) from public, anon
 
 -- Al aplicarlo (2026-10-17) se alinearon los chats existentes: 2 con cita
 -- pendiente → Agendado y 74 "Nuevo" que ya habían escrito → Cotizando.
+
+-- v2 (2026-10-17): solo pasa a "Cotizando" si el mensaje parece una consulta de
+-- tatuaje (palabras clave). Ignora respuestas a historias, reels/publicaciones
+-- compartidas y mensajes reenviados largos. Se devolvieron a "Nuevo" 58 chats
+-- de amigos/proveedores que no habían preguntado por un tatuaje.
+create or replace function public.is_tattoo_inquiry(p_text text)
+returns boolean language sql immutable set search_path = public as $$
+  select coalesce(
+    length(p_text) <= 600
+    and p_text !~ '^(↩️ Respondió a tu historia|🎬 Compartió|🔗 Compartió|📣|🎁)'
+    and translate(lower(p_text), 'áéíóúüñ', 'aeiouun') ~ (
+      '(\mtatu|\mtatt?oo?|\mtatto|\mcotiz|\mprecio|cuanto (vale|cuesta|cobr|sale|seria|me sale|tendria|costaria)|que valor|cual (es|seria) el valor|\mpresupuesto|\mdiseno|\mboceto|\d+ ?cm\M|centimetro|\mantebrazo|\mbrazo\M|\mespalda\M|\mpierna\M|\mcostilla|\mpantorrilla|\mmuslo|\mhombro|\mpecho\M|\mcuello\M|\mmuneca\M|\mtobillo|\mclavicula|\momoplato|\mrealismo|fine ?line|\mlettering|\mminimalista|blanco y negro|\ma color\M|cover ?up|\mretoque|\magendar|\mdisponibilidad|\msesion|\mreferencia|\mhacerme\M|me quiero hacer|quisiera hacer|\mpiercing|\mcupo|\mpromo)'
+    ), false)
+$$;
+
+create or replace function public.wa_lead_on_inbound()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if not is_tattoo_inquiry(new.body) then return new; end if;
+  update wa_conversations c
+     set lead_stage = 'cotizando', lead_stage_at = new.created_at
+   where c.id = new.conversation_id
+     and (
+       c.lead_stage is null
+       or c.lead_stage in ('nuevo', 'perdido')
+       or (c.lead_stage = 'agendado' and not client_has_pending_session(c.client_id))
+     );
+  return new;
+end $$;
