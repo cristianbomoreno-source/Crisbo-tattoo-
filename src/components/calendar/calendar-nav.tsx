@@ -15,7 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { SessionWithProject } from '@/queries/sessions'
-import { isProjectFullyPaid } from '@/lib/sessions/paid'
+import { isProjectFullyPaid, isSessionGreen } from '@/lib/sessions/paid'
 
 const WEEKDAYS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 const HOUR_PX = 56
@@ -106,6 +106,7 @@ export function CalendarNav({
     const isToday = dKey === today
     const selected = dKey === selectedDay
     const paid = busy && !blocked && allSessionsPaid(byDay[dKey])
+    const green = busy && !blocked && allSessionsGreen(byDay[dKey])
     return (
       <button
         type="button"
@@ -113,13 +114,13 @@ export function CalendarNav({
           onSelectedDayChange(() => dKey)
           onViewChange('day')
         }}
-        title={blocked ? 'Día bloqueado' : paid ? 'Citas pagadas' : undefined}
+        title={blocked ? 'Día bloqueado' : paid ? 'Citas pagadas' : green ? 'Citas finalizadas' : undefined}
         className={cn(
           'relative flex aspect-square items-center justify-center rounded-xl text-sm font-medium tabular-nums transition-colors',
           !busy && !blocked && !selected && 'text-foreground hover:bg-accent',
           blocked && !selected && 'bg-muted-foreground/15 text-muted-foreground',
-          busy && !blocked && !selected && !paid && 'bg-primary/20 text-foreground',
-          paid && !selected && 'bg-emerald-500/25 text-foreground',
+          busy && !blocked && !selected && !green && 'bg-primary/20 text-foreground',
+          green && !selected && 'bg-emerald-500/25 text-foreground',
           selected && 'bg-primary text-primary-foreground',
           isToday && !selected && 'ring-1 ring-primary/50'
         )}
@@ -253,9 +254,9 @@ export function CalendarNav({
                   )}
                 </div>
                 {items.length > 0 &&
-                  (allSessionsPaid(items) ? (
+                  (allSessionsGreen(items) ? (
                     <span className="flex shrink-0 items-center gap-1">
-                      <PaidBadge />
+                      {allSessionsPaid(items) && <PaidBadge />}
                       <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[12px] font-semibold">
                         {items.length}
                       </span>
@@ -423,6 +424,12 @@ function allSessionsPaid(sessions: SessionWithProject[] | undefined): boolean {
   return active.length > 0 && active.every((s) => isProjectFullyPaid(s.projects))
 }
 
+/** Hay citas activas ese día y TODAS están finalizadas o pagadas (verde). */
+function allSessionsGreen(sessions: SessionWithProject[] | undefined): boolean {
+  const active = (sessions ?? []).filter((s) => s.status !== 'cancelled')
+  return active.length > 0 && active.every(isSessionGreen)
+}
+
 function minutesToHHmm(total: number): string {
   const clamped = Math.max(0, Math.min(23 * 60 + 59, total))
   const h = Math.floor(clamped / 60)
@@ -587,6 +594,7 @@ function DayTimeline({
           const height = Math.max(28, ((s.duration_minutes ?? 60) / 60) * HOUR_PX)
           const isDragging = drag?.session.id === s.id
           const paid = s.status !== 'cancelled' && isProjectFullyPaid(s.projects)
+          const green = isSessionGreen(s)
           return (
             <button
               key={s.id}
@@ -624,7 +632,7 @@ function DayTimeline({
                 'absolute right-1 left-14 overflow-hidden rounded-lg border px-2 py-1 text-left transition-colors hover:border-primary/50',
                 s.status === 'cancelled'
                   ? 'bg-muted/40 opacity-60'
-                  : paid
+                  : green
                     ? 'border-emerald-500/60 bg-emerald-500/20'
                     : 'bg-primary/15',
                 isDragging && 'border-primary opacity-90'

@@ -18,7 +18,7 @@ export function MonthGrid({
   blockedDays = [],
   onSelectDay,
 }: {
-  days: { key: string; count: number; paid?: boolean }[]
+  days: { key: string; count: number; paid?: boolean; green?: boolean }[]
   today: string
   blockedDays?: string[]
   onSelectDay: (key: string) => void
@@ -51,6 +51,8 @@ export function MonthGrid({
           const blocked = blockedSet.has(d.key)
           const busy = d.count > 0
           const paid = busy && !blocked && !!d.paid
+          // Verde: finalizadas o pagadas; el ✓ solo si están pagadas.
+          const green = busy && !blocked && (!!d.green || paid)
           return (
             <button
               key={d.key}
@@ -65,7 +67,7 @@ export function MonthGrid({
                   ? 'bg-primary font-semibold text-primary-foreground'
                   : blocked
                     ? 'bg-muted-foreground/15 text-muted-foreground'
-                    : paid
+                    : green
                       ? 'bg-emerald-500/25 text-foreground'
                       : busy
                         ? 'bg-primary/20 text-foreground hover:bg-primary/25'
@@ -86,7 +88,7 @@ export function MonthGrid({
                   <Check className="size-2.5" strokeWidth={3.5} aria-hidden="true" />
                 </span>
               )}
-              {busy && !paid && !blocked && !isToday && d.count > 1 && (
+              {busy && !green && !blocked && !isToday && d.count > 1 && (
                 <span className="absolute bottom-0.5 right-1 text-[10px] font-semibold text-primary">
                   {d.count}
                 </span>

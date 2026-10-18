@@ -5,7 +5,7 @@ import { Clock3 } from 'lucide-react'
 import type { SessionWithProject } from '@/queries/sessions'
 import type { TeamMember } from '@/actions/team'
 import { cn } from '@/lib/utils'
-import { isProjectFullyPaid } from '@/lib/sessions/paid'
+import { isProjectFullyPaid, isSessionGreen } from '@/lib/sessions/paid'
 import { PaidBadge } from '@/components/calendar/calendar-nav'
 
 type StudioSession = SessionWithProject & { artists: { id: string; name: string } | null }
@@ -108,7 +108,7 @@ export function StudioCalendar({
                     key={s.id}
                     className={cn(
                       'flex items-center gap-3 rounded-xl px-3.5 py-2.5',
-                      paid ? 'bg-emerald-500/15 ring-1 ring-emerald-500/40' : 'bg-background'
+                      isSessionGreen(s) ? 'bg-emerald-500/15 ring-1 ring-emerald-500/40' : 'bg-background'
                     )}
                   >
                     <span className={cn('size-2 shrink-0 rounded-full', color.dot)} />

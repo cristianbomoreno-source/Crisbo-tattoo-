@@ -13,3 +13,10 @@ export function isProjectFullyPaid(project: ProjectPaymentInfo | undefined): boo
   const paid = (project?.payments ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0)
   return paid >= total
 }
+
+/** La cita se pinta de verde: ya se finalizó o su proyecto ya está pagado.
+ * El check (✓ / "Pagado") sigue siendo solo para lo pagado. */
+export function isSessionGreen(s: { status?: string | null; projects?: ProjectPaymentInfo }): boolean {
+  if (s.status === 'cancelled') return false
+  return s.status === 'completed' || isProjectFullyPaid(s.projects)
+}

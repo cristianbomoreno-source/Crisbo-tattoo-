@@ -27,7 +27,7 @@ export function CalendarCard({
   todaySessions,
   blockedDays = [],
 }: {
-  days: { key: string; count: number; paid?: boolean }[]
+  days: { key: string; count: number; paid?: boolean; green?: boolean }[]
   today: string
   todaySessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
