@@ -260,6 +260,8 @@ Firma: ${consent.signerName}`
     const autoReply = m.body === BUTTON_YES ? CAMPAIGN_AUTO_REPLY : m.body === BUTTON_NO ? CAMPAIGN_AUTO_REPLY_NO : null
     if (autoReply) await sendCampaignAutoReply(admin, studioId, conv.id, m.waId, autoReply)
 
+    // Reaccionar (❤️👍) a un mensaje no es responder: se guarda, sin push.
+    if (m.type === 'reaction') continue
     notify.set(conv.id, {
       studioId,
       title: m.contactName || `+${m.waId}`,
