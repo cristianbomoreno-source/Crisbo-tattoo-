@@ -89,9 +89,8 @@ export function CampaignView({
   const [confirmSelected, setConfirmSelected] = useState(false)
   const [others, setOthers] = useState<{ id: string; name: string; phone: string | null }[]>([])
   const [limit, setLimit] = useState(PAGE)
-  // Borrado de la base: se esconden al instante; la X pide confirmar.
+  // Borrado de la base: la X borra directo y la fila se esconde al instante.
   const [deleted, setDeleted] = useState<Set<string>>(new Set())
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const recipients = useMemo(
     () =>
@@ -182,7 +181,6 @@ export function CampaignView({
 
   /** Borra de la base de datos (con respaldo). Los que tienen historial no se tocan. */
   function removeClients(ids: string[]) {
-    setConfirmDelete(null)
     setConfirmBulkDelete(false)
     setDeleted((prev) => new Set([...prev, ...ids]))
     setBusy('delete')
@@ -682,30 +680,17 @@ export function CampaignView({
                     <Undo2 className="size-4" />
                   </button>
                 )}
-                {!selecting && isOwner && !r.excluded && !r.slotTaken &&
-                  (confirmDelete === r.clientId ? (
-                    <button
-                      type="button"
-                      onClick={() => removeClients([r.clientId])}
-                      onBlur={() => setConfirmDelete(null)}
-                      autoFocus
-                      className="flex shrink-0 items-center gap-1 rounded-full bg-destructive px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-destructive/85"
-                    >
-                      <Trash2 className="size-3.5" />
-                      ¿Borrar?
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(r.clientId)}
-                      disabled={pending}
-                      className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                      aria-label={`Borrar a ${r.firstName} de la base de datos`}
-                      title="Borrar de la base de datos"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  ))}
+                {!selecting && isOwner && !r.excluded && !r.slotTaken && (
+                  <button
+                    type="button"
+                    onClick={() => removeClients([r.clientId])}
+                    className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    aria-label={`Borrar a ${r.firstName} de la base de datos`}
+                    title="Borrar de la base de datos"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
                 {r.conversationId ? (
                   <Link
                     href={`/dashboard/inbox/${r.conversationId}`}

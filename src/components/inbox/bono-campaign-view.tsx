@@ -59,9 +59,8 @@ export function BonoCampaignView({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirming, setConfirming] = useState(false)
   const [limit, setLimit] = useState(PAGE)
-  // Borrado de la base: se esconden al instante; la X pide confirmar.
+  // Borrado de la base: la X borra directo y la fila se esconde al instante.
   const [deleted, setDeleted] = useState<Set<string>>(new Set())
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
   const recipients = useMemo(
@@ -149,7 +148,6 @@ export function BonoCampaignView({
 
   /** Borra de la base de datos (con respaldo). Los que tienen historial no se tocan. */
   function removeClients(ids: string[]) {
-    setConfirmDelete(null)
     setConfirmBulkDelete(false)
     setDeleted((prev) => new Set([...prev, ...ids]))
     setBusy('delete')
@@ -400,28 +398,13 @@ export function BonoCampaignView({
                   >
                     <Undo2 className="size-4" />
                   </button>
-                ) : confirmDelete === r.clientId ? (
+                ) : (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       removeClients([r.clientId])
                     }}
-                    onBlur={() => setConfirmDelete(null)}
-                    autoFocus
-                    className="flex shrink-0 items-center gap-1 rounded-full bg-destructive px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-destructive/85"
-                  >
-                    <Trash2 className="size-3.5" />
-                    ¿Borrar?
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setConfirmDelete(r.clientId)
-                    }}
-                    disabled={pending}
                     className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                     aria-label={`Borrar a ${r.firstName} de la base de datos`}
                     title="Borrar de la base de datos"
