@@ -396,6 +396,31 @@ export async function createUtilityTemplate(
   )
 }
 
+/** Plantilla de texto con variables y UN botón que abre una URL fija. */
+export async function createUrlButtonTemplate(
+  wabaId: string,
+  token: string,
+  t: { name: string; language: string; category: 'UTILITY' | 'MARKETING'; body: string; example: string[]; button: { text: string; url: string } }
+) {
+  templateStatusCache.delete(`${wabaId}:${t.name}`)
+  return graph<{ id: string; status?: string; category?: string }>(
+    `/${encodeURIComponent(wabaId)}/message_templates`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name: t.name,
+        language: t.language,
+        category: t.category,
+        components: [
+          { type: 'BODY', text: t.body, example: { body_text: [t.example] } },
+          { type: 'BUTTONS', buttons: [{ type: 'URL', text: t.button.text, url: t.button.url }] },
+        ],
+      }),
+    }
+  )
+}
+
 /** Envía una plantilla de solo texto con variables en el cuerpo. */
 export async function sendBodyTemplate(
   account: WaAccountCredentials,

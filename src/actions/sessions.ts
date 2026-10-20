@@ -9,6 +9,9 @@ import {
   bulkSessionsSchema,
 } from '@/lib/validations/sessions'
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendGoogleReviewRequest } from '@/lib/reviews/google-review'
 import { ownsRow } from '@/lib/authz'
 import { findSessionConflict, findBlockedDay, isWeekdayClosed } from '@/lib/sessions/availability'
 import { blockDaySchema } from '@/lib/validations/blocked-days'
@@ -91,6 +94,14 @@ export async function updateSessionStatusAction(
     .single()
 
   if (error) return dbError(error)
+  // Sesión finalizada → invitación a reseñar en Google (en segundo plano).
+  if (status === 'completed') {
+    after(() =>
+      sendGoogleReviewRequest(createAdminClient(), id).catch((e) =>
+        console.error('[review]', (e as Error).message)
+      )
+    )
+  }
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/stats')
   revalidatePath('/dashboard/projects')
