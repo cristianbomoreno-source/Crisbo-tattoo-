@@ -61,9 +61,10 @@ export async function sendCampaignToCore(
   return ok(total)
 }
 
-/** Recordatorio del día 5: a quienes les llegó la campaña (no falló) y no
- * han escrito nada — ni botón ni texto —, sin cupo, no quitados y sin
- * recordatorio previo. {{2}} = cupos que quedan; sin cupos no se envía. */
+/** Recordatorio: a quienes les llegó la campaña y no han escrito nada — ni
+ * botón ni texto —, sin cupo, no quitados y sin recordatorio previo; también
+ * a quienes la campaña les falló (el grupo B del 16 falló por la imagen), que
+ * así reciben la oferta. {{2}} = cupos que quedan; sin cupos no se envía. */
 export async function sendCampaignReminderCore(
   admin: SupabaseClient,
   opts: { studioId: string; group: CampaignGroup; origin: string; sentBy: string | null }
@@ -76,7 +77,6 @@ export async function sendCampaignReminderCore(
     (r) =>
       r.group === opts.group &&
       r.sentStatus &&
-      r.sentStatus !== 'failed' &&
       !r.wroteBack &&
       !r.reply &&
       !r.slotTaken &&

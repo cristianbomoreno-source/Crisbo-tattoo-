@@ -12,7 +12,9 @@ export const CAMPAIGN_IMAGE_PATH = '/whatsapp/nuevos-trazos.jpg'
 export const CAMPAIGN_FOOTER = 'Aplican términos y condiciones'
 export const BUTTON_YES = 'Quiero mi cupo'
 export const BUTTON_NO = 'No me interesa'
-export const CAMPAIGN_SLOTS = 15
+/** Se abrieron 15; el 2026-10-19 se cerró en 6 para que (con 1 tomado)
+ * queden 5 disponibles en el recordatorio y en la app. */
+export const CAMPAIGN_SLOTS = 6
 
 /** Respuesta automática al tocar "Quiero mi cupo" (texto del estudio).
  * Se envía una sola vez por chat. */

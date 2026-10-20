@@ -382,7 +382,7 @@ export function CampaignView({
               <Gift className="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
                 <span className="font-semibold text-foreground">Tatuaje hasta 20 cm en blanco y negro por $460.000</span>{' '}
-                + un tatuaje minimalista de regalo. Solo 15 cupos, hasta el 3 de noviembre. No incluye clientes con cita
+                + un tatuaje minimalista de regalo. Solo {CAMPAIGN_SLOTS} cupos, hasta el 3 de noviembre. No incluye clientes con cita
                 agendada ni que se tatuaron en el último mes.
               </span>
             </p>

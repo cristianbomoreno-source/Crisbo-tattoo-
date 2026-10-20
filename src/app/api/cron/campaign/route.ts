@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'studioId y group (A|B) son obligatorios' }, { status: 400 })
   }
 
-  schedule(studioId, { group, kind }, new URL(req.url).origin)
+  schedule(studioId, [{ group, kind }], new URL(req.url).origin)
   return NextResponse.json({ accepted: true, group, kind }, { status: 202 })
 }
 
@@ -48,43 +48,50 @@ type Job = { group: CampaignGroup; kind: Kind }
  * VERCEL_SCHEDULE; los demás días no hace nada. Reenviar es seguro: solo
  * se envía a quien todavía no recibió la campaña. */
 const STUDIO_ID = '809b00a6-5040-43a8-a735-ab306fe5c163'
-const VERCEL_SCHEDULE: Record<string, Job> = {
-  '2026-10-16': { group: 'B', kind: 'send' },
-  // Recordatorio del día 5 (A salió el 15, B el 16).
-  '2026-10-20': { group: 'A', kind: 'reminder' },
-  '2026-10-21': { group: 'B', kind: 'reminder' },
+const VERCEL_SCHEDULE: Record<string, Job[]> = {
+  '2026-10-16': [{ group: 'B', kind: 'send' }],
+  // Recordatorio "quedan 5 cupos" a A y B (y a quienes la campaña les falló).
+  '2026-10-20': [
+    { group: 'A', kind: 'reminder' },
+    { group: 'B', kind: 'reminder' },
+  ],
 }
 
 export async function GET(req: Request) {
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' })
-  const job = VERCEL_SCHEDULE[today]
-  if (!job) return NextResponse.json({ skipped: true, today })
-  schedule(STUDIO_ID, job, new URL(req.url).origin)
-  return NextResponse.json({ accepted: true, ...job }, { status: 202 })
+  const jobs = VERCEL_SCHEDULE[today]
+  if (!jobs) return NextResponse.json({ skipped: true, today })
+  schedule(STUDIO_ID, jobs, new URL(req.url).origin)
+  return NextResponse.json({ accepted: true, jobs }, { status: 202 })
 }
 
-function schedule(studioId: string, { group, kind }: Job, origin: string) {
+/** Los trabajos van uno tras otro (no en paralelo: comparten límites de Meta). */
+function schedule(studioId: string, jobs: Job[], origin: string) {
   after(async () => {
-    const label = `${kind === 'reminder' ? 'recordatorio del ' : ''}${CAMPAIGN_GROUPS[group].label}`
-    const core = kind === 'reminder' ? sendCampaignReminderCore : sendCampaignGroupCore
-    const res = await core(createAdminClient(), { studioId, group, origin, sentBy: null })
-    if (!res.success) {
-      console.error(`[campaign] ${label}: ${res.error.message}`)
-      await sendPushToStudio(studioId, {
-        title: `⚠️ ${CAMPAIGN_NAME}: no se envió el ${label}`,
-        body: res.error.message,
-        link: '/dashboard/inbox/campaigns',
-      })
-      return
-    }
-    const { sent, failed } = res.data
-    console.log(`[campaign] ${label}: ${sent} enviados, ${failed.length} fallidos`, failed)
+    for (const job of jobs) await runJob(studioId, job, origin)
+  })
+}
+
+async function runJob(studioId: string, { group, kind }: Job, origin: string) {
+  const label = `${kind === 'reminder' ? 'recordatorio del ' : ''}${CAMPAIGN_GROUPS[group].label}`
+  const core = kind === 'reminder' ? sendCampaignReminderCore : sendCampaignGroupCore
+  const res = await core(createAdminClient(), { studioId, group, origin, sentBy: null })
+  if (!res.success) {
+    console.error(`[campaign] ${label}: ${res.error.message}`)
     await sendPushToStudio(studioId, {
-      title: `📣 ${CAMPAIGN_NAME}: ${label} enviado`,
-      body: `${sent} mensajes enviados${failed.length ? ` · ${failed.length} no se enviaron` : ''}`,
+      title: `⚠️ ${CAMPAIGN_NAME}: no se envió el ${label}`,
+      body: res.error.message,
       link: '/dashboard/inbox/campaigns',
     })
+    return
+  }
+  const { sent, failed } = res.data
+  console.log(`[campaign] ${label}: ${sent} enviados, ${failed.length} fallidos`, failed)
+  await sendPushToStudio(studioId, {
+    title: `📣 ${CAMPAIGN_NAME}: ${label} enviado`,
+    body: `${sent} mensajes enviados${failed.length ? ` · ${failed.length} no se enviaron` : ''}`,
+    link: '/dashboard/inbox/campaigns',
   })
 }
 
