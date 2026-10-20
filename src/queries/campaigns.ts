@@ -64,6 +64,12 @@ export async function getCampaignData(): Promise<Result<CampaignData>> {
 /** Núcleo de la lista. Recibe el cliente de Supabase para poder correr
  * también desde el cron (cliente admin, sin sesión): por eso filtra por
  * estudio explícitamente en vez de confiar solo en RLS. */
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
+
 export async function loadCampaignData(
   supabase: SupabaseClient,
   /** includeAll: también todos los demás contactos con teléfono (group null),
@@ -138,13 +144,18 @@ export async function loadCampaignData(
   // Chats ya vinculados, para abrirlos directo desde la lista.
   const chats = new Map<string, string>()
   const ids = withPhone.map((c) => c.id)
-  for (let i = 0; i < ids.length; i += 200) {
-    const { data } = await supabase
-      .from('wa_conversations')
-      .select('id, client_id')
-      .eq('studio_id', scope.studioId)
-      .in('client_id', ids.slice(i, i + 200))
-      .order('last_message_at', { ascending: false })
+  // Las tandas van en paralelo (en serie la página tardaba 4–7 s).
+  const chatBatches = await Promise.all(
+    chunk(ids, 200).map((slice) =>
+      supabase
+        .from('wa_conversations')
+        .select('id, client_id')
+        .eq('studio_id', scope.studioId)
+        .in('client_id', slice)
+        .order('last_message_at', { ascending: false })
+    )
+  )
+  for (const { data } of chatBatches) {
     for (const c of (data ?? []) as { id: string; client_id: string }[]) {
       if (!chats.has(c.client_id)) chats.set(c.client_id, c.id)
     }
@@ -157,9 +168,8 @@ export async function loadCampaignData(
   const wroteBack = new Set<string>()
   const replies = new Map<string, 'yes' | 'no'>()
   const convIds = [...chats.values()]
-  for (let i = 0; i < convIds.length; i += 200) {
-    const slice = convIds.slice(i, i + 200)
-    const [{ data: outs }, { data: ins }] = await Promise.all([
+  const msgBatches = await Promise.all(
+    chunk(convIds, 200).map((slice) => Promise.all([
       supabase
         .from('wa_messages')
         .select('conversation_id, status, body, created_at')
@@ -176,7 +186,9 @@ export async function loadCampaignData(
         .eq('direction', 'in')
         .gte('created_at', CAMPAIGN_START)
         .order('created_at', { ascending: true }),
-    ])
+    ]))
+  )
+  for (const [{ data: outs }, { data: ins }] of msgBatches) {
     for (const m of (outs ?? []) as { conversation_id: string; status: string; body: string; created_at: string }[]) {
       // El recordatorio también empieza con el marcador: no pisa el estado del primer envío.
       if (m.body.startsWith(REMINDER_MARKER)) {
