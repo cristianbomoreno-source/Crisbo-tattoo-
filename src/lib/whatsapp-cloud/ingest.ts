@@ -15,6 +15,7 @@ import { consentComplete, parseConsentFlowResponse } from '@/lib/consents/whatsa
 import { signConsentFromWhatsApp } from '@/lib/consents/whatsapp-sign'
 import { handleAppointmentReply, isAppointmentReply } from '@/lib/appointments/reply'
 import { dropAutomatedResponder, isAutomatedReplyToTemplate } from './auto-reply'
+import { INTEREST_YES } from '@/lib/campaigns/custom'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -230,7 +231,9 @@ Firma: ${consent.signerName}`
 
     // Botones de la campaña: "Quiero mi cupo" → cotizando, "No me interesa" → perdido.
     // (parse.ts guarda los botones como type 'text': se reconocen por el texto.)
-    const campaignStage = m.body === BUTTON_YES ? 'cotizando' : m.body === BUTTON_NO ? 'perdido' : null
+    // "Me interesa" = botón de las campañas creadas desde la app.
+    const campaignStage =
+      m.body === BUTTON_YES || m.body === INTEREST_YES ? 'cotizando' : m.body === BUTTON_NO ? 'perdido' : null
     if (campaignStage) {
       await admin
         .from('wa_conversations')

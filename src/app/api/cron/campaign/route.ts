@@ -7,6 +7,7 @@ import { CAMPAIGN_NAME } from '@/lib/campaigns/nuevos-trazos'
 import { sendPushToStudio } from '@/lib/push/send'
 import { sendBonoScheduledCore } from '@/lib/campaigns/bono-send'
 import { BONO_NAME } from '@/lib/campaigns/bono'
+import { processDueCampaigns } from '@/lib/campaigns/custom-send'
 
 /** Envío programado de la campaña. Lo llama pg_cron (Supabase) a la hora
  * exacta con `Authorization: Bearer CRON_SECRET` y { studioId, group, kind? }, o
@@ -25,6 +26,11 @@ export async function POST(req: Request) {
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const body = (await req.json().catch(() => ({}))) as { studioId?: string; group?: string; kind?: string }
   const { studioId, group } = body
+  // Campañas de "Crear campaña": pg_cron cada 5 min con { kind: 'custom' }.
+  if (body.kind === 'custom') {
+    after(() => processDueCampaigns(createAdminClient()).catch((e) => console.error('[campaign] custom', (e as Error).message)))
+    return NextResponse.json({ accepted: true, kind: 'custom' }, { status: 202 })
+  }
   // Bono de agradecimiento: { studioId, kind: 'bono' } — sin grupo.
   if (body.kind === 'bono') {
     if (!studioId) return NextResponse.json({ error: 'studioId es obligatorio' }, { status: 400 })

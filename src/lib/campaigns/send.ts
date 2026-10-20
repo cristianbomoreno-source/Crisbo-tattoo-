@@ -149,7 +149,12 @@ export async function sendCampaignTemplate<R extends Target>(
   // Siempre el dominio público: el cron de Vercel llega por la URL interna
   // del deployment (*.vercel.app, protegida) y Meta no puede bajar la imagen
   // de ahí — el 2026-10-16 el grupo B falló entero con "Media upload error".
-  const imageLink = template.imagePath ? `${PUBLIC_ORIGIN}${template.imagePath}` : null
+  // imagePath: ruta de /public o una URL completa (imágenes subidas en "Crear campaña").
+  const imageLink = template.imagePath
+    ? /^https?:\/\//.test(template.imagePath)
+      ? template.imagePath
+      : `${PUBLIC_ORIGIN}${template.imagePath}`
+    : null
   const failed: CampaignSendResult['failed'] = []
   let sent = 0
 

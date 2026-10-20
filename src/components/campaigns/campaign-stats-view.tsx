@@ -10,10 +10,19 @@ const fmtDate = (iso: string | null) =>
     : '—'
 
 /** Estadísticas de una campaña: cifras, gráficos explicados y acceso a la lista de clientes. */
-export function CampaignStatsView({ stats: s, listHref }: { stats: CampaignStats; listHref: string }) {
+export function CampaignStatsView({
+  stats: s,
+  listHref,
+  banner,
+}: {
+  stats: CampaignStats
+  listHref: string
+  /** Estado de una campaña creada desde la app (programada, en revisión…). */
+  banner?: React.ReactNode
+}) {
   const reached = s.status.read + s.status.delivered + s.status.sent
   const interested = s.stages.cotizando + s.stages.abono + s.stages.agendado
-  const Icon = s.slug === 'bono' ? Gift : Megaphone
+  const Icon = s.kind === 'bono' ? Gift : Megaphone
   const bestDay = [...s.repliesByDay].sort((a, b) => b.count - a.count)[0]
 
   return (
@@ -32,13 +41,14 @@ export function CampaignStatsView({ stats: s, listHref }: { stats: CampaignStats
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-display text-sm font-semibold">{s.name}</h2>
           <p className="truncate text-xs text-muted-foreground">
-            Enviada el {fmtDate(s.firstSentAt)}
+            {s.firstSentAt ? `Enviada el ${fmtDate(s.firstSentAt)}` : 'Todavía no se envía'}
             {s.lastSentAt && fmtDate(s.lastSentAt) !== fmtDate(s.firstSentAt) && ` · último envío ${fmtDate(s.lastSentAt)}`}
           </p>
         </div>
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
+        {banner}
         <p className="text-sm text-muted-foreground">{s.description}</p>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -166,7 +176,7 @@ export function CampaignStatsView({ stats: s, listHref }: { stats: CampaignStats
             explain={
               s.buttons ? (
                 <>
-                  <b>Quiero mi cupo</b> y <b>No me interesa</b> son los botones del mensaje. Las reacciones (❤️👍) no
+                  <b>{s.buttons.yesLabel}</b> y <b>{s.buttons.noLabel}</b> son los botones del mensaje. Las reacciones (❤️👍) no
                   cuentan como respuesta.
                   {s.reminder && s.reminder.sent > 0 && (
                     <>
@@ -185,8 +195,8 @@ export function CampaignStatsView({ stats: s, listHref }: { stats: CampaignStats
               items={[
                 ...(s.buttons
                   ? [
-                      { label: 'Quiero mi cupo', value: s.buttons.yes, className: 'bg-emerald-500' },
-                      { label: 'No me interesa', value: s.buttons.no, className: 'bg-muted-foreground/50' },
+                      { label: s.buttons.yesLabel, value: s.buttons.yes, className: 'bg-emerald-500' },
+                      { label: s.buttons.noLabel, value: s.buttons.no, className: 'bg-muted-foreground/50' },
                     ]
                   : []),
                 { label: 'Escribieron', value: s.replied, className: 'bg-primary' },

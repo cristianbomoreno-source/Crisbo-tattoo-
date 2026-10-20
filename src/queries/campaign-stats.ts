@@ -4,6 +4,7 @@ import { err, ok, type Result } from '@/lib/errors/types'
 import { getCurrentStudio } from '@/queries/studio'
 import { BUTTON_NO, BUTTON_YES, CAMPAIGN_MARKER, CAMPAIGN_NAME, CAMPAIGN_SLOTS, CAMPAIGN_KEY, REMINDER_MARKER } from '@/lib/campaigns/nuevos-trazos'
 import { BONO_MARKER, BONO_NAME } from '@/lib/campaigns/bono'
+import { customMarker, renderBody } from '@/lib/campaigns/custom'
 
 /** Campañas con estadísticas (una tarjeta y una página cada una). */
 export type CampaignSlug = 'nuevos-trazos' | 'bono'
@@ -21,8 +22,19 @@ export const CAMPAIGNS: Record<CampaignSlug, { name: string; marker: string; des
   },
 }
 
+/** Qué medir: marcador del chat, nombre y botones (si los tiene). */
+export type StatsDef = {
+  slug: string
+  kind: CampaignSlug | 'custom'
+  name: string
+  marker: string
+  description: string
+  buttons?: { yes: string; no: string } | null
+}
+
 export type CampaignStats = {
-  slug: CampaignSlug
+  slug: string
+  kind: CampaignSlug | 'custom'
   name: string
   description: string
   firstSentAt: string | null
@@ -37,7 +49,7 @@ export type CampaignStats = {
   replied: number
   /** Solo reaccionaron (❤️👍) sin escribir. */
   reactedOnly: number
-  buttons: { yes: number; no: number } | null
+  buttons: { yes: number; no: number; yesLabel: string; noLabel: string } | null
   /** Etapa actual en Mensajes de quienes la recibieron. */
   stages: { nuevo: number; cotizando: number; abono: number; agendado: number; perdido: number }
   /** Citas creadas después del envío para esos clientes. */
@@ -95,7 +107,16 @@ export async function getCampaignStats(slug: CampaignSlug): Promise<Result<Campa
 }
 
 export async function loadCampaignStats(supabase: SupabaseClient, studioId: string, slug: CampaignSlug): Promise<CampaignStats> {
-  const def = CAMPAIGNS[slug]
+  return loadStatsFor(supabase, studioId, {
+    slug,
+    kind: slug,
+    ...CAMPAIGNS[slug],
+    buttons: slug === 'nuevos-trazos' ? { yes: BUTTON_YES, no: BUTTON_NO } : null,
+  })
+}
+
+export async function loadStatsFor(supabase: SupabaseClient, studioId: string, def: StatsDef): Promise<CampaignStats> {
+  const slug = def.kind
   type Out = { conversation_id: string; status: string; error: string | null; body: string; created_at: string }
   const outs = await all<Out>((a, b) =>
     supabase
@@ -180,8 +201,8 @@ export async function loadCampaignStats(supabase: SupabaseClient, studioId: stri
     replied.add(m.conversation_id)
     if (!firstReplyDay.has(m.conversation_id)) firstReplyDay.set(m.conversation_id, bogotaDay(m.created_at))
     if (remAt && m.created_at >= remAt) remindReplied.add(m.conversation_id)
-    if (m.body === BUTTON_YES) yes.add(m.conversation_id)
-    if (m.body === BUTTON_NO) no.add(m.conversation_id)
+    if (def.buttons && m.body === def.buttons.yes) yes.add(m.conversation_id)
+    if (def.buttons && m.body === def.buttons.no) no.add(m.conversation_id)
   }
 
   const stages = { nuevo: 0, cotizando: 0, abono: 0, agendado: 0, perdido: 0 }
@@ -244,7 +265,8 @@ export async function loadCampaignStats(supabase: SupabaseClient, studioId: stri
   }
 
   return {
-    slug,
+    slug: def.slug,
+    kind: def.kind,
     name: def.name,
     description: def.description,
     firstSentAt,
@@ -254,12 +276,38 @@ export async function loadCampaignStats(supabase: SupabaseClient, studioId: stri
     failures: [...failureCount.values()].sort((a, b) => b.count - a.count),
     replied: replied.size,
     reactedOnly: [...reacted].filter((id) => !replied.has(id)).length,
-    buttons: slug === 'nuevos-trazos' ? { yes: yes.size, no: no.size } : null,
+    buttons: def.buttons ? { yes: yes.size, no: no.size, yesLabel: def.buttons.yes, noLabel: def.buttons.no } : null,
     stages,
     bookings,
     revenue,
     repliesByDay,
     reminder: slug === 'nuevos-trazos' ? { sent: reminderAt.size, replied: remindReplied.size } : null,
     slots,
+  }
+}
+
+/** Estadísticas de una campaña creada desde la app. */
+export async function getCustomCampaignStats(c: {
+  id: string
+  studio_id: string
+  name: string
+  body_preview: string
+  params: string[]
+  buttons: string[]
+}): Promise<Result<CampaignStats>> {
+  try {
+    const description = renderBody(c.body_preview, ['{nombre}', ...c.params]).replace(/\s+/g, ' ').slice(0, 160)
+    return ok(
+      await loadStatsFor(await createClient(), c.studio_id, {
+        slug: `c/${c.id}`,
+        kind: 'custom',
+        name: c.name,
+        marker: customMarker(c.name),
+        description,
+        buttons: c.buttons.length >= 2 ? { yes: c.buttons[0]!, no: c.buttons[1]! } : null,
+      })
+    )
+  } catch (e) {
+    return err('DB_ERROR', (e as Error).message)
   }
 }

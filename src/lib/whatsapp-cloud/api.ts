@@ -360,7 +360,7 @@ export async function sendImageTemplate(
           language: { code: t.language },
           components: [
             { type: 'header', parameters: [{ type: 'image', image: { link: t.imageLink } }] },
-            { type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) },
+            ...(t.params.length ? [{ type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) }] : []),
           ],
         },
       }),
@@ -394,6 +394,28 @@ export async function createUtilityTemplate(
       }),
     }
   )
+}
+
+/** Todas las plantillas de la cuenta (con su contenido). */
+export async function listTemplates(wabaId: string, token: string) {
+  type Row = {
+    name: string
+    language: string
+    status: string
+    category: string
+    rejected_reason?: string
+    components?: { type: string; format?: string; text?: string; buttons?: { type: string; text: string; url?: string }[] }[]
+  }
+  const out: Row[] = []
+  let path: string | null =
+    `/${encodeURIComponent(wabaId)}/message_templates?fields=name,language,status,category,rejected_reason,components&limit=100`
+  for (let i = 0; path && i < 10; i++) {
+    const json: { data?: Row[]; paging?: { next?: string } } = await graph(path, token)
+    out.push(...(json.data ?? []))
+    const next = json.paging?.next
+    path = next ? next.replace(/^https:\/\/graph\.facebook\.com\/v[\d.]+/, '') : null
+  }
+  return out
 }
 
 /** Plantilla de texto con variables y UN botón que abre una URL fija. */
@@ -440,7 +462,9 @@ export async function sendBodyTemplate(
         template: {
           name: t.name,
           language: { code: t.language },
-          components: [{ type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) }],
+          components: t.params.length
+            ? [{ type: 'body', parameters: t.params.map((text) => ({ type: 'text', text })) }]
+            : [],
         },
       }),
     }

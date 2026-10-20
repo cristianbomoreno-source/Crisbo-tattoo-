@@ -4,7 +4,25 @@ import type { CampaignStats } from '@/queries/campaign-stats'
 import { pct } from './campaign-charts'
 
 /** Entrada de "Campañas": una tarjeta por campaña activa + crear campaña. */
-export function CampaignHub({ campaigns, error }: { campaigns: CampaignStats[]; error: string | null }) {
+export type HubBadge = { label: string; tone: 'active' | 'pending' | 'done' | 'off' }
+
+const BADGE_TONE: Record<HubBadge['tone'], string> = {
+  active: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300',
+  pending: 'bg-amber-400/15 text-amber-700 dark:text-amber-300',
+  done: 'bg-sky-400/15 text-sky-700 dark:text-sky-300',
+  off: 'bg-muted text-muted-foreground',
+}
+
+export function CampaignHub({
+  campaigns,
+  badges = {},
+  error,
+}: {
+  campaigns: CampaignStats[]
+  /** Estado por campaña (slug); sin estado = "Activa". */
+  badges?: Record<string, HubBadge>
+  error: string | null
+}) {
   return (
     <div className="flex h-full w-full flex-col">
       <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
@@ -29,7 +47,7 @@ export function CampaignHub({ campaigns, error }: { campaigns: CampaignStats[]; 
         <div className="grid gap-3 sm:grid-cols-2">
           {campaigns.map((c) => {
             const reached = c.status.read + c.status.delivered + c.status.sent
-            const Icon = c.slug === 'bono' ? Gift : Megaphone
+            const Icon = c.kind === 'bono' ? Gift : Megaphone
             return (
               <Link
                 key={c.slug}
@@ -43,8 +61,10 @@ export function CampaignHub({ campaigns, error }: { campaigns: CampaignStats[]; 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate font-display text-sm font-semibold">{c.name}</h3>
-                      <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
-                        Activa
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${BADGE_TONE[(badges[c.slug] ?? { tone: 'active' }).tone]}`}
+                      >
+                        {badges[c.slug]?.label ?? 'Activa'}
                       </span>
                     </div>
                     <p className="line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
@@ -74,13 +94,18 @@ export function CampaignHub({ campaigns, error }: { campaigns: CampaignStats[]; 
             )
           })}
 
-          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border p-4 text-center">
-            <span className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
+          <Link
+            href="/dashboard/inbox/campaigns/nueva"
+            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border p-4 text-center transition hover:border-primary/50 hover:bg-primary/5"
+          >
+            <span className="grid size-10 place-items-center rounded-full bg-primary/15 text-primary">
               <Plus className="size-5" />
             </span>
             <p className="font-display text-sm font-semibold">Crear campaña</p>
-            <p className="text-xs text-muted-foreground">Próximamente: arma una campaña nueva desde aquí.</p>
-          </div>
+            <p className="text-xs text-muted-foreground">
+              Usa la plantilla comodín, una aprobada o crea una nueva y elige a quién enviarla.
+            </p>
+          </Link>
         </div>
       </div>
     </div>
