@@ -10,14 +10,17 @@ import { normalizeWaPhone } from '@/lib/whatsapp-cloud/parse'
  * con REVIEW_MARKER y eso evita repetirlo.
  */
 
-/** Place ID de la ficha (sacado del ftid 0x8e3f9bed9f4a9345:0x4f45461dfc0df3c7). */
-export const GOOGLE_PLACE_ID = 'ChIJRZNKn-2bP44Rx_MN_B1GRU8'
-export const GOOGLE_REVIEW_URL = `https://search.google.com/local/writereview?placeid=${GOOGLE_PLACE_ID}`
+/** Link oficial "Obtén más opiniones" del Perfil de Negocio: a diferencia de
+ * search.google.com/local/writereview (v1, abría el navegador), este lo abre
+ * la app de Google Maps. Va directo en el botón (sin redirección propia: un
+ * redirect intermedio hace que Android no lo pase a la app). Cambiarlo exige
+ * una plantilla nueva (`_v3`): Meta no deja editar la URL del botón. */
+export const GOOGLE_REVIEW_URL = 'https://g.page/r/CcfzDfwdRkVPEAI/review'
 
 export const REVIEW_MARKER = '⭐ Reseña en Google'
 export const REVIEW_BUTTON = 'Dejar mi reseña'
 export const REVIEW_TEMPLATE = {
-  name: 'resena_google_v1',
+  name: 'resena_google_v2',
   language: 'es',
   example: ['Laura'],
   body: [
@@ -26,6 +29,9 @@ export const REVIEW_TEMPLATE = {
     'Me ayudarías muchísimo dejando tu reseña en Google, toma menos de un minuto ⭐',
   ].join('\n'),
 }
+
+/** Versiones anteriores aprobadas (v1 abre el navegador en vez de la app). */
+export const REVIEW_TEMPLATE_FALLBACKS = ['resena_google_v1']
 
 export function reviewMessageText(firstName: string) {
   return [REVIEW_MARKER, '', REVIEW_TEMPLATE.body.replace('{{1}}', firstName), '', `[${REVIEW_BUTTON}]`].join('\n')
@@ -77,15 +83,23 @@ export async function sendGoogleReviewRequest(admin: SupabaseClient, sessionId: 
     .eq('studio_id', studioId)
     .maybeSingle()
   if (!acc) return
-  const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, REVIEW_TEMPLATE.name).catch(() => null)
-  if (t?.status !== 'APPROVED') {
-    console.error(`[review] plantilla ${REVIEW_TEMPLATE.name}: ${t?.status ?? 'no existe'}`)
+  // La versión nueva; si Meta aún no la aprueba, la anterior.
+  let templateName: string | null = null
+  for (const name of [REVIEW_TEMPLATE.name, ...REVIEW_TEMPLATE_FALLBACKS]) {
+    const t = await fetchTemplateStatus(acc.waba_id, acc.access_token, name).catch(() => null)
+    if (t?.status === 'APPROVED') {
+      templateName = name
+      break
+    }
+  }
+  if (!templateName) {
+    console.error(`[review] plantilla ${REVIEW_TEMPLATE.name}: sin versión aprobada`)
     return
   }
 
   const firstName = firstNameOf(client.name)
   const waMessageId = await sendBodyTemplate(acc, waId, {
-    name: REVIEW_TEMPLATE.name,
+    name: templateName,
     language: REVIEW_TEMPLATE.language,
     params: [firstName],
   })
