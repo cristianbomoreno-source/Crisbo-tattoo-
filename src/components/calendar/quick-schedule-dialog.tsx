@@ -12,7 +12,9 @@ import {
   searchClientsAction,
   type ClientBookingMatch,
 } from '@/actions/clients'
-import { createProjectAction } from '@/actions/projects'
+import { createProjectAction, getProjectMoneyAction, updateProjectValueAction } from '@/actions/projects'
+import { createPaymentAction } from '@/actions/payments'
+import { cop } from '@/lib/projects/metrics'
 import { createSessionAction, getBookingConfirmationLinkAction } from '@/actions/sessions'
 import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
 import { PhoneInput } from '@/components/shared/phone-input'
@@ -28,6 +30,10 @@ import {
 } from '@/components/ui/select'
 
 const NEW_PROJECT = '__new__'
+
+/** "460000" → "460.000" (solo dígitos). */
+const formatMoney = (digits: string) => (digits ? Number(digits).toLocaleString('es-CO') : '')
+const onlyDigits = (v: string) => v.replace(/\D/g, '').slice(0, 10)
 
 /**
  * Popup de "agendar cita" al tocar un hueco vacío del calendario (día).
@@ -93,6 +99,29 @@ export function QuickScheduleDialog({
   const searchSeq = useRef(0)
   const [projectChoice, setProjectChoice] = useState<string>(NEW_PROJECT)
   const [projectName, setProjectName] = useState('Cita rápida')
+  // Valor del proyecto y abono de esta cita (solo dígitos). Lo escrito vale
+  // para el proyecto elegido; al cambiar de proyecto se precarga su valor.
+  const [presetMoney, setPresetMoney] = useState<{ totalValue: number | null; paid: number } | null>(null)
+  const projectKey = presetProjectId ?? projectChoice
+  const money = presetProjectId
+    ? presetMoney
+    : (match?.projects.find((p) => p.id === projectChoice) ?? null)
+  const [valueEdit, setValueEdit] = useState<{ key: string; v: string } | null>(null)
+  const [depositEdit, setDepositEdit] = useState<{ key: string; v: string } | null>(null)
+  const value =
+    valueEdit?.key === projectKey ? valueEdit.v : money?.totalValue ? String(Math.round(money.totalValue)) : ''
+  const deposit = depositEdit?.key === projectKey ? depositEdit.v : ''
+  const setValue = (v: string) => setValueEdit({ key: projectKey, v })
+  const setDeposit = (v: string) => setDepositEdit({ key: projectKey, v })
+  const paid = money?.paid ?? 0
+  const valueNum = Number(value || 0)
+  const depositNum = Number(deposit || 0)
+  const balance = valueNum > 0 ? valueNum - paid : null
+
+  useEffect(() => {
+    if (!open || !presetProjectId) return
+    getProjectMoneyAction(presetProjectId).then((res) => setPresetMoney(res.success ? res.data : null))
+  }, [open, presetProjectId])
 
   // La hora tocada en el calendario llega por props; si cambia mientras el
   // popup está cerrado (tocaron otro hueco), se sincroniza al reabrir.
@@ -193,6 +222,10 @@ export function QuickScheduleDialog({
       toast.error('Elige una hora')
       return
     }
+    if (depositNum > 0 && balance !== null && depositNum > balance) {
+      toast.error(`El abono supera el saldo del proyecto (${cop(Math.max(balance, 0))})`)
+      return
+    }
     setLoading(true)
     // Se abre YA (síncrono con el tap del botón) para que Safari/iOS no
     // bloquee el popup -- se redirige más abajo cuando ya se tiene el link
@@ -228,6 +261,7 @@ export function QuickScheduleDialog({
         const projectRes = await createProjectAction({
           client_id: clientId,
           name: projectName.trim() || 'Cita rápida',
+          ...(valueNum > 0 ? { total_value: valueNum } : {}),
         })
         if (!projectRes.success) {
           toast.error(projectRes.error.message)
@@ -237,6 +271,13 @@ export function QuickScheduleDialog({
         }
         projectId = projectRes.data.id
       }
+    }
+
+    // Proyecto existente con valor nuevo o cambiado.
+    const existing = presetProjectId || projectChoice !== NEW_PROJECT
+    if (existing && valueNum > 0 && valueNum !== Math.round(money?.totalValue ?? 0)) {
+      const res = await updateProjectValueAction(projectId, { total_value: valueNum })
+      if (!res.success) toast.error(`No se actualizó el valor: ${res.error.message}`)
     }
 
     const sessionRes = await createSessionAction({
@@ -251,8 +292,17 @@ export function QuickScheduleDialog({
       return
     }
 
-    toast.success('Cita agendada')
+    // El abono queda como pago de esta cita (antes del mensaje de
+    // confirmación, que muestra valor, abonado y saldo).
+    if (depositNum > 0) {
+      const payRes = await createPaymentAction({ project_id: projectId, session_id: sessionRes.data.id, amount: depositNum })
+      if (!payRes.success) toast.error(`Cita agendada, pero el abono no se guardó: ${payRes.error.message}`)
+    }
+
+    toast.success(depositNum > 0 ? `Cita agendada · abono de ${cop(depositNum)}` : 'Cita agendada')
     onOpenChange(false)
+    setValueEdit(null)
+    setDepositEdit(null)
     setName(presetClientName ?? '')
     setPhone(presetPhone ?? '')
     setMatch(null)
@@ -433,6 +483,46 @@ export function QuickScheduleDialog({
               )}
             </>
           )}
+
+          <div className="space-y-1">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label htmlFor="quick-schedule-value" className="block text-xs font-medium text-muted-foreground">
+                  Valor del proyecto
+                </label>
+                <input
+                  id="quick-schedule-value"
+                  inputMode="numeric"
+                  value={value ? `$${formatMoney(value)}` : ''}
+                  onChange={(e) => setValue(onlyDigits(e.target.value))}
+                  placeholder="$0"
+                  disabled={loading}
+                  className="h-11 w-full rounded-xl border border-input bg-transparent px-3.5 text-sm tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="quick-schedule-deposit" className="block text-xs font-medium text-muted-foreground">
+                  Abono de esta cita
+                </label>
+                <input
+                  id="quick-schedule-deposit"
+                  inputMode="numeric"
+                  value={deposit ? `$${formatMoney(deposit)}` : ''}
+                  onChange={(e) => setDeposit(onlyDigits(e.target.value))}
+                  placeholder="$0"
+                  disabled={loading}
+                  className="h-11 w-full rounded-xl border border-input bg-transparent px-3.5 text-sm tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
+            </div>
+            {(paid > 0 || (balance !== null && depositNum > 0)) && (
+              <p className={`text-xs ${balance !== null && depositNum > balance ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {paid > 0 && `Ya abonó ${cop(paid)}`}
+                {paid > 0 && balance !== null && ' · '}
+                {balance !== null && `Saldo ${cop(Math.max(balance - depositNum, 0))}${depositNum > 0 ? ' después de este abono' : ''}`}
+              </p>
+            )}
+          </div>
 
           <div className="flex gap-2">
             <div className="flex-1">

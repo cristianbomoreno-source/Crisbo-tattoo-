@@ -151,6 +151,18 @@ export async function updateProjectValueAction(
   return ok(data as ProjectSummary)
 }
 
+/** Valor y abonado de un proyecto (popup de agendar desde un proyecto ya elegido). */
+export async function getProjectMoneyAction(
+  id: string
+): Promise<Result<{ totalValue: number | null; paid: number }>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('projects').select('total_value, payments(amount)').eq('id', id).maybeSingle()
+  if (error) return dbError(error)
+  if (!data) return err('NOT_FOUND', 'Proyecto no encontrado')
+  const paid = ((data.payments ?? []) as { amount: number | null }[]).reduce((s, x) => s + (x.amount ?? 0), 0)
+  return ok({ totalValue: data.total_value, paid })
+}
+
 export async function deleteProjectAction(id: string): Promise<Result<void>> {
   const gate = await getCurrentPermissions()
   if (gate && !gate.permissions.can_delete_projects)

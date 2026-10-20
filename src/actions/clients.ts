@@ -181,7 +181,8 @@ export type ClientBookingMatch = {
   clientId: string
   clientName: string
   phone: string | null
-  projects: { id: string; name: string }[]
+  /** Valor del proyecto y lo ya abonado (para el popup de agendar). */
+  projects: { id: string; name: string; totalValue: number | null; paid: number }[]
 }
 
 /** Proyectos activos (no completados) del cliente, para agendar en uno de ellos. */
@@ -192,7 +193,7 @@ async function clientBookingMatch(
 ): Promise<ClientBookingMatch> {
   const { data: projects } = await supabase
     .from('projects')
-    .select('id, name, status')
+    .select('id, name, status, total_value, payments(amount)')
     .eq('studio_id', studioId)
     .eq('client_id', client.id)
     .neq('status', 'completed')
@@ -201,7 +202,12 @@ async function clientBookingMatch(
     clientId: client.id,
     clientName: client.name,
     phone: client.phone,
-    projects: (projects ?? []).map((p) => ({ id: p.id, name: p.name })),
+    projects: (projects ?? []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      totalValue: p.total_value,
+      paid: ((p.payments ?? []) as { amount: number | null }[]).reduce((s, x) => s + (x.amount ?? 0), 0),
+    })),
   }
 }
 
