@@ -214,7 +214,7 @@ export function BonoCampaignView({
     <div className="flex h-full w-full flex-col">
       <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
         <Link
-          href="/dashboard/inbox/campaigns"
+          href="/dashboard/inbox/campaigns/bono"
           className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60"
           aria-label="Volver a campañas"
         >

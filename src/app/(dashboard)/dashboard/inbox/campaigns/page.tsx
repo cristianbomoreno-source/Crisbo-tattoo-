@@ -1,22 +1,13 @@
-import { getCampaignData } from '@/queries/campaigns'
-import { getCurrentStudio } from '@/queries/studio'
-import { getCampaignTemplateStatuses } from '@/actions/campaigns'
-import { CampaignView } from '@/components/inbox/campaign-view'
+import { getCampaignStats } from '@/queries/campaign-stats'
+import { CampaignHub } from '@/components/campaigns/campaign-hub'
 
 export default async function CampaignsPage() {
-  const studio = await getCurrentStudio()
-  const isOwner = studio?.role === 'owner'
-  const [result, templates] = await Promise.all([
-    getCampaignData(),
-    isOwner ? getCampaignTemplateStatuses() : null,
-  ])
+  const results = await Promise.all([getCampaignStats('nuevos-trazos'), getCampaignStats('bono')])
+  const failed = results.find((r) => !r.success)
   return (
-    <CampaignView
-      recipients={result.success ? result.data.recipients : []}
-      slotsTaken={result.success ? result.data.slotsTaken : 0}
-      error={result.success ? null : result.error.message}
-      isOwner={isOwner}
-      templates={templates?.success ? templates.data : []}
+    <CampaignHub
+      campaigns={results.flatMap((r) => (r.success ? [r.data] : []))}
+      error={failed && !failed.success ? failed.error.message : null}
     />
   )
 }

@@ -309,9 +309,9 @@ export function CampaignView({
     <div className="flex h-full w-full flex-col">
       <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
         <Link
-          href="/dashboard/inbox"
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 lg:hidden"
-          aria-label="Volver a los chats"
+          href="/dashboard/inbox/campaigns/nuevos-trazos"
+          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60"
+          aria-label="Volver a las estadísticas"
         >
           <ArrowLeft className="size-5" />
         </Link>
@@ -337,19 +337,6 @@ export function CampaignView({
 
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-3 border-b border-border/60 p-3 sm:px-4">
-          {isOwner && (
-            <Link
-              href="/dashboard/inbox/campaigns/bono"
-              className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/5 p-3 text-xs hover:bg-primary/10"
-            >
-              <Gift className="size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="font-semibold">Campaña “Bono de agradecimiento”</span>
-                <span className="block text-muted-foreground">$100.000 para su próximo tatuaje grande · tú eliges a quién</span>
-              </span>
-              <span className="text-primary">→</span>
-            </Link>
-          )}
           <div className="rounded-xl border border-border/60 p-3">
             <div className="flex items-baseline justify-between gap-2">
               <p className="flex items-center gap-1.5 text-xs font-semibold">

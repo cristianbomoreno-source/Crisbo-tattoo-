@@ -1,0 +1,88 @@
+import Link from 'next/link'
+import { ArrowLeft, ChevronRight, Gift, Megaphone, Plus } from 'lucide-react'
+import type { CampaignStats } from '@/queries/campaign-stats'
+import { pct } from './campaign-charts'
+
+/** Entrada de "Campañas": una tarjeta por campaña activa + crear campaña. */
+export function CampaignHub({ campaigns, error }: { campaigns: CampaignStats[]; error: string | null }) {
+  return (
+    <div className="flex h-full w-full flex-col">
+      <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
+        <Link
+          href="/dashboard/inbox"
+          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 lg:hidden"
+          aria-label="Volver a los chats"
+        >
+          <ArrowLeft className="size-5" />
+        </Link>
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+          <Megaphone className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-sm font-semibold">Campañas</h2>
+          <p className="text-xs text-muted-foreground">Toca una campaña para ver cómo le va</p>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+        {error && <p className="mb-3 rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {campaigns.map((c) => {
+            const reached = c.status.read + c.status.delivered + c.status.sent
+            const Icon = c.slug === 'bono' ? Gift : Megaphone
+            return (
+              <Link
+                key={c.slug}
+                href={`/dashboard/inbox/campaigns/${c.slug}`}
+                className="group space-y-3 rounded-2xl bg-card p-4 ring-1 ring-foreground/5 transition hover:ring-primary/40"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                    <Icon className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-display text-sm font-semibold">{c.name}</h3>
+                      <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
+                        Activa
+                      </span>
+                    </div>
+                    <p className="line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5" />
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-muted/50 py-2">
+                    <p className="font-display text-base font-semibold tabular-nums">{reached}</p>
+                    <p className="text-[10px] text-muted-foreground">les llegó</p>
+                  </div>
+                  <div className="rounded-xl bg-muted/50 py-2">
+                    <p className="font-display text-base font-semibold tabular-nums text-primary">{c.replied}</p>
+                    <p className="text-[10px] text-muted-foreground">respondieron · {pct(c.replied, reached)}%</p>
+                  </div>
+                  <div className="rounded-xl bg-muted/50 py-2">
+                    <p className="font-display text-base font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                      {c.bookings}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">citas nuevas</p>
+                  </div>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${pct(reached, c.people)}%` }} />
+                </div>
+              </Link>
+            )
+          })}
+
+          <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border p-4 text-center">
+            <span className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
+              <Plus className="size-5" />
+            </span>
+            <p className="font-display text-sm font-semibold">Crear campaña</p>
+            <p className="text-xs text-muted-foreground">Próximamente: arma una campaña nueva desde aquí.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

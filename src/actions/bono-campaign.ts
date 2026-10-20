@@ -85,7 +85,7 @@ export async function setupBonoTemplate(): Promise<Result<BonoTemplateStatus>> {
   } catch (e) {
     return err('UNKNOWN_ERROR', `Meta no aceptó la plantilla: ${(e as Error).message}`)
   }
-  revalidatePath('/dashboard/inbox/campaigns/bono')
+  revalidatePath('/dashboard/inbox/campaigns/bono/clientes')
   return ok(await readStatus(acc.waba_id, acc.access_token))
 }
 
@@ -134,6 +134,6 @@ export async function setBonoExcluded(clientId: string, excluded: boolean): Prom
         .eq('campaign', BONO_KEY)
         .eq('client_id', clientId)
   if (error) return dbError(error)
-  revalidatePath('/dashboard/inbox/campaigns/bono')
+  revalidatePath('/dashboard/inbox/campaigns/bono/clientes')
   return ok(null)
 }

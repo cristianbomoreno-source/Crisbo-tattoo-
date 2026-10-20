@@ -1,14 +1,8 @@
-import { getBonoCampaignData } from '@/queries/bono-campaign'
-import { getBonoTemplateStatus } from '@/actions/bono-campaign'
-import { BonoCampaignView } from '@/components/inbox/bono-campaign-view'
+import { getCampaignStats } from '@/queries/campaign-stats'
+import { CampaignStatsView } from '@/components/campaigns/campaign-stats-view'
 
-export default async function BonoCampaignPage() {
-  const [result, template] = await Promise.all([getBonoCampaignData(), getBonoTemplateStatus()])
-  return (
-    <BonoCampaignView
-      recipients={result.success ? result.data : []}
-      error={result.success ? null : result.error.message}
-      template={template.success ? template.data : null}
-    />
-  )
+export default async function CampaignStatsPage() {
+  const res = await getCampaignStats('bono')
+  if (!res.success) return <p className="p-4 text-sm text-destructive">{res.error.message}</p>
+  return <CampaignStatsView stats={res.data} listHref="/dashboard/inbox/campaigns/bono/clientes" />
 }

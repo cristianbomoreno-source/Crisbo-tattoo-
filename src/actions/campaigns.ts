@@ -114,7 +114,7 @@ export async function setupCampaignTemplates(): Promise<Result<CampaignTemplateS
   }
   if (problems.length) return err('UNKNOWN_ERROR', `Meta no aceptó: ${problems.join(' · ')}`)
 
-  revalidatePath('/dashboard/inbox/campaigns')
+  revalidatePath('/dashboard/inbox/campaigns/nuevos-trazos/clientes')
   return ok(await readStatuses(acc.waba_id, acc.access_token))
 }
 
@@ -170,7 +170,7 @@ export async function setCampaignAdded(clientId: string, added: boolean): Promis
         .eq('campaign', CAMPAIGN_KEY)
         .eq('client_id', clientId)
   if (error) return dbError(error)
-  revalidatePath('/dashboard/inbox/campaigns')
+  revalidatePath('/dashboard/inbox/campaigns/nuevos-trazos/clientes')
   return ok(null)
 }
 
@@ -197,7 +197,7 @@ export async function setCampaignExcluded(clientId: string, excluded: boolean): 
     }
     return dbError(error)
   }
-  revalidatePath('/dashboard/inbox/campaigns')
+  revalidatePath('/dashboard/inbox/campaigns/nuevos-trazos/clientes')
   return ok(null)
 }
 
