@@ -25,7 +25,24 @@ export const RECOMENDACIONES = [
   'Recuerda, este es un momento para disfrutar y expresar algo significativo en tu piel. ¡Nos aseguraremos de que sea una experiencia única!',
 ].join('\n')
 
+/** Promo de la historia/estado "Nuevos Trazos — quedan 3 cupos" (oct–nov 2026):
+ * se reserva con el pago completo. */
+export const PROMO_NUEVOS_TRAZOS = [
+  '¡Hola! 🙌 Gracias por escribir. Esta es la promo *Nuevos Trazos*:',
+  '',
+  '🖋️ Tu tatuaje hasta 20 cm en blanco y negro por *$460.000*',
+  '🎁 + un tatuaje minimalista de regalo (hasta 5 cm, línea fina), para ti o para quien quieras',
+  '📅 Se tatúan del 27 de octubre al 1 de noviembre',
+  '⏳ Quedan solo 3 cupos. La oferta cierra el 3 de noviembre',
+  '',
+  'Para reservar tu cupo se paga el *valor completo ($460.000)* por Llave Bre-B:',
+  '🔑 1019126345',
+  '',
+  'Envíame por aquí el comprobante junto con tu idea (foto de referencia, zona del cuerpo y tamaño) y te confirmo el día y la hora. ✅',
+].join('\n')
+
 export const CHAT_SHORTCUTS: ChatShortcut[] = [
+  { key: 'promo', label: 'Promo 3 cupos', text: PROMO_NUEVOS_TRAZOS, image: '/whatsapp/nuevos-trazos-3-cupos.jpg' },
   {
     key: 'abono',
     label: 'Abono',
@@ -54,6 +71,7 @@ export type SuggestionKey = ChatShortcut['key'] | 'ubicacion' | 'formulario'
 /** Palabras/frases (sin tildes, en minúscula) que delatan qué necesita el
  * cliente. Salen de las conversaciones reales del estudio. */
 const KEYWORDS: Record<SuggestionKey, (string | RegExp)[]> = {
+  promo: ['promo', 'cupo', 'nuevos trazos', '460', 'respondio a tu historia', 'la oferta', 'el descuento'],
   abono: ['separar', 'apartar', 'reservar', 'como pago', 'como hago para', 'hay que pagar', 'pagar algo', 'abono', 'adelanto', 'transferencia', 'nequi', 'bre-b', 'breb', 'llave', 'cuenta'],
   comprobante: ['ya te hice el abono', 'ya hice el abono', 'ya pague', 'ya te pague', 'ya transferi', 'ya consigne', 'ya te transferi', 'ya te envie la plata', 'ya abone'],
   formulario: ['comprobante', 'ya pague', 'ya te pague', 'ya hice el abono', 'ya te hice el abono', 'ya transferi', 'ya abone', 'mis datos', 'que datos'],

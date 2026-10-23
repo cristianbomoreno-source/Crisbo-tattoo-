@@ -28,6 +28,7 @@ import {
   UserPlus,
   UserRound,
   Wallet,
+  Flame,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -74,6 +75,7 @@ import {
 
 /** Ícono de cada botón de mensaje fijo (`chat-shortcuts.ts`). */
 const SHORTCUT_ICONS: Record<string, LucideIcon> = {
+  promo: Flame,
   abono: Wallet,
   comprobante: Banknote,
   recomendaciones: ListChecks,
