@@ -40,6 +40,7 @@ import { StatsHoursCard } from '@/components/stats/stats-hours-card'
 import { StatsOccupancyCalendar } from '@/components/stats/stats-occupancy-calendar'
 import { StatsObjectives } from '@/components/stats/stats-objectives'
 import { StatsAudienceCard } from '@/components/stats/stats-audience-card'
+import { StatsTabs } from '@/components/social/stats-tabs'
 
 export default async function StatsPage({
   searchParams,
@@ -164,6 +165,7 @@ export default async function StatsPage({
 
   return (
     <div className="space-y-4">
+      {studio?.role === 'owner' && <StatsTabs active="negocio" />}
       <StatsHero
         monthKey={monthKey}
         photoUrl={studio?.logoUrl ?? null}
