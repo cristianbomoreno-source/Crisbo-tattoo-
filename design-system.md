@@ -1,121 +1,96 @@
 # Crisbo Tattoo — Design System
 
-Identidad visual premium, minimalista y neutra, inspirada en Apple / Linear /
-Arc / Stripe / Revolut, adaptada para tatuadores. El rojo de marca se reserva
-para acciones principales y estados activos; el resto de la interfaz vive en
-grises muy oscuros y parejos (`#141414` / `#1C1C1E`) sobre negro puro (`#000000`).
+App de gestión de un estudio de tatuajes, usada sobre todo en el iPhone
+del dueño (PWA instalada), con una mano y entre clientes. Modo **Operate**:
+manda que se lea rápido y que no haya toques equivocados; la marca vive en
+detalles precisos, no en decoración.
 
-Todo lo de este documento vive en **`src/app/globals.css`** como variables
-CSS (tema `.dark`, tokens `@theme inline`). No se tocó ningún componente,
-ruta, acción de servidor ni lógica — el rediseño es 100% a nivel de tokens,
-así que se propaga solo a toda la app (todo el código ya usa clases
-semánticas como `bg-card`, `border-border`, `rounded-xl`, nunca colores
-sueltos).
+La paleta sale del estudio real: negro de techo y piso, el **dorado de las
+tiras LED** como único acento, el blanco cálido del muro de concreto para
+el texto y el **rojo del maletín** para lo destructivo.
 
-## 1. Paleta de colores
+Todo vive en **`src/app/globals.css`** como variables CSS (`.dark` por
+defecto, `:root` claro y `.minimal`) expuestas en `@theme inline`. Los
+componentes usan clases semánticas (`bg-card`, `text-muted-foreground`,
+`text-income`…), nunca colores sueltos de Tailwind.
 
-| Token | Valor | Uso |
+## 1. Color
+
+| Token | Oscuro (por defecto) | Uso |
 |---|---|---|
-| `--background` | `#000000` | Fondo de toda la app — negro puro. |
-| `--card` | `#141414` | Tarjetas, superficies elevadas nivel 1. |
-| `--popover` | `#1C1C1E` | Menús, diálogos, hojas — nivel 2 (más elevado que `card`). |
-| `--secondary` / `--accent` | `#1C1C1E` | Superficies interactivas (botones secundarios, chips inactivos). |
-| `--muted-foreground` | `#8E8E93` | Texto secundario, subtítulos, metadatos. |
-| `--foreground` | `#FFFFFF` | Texto principal. |
-| `--border` / `--input` | blanco al 6% / 12% opacidad | Bordes "hairline" (translúcidos, no grises sólidos) — técnica Linear/Arc. |
-| `--primary` / `--success` | `#D9A54A` dorado LED del estudio (hover `#E6B862`, pressed `#BF8D36`, glow `rgba(217,165,74,.22)`) | **Único acento de color.** Sale de las luces del estudio. Texto **negro** sobre fondos de este color. |
-| `--destructive` | `#C2332B` rojo del maletín | Solo acciones destructivas/errores. |
-| `--warning` / `--info` | ámbar / azul | Solo para estado semántico puntual (pendiente, informativo) — no decorativos. |
+| `--background` | `#0a0a09` | Fondo de la app. |
+| `--card` | `#151412` | Tarjetas, nivel 1. |
+| `--popover` / `--secondary` / `--accent` | `#1d1b18` | Hojas, menús, chips inactivos, nivel 2. |
+| `--foreground` | `#f2ece3` | Texto principal (blanco cálido del concreto). |
+| `--muted-foreground` | `#9a9289` | Texto secundario. |
+| `--primary` (= `--success`) | `#d9a54a` | **Único acento de marca**: botones primarios, ítem activo, indicadores. Texto negro encima. Nunca pinta superficies grandes. |
+| `--destructive` | `#c2332b` | Borrar, errores, plata que sale. |
+| `--income` | `#4cc08a` | Plata que **entra** (cobros, ingresos, ingresos fijos). |
+| `--transfer` | `#5aa7e0` | **Traslados** entre cuentas propias. |
+| `--warning` | ámbar | Vencimientos y pendientes urgentes. |
+| `--info` | azul grisáceo | Avisos informativos puntuales. |
 
-**Regla de oro:** si un elemento no es una acción principal, un estado activo
-o un indicador semántico, va en gris. El rojo no se usa como color decorativo.
+Cada color semántico tiene su `-foreground` para texto encima
+(`bg-income text-income-foreground`). El trío entra / sale / traslado
+(verde, rojo, azul) es el del libro de caja y solo se usa para dinero.
+
+**Regla:** si algo no es acción principal, estado activo, dinero o un
+estado semántico, va en los grises cálidos. No hay un segundo acento.
 
 ## 2. Tipografía
 
-Ya cargada en `layout.tsx` (no se tocó):
+Una sola familia: **Inter** (`--font-sans`) para títulos y texto, en
+mayúscula inicial (sentence case). `--font-display`, `--font-title` y
+`--font-heading` apuntan a Inter a propósito; la jerarquía sale de tamaño
+y peso. `--font-wordmark` (Orbitron) es solo para el logotipo.
 
-| Variable | Fuente | Uso |
-|---|---|---|
-| `--font-sans` | Inter | Texto de UI general (cuerpo, labels, inputs). |
-| `--font-display` | Oswald | Encabezados de sección, títulos de tarjetas (condensada, mayúsculas). |
-| `--font-title` | Anton | Títulos grandes / hero (Inicio, splash). |
-| `--font-wordmark` | Orbitron | Solo el logotipo "Crisbo Tattoo". |
-| `--font-mono` | Geist Mono | Cifras tabulares en contextos técnicos (opcional). |
+- Escala: `--text-base` 17px, `lg` 19px, `xl` 21px, `2xl` 25px.
+- Números en columnas o montos: `tabular-nums`.
+- **Piso de 12px** para cualquier texto que haya que leer (incluidas las
+  tarjetas de proyecto); 11px solo para unidades mínimas ("día", "cada uno").
+- Contraste mínimo 4.5:1 para texto normal.
 
-Reglas globales nuevas (`@layer base`):
-- `h1–h4`: `tracking-tight` + `line-height: 1.15` (encabezados compactos, sensación premium).
-- `p`: `line-height: 1.55` (cuerpo cómodo de leer).
-- Tamaños los sigue definiendo cada componente (`text-sm`, `text-lg`, etc.) — esto no cambió.
+## 3. Toque y tamaños
 
-## 3. Espaciado
+- En pantallas táctiles (`pointer-coarse`) los botones miden ~44px:
+  `default` h-11, `sm` h-10, `icon` 44px (ver `components/ui/button.tsx`).
+  Los `xs` conservan su tamaño visual y amplían el área táctil con un
+  `::after` invisible. En escritorio no cambia nada.
+- Filas tocables de listas: `min-h-14`. Chips de selección: `min-h-10`.
+- Acciones peligrosas lejos de las frecuentes (p. ej. borrar a la derecha,
+  pagar a la izquierda) y con confirmación dentro de la app, nunca
+  `window.confirm`.
+- Acciones de plata (marcar pagado/recibido) dicen monto y cuenta en el
+  aviso y ofrecen **Deshacer**.
 
-Se mantiene la escala estándar de Tailwind (4px base). Guía de uso ya presente en el código:
-- `gap-1.5` / `gap-2` — entre ícono y texto, chips.
-- `p-4` / `p-5` — padding interno de tarjetas en móvil.
-- `space-y-4` / `space-y-6` — separación entre secciones de una pantalla.
-- Safe-area (`env(safe-area-inset-*)`) ya integrada en topbar/tabbar/hojas — no tocar.
+## 4. Espaciado, radios y superficies
 
-## 4. Bordes (radios)
+- Escala de Tailwind (4px). Tarjetas `p-4` en móvil; secciones `space-y-3.5`
+  a `space-y-6`. Safe areas ya integradas en barra inferior y hojas.
+- Radios: `rounded-2xl` para tarjetas y filas agrupadas, `rounded-full` solo
+  para controles pequeños (chips, píldoras, barra inferior).
+- Profundidad con una sola cosa: sombra suave y difusa **o** borde hairline
+  (`border-border`, blanco translúcido), no las dos.
+- Sin bordes de color a un lado de tarjetas o filas.
 
-Escala redefinida para caer en el rango premium de **16–24px** en los tamaños más usados:
+## 5. Navegación
 
-| Token | Valor | Uso típico |
-|---|---|---|
-| `rounded-sm` | 12px | Chips pequeños. |
-| `rounded-md` | 14px | Inputs, botones. |
-| `rounded-lg` | 16px | Tarjetas compactas. |
-| `rounded-xl` | **20px** | Tarjetas estándar — el más usado en la app. |
-| `rounded-2xl` | **24px** | Tarjetas destacadas, hojas inferiores, diálogos. |
-| `rounded-3xl` / `rounded-4xl` | 28px / 32px | Superficies grandes, splash. |
+- Móvil: barra flotante con **Inicio, Proyectos, Mensajes, Estudio**.
+  La pestaña Estudio abre con **"Tu estudio"** (Cotizaciones, Caja y
+  cuentas, Clientes, Consentimientos, Galería, Estadísticas) encima de los
+  ajustes (`components/settings/studio-modules.tsx`).
+- Escritorio: sidebar con todos los módulos (`components/shared/nav-items.tsx`).
+- El Resumen de caja se abre desde la fila "Caja y cuentas" de Inicio,
+  deslizando ← o con `/dashboard?caja=1`.
 
-## 5. Sombras y superficies flotantes
+## 6. Inicio (móvil)
 
-Dos capas de profundidad, siempre suaves y difusas (nunca duras ni con spread grande):
+Orden: saludo → próxima cita (con foto) → **Hoy** (lista con resumen de
+citas y horas) → plata del mes + "Caja y cuentas" → alertas de gastos →
+calendario. Cada dato aparece una vez.
 
-```css
-/* Tarjeta (.bg-card) — luz de canto sutil + sombra ancha y difusa */
-box-shadow:
-  inset 0 1px 0 0 oklch(1 0 0 / 0.06),   /* filo superior con luz */
-  0 1px 2px 0 rgb(0 0 0 / 0.4),          /* contacto */
-  0 16px 40px -24px rgb(0 0 0 / 0.85);   /* halo flotante */
+## 7. Movimiento
 
-/* Acento rojo (.glow-primary) — SOLO en FAB y CTAs principales */
-box-shadow:
-  0 0 20px -6px rgba(217, 165, 74, 0.22),  /* var(--primary-glow) — muy sutil, nunca "gaming" */
-  0 10px 24px -10px rgb(0 0 0 / 0.55);
-```
-
-## 6. Componentes reutilizables (ya existentes, ahora con los tokens nuevos)
-
-Ningún componente cambió de código — todos heredan el estilo nuevo automáticamente:
-
-- **Tarjeta** (`bg-card` + `rounded-xl`/`2xl` + `border-border`): base de toda la UI (resumen del día, cotizaciones, proyectos).
-- **Botón primario** (`bg-primary` + `glow-primary`): única superficie donde el rojo "brilla".
-- **Botón secundario** (`border-border` + `bg-transparent`): acciones no destacadas.
-- **Chip / badge** (`rounded-full`, borde hairline, texto `muted-foreground` o `primary` si está activo).
-- **Input** (`border-input`, `rounded-md`, fondo semitransparente `bg-input/30`).
-- **Hoja inferior / diálogo** (`bg-popover` + `rounded-2xl` arriba + safe-area).
-- **Selector de fecha/hora, dial de duración**: usan los mismos tokens de color (rojo = seleccionado, rojo tenue = ocupado/bloqueado).
-
-## 7. Animaciones
-
-Utilidades nuevas en `globals.css`, opcionales (ningún componente las fuerza):
-
-| Clase | Efecto | Duración |
-|---|---|---|
-| `.animate-fade-in` | Aparece con fade | 250ms ease-out |
-| `.animate-scale-in` | Aparece con fade + escala 0.96→1 | 200ms spring |
-| `.animate-spring-in` | Entra con rebote sutil (listas, tarjetas) | 420ms spring |
-
-Respetan `prefers-reduced-motion`. Los diálogos/hojas ya traían sus propias
-animaciones vía `tw-animate-css` (`data-open:animate-in`, etc.) — no se tocaron.
-
-## 8. Reglas de diseño
-
-1. **Negro puro de fondo (`#000000`)**, con profundidad dada por las tarjetas (`#141414`/`#1C1C1E`), no por el fondo.
-2. **El verde lima es escaso.** Un solo acento de color en toda la interfaz — para lo demás, escala de grises. Nunca se usa para pintar superficies completas (tarjetas, fondos grandes), solo títulos, íconos, botones e indicadores puntuales.
-3. **Bordes hairline, no grises sólidos.** `border-border` es blanco translúcido al 8%, no un gris plano — así las tarjetas "flotan" en vez de verse recortadas.
-4. **Sombras anchas y difusas**, nunca duras ni con offset grande — sensación de elementos suspendidos, no de recortes con contorno.
-5. **Jerarquía antes que decoración.** Un dato importante se distingue por tamaño/peso/color, no por más adornos.
-6. **El calendario es protagonista.** Mantiene la mayor superficie de tarjeta y el primer lugar en Inicio.
-7. **Cualquier componente nuevo debe usar los tokens semánticos** (`bg-card`, `text-muted-foreground`, `border-border`, `rounded-xl`) — nunca colores o radios hardcodeados, para que seguir cambiando el sistema de diseño siga siendo tan simple como editar `globals.css`.
+Utilidades `.animate-fade-in`, `.animate-scale-in`, `.animate-spring-in`
+en `globals.css`; hojas y diálogos usan `tw-animate-css`. Todo respeta
+`prefers-reduced-motion`. Nada rebota en transiciones de interfaz.

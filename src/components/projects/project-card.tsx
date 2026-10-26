@@ -75,7 +75,7 @@ export function ProjectCard({
           <p className="truncate font-display text-[clamp(0.85rem,3.8vw,1.2rem)] font-bold leading-tight tracking-tight text-black">
             {clientName}
           </p>
-          <p className="truncate text-[clamp(0.62rem,2.5vw,0.78rem)] leading-tight text-black/45">
+          <p className="truncate text-[clamp(0.75rem,2.9vw,0.85rem)] leading-tight text-black/60">
             {project.name}
           </p>
 
@@ -87,14 +87,14 @@ export function ProjectCard({
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="shrink-0 text-[clamp(0.56rem,2.3vw,0.7rem)] font-bold tabular-nums text-black">
+            <span className="shrink-0 text-[clamp(0.75rem,2.7vw,0.8rem)] font-bold tabular-nums text-black">
               {pct}%
             </span>
           </div>
 
           {/* Chip de estado a todo lo ancho: verde cuando está completado */}
           <div
-            className={`mt-1.5 flex items-center justify-center rounded-full py-1 font-display text-[clamp(0.5rem,2.1vw,0.64rem)] font-bold ${
+            className={`mt-1.5 flex items-center justify-center rounded-full py-1 font-display text-[clamp(0.75rem,2.6vw,0.8rem)] font-bold ${
               complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
             }`}
           >
