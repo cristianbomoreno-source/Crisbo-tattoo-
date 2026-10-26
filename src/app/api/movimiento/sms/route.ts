@@ -31,6 +31,8 @@ export async function POST(req: Request) {
   const { sms, opcion } = parsed.data
 
   const movement = parseBankSms(sms)
+  // TEMP diagnóstico del atajo: qué texto manda el iPhone (sin el monto completo).
+  console.log('[movimiento/sms] in', JSON.stringify(sms.slice(0, 160)), movement ? 'parsed' : 'ignored')
   if (!movement) return text(IGNORE)
 
   if (!opcion) {
