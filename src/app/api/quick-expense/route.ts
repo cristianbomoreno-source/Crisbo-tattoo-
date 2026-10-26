@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     return text('❌ No se pudo guardar, intenta de nuevo', 500)
   }
 
+  revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings/gastos')
   revalidatePath('/dashboard/settings/finanzas')
   return text(`✅ ${cop(Math.round(monto))} · ${tipo === 'personal' ? 'Personal' : 'Negocio'} · ${categoria}`)

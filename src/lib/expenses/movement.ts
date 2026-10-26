@@ -66,6 +66,7 @@ export async function saveMovement(studioId: string, m: Movement): Promise<SaveR
       console.error('[movimiento] other income', error.message)
       return { ok: false, message: '❌ No se pudo guardar, intenta de nuevo' }
     }
+    revalidatePath('/dashboard')
     revalidatePath('/dashboard/settings/gastos')
     revalidatePath('/dashboard/settings/finanzas')
     return { ok: true, message: `✅ Entró ${cop(monto)} · ${otherIncome}` }
@@ -113,6 +114,7 @@ export async function saveMovement(studioId: string, m: Movement): Promise<SaveR
     console.error('[movimiento] expense', error.message)
     return { ok: false, message: '❌ No se pudo guardar, intenta de nuevo' }
   }
+  revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings/gastos')
   revalidatePath('/dashboard/settings/finanzas')
   return { ok: true, message: `✅ Salió ${cop(monto)} · ${personal ? 'Personal' : 'Negocio'} · ${category}` }
