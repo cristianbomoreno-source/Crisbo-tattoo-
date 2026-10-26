@@ -7,9 +7,9 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { toast } from 'sonner'
 import { ArrowLeft, Briefcase, Check, Plus, Trash2, User, Wallet } from 'lucide-react'
 
-import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction } from '@/actions/expenses'
+import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction, setFixedDiscountAction } from '@/actions/expenses'
 import { AccountBookCard, Fab, LedgerView, NewRecordSheet, useSaveBalance } from '@/components/home/cash-ledger'
-import { personalCategory } from '@/lib/expenses/scope'
+import { OTHER_INCOME_PREFIX, personalCategory } from '@/lib/expenses/scope'
 import { todayKey } from '@/lib/calendar/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -168,6 +168,23 @@ export function CashSummarySheet({
                   )}
                 </section>
 
+                {/* Ingresos fijos: lo que te pagan cada mes (p. ej. el arriendo del tatuador) */}
+                {summary.fixedIncome.length > 0 && (
+                  <section>
+                    <div className="mb-2 flex items-center justify-between px-1">
+                      <h2 className="text-sm font-semibold">Por recibir cada mes</h2>
+                      {summary.incomingTotal > 0 && (
+                        <span className="text-xs text-muted-foreground tabular-nums">Falta {cop(summary.incomingTotal)} este mes</span>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {summary.fixedIncome.map((f) => (
+                        <FixedRow key={f.id} item={f} accounts={accounts} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 {receivable.total > 0 && (
                   <section className="flex items-center justify-between rounded-2xl bg-card px-4 py-3">
                     <div>
@@ -285,6 +302,8 @@ function FixedSection({
 function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts: string[]; showScope?: boolean }) {
   const router = useRouter()
   const [choosing, setChoosing] = useState(false)
+  const [discounting, setDiscounting] = useState(false)
+  const [discountValue, setDiscountValue] = useState('')
   const [pending, startTransition] = useTransition()
   const urgent = f.pending && f.daysLeft <= 3
   const b = badge(f.schedule)
@@ -296,8 +315,22 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         toast.error(result.error.message)
         return
       }
-      toast.success(`${f.name} marcado como pagado`)
+      toast.success(`${f.name} marcado como ${f.income ? 'recibido' : 'pagado'}`)
       setChoosing(false)
+      router.refresh()
+    })
+  }
+
+  function saveDiscount() {
+    const amount = Number(discountValue.replace(/\D/g, '') || 0)
+    startTransition(async () => {
+      const result = await setFixedDiscountAction(f.id, amount)
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      toast.success(amount ? `${f.name}: descuento de ${cop(amount)} este mes` : `${f.name}: sin descuento`)
+      setDiscounting(false)
       router.refresh()
     })
   }
@@ -338,16 +371,41 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
           </p>
           {f.remaining > 1 && (
             <p className="text-xs text-muted-foreground">
-              Faltan {f.remaining} pagos este mes · {cop(f.amount * f.remaining)}
+              Faltan {f.remaining} pagos este mes · {cop(f.amount * f.remaining - f.discount)}
             </p>
+          )}
+          {f.discount > 0 && f.pending && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">Descuento este mes −{cop(f.discount)}</p>
           )}
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-sm font-semibold tabular-nums">{cop(f.amount)}</p>
+          {f.discount > 0 && f.pending ? (
+            <>
+              <p className="text-[11px] text-muted-foreground line-through tabular-nums">{cop(f.amount)}</p>
+              <p className="text-sm font-semibold tabular-nums">{cop(f.dueAmount)}</p>
+            </>
+          ) : (
+            <p className={cn('text-sm font-semibold tabular-nums', f.income && 'text-emerald-600 dark:text-emerald-400')}>
+              {f.income ? '+' : ''}
+              {cop(f.amount)}
+            </p>
+          )}
           {f.schedule.kind === 'weekly' && <p className="text-[10px] text-muted-foreground">cada uno</p>}
           {f.pending && (
             <button type="button" onClick={() => setChoosing((v) => !v)} className="mt-0.5 text-xs font-semibold text-primary">
-              {choosing ? 'Cancelar' : 'Marcar pagado'}
+              {choosing ? 'Cancelar' : f.income ? 'Marcar recibido' : 'Marcar pagado'}
+            </button>
+          )}
+          {f.pending && !f.income && !choosing && (
+            <button
+              type="button"
+              onClick={() => {
+                setDiscountValue(f.discount ? String(f.discount) : '')
+                setDiscounting((v) => !v)
+              }}
+              className="mt-0.5 block w-full text-right text-[11px] font-medium text-muted-foreground"
+            >
+              {discounting ? 'Cerrar' : 'Descuento'}
             </button>
           )}
           {!showScope && !f.pending && (
@@ -363,9 +421,24 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
           )}
         </div>
       </div>
+      {discounting && (
+        <div className="mt-3 flex items-center gap-2 border-t border-border/60 pt-3">
+          <Input
+            autoFocus
+            type="number"
+            inputMode="numeric"
+            placeholder="Descuento de este mes"
+            value={discountValue}
+            onChange={(e) => setDiscountValue(e.target.value)}
+          />
+          <Button type="button" size="sm" disabled={pending} onClick={saveDiscount}>
+            Guardar
+          </Button>
+        </div>
+      )}
       {choosing && (
         <div className="mt-3 border-t border-border/60 pt-3">
-          <p className="mb-2 text-xs text-muted-foreground">¿De qué cuenta salió?</p>
+          <p className="mb-2 text-xs text-muted-foreground">{f.income ? '¿A qué cuenta llegó?' : '¿De qué cuenta salió?'}</p>
           <div className="flex flex-wrap gap-1.5">
             {[...(f.account ? [f.account] : []), ...accounts.filter((a) => a !== f.account), null].map((a) => (
               <button
@@ -399,7 +472,8 @@ const FREQUENCIES: { value: Frequency; label: string }[] = [
 function AddFixedForm({ accounts }: { accounts: string[] }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [personal, setPersonal] = useState(false)
+  const [scope, setScope] = useState<'business' | 'personal' | 'income'>('business')
+  const personal = scope === 'personal'
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [frequency, setFrequency] = useState<Frequency>('once')
@@ -428,7 +502,7 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
     if (typeof sch === 'string') return toast.error(sch)
     startTransition(async () => {
       const result = await createExpenseAction({
-        category: personal ? personalCategory(name.trim()) : name.trim(),
+        category: scope === 'income' ? OTHER_INCOME_PREFIX + name.trim() : personal ? personalCategory(name.trim()) : name.trim(),
         description: [account, scheduleTag(sch)].filter(Boolean).join(' · ') || undefined,
         amount: Number(amount),
         expense_date: todayKey(),
@@ -463,7 +537,7 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
         className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground"
       >
         <Plus className="size-4" />
-        Agregar gasto fijo
+        Agregar gasto o ingreso fijo
       </button>
     )
   }
@@ -471,21 +545,28 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
   return (
     <section className="space-y-2.5 rounded-2xl border border-border p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Nuevo gasto fijo</h2>
+        <h2 className="text-sm font-semibold">{scope === 'income' ? 'Nuevo ingreso fijo' : 'Nuevo gasto fijo'}</h2>
         <button type="button" onClick={() => setOpen(false)} className="text-xs font-semibold text-muted-foreground">
           Cancelar
         </button>
       </div>
       <Segmented
         options={[
-          { value: false, label: 'Negocio' },
-          { value: true, label: 'Personal' },
+          { value: 'business' as const, label: 'Negocio' },
+          { value: 'personal' as const, label: 'Personal' },
+          { value: 'income' as const, label: 'Me pagan' },
         ]}
-        value={personal}
-        onChange={setPersonal}
+        value={scope}
+        onChange={setScope}
       />
       <Input
-        placeholder={personal ? 'Qué es (ej. Cadena, Celular)' : 'Qué es (ej. Arriendo, Internet)'}
+        placeholder={
+          scope === 'income'
+            ? 'Qué es (ej. Arriendo tatuador)'
+            : personal
+              ? 'Qué es (ej. Cadena, Celular)'
+              : 'Qué es (ej. Arriendo, Internet)'
+        }
         value={name}
         onChange={(e) => setName(e.target.value)}
         maxLength={28}
@@ -540,7 +621,9 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
         </div>
       )}
       <div>
-        <p className="mb-1.5 text-xs text-muted-foreground">¿De qué cuenta lo pagas? (opcional)</p>
+        <p className="mb-1.5 text-xs text-muted-foreground">
+          {scope === 'income' ? '¿A qué cuenta te llega? (opcional)' : '¿De qué cuenta lo pagas? (opcional)'}
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {accounts.map((a) => (
             <button

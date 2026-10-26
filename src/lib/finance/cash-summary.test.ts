@@ -178,4 +178,22 @@ describe('cashSummary', () => {
     ])
     expect(s.ledger.find((e) => e.kind === 'transfer-in')).toMatchObject({ account: 'Efectivo', otherAccount: 'Daviplata' })
   })
+
+  it('descuento de un mes e ingreso fijo (te pagan cada mes)', () => {
+    const s = cashSummary({
+      today: '2026-10-26',
+      accounts: ['Daviplata'],
+      payments: [],
+      expenses: [
+        exp({ id: 'arr', category: 'Arriendo', amount: 2_450_000, due_day: 30, description: 'Daviplata · Descuento 2026-10 260000', expense_date: '2026-09-01' }),
+        exp({ id: 'tat', category: 'Ingreso · Arriendo tatuador', amount: 700_000, due_day: 27, expense_date: '2026-10-01' }),
+      ],
+    })
+    expect(s.fixedBusiness[0]).toMatchObject({ discount: 260_000, dueAmount: 2_190_000, perMonth: 2_190_000, pending: true })
+    expect(s.upcomingTotal).toBe(2_190_000)
+    expect(s.fixedIncome[0]).toMatchObject({ name: 'Arriendo tatuador', income: true, pending: true, nextDate: '2026-10-27' })
+    expect(s.incomingTotal).toBe(700_000)
+    // El ingreso fijo no está en los gastos ni en "Próximos pagos".
+    expect(s.upcoming.map((f) => f.id)).toEqual(['arr'])
+  })
 })

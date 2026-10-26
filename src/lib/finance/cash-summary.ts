@@ -31,7 +31,10 @@ import {
  *   varias veces al mes y "Cada domingo", cada semana. Cada pago es una fila
  *   normal de la misma categoría y descripción "… · Pago fijo"
  *   (`payFixedExpenseAction`) — esa sí cuenta como gasto; los pagos del mes
- *   van cubriendo las fechas del mes en orden.
+ *   van cubriendo las fechas del mes en orden. Un tramo "Descuento 2026-10
+ *   260000" baja lo que toca pagar ese mes. Con categoría "Ingreso · …" es un
+ *   ingreso fijo (lo que te pagan cada mes, p. ej. el arriendo de un tatuador):
+ *   se marca recibido igual y ese pago cuenta como ingreso.
  */
 export const FIXED_PAYMENT_MARK = 'Pago fijo'
 export const NO_ACCOUNT = 'Sin cuenta'
@@ -99,6 +102,12 @@ export type FixedItem = {
   /** "Día 5", "Días 5 y 20", "Cada domingo". */
   scheduleLabel: string
   personal: boolean
+  /** Ingreso fijo (te pagan a ti), no gasto. */
+  income: boolean
+  /** Descuento de este mes (tramo "Descuento AAAA-MM monto"). */
+  discount: number
+  /** Lo que toca pagar en la próxima fecha (monto − descuento si es de este mes). */
+  dueAmount: number
   /** Próxima fecha a pagar (YYYY-MM-DD): la primera sin pagar de este mes, si no la del siguiente. */
   nextDate: string
   daysLeft: number
@@ -138,6 +147,10 @@ export type CashSummary = {
   upcoming: FixedItem[]
   /** Todo lo que falta pagar este mes (cada fecha pendiente cuenta). */
   upcomingTotal: number
+  /** Ingresos fijos (te pagan cada mes). */
+  fixedIncome: FixedItem[]
+  /** Lo que falta por recibir este mes de los ingresos fijos. */
+  incomingTotal: number
   monthExpenses: MonthExpense[]
   /** Libro de todas las cuentas (lo que movió cada saldo desde su saldo inicial), lo más reciente primero. */
   ledger: LedgerEntry[]
@@ -157,7 +170,14 @@ export function parseSchedule(description: string | null, dueDay: number | null)
     }
     const d = DAYS_RE.exec(seg)
     if (d) {
-      const days = [...new Set(d[1]!.split(/[ ,y]+/).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 31))]
+      const days = [
+        ...new Set(
+          d[1]!
+            .split(/[ ,y]+/)
+            .map(Number)
+            .filter((n) => Number.isInteger(n) && n >= 1 && n <= 31),
+        ),
+      ]
       if (days.length) return { kind: 'monthly', days: days.sort((a, b) => a - b) }
     }
   }
@@ -171,6 +191,17 @@ export function scheduleTag(s: FixedSchedule): string | null {
 }
 
 const UNTIL_RE = /^hasta (\d{4}-\d{2})$/i
+const DISCOUNT_RE = /^descuento (\d{4}-\d{2}) (\d+)$/i
+
+/** Descuento de un fijo en un mes (YYYY-MM): suma de sus tramos "Descuento AAAA-MM monto". */
+export function discountFor(description: string | null, monthKey: string): number {
+  let total = 0
+  for (const seg of (description ?? '').split(' · ')) {
+    const d = DISCOUNT_RE.exec(seg.trim())
+    if (d && d[1] === monthKey) total += Number(d[2])
+  }
+  return total
+}
 
 /** Último mes (YYYY-MM) de un fijo en cuotas — tramo "Hasta 2027-01" —, o null si no termina. */
 export function parseUntil(description: string | null): string | null {
@@ -282,7 +313,16 @@ export function cashSummary({
     let b = byAccount.get(k)
     if (!b) {
       const snap = name ? snapshots.get(name.toLowerCase()) : undefined
-      b = { name: k, income: 0, expenses: 0, transfersOut: 0, transfersIn: 0, balance: 0, setAmount: snap?.amount ?? null, setAt: snap?.iso ?? null }
+      b = {
+        name: k,
+        income: 0,
+        expenses: 0,
+        transfersOut: 0,
+        transfersIn: 0,
+        balance: 0,
+        setAmount: snap?.amount ?? null,
+        setAt: snap?.iso ?? null,
+      }
       byAccount.set(k, b)
     }
     return b
@@ -294,7 +334,7 @@ export function cashSummary({
     const snap = account ? snapshots.get(account.toLowerCase()) : undefined
     return !!snap && (t <= snap.at || (!!day && day.slice(0, 10) < snap.day))
   }
-  const canonical = (m: string | null) => (m ? accountNames.find((a) => a.toLowerCase() === m.toLowerCase()) ?? m : null)
+  const canonical = (m: string | null) => (m ? (accountNames.find((a) => a.toLowerCase() === m.toLowerCase()) ?? m) : null)
 
   const month = { income: 0, business: 0, personal: 0 }
   const ledger: LedgerEntry[] = []
@@ -399,7 +439,7 @@ export function cashSummary({
 
   const [y, m] = monthKey.split('-').map(Number) as [number, number]
   const fixed: FixedItem[] = expenses
-    .filter((e) => e.due_day !== null && e.due_day >= 1 && e.due_day <= 31 && !isOtherIncome(e.category) && !isBalanceSnapshot(e.category))
+    .filter((e) => e.due_day !== null && e.due_day >= 1 && e.due_day <= 31 && !isBalanceSnapshot(e.category))
     // En cuotas y ya terminado: no se muestra más.
     .filter((e) => {
       const until = parseUntil(e.description)
@@ -416,7 +456,7 @@ export function cashSummary({
           x.due_day === null &&
           x.category === e.category &&
           x.expense_date.slice(0, 7) === monthKey &&
-          (x.description ?? '').includes(FIXED_PAYMENT_MARK)
+          (x.description ?? '').includes(FIXED_PAYMENT_MARK),
       ).length
       const unpaid = thisMonth.slice(paidCount)
       const pending = unpaid.length > 0
@@ -429,9 +469,14 @@ export function cashSummary({
           }
         : null
       const paidThisMonth = thisMonth.length > 0 && !pending
+      const income = isOtherIncome(e.category)
+      const discount = Math.min(discountFor(e.description, monthKey), e.amount)
       return {
         id: e.id,
-        name: stripPersonalPrefix(e.category),
+        name: income ? e.category.split(' · ').slice(1).join(' · ') || 'Ingreso' : stripPersonalPrefix(e.category),
+        income,
+        discount,
+        dueAmount: pending && nextDate.slice(0, 7) === monthKey ? e.amount - discount : e.amount,
         amount: e.amount,
         dueDay: e.due_day!,
         schedule,
@@ -444,22 +489,28 @@ export function cashSummary({
         remaining: unpaid.length,
         installment,
         lastPaid: !!until && paidThisMonth && monthKey === until,
-        perMonth: e.amount * occurrences(schedule, y, m - 1).length,
+        perMonth: e.amount * occurrences(schedule, y, m - 1).length - discount,
         account: splitAccount(e.description, accountNames).account,
       }
     })
     .sort((a, b) => a.nextDate.localeCompare(b.nextDate))
 
-  const upcoming = fixed.filter((f) => f.pending)
+  const expensesFixed = fixed.filter((f) => !f.income)
+  const fixedIncome = fixed.filter((f) => f.income)
+  const upcoming = expensesFixed.filter((f) => f.pending)
+  /** Lo que falta de este mes: cada fecha pendiente, con el descuento del mes una vez. */
+  const due = (f: FixedItem) => f.amount * f.remaining - (f.pending ? f.discount : 0)
 
   return {
     accounts,
     total: accounts.reduce((s, a) => s + a.balance, 0),
     month,
-    fixedBusiness: fixed.filter((f) => !f.personal),
-    fixedPersonal: fixed.filter((f) => f.personal),
+    fixedBusiness: expensesFixed.filter((f) => !f.personal),
+    fixedPersonal: expensesFixed.filter((f) => f.personal),
     upcoming,
-    upcomingTotal: upcoming.reduce((s, f) => s + f.amount * f.remaining, 0),
+    upcomingTotal: upcoming.reduce((s, f) => s + due(f), 0),
+    fixedIncome,
+    incomingTotal: fixedIncome.filter((f) => f.pending).reduce((s, f) => s + due(f), 0),
     monthExpenses: monthExpenses.sort((a, b) => b.date.localeCompare(a.date)),
     ledger: ledger.sort((a, b) => b.date.localeCompare(a.date)),
   }

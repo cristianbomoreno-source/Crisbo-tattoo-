@@ -3,7 +3,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { todayKey } from '@/lib/calendar/utils'
 import { parseSchedule, parseUntil, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
-import { LEDGER_ONLY_PREFIXES } from '@/lib/expenses/scope'
+import { LEDGER_ONLY_PREFIXES, isOtherIncome } from '@/lib/expenses/scope'
 
 export type Expense = {
   id: string
@@ -54,13 +54,15 @@ export async function getFixedExpenses(): Promise<Result<Expense[]>> {
   return ok(
     (data as Expense[]).filter((e) => {
       const until = parseUntil(e.description)
-      return parseSchedule(e.description, e.due_day).kind === 'monthly' && (!until || month <= until)
-    })
+      return parseSchedule(e.description, e.due_day).kind === 'monthly' && (!until || month <= until) && !isOtherIncome(e.category)
+    }),
   )
 }
 
 /** Todas las filas, de a 1.000 (tope de Supabase por consulta). */
-async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
+async function fetchAll<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
   const out: T[] = []
   for (let from = 0; ; from += 1000) {
     const { data, error } = await page(from, from + 999)
@@ -73,9 +75,7 @@ async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ dat
 /** Datos crudos del "Resumen de caja" de Inicio (ver lib/finance/cash-summary.ts):
  * todos los cobros y gastos del estudio, sin filtro de fecha — el saldo por
  * cuenta es acumulado. RLS limita a los del estudio. */
-export async function getCashData(): Promise<
-  Result<{ payments: CashPayment[]; expenses: CashExpense[] }>
-> {
+export async function getCashData(): Promise<Result<{ payments: CashPayment[]; expenses: CashExpense[] }>> {
   const supabase = await createClient()
   try {
     const [payments, expenses] = await Promise.all([
@@ -86,14 +86,14 @@ export async function getCashData(): Promise<
             .from('payments')
             .select('id, amount, paid_at, payment_method, created_at, projects(name, clients(name))')
             .order('paid_at')
-            .range(from, to) as unknown as PromiseLike<{ data: CashPayment[] | null; error: { message: string } | null }>
+            .range(from, to) as unknown as PromiseLike<{ data: CashPayment[] | null; error: { message: string } | null }>,
       ),
       fetchAll<CashExpense>((from, to) =>
         supabase
           .from('expenses')
           .select('id, category, description, amount, expense_date, due_day, created_at')
           .order('expense_date')
-          .range(from, to)
+          .range(from, to),
       ),
     ])
     return ok({ payments, expenses })
