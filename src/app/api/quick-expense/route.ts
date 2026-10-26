@@ -1,11 +1,10 @@
-import { timingSafeEqual } from 'node:crypto'
-import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { todayKey } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
 import { personalCategory } from '@/lib/expenses/scope'
+import { quickEntryAuthorized, quickEntryStudioId, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Registro rápido de gastos desde el atajo del iPhone ("Gasto Crisbo"):
  * Tocar atrás ×2 o al cerrar Nequi/Daviplata/Nu → el atajo pide monto,
@@ -19,19 +18,9 @@ const schema = z.object({
   nota: z.string().trim().max(200).optional(),
 })
 
-function authorized(req: Request) {
-  const got = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
-  const secret = process.env.QUICK_EXPENSE_TOKEN?.trim()
-  if (!got || !secret || got.length !== secret.length) return false
-  return timingSafeEqual(Buffer.from(got), Buffer.from(secret))
-}
-
-const text = (body: string, status = 200) =>
-  new NextResponse(body, { status, headers: { 'content-type': 'text/plain; charset=utf-8' } })
-
 export async function POST(req: Request) {
-  if (!authorized(req)) return text('❌ Token inválido', 401)
-  const studioId = process.env.QUICK_EXPENSE_STUDIO_ID?.trim()
+  if (!quickEntryAuthorized(req)) return text('❌ Token inválido', 401)
+  const studioId = quickEntryStudioId()
   if (!studioId) return text('❌ Falta configurar el estudio', 500)
 
   const parsed = schema.safeParse(await req.json().catch(() => null))
