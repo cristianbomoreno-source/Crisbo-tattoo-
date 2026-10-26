@@ -7,7 +7,8 @@ import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcut
  *  1. Elige "Ingreso" / "Gasto" (o "Entró"/"Salió") y escribe el monto.
  *  2. GET ?movimiento=… devuelve las opciones, una por renglón:
  *     - Salió: "Negocio · Insumos", "Personal · Comida", …
- *     - Entró: "Abono de cita nueva", "Venta de producto", "Otro ingreso"
+ *     - Entró: "Otro cliente (escribe su nombre en la nota)" — busca entre
+ *       todos los clientes —, "Abono de cita nueva", "Venta de producto", "Otro ingreso"
  *       y los proyectos con saldo, "Cliente · Proyecto · debe $X · #abc123"
  *  3. Elige opción, medio (Nequi, Bold, …) y nota → POST aquí.
  * Cómo se guarda cada cosa: lib/expenses/movement.ts. */
