@@ -28,3 +28,13 @@ export function quickEntryIssue(issue: { path: PropertyKey[]; code: string; mess
     return `❌ Falta el campo "${field}" en el Cuerpo de la solicitud (JSON)`
   return `❌ ${field ? field + ': ' : ''}${issue.message}`
 }
+
+/** Lee el JSON del atajo tolerando claves mal tecleadas en el iPhone
+ * (" movimiento", "Monto", "opción"): espacios, mayúsculas y tildes fuera. */
+export async function readShortcutBody(req: Request): Promise<Record<string, unknown>> {
+  const raw: unknown = await req.json().catch(() => ({}))
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  return Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s+/g, '').toLowerCase(), v])
+  )
+}

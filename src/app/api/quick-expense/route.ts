@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { todayKey } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
 import { personalCategory } from '@/lib/expenses/scope'
-import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, plainText as text } from '@/lib/expenses/quick-entry'
+import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcutBody, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Registro rápido de gastos desde el atajo del iPhone ("Gasto Crisbo"):
  * Tocar atrás ×2 o al cerrar Nequi/Daviplata/Nu → el atajo pide monto,
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const studioId = quickEntryStudioId()
   if (!studioId) return text('❌ Falta configurar el estudio', 500)
 
-  const parsed = schema.safeParse(await req.json().catch(() => ({})))
+  const parsed = schema.safeParse(await readShortcutBody(req))
   if (!parsed.success) return text(quickEntryIssue(parsed.error.issues[0]), 400)
 
   const { monto, tipo, categoria, nota } = parsed.data
