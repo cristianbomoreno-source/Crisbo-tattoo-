@@ -114,12 +114,15 @@ describe('cashSummary', () => {
         exp({ category: 'Saldo · Nequi', amount: 300_000, description: '2026-10-25T12:00:00.000Z', expense_date: '2026-10-25' }),
         exp({ category: 'Saldo · Bancolombia', amount: 1_000_000, description: '2026-10-25T12:00:00.000Z', expense_date: '2026-10-25' }),
         exp({ category: 'Insumos', amount: 10_000, description: 'Bancolombia', created_at: '2026-10-26T10:00:00Z', expense_date: '2026-10-26' }),
+        // Anotado después del corte pero con fecha anterior: ya estaba en el saldo.
+        exp({ category: 'Personal · Mercado', amount: 250_000, description: 'Bancolombia', created_at: '2026-10-26T11:00:00Z', expense_date: '2026-10-24' }),
       ],
     })
     const by = Object.fromEntries(s.accounts.map((a) => [a.name, a.balance]))
     expect(by).toEqual({ Nequi: 340_000, Bancolombia: 990_000 })
     // El saldo no es gasto del mes.
     expect(s.month.business).toBe(10_000)
+    expect(s.month.personal).toBe(250_000)
   })
 
   it('horario: se guarda y se lee de la descripción', () => {

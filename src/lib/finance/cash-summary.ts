@@ -218,7 +218,7 @@ export function cashSummary({
   for (const p of payments) if (p.payment_method) addName(p.payment_method)
 
   // Último saldo escrito a mano por cuenta.
-  const snapshots = new Map<string, { amount: number; at: number; iso: string }>()
+  const snapshots = new Map<string, { amount: number; at: number; iso: string; day: string }>()
   for (const e of expenses) {
     if (!isBalanceSnapshot(e.category)) continue
     const name = e.category.slice(BALANCE_PREFIX.length).trim()
@@ -227,7 +227,7 @@ export function cashSummary({
     const t = at(e.description, e.created_at, e.expense_date)
     const k = name.toLowerCase()
     const prev = snapshots.get(k)
-    if (!prev || t > prev.at) snapshots.set(k, { amount: e.amount, at: t, iso: new Date(t).toISOString() })
+    if (!prev || t > prev.at) snapshots.set(k, { amount: e.amount, at: t, iso: new Date(t).toISOString(), day: e.expense_date })
   }
 
   const byAccount = new Map<string, AccountBalance>()
@@ -240,10 +240,12 @@ export function cashSummary({
     }
     return b
   }
-  /** Ya estaba contado en el saldo escrito a mano de esa cuenta. */
-  const beforeSnapshot = (account: string | null, t: number) => {
+  /** Ya estaba contado en el saldo escrito a mano de esa cuenta: se registró
+   * antes del corte, o se registró después pero con fecha de un día anterior
+   * (anotar hoy un gasto de la semana pasada no vuelve a restarlo). */
+  const beforeSnapshot = (account: string | null, t: number, day: string | null | undefined) => {
     const snap = account ? snapshots.get(account.toLowerCase()) : undefined
-    return !!snap && t <= snap.at
+    return !!snap && (t <= snap.at || (!!day && day.slice(0, 10) < snap.day))
   }
   const canonical = (m: string | null) => (m ? accountNames.find((a) => a.toLowerCase() === m.toLowerCase()) ?? m : null)
 
@@ -252,7 +254,7 @@ export function cashSummary({
   for (const p of payments) {
     const account = canonical(p.payment_method)
     if (p.paid_at?.slice(0, 7) === monthKey) month.income += p.amount
-    if (!beforeSnapshot(account, at(p.created_at, p.paid_at))) bucket(account).income += p.amount
+    if (!beforeSnapshot(account, at(p.created_at, p.paid_at), p.paid_at)) bucket(account).income += p.amount
   }
 
   const monthExpenses: MonthExpense[] = []
@@ -260,7 +262,7 @@ export function cashSummary({
     if (e.due_day !== null || isBalanceSnapshot(e.category)) continue // definición de un fijo o saldo: no es plata que se movió
     const { account, note } = splitAccount(e.description, accountNames)
     const inMonth = e.expense_date.slice(0, 7) === monthKey
-    const counted = !beforeSnapshot(account, at(e.created_at, e.expense_date))
+    const counted = !beforeSnapshot(account, at(e.created_at, e.expense_date), e.expense_date)
     if (isOtherIncome(e.category)) {
       if (counted) bucket(account).income += e.amount
       if (inMonth) month.income += e.amount
