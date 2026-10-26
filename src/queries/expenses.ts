@@ -3,7 +3,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { todayKey } from '@/lib/calendar/utils'
 import { parseSchedule, parseUntil, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
-import { LEDGER_ONLY_PREFIXES, isOtherIncome } from '@/lib/expenses/scope'
+import { LEDGER_ONLY_PREFIXES, MOVE_IN_PREFIX, isOtherIncome } from '@/lib/expenses/scope'
 
 export type Expense = {
   id: string
@@ -54,7 +54,12 @@ export async function getFixedExpenses(): Promise<Result<Expense[]>> {
   return ok(
     (data as Expense[]).filter((e) => {
       const until = parseUntil(e.description)
-      return parseSchedule(e.description, e.due_day).kind === 'monthly' && (!until || month <= until) && !isOtherIncome(e.category)
+      return (
+        parseSchedule(e.description, e.due_day).kind === 'monthly' &&
+        (!until || month <= until) &&
+        !isOtherIncome(e.category) &&
+        !e.category.startsWith(MOVE_IN_PREFIX)
+      )
     }),
   )
 }

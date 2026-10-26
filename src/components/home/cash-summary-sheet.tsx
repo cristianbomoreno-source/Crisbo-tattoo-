@@ -9,7 +9,7 @@ import { ArrowLeft, Briefcase, Check, Plus, Trash2, User, Wallet } from 'lucide-
 
 import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction, setFixedDiscountAction } from '@/actions/expenses'
 import { AccountBookCard, Fab, LedgerView, NewRecordSheet, useSaveBalance } from '@/components/home/cash-ledger'
-import { OTHER_INCOME_PREFIX, personalCategory } from '@/lib/expenses/scope'
+import { MOVE_IN_PREFIX, OTHER_INCOME_PREFIX, personalCategory } from '@/lib/expenses/scope'
 import { todayKey } from '@/lib/calendar/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -474,6 +474,8 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
   const [open, setOpen] = useState(false)
   const [scope, setScope] = useState<'business' | 'personal' | 'income'>('business')
   const personal = scope === 'personal'
+  // Un ingreso fijo puede ser del negocio (cuenta en Finanzas) o plata que te pasan (familia, préstamos).
+  const [isSale, setIsSale] = useState(true)
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [frequency, setFrequency] = useState<Frequency>('once')
@@ -502,7 +504,12 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
     if (typeof sch === 'string') return toast.error(sch)
     startTransition(async () => {
       const result = await createExpenseAction({
-        category: scope === 'income' ? OTHER_INCOME_PREFIX + name.trim() : personal ? personalCategory(name.trim()) : name.trim(),
+        category:
+          scope === 'income'
+            ? (isSale ? OTHER_INCOME_PREFIX : MOVE_IN_PREFIX) + name.trim()
+            : personal
+              ? personalCategory(name.trim())
+              : name.trim(),
         description: [account, scheduleTag(sch)].filter(Boolean).join(' · ') || undefined,
         amount: Number(amount),
         expense_date: todayKey(),
@@ -559,6 +566,17 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
         value={scope}
         onChange={setScope}
       />
+      {scope === 'income' && (
+        <Segmented
+          small
+          options={[
+            { value: true, label: 'Ingreso del negocio' },
+            { value: false, label: 'Me lo pasan (no es venta)' },
+          ]}
+          value={isSale}
+          onChange={setIsSale}
+        />
+      )}
       <Input
         placeholder={
           scope === 'income'

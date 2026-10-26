@@ -469,7 +469,8 @@ export function cashSummary({
           }
         : null
       const paidThisMonth = thisMonth.length > 0 && !pending
-      const income = isOtherIncome(e.category)
+      // Ingreso fijo: venta o ingreso del negocio ("Ingreso · ") o plata que te pasan y no es venta ("Entrada · ").
+      const income = isOtherIncome(e.category) || e.category.startsWith(MOVE_IN_PREFIX)
       const discount = Math.min(discountFor(e.description, monthKey), e.amount)
       return {
         id: e.id,
