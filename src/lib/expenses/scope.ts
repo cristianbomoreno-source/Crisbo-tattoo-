@@ -15,3 +15,13 @@ export function personalCategory(category: string) {
 export function stripPersonalPrefix(category: string) {
   return isPersonalExpense(category) ? category.slice(PERSONAL_PREFIX.length) : category
 }
+
+/** Ingresos que no son de un proyecto (abono de una cita nueva, venta de
+ * producto…) registrados desde el atajo. Sin tabla propia: van en `expenses`
+ * con este prefijo y Finanzas los suma a lo cobrado, no a los gastos. */
+export const OTHER_INCOME_PREFIX = 'Ingreso · '
+export const OTHER_INCOME_OPTIONS = ['Abono de cita nueva', 'Venta de producto', 'Otro ingreso']
+
+export function isOtherIncome(category: string) {
+  return category.startsWith(OTHER_INCOME_PREFIX)
+}

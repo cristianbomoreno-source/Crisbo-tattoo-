@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cop } from '@/lib/projects/metrics'
 import { todayKey } from '@/lib/calendar/utils'
+import { isOtherIncome } from '@/lib/expenses/scope'
 
 function formatDay(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
@@ -31,7 +32,8 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
   const [dueDay, setDueDay] = useState('')
   const [pending, startTransition] = useTransition()
 
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0)
+  // Los "Ingreso · …" del atajo se listan para poder borrarlos, pero no son gasto.
+  const total = expenses.filter((e) => !isOtherIncome(e.category)).reduce((sum, e) => sum + e.amount, 0)
   const fixedExpenses = expenses.filter((e) => e.due_day !== null)
 
   function add() {
@@ -139,7 +141,9 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
                   </p>
                 )}
               </div>
-              <p className="shrink-0 font-display text-sm font-semibold tabular-nums">{cop(e.amount)}</p>
+              <p className={`shrink-0 font-display text-sm font-semibold tabular-nums ${isOtherIncome(e.category) ? 'text-primary' : ''}`}>
+                {isOtherIncome(e.category) ? `+${cop(e.amount)}` : cop(e.amount)}
+              </p>
               <button
                 type="button"
                 onClick={() => remove(e.id)}

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { todayKey } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
-import { personalCategory } from '@/lib/expenses/scope'
+import { personalCategory, OTHER_INCOME_OPTIONS, OTHER_INCOME_PREFIX } from '@/lib/expenses/scope'
 import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcutBody, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Atajo "Caja Crisbo" del iPhone: un solo flujo lineal (sin bloques "Si")
@@ -11,7 +11,9 @@ import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcut
  *  1. Elige "Ingreso" / "Gasto" (o "Entró"/"Salió") y escribe el monto.
  *  2. GET ?movimiento=… devuelve las opciones, una por renglón:
  *     - Salió: "Negocio · Insumos", "Personal · Comida", …
- *     - Entró: proyectos con saldo, "Cliente · Proyecto · debe $X · #abc123"
+ *     - Entró: "Abono de cita nueva", "Venta de producto", "Otro ingreso"
+ *       (sin proyecto, ver OTHER_INCOME_PREFIX) y los proyectos con saldo,
+ *       "Cliente · Proyecto · debe $X · #abc123"
  *  3. Elige opción, medio (Nequi, Bold, …) y nota → POST aquí.
  * Gastos → `expenses` (personales con prefijo, ver lib/expenses/scope.ts);
  * ingresos → `payments` del proyecto elegido, igual que la Caja de Inicio. */
@@ -58,8 +60,7 @@ export async function GET(req: Request) {
   }
   try {
     const projects = await openProjects(studioId)
-    if (projects.length === 0) return text('No hay proyectos con saldo pendiente')
-    return text(projects.slice(0, 40).map(projectLine).join('\n'))
+    return text([...OTHER_INCOME_OPTIONS, ...projects.slice(0, 40).map(projectLine)].join('\n'))
   } catch (e) {
     console.error('[movimiento]', (e as Error).message)
     return text('❌ No se pudieron cargar los proyectos', 500)
@@ -85,6 +86,24 @@ export async function POST(req: Request) {
   const monto = Math.round(parsed.data.monto)
   const cleanNota = nota && nota !== '-' ? nota : null
   const supabase = createAdminClient()
+
+  const otherIncome = OTHER_INCOME_OPTIONS.find((o) => o.toLowerCase() === opcion.toLowerCase())
+  if (isIncome(movimiento) && otherIncome) {
+    const { error } = await supabase.from('expenses').insert({
+      studio_id: studioId,
+      category: OTHER_INCOME_PREFIX + otherIncome,
+      description: [medio, cleanNota].filter(Boolean).join(' · ') || null,
+      amount: monto,
+      expense_date: todayKey(),
+    })
+    if (error) {
+      console.error('[movimiento] other income', error.message)
+      return text('❌ No se pudo guardar, intenta de nuevo', 500)
+    }
+    revalidatePath('/dashboard/settings/gastos')
+    revalidatePath('/dashboard/settings/finanzas')
+    return text(`✅ Entró ${cop(monto)} · ${otherIncome}`)
+  }
 
   if (isIncome(movimiento)) {
     const ref = opcion.match(/#([0-9a-f]{6})\s*$/i)?.[1]?.toLowerCase()

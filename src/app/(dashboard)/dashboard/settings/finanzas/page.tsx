@@ -37,7 +37,7 @@ import { FinancePendingCard } from '@/components/finance/finance-pending'
 import { FinanceProductionGrid } from '@/components/finance/finance-production'
 import { FinanceTopServicesCard, FinanceTopClientsCard } from '@/components/finance/finance-rankings'
 import { FinanceIncomeVsExpensesCard, FinanceExpensesDonut, FinancePersonalCard } from '@/components/finance/finance-expenses'
-import { isPersonalExpense, stripPersonalPrefix } from '@/lib/expenses/scope'
+import { isPersonalExpense, isOtherIncome, stripPersonalPrefix } from '@/lib/expenses/scope'
 
 function getDefaultDates() {
   const today = new Date()
@@ -81,7 +81,11 @@ export default async function FinanzasPage({
   const clients = clientsResult.success ? clientsResult.data : []
   const allRangeExpenses = expensesResult.success ? expensesResult.data : []
   // Los gastos personales no son costo del estudio: van aparte como retiros.
-  const rangeExpenses = allRangeExpenses.filter((e) => !isPersonalExpense(e.category))
+  // Los "Ingreso · …" del atajo (abonos sin proyecto, ventas) no son gasto:
+  // suman a la utilidad, pero no al cobro de cotizaciones (pendiente).
+  const otherIncomeRows = allRangeExpenses.filter((e) => isOtherIncome(e.category))
+  const otherIncome = otherIncomeRows.reduce((sum, e) => sum + e.amount, 0)
+  const rangeExpenses = allRangeExpenses.filter((e) => !isPersonalExpense(e.category) && !isOtherIncome(e.category))
   const personalExpenses = allRangeExpenses.filter((e) => isPersonalExpense(e.category))
 
   // Datos filtrados por el rango seleccionado
@@ -100,7 +104,7 @@ export default async function FinanzasPage({
   const conversion = conversionPct(rangeQuotes)
 
   const totalExpenses = rangeExpenses.reduce((sum, e) => sum + e.amount, 0)
-  const profit = rangeExpenses.length > 0 ? collected - totalExpenses : null
+  const profit = rangeExpenses.length > 0 ? collected + otherIncome - totalExpenses : null
 
   // Datos para el reporte
   const reportData: ReportData = {
@@ -112,7 +116,7 @@ export default async function FinanzasPage({
     pendingValue: pendingQuotes.reduce((sum, q) => sum + (q.price ?? 0), 0),
     rejectedQuotes: rejectedQuotes.length,
     conversionRate: conversion,
-    confirmedIncome: collected,
+    confirmedIncome: collected + otherIncome,
     pendingIncome: pending,
     averageTicket: avgTicket,
     totalSessions: hoursData.sessionCount,
@@ -145,7 +149,8 @@ export default async function FinanzasPage({
 
   const monthExpenses = rangeExpenses.filter((e) => e.expense_date.slice(0, 7) === monthKey)
   const monthTotalExpenses = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
-  const monthProfit = monthExpenses.length > 0 ? monthCollected - monthTotalExpenses : null
+  const monthOtherIncome = otherIncomeRows.filter((e) => e.expense_date.slice(0, 7) === monthKey).reduce((sum, e) => sum + e.amount, 0)
+  const monthProfit = monthExpenses.length > 0 ? monthCollected + monthOtherIncome - monthTotalExpenses : null
 
   const expensesByCategory = Object.entries(
     rangeExpenses.reduce<Record<string, number>>((acc, e) => {
@@ -198,12 +203,12 @@ export default async function FinanzasPage({
         />
         {rangeExpenses.length > 0 && (
           <>
-            <FinanceIncomeVsExpensesCard income={collected} expenses={totalExpenses} />
+            <FinanceIncomeVsExpensesCard income={collected + otherIncome} expenses={totalExpenses} />
             <FinanceExpensesDonut totals={expensesByCategory} />
           </>
         )}
         {personalExpenses.length > 0 && (
-          <FinancePersonalCard totals={personalByCategory} profit={profit ?? collected} />
+          <FinancePersonalCard totals={personalByCategory} profit={profit ?? collected + otherIncome} />
         )}
         <FinanceTopServicesCard rows={topServicesByRevenue(rangeQuotes)} />
         <FinanceTopClientsCard rows={topClientsByRevenue(projects)} />
