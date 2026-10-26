@@ -53,8 +53,6 @@ export type HomeDesktopProps = {
   unscheduledApproved: number
   projects: ProjectSummary[]
   paymentMethods?: string[] | null
-  /** Gastos fijos del mes (solo el dueño), se descuentan de las ventas. */
-  fixedThisMonth?: number
   medicalAlertProjectIds?: Set<string>
   /** Detalle de la alerta médica por proyecto (tarjeta "Próxima sesión"). */
   medicalAlerts?: Record<string, MedicalAlert[]>
@@ -84,7 +82,6 @@ export function HomeDesktop({
   unscheduledApproved,
   projects,
   paymentMethods,
-  fixedThisMonth,
   medicalAlertProjectIds,
   medicalAlerts,
   expenseAlerts = [],
@@ -149,7 +146,6 @@ export function HomeDesktop({
             projects={projects}
             todaySessions={todaySessions}
             paymentMethods={paymentMethods}
-            fixedThisMonth={fixedThisMonth}
           />
           {expenseAlerts.length > 0 && (
             <ExpenseAlertsCard alerts={expenseAlerts} />

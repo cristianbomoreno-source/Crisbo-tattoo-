@@ -290,7 +290,6 @@ export default async function DashboardPage() {
         projects={projects}
         todaySessions={todaySessions}
         paymentMethods={studio?.paymentMethods}
-        fixedThisMonth={cash?.fixedMonthTotal}
       />
 
       {expenseAlerts.length > 0 && (
@@ -357,7 +356,6 @@ export default async function DashboardPage() {
           unscheduledApproved={unscheduledApproved}
           projects={projects}
           paymentMethods={studio?.paymentMethods}
-          fixedThisMonth={cash?.fixedMonthTotal}
           medicalAlertProjectIds={medicalAlertProjectIds}
           medicalAlerts={medicalAlerts}
           expenseAlerts={expenseAlerts}
