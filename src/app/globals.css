@@ -272,9 +272,6 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #171717;
-  /* El pulpo tiene botones negros: su aro/íconos van en gris claro para
-     no quedar negro sobre negro (ver octopus-menu.tsx). */
-  --octopus-accent: #c4c4c4;
 }
 
 /* ===== Superficies flotantes premium sobre #090909. Ver design-system.md §5. ===== */

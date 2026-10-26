@@ -9,8 +9,8 @@ import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 /**
  * Navegación móvil de Crisbo Tattoo (<lg): barra flotante en forma de
  * píldora (estilo YouVersion) separada del borde inferior, de 5 posiciones
- * (Inicio, Proyectos, hueco central para el pulpo de octopus-menu.tsx,
- * Cotizaciones, Estudio). Íconos y etiquetas en el color del texto; la
+ * (Inicio, Proyectos, Mensajes, Estudio). Sin botón central: el menú-pulpo
+ * se eliminó (2026-10-26). Íconos y etiquetas en el color del texto; la
  * pestaña activa se marca con una píldora gris detrás, no con color. En
  * escritorio (lg+) se oculta; ahí manda el sidebar.
  *
@@ -38,12 +38,7 @@ export function MobileNav() {
       data-tour="nav-bar"
       className="fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-16 items-stretch gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_8px_30px_-6px_rgb(0_0_0/0.35)] lg:hidden"
     >
-      {MOBILE_TAB_ITEMS.slice(0, 2).map((item) => (
-        <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
-      ))}
-      {/* Hueco central: aquí vive el pulpo (octopus-menu.tsx, fixed + z-40) */}
-      <div className="w-[84px] shrink-0" aria-hidden="true" />
-      {MOBILE_TAB_ITEMS.slice(2).map((item) => (
+      {MOBILE_TAB_ITEMS.map((item) => (
         <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
       ))}
       <TabLink href="/dashboard/settings" label="Estudio" icon={LayoutGrid} active={isActive('/dashboard/settings')} />

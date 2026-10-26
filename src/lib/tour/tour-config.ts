@@ -8,8 +8,8 @@
  * (ver ese atributo repartido por los componentes reales — nunca clases
  * CSS, que cambian con el rediseño). `target` es una lista de candidatos
  * en orden de preferencia: Crisbo Tattoo tiene versiones móvil/escritorio
- * distintas para la misma función (p. ej. el pulpo central es solo móvil,
- * escritorio tiene un botón "Nueva cotización" aparte) — el motor prueba
+ * distintas para la misma función (p. ej. en móvil "Rápida"/"Formal" en la cabecera,
+ * escritorio tiene un botón "Nueva cotización") — el motor prueba
  * cada `data-tour` de la lista y usa el primero que esté realmente
  * visible en pantalla. Si NINGUNO está visible, el paso se omite solo
  * (nunca bloquea el recorrido).
@@ -95,7 +95,7 @@ export const TATUADOR_TOUR_STEPS: TourStep[] = [
     title: 'Crear cotización',
     body: 'Toca aquí para cargar una cotización nueva — rápida (unos datos) o formal (con foto de referencia y detalle).',
     route: '/dashboard/quotes',
-    target: { keys: ['quote-create-desktop', 'octopus-trigger'], placement: 'auto' },
+    target: { keys: ['quote-create-desktop', 'quote-create-mobile'], placement: 'auto' },
   },
   {
     id: 'quotes-list',
@@ -103,13 +103,6 @@ export const TATUADOR_TOUR_STEPS: TourStep[] = [
     body: 'Todas tus cotizaciones, con su estado — desde aquí las conviertes en proyecto en cuanto el cliente confirma.',
     route: '/dashboard/quotes',
     target: { keys: ['quotes-list'], placement: 'top' },
-  },
-  {
-    id: 'octopus',
-    title: 'El botón central',
-    body: 'Tu acceso rápido: clientes, agenda, cotización rápida o formal, sin importar en qué pantalla estés.',
-    route: '/dashboard/quotes',
-    target: { keys: ['octopus-trigger'], placement: 'top' },
   },
   {
     id: 'calendar',

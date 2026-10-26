@@ -8,7 +8,6 @@ import { SettingsSubpage } from '@/components/settings/settings-subpage'
 import { StatusRow } from '@/components/settings/status-row'
 import { ThemeToggle } from '@/components/settings/theme-toggle'
 import { TemplateColorPicker } from '@/components/settings/template-color-picker'
-import { OctopusMenuSettings } from '@/components/settings/octopus-menu-settings'
 
 export default async function PersonalizacionHubPage() {
   const studio = await getCurrentStudio()
@@ -49,9 +48,6 @@ export default async function PersonalizacionHubPage() {
       </div>
       <div className="mt-3">
         <TemplateColorPicker initialColor={studio.quoteTemplateColor} />
-      </div>
-      <div className="mt-3">
-        <OctopusMenuSettings accountKind={studio.accountKind} />
       </div>
       <div className="mt-3 border-t border-border/60 pt-2">
         <StatusRow href="/dashboard/settings/mensajes" ok={status.checks.mensajes} label="Plantillas de WhatsApp" />

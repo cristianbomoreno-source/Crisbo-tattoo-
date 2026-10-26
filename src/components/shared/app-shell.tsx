@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/shared/sidebar'
 import { MobileTopbar } from '@/components/shared/mobile-topbar'
 import { MobileNav } from '@/components/shared/mobile-nav'
-import { OctopusMenu } from '@/components/shared/octopus-menu'
 import { InstallPrompt } from '@/components/shared/install-prompt'
 import { GuidedTour } from '@/components/shared/guided-tour'
 import { PageHint } from '@/components/shared/page-hint'
@@ -66,7 +65,6 @@ export function AppShell({
       </div>
 
       <MobileNav />
-      <OctopusMenu avatarUrl={studio?.logoUrl ?? null} isStudioOwner={studio?.isStudioOwner} />
       <InstallPrompt />
       <PageHint />
       <GuidedTour />

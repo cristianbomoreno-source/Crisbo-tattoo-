@@ -76,12 +76,9 @@ export function SettingsSubpage({
  * offset inferior deja la barra ENCIMA de la navegación fija del móvil
  * (64px + safe-area) — antes era `bottom-0` y quedaba exactamente DEBAJO de
  * la barra de pestañas: el botón se veía a medias o nada y los taps caían en
- * la navegación, por eso "Guardar no hacía nada". El botón pulpo (84px,
- * `octopus-menu.tsx`) sobresale 42px por encima del borde superior de esa
- * barra — con el offset anterior (64px) su mitad superior quedaba encima del
- * propio botón Guardar (ancho completo en móvil), tapándolo. El offset ahora
- * es 106px (64px de barra + 42px del pulpo) para dejarlo siempre libre. En
- * desktop (lg, sin barra inferior ni pulpo) vuelve a bottom-0. En modo
+ * la navegación, por eso "Guardar no hacía nada". El offset es 80px (8px de
+ * margen + 64px de barra + 8px de aire). En desktop (lg, sin barra
+ * inferior) vuelve a bottom-0. En modo
  * embebido no es fixed.
  *
  * Por qué `fixed` y no `sticky`: reportado como bug real ("Guardar no deja
@@ -118,7 +115,7 @@ export function SettingsSaveBar({
     )
   }
   return (
-    <div className="fixed inset-x-0 bottom-[calc(106px+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background px-4 py-3 sm:px-6 lg:bottom-0 lg:left-64">
+    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background px-4 py-3 sm:px-6 lg:bottom-0 lg:left-64">
       <div className="mx-auto max-w-xl">
         <Button type="button" onClick={onSave} disabled={!dirty || saving} className="h-10 w-full sm:w-auto">
           {saving ? 'Guardando…' : label}

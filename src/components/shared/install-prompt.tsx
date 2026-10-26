@@ -63,7 +63,7 @@ export function InstallPrompt() {
   if (!visible) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-[calc(106px+env(safe-area-inset-bottom))] z-40 flex justify-center p-4 motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in lg:bottom-0 lg:left-64">
+    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex justify-center p-4 motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in lg:bottom-0 lg:left-64">
       <div className="relative flex w-full max-w-md items-center gap-3 rounded-2xl bg-card p-3 pr-10 shadow-xl">
         <span className="absolute inset-y-0 left-0 w-[3px] rounded-l-xl bg-primary" aria-hidden="true" />
 

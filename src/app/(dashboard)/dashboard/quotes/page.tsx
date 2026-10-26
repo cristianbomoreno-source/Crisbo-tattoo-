@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { Zap, FileText } from 'lucide-react'
+import { buttonVariants } from '@/components/ui/button'
 import { getQuotes } from '@/queries/quotes'
 import { getClients } from '@/queries/clients'
 import { getCurrentStudio } from '@/queries/studio'
@@ -42,9 +45,20 @@ export default async function QuotesPage() {
       <PageHeader
         title="Cotizaciones"
         action={
-          <div className="hidden lg:block" data-tour="quote-create-desktop">
-            <CreateQuoteDialog clients={clients} quoteMessageTemplate={studio?.quoteMessageTemplate} />
-          </div>
+          <>
+            <div className="hidden lg:block" data-tour="quote-create-desktop">
+              <CreateQuoteDialog clients={clients} quoteMessageTemplate={studio?.quoteMessageTemplate} />
+            </div>
+            {/* Móvil: los accesos "Rápida" / "Formal" que antes vivían en el pulpo. */}
+            <div className="flex gap-2 lg:hidden" data-tour="quote-create-mobile">
+              <Link href="/dashboard/quotes/quick" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
+                <Zap className="size-4" />Rápida
+              </Link>
+              <Link href="/dashboard/quotes/new" className={buttonVariants({ size: 'sm' })}>
+                <FileText className="size-4" />Formal
+              </Link>
+            </div>
+          </>
         }
       />
       <QuotesList

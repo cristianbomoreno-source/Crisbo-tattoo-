@@ -43,7 +43,7 @@ export function PageHint() {
   if (!visible || !content) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-[calc(106px+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in lg:bottom-6 lg:left-64">
+    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in lg:bottom-6 lg:left-64">
       <div className="relative flex w-full max-w-sm items-start gap-3 rounded-2xl bg-card p-3.5 pr-9 shadow-xl ring-1 ring-border/60">
         <span className="mt-0.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
         <div className="min-w-0">
