@@ -29,12 +29,23 @@ export function quickEntryIssue(issue: { path: PropertyKey[]; code: string; mess
   return `❌ ${field ? field + ': ' : ''}${issue.message}`
 }
 
-/** Lee el JSON del atajo tolerando claves mal tecleadas en el iPhone
- * (" movimiento", "Monto", "opción"): espacios, mayúsculas y tildes fuera. */
+const normalizeKey = (k: string) =>
+  k.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '').toLowerCase()
+
+/** Lee el cuerpo del atajo tolerando lo que se escoge o teclea mal en el
+ * iPhone: "Formulario" en vez de JSON, y claves como " movimiento", "Monto"
+ * u "opción" (espacios, mayúsculas y tildes fuera). */
 export async function readShortcutBody(req: Request): Promise<Record<string, unknown>> {
-  const raw: unknown = await req.json().catch(() => ({}))
+  const type = req.headers.get('content-type') ?? ''
+  let raw: unknown = {}
+  if (/form/i.test(type)) {
+    const form = await req.formData().catch(() => null)
+    raw = form ? Object.fromEntries(form.entries()) : {}
+  } else {
+    raw = await req.json().catch(() => ({}))
+  }
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
-  return Object.fromEntries(
-    Object.entries(raw).map(([k, v]) => [k.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s+/g, '').toLowerCase(), v])
-  )
+  const body = Object.fromEntries(Object.entries(raw).map(([k, v]) => [normalizeKey(k), v]))
+  console.log('[shortcut-body]', type, Object.keys(body).join(','))
+  return body
 }
