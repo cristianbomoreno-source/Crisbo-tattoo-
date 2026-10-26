@@ -499,3 +499,9 @@
 .minimal::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
 }
+
+/* Íconos lucide que aún quedan: trazo 1.75 para que convivan con los Phosphor
+   (la navegación, Inicio y Estadísticas ya usan Phosphor). */
+svg.lucide {
+  stroke-width: 1.75;
+}

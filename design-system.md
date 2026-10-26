@@ -90,7 +90,20 @@ mira, a pedido del dueño) → próxima cita (con foto) → **Hoy** (lista con
 resumen de citas y horas) → "Caja y cuentas" → alertas de gastos. Cada dato
 aparece una vez.
 
-## 7. Movimiento
+## 7. Íconos y gráficas
+
+- Íconos **Phosphor** (`@phosphor-icons/react`; en componentes de servidor
+  `@phosphor-icons/react/dist/ssr`). Navegación: `regular` en reposo y
+  `fill` dorado en la pestaña activa. Módulos y tarjetas: `duotone` dentro
+  de un cuadro `rounded-xl bg-primary/12`. Flechas: `CaretRight` `bold`.
+  Lo que queda en lucide se dibuja con trazo 1.75 para convivir.
+- Estadísticas: primero la gráfica, poco texto. Kit SVG propio en
+  `components/stats/charts.tsx` (curva acumulada contra el mes anterior,
+  barritas por día, dona, anillo, columnas, píldora de variación). Dorado
+  para el dato que importa; tierras y grises cálidos para el resto; el rojo
+  nunca es una categoría, solo lo malo.
+
+## 8. Movimiento
 
 Utilidades `.animate-fade-in`, `.animate-scale-in`, `.animate-spring-in`
 en `globals.css`; hojas y diálogos usan `tw-animate-css`. Todo respeta

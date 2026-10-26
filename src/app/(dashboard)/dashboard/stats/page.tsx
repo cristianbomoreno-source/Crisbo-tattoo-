@@ -8,8 +8,7 @@ import { getCashData, getFixedExpenses } from '@/queries/expenses'
 import { cashSummary } from '@/lib/finance/cash-summary'
 import { PAYMENT_METHOD_OPTIONS } from '@/lib/validations/studio'
 import { monthMetrics, monthHeatmap, daysInMonth, sessionsInMonth, type StudioSchedule } from '@/lib/home/month-metrics'
-import { todayKey, shiftMonth } from '@/lib/calendar/utils'
-import { accentColorFor } from '@/lib/pdf/quote-template-data'
+import { todayKey, shiftMonth, dayKey } from '@/lib/calendar/utils'
 import {
   quotesInMonth,
   salesFunnel,
@@ -23,18 +22,15 @@ import {
   confirmedIncome,
   monthPayments,
   clientsBreakdown,
-  upcomingSessions,
   genderBreakdown,
   ageStats,
 } from '@/lib/stats/period-metrics'
 import { alertsFromFixedItems, calculateUpcomingExpenseAlerts, getSmartRecommendations } from '@/lib/finance/alerts'
 
 import { StatsHero } from '@/components/stats/stats-hero'
-import { StatsSummaryStrip } from '@/components/stats/stats-summary-strip'
-import { StatsSecondaryGrid } from '@/components/stats/stats-secondary-grid'
+import { StatsKpiGrid } from '@/components/stats/stats-kpi-grid'
 import { StatsFunnel } from '@/components/stats/stats-funnel'
-import { StatsTrendChart } from '@/components/stats/stats-trend-chart'
-import { StatsInsightCards } from '@/components/stats/stats-insight-cards'
+import { StatsClientsCard } from '@/components/stats/stats-insight-cards'
 import { StatsRecommendations } from '@/components/stats/stats-recommendations'
 import { StatsStylesRanking } from '@/components/stats/stats-styles-ranking'
 import { StatsZonesMap } from '@/components/stats/stats-zones-map'
@@ -44,11 +40,7 @@ import { StatsObjectives } from '@/components/stats/stats-objectives'
 import { StatsAudienceCard } from '@/components/stats/stats-audience-card'
 import { StatsTabs } from '@/components/social/stats-tabs'
 
-export default async function StatsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ m?: string }>
-}) {
+export default async function StatsPage({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
   const { m } = await searchParams
   const monthKey = m && /^\d{4}-\d{2}$/.test(m) ? m : todayKey().slice(0, 7)
   const prevKey = shiftMonth(monthKey, -1)
@@ -66,16 +58,17 @@ export default async function StatsPage({
   const toD = new Date(Date.UTC(year, month0 + 1, 0))
   toD.setUTCDate(toD.getUTCDate() + 7)
 
-  const [quotesResult, sessionsResult, projectsResult, clientsResult, blockedKeys, studio, fixedExpensesResult, cashResult] = await Promise.all([
-    getQuotes(),
-    getSessions(fromD.toISOString(), toD.toISOString()),
-    getProjects(),
-    getClients(),
-    getBlockedDayKeys(fromD.toISOString().slice(0, 10), toD.toISOString().slice(0, 10)),
-    getCurrentStudio(),
-    getFixedExpenses(),
-    getCashData(),
-  ])
+  const [quotesResult, sessionsResult, projectsResult, clientsResult, blockedKeys, studio, fixedExpensesResult, cashResult] =
+    await Promise.all([
+      getQuotes(),
+      getSessions(fromD.toISOString(), toD.toISOString()),
+      getProjects(),
+      getClients(),
+      getBlockedDayKeys(fromD.toISOString().slice(0, 10), toD.toISOString().slice(0, 10)),
+      getCurrentStudio(),
+      getFixedExpenses(),
+      getCashData(),
+    ])
   const quotes = quotesResult.success ? quotesResult.data : []
   const sessions = sessionsResult.success ? sessionsResult.data : []
   const projectsFull = projectsResult.success ? projectsResult.data : []
@@ -104,29 +97,20 @@ export default async function StatsPage({
   const prevMonthQuotes = quotesInMonth(quotes, prevKey)
   const quotedValue = monthQuotes.reduce((sum, q) => sum + (q.price ?? 0), 0)
   const prevQuotedValue = prevMonthQuotes.reduce((sum, q) => sum + (q.price ?? 0), 0)
-  const deltaQuotesPct =
-    prevMonthQuotes.length > 0
-      ? Math.round(((monthQuotes.length - prevMonthQuotes.length) / prevMonthQuotes.length) * 100)
-      : null
 
   const approvedCount = monthQuotes.filter((q) => q.status === 'approved').length
-  const prevApprovedCount = prevMonthQuotes.filter((q) => q.status === 'approved').length
 
-  // ----- Series diarias para la gráfica -----
+  // ----- Series diarias para las gráficas -----
   const totalDays = daysInMonth(monthKey)
-  const trendData = Array.from({ length: totalDays }, (_, i) => {
-    const day = String(i + 1).padStart(2, '0')
-    const key = `${monthKey}-${day}`
-    const dayQuotes = monthQuotes.filter((q) => q.created_at.slice(0, 10) === key)
-    return {
-      day: i + 1,
-      quotes: dayQuotes.length,
-      value: dayQuotes.reduce((sum, q) => sum + (q.price ?? 0), 0),
-    }
-  })
+  const dayKeys = Array.from({ length: totalDays }, (_, i) => `${monthKey}-${String(i + 1).padStart(2, '0')}`)
+  const dailyQuoted = dayKeys.map((key) =>
+    monthQuotes.filter((q) => q.created_at.slice(0, 10) === key).reduce((sum, q) => sum + (q.price ?? 0), 0),
+  )
+  const monthSessionsList = sessionsInMonth(sessions, monthKey)
+  const dailySessions = dayKeys.map((key) => monthSessionsList.filter((s) => dayKey(s.scheduled_at) === key).length)
 
   // ----- Derivados nuevos (todos sobre datos ya cargados, sin nuevas consultas) -----
-  const funnel = salesFunnel(monthQuotes, sessionsInMonth(sessions, monthKey))
+  const funnel = salesFunnel(monthQuotes, monthSessionsList)
   const conversion = conversionPct(monthQuotes)
   const expected = expectedIncome(monthQuotes)
   const pendingApproval = pendingApprovalValue(monthQuotes)
@@ -138,12 +122,37 @@ export default async function StatsPage({
   const confirmed = confirmedIncome(projectsFull, monthKey)
   const payments = monthPayments(projectsFull, monthKey)
   const { newClients, recurringClients } = clientsBreakdown(clients, monthQuotes, monthKey)
-  const upcoming = upcomingSessions(sessions, todayKey())
   const heatCells = monthHeatmap(monthKey, sessions, blockedKeys, undefined, schedule)
   const gender = genderBreakdown(monthQuotes)
   const age = ageStats(monthQuotes)
 
-  const accentColor = accentColorFor(studio?.quoteTemplateColor)
+  // Plata acumulada día a día, este mes y el anterior, para la curva de la cabecera.
+  const cumulativeOf = (list: { amount: number; paid_at: string }[], key: string) => {
+    const n = daysInMonth(key)
+    const perDay = Array.from({ length: n }, () => 0)
+    for (const pay of list) {
+      const d = Number(pay.paid_at.slice(8, 10))
+      if (d >= 1 && d <= n) perDay[d - 1] = (perDay[d - 1] ?? 0) + pay.amount
+    }
+    let acc = 0
+    return perDay.map((v) => (acc += v))
+  }
+  const prevPayments = monthPayments(projectsFull, prevKey)
+  const cumulative = cumulativeOf(payments, monthKey)
+  const prevCumulative = cumulativeOf(prevPayments, prevKey)
+  const today = todayKey()
+  const upToIndex = monthKey === today.slice(0, 7) ? Number(today.slice(8, 10)) - 1 : monthKey < today.slice(0, 7) ? totalDays - 1 : -1
+  const prevIncome = prevCumulative[prevCumulative.length - 1] ?? 0
+  const prevSameDay = upToIndex >= 0 ? (prevCumulative[Math.min(upToIndex, prevCumulative.length - 1)] ?? 0) : 0
+
+  // Horas tatuadas por día de la semana (lunes primero).
+  const weekdayIndex = (key: string) => (new Date(`${key}T12:00:00Z`).getUTCDay() + 6) % 7
+  const hoursByWeekday = ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((label, idx) => ({
+    label,
+    value:
+      monthSessionsList.filter((s) => weekdayIndex(dayKey(s.scheduled_at)) === idx).reduce((sum, s) => sum + s.duration_minutes, 0) / 60,
+  }))
+  const pendingCount = monthQuotes.filter((q) => q.status === 'quoted').length
 
   // Calcular recomendaciones inteligentes
   // Con los pagos registrados, un gasto fijo ya pagado este mes no sale como urgente.
@@ -173,66 +182,53 @@ export default async function StatsPage({
       sessionsThisMonth: metrics.scheduledSessions,
       availableMoney: 0,
     },
-    expenseAlerts
+    expenseAlerts,
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {studio?.role === 'owner' && <StatsTabs active="negocio" />}
       <StatsHero
         monthKey={monthKey}
-        photoUrl={studio?.logoUrl ?? null}
-        studioName={studio?.name ?? 'Tu estudio'}
-        deltaQuotesPct={deltaQuotesPct}
-        accentColor={accentColor}
-        monthlyGoal={studio?.monthlyGoalQuotedValue ?? null}
-        quotedValue={quotedValue}
+        income={confirmed}
+        prevIncome={prevIncome}
+        prevSameDay={prevSameDay}
+        cumulative={cumulative}
+        prevCumulative={prevCumulative}
+        upToIndex={upToIndex}
+        payments={payments}
       />
 
-      <StatsSummaryStrip
+      <StatsKpiGrid
         quotedValue={quotedValue}
         prevQuotedValue={prevQuotedValue}
-        approvedCount={approvedCount}
-        prevApprovedCount={prevApprovedCount}
-        scheduledSessions={metrics.scheduledSessions}
-        prevScheduledSessions={prev.scheduledSessions}
-        occupancyPct={metrics.occupancyPct}
-        prevOccupancyPct={prev.occupancyPct}
-        daysWithSessionOpen={metrics.daysWithSessionOpen}
-        workableDays={metrics.workableDays}
-      />
-
-      <StatsSecondaryGrid
-        upcomingSessionsCount={upcoming.length}
+        dailyQuoted={dailyQuoted}
+        expectedIncome={expected}
         confirmedIncome={confirmed}
         pendingApprovalValue={pendingApproval}
+        pendingCount={pendingCount}
+        scheduledSessions={metrics.scheduledSessions}
+        prevScheduledSessions={prev.scheduledSessions}
+        dailySessions={dailySessions}
+        upToIndex={upToIndex}
         occupancyPct={metrics.occupancyPct}
         daysWithSessionOpen={metrics.daysWithSessionOpen}
         workableDays={metrics.workableDays}
-        monthPayments={payments}
-        monthKey={monthKey}
-      />
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <StatsFunnel stages={funnel} />
-        <StatsTrendChart monthKey={monthKey} data={trendData} />
-      </div>
-
-      <StatsInsightCards
-        conversionPct={conversion}
-        expectedIncome={expected}
-        newClients={newClients}
-        recurringClients={recurringClients}
         averageTicket={avgTicket}
         prevAverageTicket={prevAvgTicket}
       />
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <StatsFunnel stages={funnel} conversionPct={conversion} />
+        <StatsHoursCard hours={hours.hours} avgPerSession={hours.avgPerSession} byWeekday={hoursByWeekday} />
+      </div>
 
       {recommendations.length > 0 && <StatsRecommendations recommendations={recommendations} />}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <StatsStylesRanking rows={styles} />
         <StatsZonesMap rows={zones} />
-        <StatsHoursCard hours={hours.hours} avgPerSession={hours.avgPerSession} />
+        <StatsClientsCard newClients={newClients} recurringClients={recurringClients} />
         <StatsOccupancyCalendar monthKey={monthKey} cells={heatCells} />
       </div>
 

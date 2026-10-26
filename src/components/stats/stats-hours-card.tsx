@@ -1,22 +1,30 @@
-import { Flame } from 'lucide-react'
+import { Columns } from '@/components/stats/charts'
 
-export function StatsHoursCard({ hours, avgPerSession }: { hours: number; avgPerSession: number }) {
+const fmtHours = (h: number) => h.toLocaleString('es-CO', { maximumFractionDigits: 1 })
+
+/** Horas tatuadas del mes repartidas por día de la semana: muestra qué días se llenan. */
+export function StatsHoursCard({
+  hours,
+  avgPerSession,
+  byWeekday,
+}: {
+  hours: number
+  avgPerSession: number
+  byWeekday: { label: string; value: number }[]
+}) {
   return (
-    <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold text-muted-foreground">
-        Horas tatuadas
+    <section className="rounded-[1.5rem] bg-card p-4 sm:p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-sm font-semibold">Horas tatuadas</h2>
+        <p className="text-[12px] tabular-nums text-muted-foreground">{fmtHours(Math.round(avgPerSession * 10) / 10)} h por sesión</p>
+      </div>
+      <p className="mt-1 font-title text-[1.75rem] font-bold leading-none tabular-nums">
+        {fmtHours(Math.round(hours * 10) / 10)}
+        <span className="ml-0.5 text-base text-muted-foreground">h</span>
       </p>
-      <div className="mt-2 flex items-center gap-2">
-        <p className="font-title font-bold text-2xl tabular-nums text-primary">
-          {hours % 1 === 0 ? hours : hours.toFixed(1)} h
-        </p>
-        <Flame className="size-4 text-primary/70" aria-hidden />
+      <div className="mt-4">
+        <Columns items={byWeekday} height={72} format={(n) => fmtHours(Math.round(n * 10) / 10)} />
       </div>
-      <p className="mt-0.5 text-xs text-muted-foreground">Horas este mes</p>
-      <div className="mt-4 border-t border-foreground/8 pt-3">
-        <p className="font-title font-bold text-lg tabular-nums text-foreground">{avgPerSession.toFixed(1)} h</p>
-        <p className="text-xs text-muted-foreground">Promedio por sesión</p>
-      </div>
-    </div>
+    </section>
   )
 }

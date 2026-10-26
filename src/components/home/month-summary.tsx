@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CalendarCheck, ChevronRight, FileClock, TrendingDown, TrendingUp } from 'lucide-react'
+import { CalendarCheck, CaretRight, ClipboardText, TrendDown, TrendUp } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { cop } from '@/lib/projects/metrics'
 import { deltaPct } from '@/lib/home/month-metrics'
@@ -47,17 +47,15 @@ export function MonthSummaryCard({
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs text-muted-foreground">Dinero ingresado</p>
-          <p className="mt-0.5 truncate font-title text-[1.75rem] leading-tight font-bold tabular-nums">
-            {cop(summary.income)}
-          </p>
+          <p className="mt-0.5 truncate font-title text-[1.75rem] leading-tight font-bold tabular-nums">{cop(summary.income)}</p>
           {delta !== null ? (
             <p
               className={cn(
                 'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium',
-                up ? 'bg-income/15 text-income' : 'bg-destructive/15 text-destructive'
+                up ? 'bg-income/15 text-income' : 'bg-destructive/15 text-destructive',
               )}
             >
-              {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+              {up ? <TrendUp className="size-3.5" weight="bold" /> : <TrendDown className="size-3.5" weight="bold" />}
               {up ? '+' : ''}
               {delta}% vs {monthName(monthKey, -1)}
             </p>
@@ -78,7 +76,7 @@ export function MonthSummaryCard({
         />
         <Stat
           href="/dashboard/quotes"
-          icon={FileClock}
+          icon={ClipboardText}
           value={summary.waitingQuotes}
           label={summary.waitingQuotes === 1 ? 'Cotización en espera' : 'Cotizaciones en espera'}
           detail={summary.newQuotes > 0 ? `${summary.newQuotes} sin responder` : 'Todas respondidas'}
@@ -107,20 +105,18 @@ function Stat({
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-2 rounded-2xl bg-background/60 p-3 transition-colors hover:bg-accent/60"
+      className="group flex flex-col gap-2 rounded-2xl bg-background/60 p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-accent/60 active:scale-[0.98]"
     >
       <span className="flex items-center justify-between">
         <span className="grid size-8 place-items-center rounded-full bg-primary/15 text-primary">
-          <Icon className="size-4" />
+          <Icon className="size-[18px]" weight="duotone" />
         </span>
-        <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        <CaretRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" weight="bold" />
       </span>
       <span>
         <span className="block font-title text-xl leading-none font-bold tabular-nums">{value}</span>
         <span className="mt-1 block text-xs font-medium">{label}</span>
-        <span className={cn('mt-0.5 block text-[12px]', highlight ? 'text-primary' : 'text-muted-foreground')}>
-          {detail}
-        </span>
+        <span className={cn('mt-0.5 block text-[12px]', highlight ? 'text-primary' : 'text-muted-foreground')}>{detail}</span>
       </span>
     </Link>
   )

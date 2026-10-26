@@ -1,32 +1,35 @@
 import type { RankingRow } from '@/lib/stats/period-metrics'
+import { CHART_COLORS, Donut } from '@/components/stats/charts'
 
 export function StatsStylesRanking({ rows }: { rows: RankingRow[] }) {
-  const max = Math.max(1, ...rows.map((r) => r.count))
+  const total = rows.reduce((s, r) => s + r.count, 0)
+  const segments = rows.map((r, i) => ({
+    label: r.label,
+    value: r.count,
+    color: CHART_COLORS[i % CHART_COLORS.length] ?? 'var(--primary)',
+  }))
+
   return (
-    <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold text-muted-foreground">
-        Estilos más solicitados
-      </p>
+    <section className="rounded-[1.5rem] bg-card p-4 sm:p-5">
+      <h2 className="text-sm font-semibold">Estilos</h2>
       {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">Aún no hay cotizaciones con estilo este mes.</p>
+        <p className="mt-3 text-[13px] text-muted-foreground">Sin datos este mes.</p>
       ) : (
-        <div className="mt-4 space-y-3">
-          {rows.map((row) => (
-            <div key={row.label}>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-foreground/90">{row.label}</span>
-                <span className="tabular-nums text-muted-foreground">{row.count}</span>
-              </div>
-              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-foreground/8">
-                <div
-                  className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
-                  style={{ width: `${Math.max(6, (row.count / max) * 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
+        <div className="mt-3 flex items-center gap-4">
+          <Donut segments={segments} size={104} thickness={14} label={rows.map((r) => `${r.label} ${r.count}`).join(', ')}>
+            <span className="font-title text-xl font-bold tabular-nums">{total}</span>
+          </Donut>
+          <ul className="min-w-0 flex-1 space-y-1.5">
+            {segments.map((s) => (
+              <li key={s.label} className="flex items-center gap-2 text-[13px]">
+                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{s.label}</span>
+                <span className="shrink-0 tabular-nums text-muted-foreground">{s.value}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-    </div>
+    </section>
   )
 }

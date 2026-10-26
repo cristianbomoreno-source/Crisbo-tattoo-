@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, type LucideIcon } from 'lucide-react'
+import { SquaresFour, type Icon as IconType } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 
@@ -21,17 +21,13 @@ import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 export function MobileNav() {
   const pathname = usePathname()
 
-  const isActive = (href: string) =>
-    href === '/dashboard'
-      ? pathname === href
-      : pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string) => (href === '/dashboard' ? pathname === href : pathname === href || pathname.startsWith(href + '/'))
 
   // Dentro del wizard de cotización la app es pantalla completa: sin tab bar
   // (evita toques accidentales que saquen del flujo).
   if (pathname === '/dashboard/quotes/new' || pathname === '/dashboard/quotes/quick') return null
 
-  const tourTag = (href: string) =>
-    href === '/dashboard' ? 'nav-home' : href === '/dashboard/quotes' ? 'nav-quotes' : undefined
+  const tourTag = (href: string) => (href === '/dashboard' ? 'nav-home' : href === '/dashboard/quotes' ? 'nav-quotes' : undefined)
 
   return (
     <nav
@@ -40,9 +36,16 @@ export function MobileNav() {
       className="fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-16 items-stretch gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_8px_30px_-6px_rgb(0_0_0/0.35)] lg:hidden"
     >
       {MOBILE_TAB_ITEMS.map((item) => (
-        <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
+        <TabLink
+          key={item.href}
+          href={item.href}
+          label={item.label}
+          icon={item.icon}
+          active={isActive(item.href)}
+          tour={tourTag(item.href)}
+        />
       ))}
-      <TabLink href="/dashboard/settings" label="Estudio" icon={LayoutGrid} active={isActive('/dashboard/settings')} tour="nav-studio" />
+      <TabLink href="/dashboard/settings" label="Estudio" icon={SquaresFour} active={isActive('/dashboard/settings')} tour="nav-studio" />
     </nav>
   )
 }
@@ -56,7 +59,7 @@ function TabLink({
 }: {
   href: string
   label: string
-  icon: LucideIcon
+  icon: IconType
   active: boolean
   tour?: string
 }) {
@@ -66,11 +69,11 @@ function TabLink({
       data-tour={tour}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-        active ? 'bg-muted' : 'hover:bg-muted/60'
+        'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full transition-[background-color,color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:scale-[0.96]',
+        active ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60',
       )}
     >
-      <Icon className="size-[22px]" />
+      <Icon className={cn('size-6', active && 'text-primary')} weight={active ? 'fill' : 'regular'} />
       <span className="max-w-full truncate text-[12px] font-semibold leading-none tracking-tight">{label}</span>
     </Link>
   )

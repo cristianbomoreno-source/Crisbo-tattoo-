@@ -1,78 +1,48 @@
-import { Users2 } from 'lucide-react'
 import type { GenderBreakdown, AgeBracket } from '@/lib/stats/period-metrics'
+import { Columns, Donut } from '@/components/stats/charts'
 
-export function StatsAudienceCard({
-  gender,
-  age,
-}: {
-  gender: GenderBreakdown
-  age: { average: number | null; brackets: AgeBracket[] }
-}) {
+export function StatsAudienceCard({ gender, age }: { gender: GenderBreakdown; age: { average: number | null; brackets: AgeBracket[] } }) {
   const hasData = gender.total > 0
+  const hasAges = age.brackets.some((b) => b.count > 0)
 
   return (
     <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <p className="font-display text-xs font-semibold text-muted-foreground">
-          Tu público
-        </p>
-        <Users2 className="size-4 text-muted-foreground" aria-hidden />
-      </div>
+      <h2 className="text-sm font-semibold">Tu público</h2>
 
       {!hasData ? (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Aún no hay cotizaciones con género/edad registrados este mes.
-        </p>
+        <p className="mt-3 text-[13px] text-muted-foreground">Sin datos de género o edad este mes.</p>
       ) : (
-        <>
-          <div className="mt-4 flex items-center gap-4">
-            <div className="flex-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-foreground/90">Hombres</span>
-                <span className="tabular-nums text-muted-foreground">
-                  {gender.hombres} · {gender.pctHombres}%
+        <div className="mt-3 grid gap-5 lg:grid-cols-[auto_1fr] lg:items-end">
+          <div className="flex items-center gap-4">
+            <Donut
+              segments={[
+                { label: 'Mujeres', value: gender.mujeres, color: 'var(--primary)' },
+                { label: 'Hombres', value: gender.hombres, color: 'var(--chart-3)' },
+              ]}
+              size={104}
+              thickness={14}
+              label={`Mujeres ${gender.pctMujeres}%, hombres ${gender.pctHombres}%`}
+            >
+              {age.average !== null && (
+                <span>
+                  <span className="block font-title text-xl font-bold tabular-nums">{age.average}</span>
+                  <span className="text-[11px] text-muted-foreground">años</span>
                 </span>
-              </div>
-              <div className="mt-1.5 flex h-2 w-full overflow-hidden rounded-full bg-foreground/8">
-                <div className="h-full bg-primary transition-[width] duration-700 ease-out" style={{ width: `${gender.pctHombres}%` }} />
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs">
-                <span className="text-foreground/90">Mujeres</span>
-                <span className="tabular-nums text-muted-foreground">
-                  {gender.mujeres} · {gender.pctMujeres}%
-                </span>
-              </div>
-              <div className="mt-1.5 flex h-2 w-full overflow-hidden rounded-full bg-foreground/8">
-                <div
-                  className="h-full bg-foreground/60 transition-[width] duration-700 ease-out"
-                  style={{ width: `${gender.pctMujeres}%` }}
-                />
-              </div>
-            </div>
-            {age.average !== null && (
-              <div className="shrink-0 border-l border-foreground/8 pl-4 text-center">
-                <p className="font-title font-bold text-2xl tabular-nums text-foreground">{age.average}</p>
-                <p className="text-[12px] text-muted-foreground">años en promedio</p>
-              </div>
-            )}
+              )}
+            </Donut>
+            <ul className="space-y-1.5 text-[13px]">
+              <li className="flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-primary" aria-hidden />
+                Mujeres <span className="tabular-nums text-muted-foreground">{gender.pctMujeres}%</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-chart-3" aria-hidden />
+                Hombres <span className="tabular-nums text-muted-foreground">{gender.pctHombres}%</span>
+              </li>
+            </ul>
           </div>
-
-          {age.brackets.some((b) => b.count > 0) && (
-            <div className="mt-5 flex items-end gap-2 border-t border-foreground/8 pt-4">
-              {age.brackets.map((b) => (
-                <div key={b.label} className="flex flex-1 flex-col items-center gap-1.5">
-                  <div className="flex h-16 w-full items-end overflow-hidden rounded-md bg-foreground/8">
-                    <div
-                      className="w-full bg-primary transition-[height] duration-700 ease-out"
-                      style={{ height: `${Math.max(4, b.pct)}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{b.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+          {hasAges && <Columns items={age.brackets.map((b) => ({ label: b.label, value: b.count }))} height={64} />}
+        </div>
       )}
     </section>
   )

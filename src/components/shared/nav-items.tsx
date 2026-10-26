@@ -3,32 +3,33 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home,
-  Layers,
-  Users,
-  ClipboardList,
-  BarChart3,
-  FileSignature,
-  Images,
-  MessageCircle,
-  Settings,
-  type LucideIcon,
-} from 'lucide-react'
+  ChartLineUp,
+  ChatsCircle,
+  ClipboardText,
+  GearSix,
+  House,
+  ImagesSquare,
+  PenNib,
+  Signature,
+  UsersThree,
+  type Icon,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 /**
  * Fuente única de verdad de la navegación de Crisbo Tattoo.
  * La consumen el sidebar de escritorio y el drawer móvil (ver DESIGN.md §5, §7).
  */
-export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: '/dashboard', label: 'Inicio', icon: Home },
-  { href: '/dashboard/inbox', label: 'Mensajes', icon: MessageCircle },
-  { href: '/dashboard/projects', label: 'Proyectos', icon: Layers },
-  { href: '/dashboard/quotes', label: 'Cotizaciones', icon: ClipboardList },
-  { href: '/dashboard/stats', label: 'Estadísticas', icon: BarChart3 },
-  { href: '/dashboard/clients', label: 'Clientes', icon: Users },
-  { href: '/dashboard/consents', label: 'Consentimientos', icon: FileSignature },
-  { href: '/dashboard/gallery', label: 'Galería', icon: Images },
+// Íconos Phosphor: trazo normal en reposo y relleno cuando la sección está activa.
+export const NAV_ITEMS: { href: string; label: string; icon: Icon }[] = [
+  { href: '/dashboard', label: 'Inicio', icon: House },
+  { href: '/dashboard/inbox', label: 'Mensajes', icon: ChatsCircle },
+  { href: '/dashboard/projects', label: 'Proyectos', icon: PenNib },
+  { href: '/dashboard/quotes', label: 'Cotizaciones', icon: ClipboardText },
+  { href: '/dashboard/stats', label: 'Estadísticas', icon: ChartLineUp },
+  { href: '/dashboard/clients', label: 'Clientes', icon: UsersThree },
+  { href: '/dashboard/consents', label: 'Consentimientos', icon: Signature },
+  { href: '/dashboard/gallery', label: 'Galería', icon: ImagesSquare },
 ]
 
 /** Pestañas de la barra inferior móvil (más "Estudio", que lleva a /dashboard/settings con el resto de módulos arriba). */
@@ -48,10 +49,8 @@ export function NavLinks({ onNavigate, collapsed = false }: { onNavigate?: () =>
     <>
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon
-        const active =
-          pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`))
-        const tourTag =
-          item.href === '/dashboard' ? 'nav-home' : item.href === '/dashboard/quotes' ? 'nav-quotes' : undefined
+        const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`))
+        const tourTag = item.href === '/dashboard' ? 'nav-home' : item.href === '/dashboard/quotes' ? 'nav-quotes' : undefined
         return (
           <Link
             key={item.href}
@@ -65,18 +64,13 @@ export function NavLinks({ onNavigate, collapsed = false }: { onNavigate?: () =>
               collapsed && 'justify-center px-0',
               active
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
             )}
           >
-            {active && (
-              <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />
-            )}
+            {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />}
             <Icon
-              className={cn(
-                'size-[18px] shrink-0',
-                active ? 'text-sidebar-primary' : 'text-muted-foreground'
-              )}
-              strokeWidth={1.6}
+              className={cn('size-[18px] shrink-0', active ? 'text-sidebar-primary' : 'text-muted-foreground')}
+              weight={active ? 'fill' : 'regular'}
             />
             {!collapsed && item.label}
           </Link>
@@ -101,15 +95,13 @@ export function SettingsNavLink({ onNavigate, collapsed = false }: { onNavigate?
         collapsed && 'justify-center px-0',
         active
           ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-          : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+          : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
       )}
     >
-      {active && (
-        <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />
-      )}
-      <Settings
+      {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />}
+      <GearSix
         className={cn('size-[18px] shrink-0', active ? 'text-sidebar-primary' : 'text-muted-foreground')}
-        strokeWidth={1.6}
+        weight={active ? 'fill' : 'regular'}
       />
       {!collapsed && 'Ajustes'}
     </Link>

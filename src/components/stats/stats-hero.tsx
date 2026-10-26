@@ -1,112 +1,89 @@
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr'
 import { cop } from '@/lib/projects/metrics'
 import { monthLabel, shiftMonth, capitalize } from '@/lib/calendar/utils'
+import { ConfirmedIncomeDialog } from '@/components/stats/confirmed-income-dialog'
+import { CumulativeChart, DeltaChip } from '@/components/stats/charts'
+import type { MonthPayment } from '@/lib/stats/period-metrics'
 
-/** Frase de estado según el delta de cotizaciones vs. el mes anterior — nunca
- * inventa el número, solo elige el tono ("muy bien" / "bien" / "puede mejorar")
- * según el signo real del delta. Si no hay dato comparable (mes anterior en 0),
- * usa una frase neutral sin porcentaje. */
-function heroCopy(deltaQuotesPct: number | null): { highlight: string; body: string } {
-  if (deltaQuotesPct === null) {
-    return { highlight: 'en marcha', body: 'Aún no hay datos suficientes del mes anterior para comparar.' }
-  }
-  if (deltaQuotesPct > 0) {
-    return {
-      highlight: 'muy bien',
-      body: `Llevas un ${deltaQuotesPct}% más de cotizaciones que el mes anterior.`,
-    }
-  }
-  if (deltaQuotesPct === 0) {
-    return { highlight: 'estable', body: 'Llevas las mismas cotizaciones que el mes anterior.' }
-  }
-  return {
-    highlight: 'en pausa',
-    body: `Llevas un ${Math.abs(deltaQuotesPct)}% menos de cotizaciones que el mes anterior.`,
-  }
-}
-
+/**
+ * Cabecera de Estadísticas: selector de mes y la plata que entró, con la
+ * curva acumulada del mes contra la del mes anterior. Tocar el monto abre
+ * la lista de pagos (para corregir fechas o borrar).
+ */
 export function StatsHero({
   monthKey,
-  photoUrl,
-  studioName,
-  deltaQuotesPct,
-  accentColor,
-  monthlyGoal,
-  quotedValue,
+  income,
+  prevIncome,
+  prevSameDay,
+  cumulative,
+  prevCumulative,
+  upToIndex,
+  payments,
 }: {
   monthKey: string
-  photoUrl: string | null
-  studioName: string
-  deltaQuotesPct: number | null
-  accentColor: string
-  monthlyGoal: number | null
-  quotedValue: number
+  income: number
+  prevIncome: number
+  /** Lo que llevaba el mes anterior a esta misma altura del mes (comparación justa). */
+  prevSameDay: number
+  cumulative: number[]
+  prevCumulative: number[]
+  upToIndex: number
+  payments: MonthPayment[]
 }) {
   const prevMonthKey = shiftMonth(monthKey, -1)
   const nextMonthKey = shiftMonth(monthKey, 1)
-  const { highlight, body } = heroCopy(deltaQuotesPct)
-  const goalPct = monthlyGoal && monthlyGoal > 0 ? Math.min(100, Math.round((quotedValue / monthlyGoal) * 100)) : null
+  const delta = prevSameDay > 0 ? Math.round(((income - prevSameDay) / prevSameDay) * 100) : null
 
   return (
-    <section className="relative overflow-hidden rounded-[1.5rem] bg-card">
-      <div className="relative h-[46vh] max-h-96 min-h-64 w-full overflow-hidden">
-        {photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl} alt={studioName} className="absolute inset-0 size-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-card to-background" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
-
-        <div className="relative flex h-full flex-col justify-between p-4 sm:p-6">
-          <div className="flex items-center gap-1.5">
-            <Link
-              href={`/dashboard/stats?m=${prevMonthKey}`}
-              className="font-display text-xs font-semibold transition-opacity hover:opacity-70"
-              style={{ color: accentColor }}
-            >
-              {capitalize(monthLabel(monthKey))}
-            </Link>
-            <ChevronDown className="size-3.5" style={{ color: accentColor }} aria-hidden />
-            <Link
-              href={`/dashboard/stats?m=${nextMonthKey}`}
-              className="ml-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
-            >
-              siguiente
-            </Link>
-          </div>
-
-          <div>
-            <h1 className="font-title font-bold text-[clamp(1.9rem,7vw,3rem)] leading-[0.98] text-foreground">
-              Tu estudio va{' '}
-              <span style={{ color: accentColor }}>{highlight}</span>.
-            </h1>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-foreground/70">{body}</p>
-          </div>
-        </div>
+    <section className="rounded-[1.5rem] bg-card p-4 sm:p-6">
+      <div className="-mx-1.5 -mt-1.5 flex items-center justify-between">
+        <Link
+          href={`/dashboard/stats?m=${prevMonthKey}`}
+          aria-label="Mes anterior"
+          className="grid size-11 place-items-center rounded-full text-muted-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:scale-[0.96]"
+        >
+          <CaretLeft className="size-5" weight="bold" />
+        </Link>
+        <h1 className="text-base font-semibold">{capitalize(monthLabel(monthKey))}</h1>
+        <Link
+          href={`/dashboard/stats?m=${nextMonthKey}`}
+          aria-label="Mes siguiente"
+          className="grid size-11 place-items-center rounded-full text-muted-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:scale-[0.96]"
+        >
+          <CaretRight className="size-5" weight="bold" />
+        </Link>
       </div>
 
-      {goalPct !== null && monthlyGoal !== null && (
-        <div className="p-4 pt-3.5 sm:p-6 sm:pt-4">
-          <div className="flex items-center justify-between">
-            <p className="font-display text-[11px] font-semibold text-muted-foreground">
-              Meta mensual
-            </p>
-            <p className="font-title font-bold text-sm tabular-nums text-foreground">{cop(monthlyGoal)}</p>
+      <ConfirmedIncomeDialog payments={payments} total={income} monthKey={monthKey}>
+        <div className="mt-2 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[13px] text-muted-foreground">Entró</p>
+            <p className="font-title text-[clamp(2rem,9vw,2.75rem)] font-bold leading-none tracking-tight tabular-nums">{cop(income)}</p>
           </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
-            <div
-              className="h-full rounded-full transition-[width] duration-700 ease-out"
-              style={{ width: `${goalPct}%`, backgroundColor: accentColor }}
-            />
+          <div className="flex shrink-0 items-center gap-1.5 pb-1">
+            <DeltaChip pct={delta} />
+            <CaretRight className="size-4 text-muted-foreground" weight="bold" aria-hidden />
           </div>
-          <p className="mt-1.5 text-right text-xs tabular-nums" style={{ color: accentColor }}>
-            {goalPct}% <span className="text-muted-foreground">del objetivo</span>
-          </p>
         </div>
-      )}
+      </ConfirmedIncomeDialog>
+
+      <div className="mt-4">
+        <CumulativeChart
+          current={cumulative}
+          previous={prevCumulative}
+          upToIndex={upToIndex}
+          label={`Ingresos acumulados: ${cop(income)} este mes, ${cop(prevIncome)} el mes anterior`}
+        />
+      </div>
+      <div className="mt-2 flex items-center gap-4 text-[12px] text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="h-0.5 w-3.5 rounded-full bg-primary" aria-hidden /> Este mes
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-0 w-3.5 border-t-[1.5px] border-dashed border-muted-foreground" aria-hidden /> Mes anterior · {cop(prevIncome)}
+        </span>
+      </div>
     </section>
   )
 }

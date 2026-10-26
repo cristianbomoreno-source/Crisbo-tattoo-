@@ -6,12 +6,10 @@ export function StatsZonesMap({ rows }: { rows: RankingRow[] }) {
 
   return (
     <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold text-muted-foreground">
-        Zonas más elegidas
-      </p>
+      <h2 className="text-sm font-semibold">Zonas</h2>
 
       {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">Aún no hay cotizaciones con zona este mes.</p>
+        <p className="mt-3 text-[13px] text-muted-foreground">Sin datos este mes.</p>
       ) : (
         <div className="mt-3 flex items-center gap-3">
           <svg viewBox="0 0 200 420" className="h-40 w-auto shrink-0" fill="none" aria-hidden>
@@ -20,16 +18,7 @@ export function StatsZonesMap({ rows }: { rows: RankingRow[] }) {
               const p = ZONE_POINTS[row.label as keyof typeof ZONE_POINTS]
               if (!p) return null
               const r = 6 + (row.pct / maxPct) * 10
-              return (
-                <circle
-                  key={row.label}
-                  cx={p.x}
-                  cy={p.y}
-                  r={r}
-                  fill="var(--primary)"
-                  opacity={0.35 + 0.45 * (row.pct / maxPct)}
-                />
-              )
+              return <circle key={row.label} cx={p.x} cy={p.y} r={r} fill="var(--primary)" opacity={0.35 + 0.45 * (row.pct / maxPct)} />
             })}
           </svg>
           <div className="min-w-0 flex-1 space-y-1.5">

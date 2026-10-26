@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, CalendarClock, TrendingUp } from 'lucide-react'
+import { CalendarDots, TrendUp, Warning } from '@phosphor-icons/react'
 import type { UpcomingExpenseAlert } from '@/lib/finance/alerts'
 import { cop } from '@/lib/projects/metrics'
 
@@ -29,9 +29,7 @@ export function ExpenseAlertsCard({ alerts }: Props) {
               </span>
             )}
             {warningCount > 0 && (
-              <span className="alert-badge-warning rounded-full px-2 py-0.5 text-xs font-medium">
-                {warningCount} esta semana
-              </span>
+              <span className="alert-badge-warning rounded-full px-2 py-0.5 text-xs font-medium">{warningCount} esta semana</span>
             )}
           </div>
         )}
@@ -66,33 +64,23 @@ function ExpenseAlertRow({ alert }: { alert: UpcomingExpenseAlert }) {
   }
 
   return (
-    <div
-      className={`flex items-center gap-3 rounded-2xl border p-4 ${statusStyles[alert.status]}`}
-    >
+    <div className={`flex items-center gap-3 rounded-2xl border p-4 ${statusStyles[alert.status]}`}>
       <span className={`shrink-0 ${iconColors[alert.status]}`}>
-        {alert.status === 'urgent' ? (
-          <AlertTriangle className="size-5" strokeWidth={1.8} />
-        ) : (
-          <CalendarClock className="size-5" strokeWidth={1.8} />
-        )}
+        {alert.status === 'urgent' ? <Warning className="size-5" weight="duotone" /> : <CalendarDots className="size-5" weight="duotone" />}
       </span>
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{alert.expense.name}</p>
         <p className="text-xs text-muted-foreground">
-          {alert.daysUntilDue === 0
-            ? 'Vence hoy'
-            : `Vence en ${alert.daysUntilDue} dia${alert.daysUntilDue > 1 ? 's' : ''}`}
+          {alert.daysUntilDue === 0 ? 'Vence hoy' : `Vence en ${alert.daysUntilDue} dia${alert.daysUntilDue > 1 ? 's' : ''}`}
         </p>
       </div>
 
       <div className="shrink-0 text-right">
-        <p className="font-display text-sm font-semibold tabular-nums">
-          {cop(alert.expense.amount)}
-        </p>
+        <p className="font-display text-sm font-semibold tabular-nums">{cop(alert.expense.amount)}</p>
         {alert.daysUntilDue > 0 && (
           <p className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-            <TrendingUp className="size-3" />
+            <TrendUp className="size-3" weight="bold" />
             {cop(alert.dailyTargetToPayIt)}/dia
           </p>
         )}

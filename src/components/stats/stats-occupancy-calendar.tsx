@@ -3,13 +3,7 @@ import type { DayCell } from '@/lib/home/month-metrics'
 
 const WEEKDAY_LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 
-export function StatsOccupancyCalendar({
-  monthKey,
-  cells,
-}: {
-  monthKey: string
-  cells: DayCell[]
-}) {
+export function StatsOccupancyCalendar({ monthKey, cells }: { monthKey: string; cells: DayCell[] }) {
   const weeks = getMonthMatrix(monthKey)
   const cellByKey = new Map(cells.map((c) => [c.dayKey, c]))
   const occupied = cells.filter((c) => c.state === 'full' || c.state === 'partial').length
@@ -17,9 +11,7 @@ export function StatsOccupancyCalendar({
 
   return (
     <div className="rounded-[1.5rem] bg-card p-4 sm:p-5">
-      <p className="font-display text-xs font-semibold text-muted-foreground">
-        Días ocupados
-      </p>
+      <h2 className="text-sm font-semibold">Agenda del mes</h2>
 
       <div className="mt-3 grid grid-cols-7 gap-1">
         {WEEKDAY_LETTERS.map((l, i) => (

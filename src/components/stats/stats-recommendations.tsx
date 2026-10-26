@@ -1,84 +1,53 @@
-import { AlertTriangle, TrendingUp, TrendingDown, Target, Info, DollarSign } from 'lucide-react'
+import type { Icon } from '@phosphor-icons/react'
+import { Coins, Lightbulb, Target, TrendDown, Warning } from '@phosphor-icons/react/dist/ssr'
+import { cn } from '@/lib/utils'
 import type { SmartRecommendation, SmartRecommendationType } from '@/lib/finance/alerts'
 
-const typeIcons: Record<SmartRecommendationType, typeof AlertTriangle> = {
-  alert: AlertTriangle,
-  income: DollarSign,
-  expense: TrendingDown,
+const typeIcons: Record<SmartRecommendationType, Icon> = {
+  alert: Warning,
+  income: Coins,
+  expense: TrendDown,
   goal: Target,
-  info: Info,
+  info: Lightbulb,
 }
 
 const typeColors: Record<SmartRecommendationType, string> = {
-  alert: 'text-red-400 bg-red-500/10',
-  income: 'text-income bg-income/10',
-  expense: 'text-amber-400 bg-amber-500/10',
-  goal: 'text-primary bg-primary/10',
-  info: 'text-blue-400 bg-blue-500/10',
+  alert: 'text-destructive bg-destructive/12',
+  income: 'text-income bg-income/12',
+  expense: 'text-warning bg-warning/12',
+  goal: 'text-primary bg-primary/12',
+  info: 'text-foreground/80 bg-muted',
 }
 
-const priorityBorders: Record<'high' | 'medium' | 'low', string> = {
-  high: 'recommendation-card-high',
-  medium: 'recommendation-card-medium',
-  low: 'recommendation-card-low',
-}
-
-export function StatsRecommendations({
-  recommendations,
-}: {
-  recommendations: SmartRecommendation[]
-}) {
+/** Consejos del mes en filas cortas: título y la cifra que lo respalda. */
+export function StatsRecommendations({ recommendations }: { recommendations: SmartRecommendation[] }) {
   if (recommendations.length === 0) return null
 
   return (
-    <section className="space-y-3">
-      <h2 className="font-display text-xs font-semibold text-muted-foreground">
-        Recomendaciones
-      </h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {recommendations.map((rec) => (
-          <RecommendationCard key={rec.id} recommendation={rec} />
-        ))}
-      </div>
+    <section className="rounded-[1.5rem] bg-card p-2">
+      <h2 className="px-2.5 pb-1 pt-2 text-sm font-semibold">Para mirar</h2>
+      <ul className="divide-y divide-border/60">
+        {recommendations.map((rec) => {
+          const IconCmp = typeIcons[rec.type]
+          return (
+            <li key={rec.id} className="flex items-center gap-3 px-2.5 py-2.5">
+              <span className={cn('grid size-9 shrink-0 place-items-center rounded-full', typeColors[rec.type])}>
+                <IconCmp className="size-[18px]" weight="duotone" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-medium leading-snug">{rec.title}</p>
+                {rec.action && <p className="truncate text-[12px] text-muted-foreground">{rec.action}</p>}
+              </div>
+              {rec.metric && (
+                <span className="shrink-0 text-right text-[13px] font-semibold tabular-nums">
+                  {rec.metric.value}
+                  {rec.metric.target && <span className="block text-[11px] font-normal text-muted-foreground">de {rec.metric.target}</span>}
+                </span>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </section>
-  )
-}
-
-function RecommendationCard({ recommendation }: { recommendation: SmartRecommendation }) {
-  const Icon = typeIcons[recommendation.type]
-  const iconClass = typeColors[recommendation.type]
-  const borderClass = priorityBorders[recommendation.priority]
-
-  return (
-    <div className={`rounded-2xl bg-card p-4 ${borderClass}`}>
-      <div className="flex items-start gap-3">
-        <span className={`grid size-9 shrink-0 place-items-center rounded-full ${iconClass}`}>
-          <Icon className="size-4" strokeWidth={1.8} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">{recommendation.title}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{recommendation.description}</p>
-          {recommendation.action && (
-            <p className="mt-2 text-xs font-medium text-primary">{recommendation.action}</p>
-          )}
-        </div>
-      </div>
-      {recommendation.metric && (
-        <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2">
-          <span className="text-xs text-muted-foreground">{recommendation.metric.label}</span>
-          <div className="flex items-center gap-2">
-            <span className="font-display text-sm font-semibold tabular-nums">
-              {recommendation.metric.value}
-            </span>
-            {recommendation.metric.target && (
-              <>
-                <span className="text-xs text-muted-foreground">/</span>
-                <span className="text-xs text-muted-foreground">{recommendation.metric.target}</span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
   )
 }
