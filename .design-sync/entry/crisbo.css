@@ -1,0 +1,14 @@
+/* Hoja de estilos de Crisbo Tattoo para claude.ai/design: el mismo
+   globals.css de la app, compilado por Tailwind 4, más las letras que en la
+   app carga next/font (Inter para todo, Orbitron solo para el logotipo). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&display=swap');
+@import '../../src/app/globals.css';
+@source '../../src';
+@source './';
+@source '../previews';
+
+:root {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-wordmark: 'Orbitron', 'Inter', sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}

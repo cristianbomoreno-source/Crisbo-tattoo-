@@ -1,0 +1,6 @@
+{
+  "name": "crisbo-tattoo",
+  "version": "1.29.0",
+  "private": true,
+  "types": "types/index.d.ts"
+}

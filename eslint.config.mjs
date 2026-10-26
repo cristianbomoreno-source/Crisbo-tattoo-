@@ -23,6 +23,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sincronización con claude.ai/design (tipos y paquetes generados).
+    ".design-sync/**",
+    ".ds-sync/**",
+    "ds-bundle/**",
   ]),
 ]);
 
