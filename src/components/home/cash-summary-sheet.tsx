@@ -32,6 +32,7 @@ function shortDate(key: string) {
 }
 
 function whenLabel(f: FixedItem) {
+  if (f.lastPaid) return 'Última cuota pagada'
   if (f.paidThisMonth) return `Pagado este mes · próximo ${shortDate(f.nextDate)}`
   if (!f.pending) return `Empieza el ${shortDate(f.nextDate)}`
   if (f.daysLeft < 0) return `Vencido hace ${-f.daysLeft} ${f.daysLeft === -1 ? 'día' : 'días'}`
@@ -297,6 +298,11 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">
             {f.name}
+            {f.installment && (
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                · cuota {f.installment.n} de {f.installment.total}
+              </span>
+            )}
             {showScope && <span className="ml-1.5 text-xs font-normal text-muted-foreground">· {f.personal ? 'Personal' : 'Negocio'}</span>}
           </p>
           <p className={cn('text-xs', f.paidThisMonth ? 'text-emerald-500' : urgent ? 'text-amber-500' : 'text-muted-foreground')}>

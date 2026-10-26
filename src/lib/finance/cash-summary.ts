@@ -77,6 +77,10 @@ export type FixedItem = {
   pending: boolean
   /** Fechas de este mes que faltan por pagar. */
   remaining: number
+  /** Pago en cuotas ("Hasta 2027-01" en la descripción): cuota que toca y total. */
+  installment: { n: number; total: number } | null
+  /** Ya se pagó la última cuota (este mes); el mes siguiente desaparece. */
+  lastPaid: boolean
   /** Lo que cuesta en un mes (monto × veces del mes). */
   perMonth: number
   /** Cuenta de donde suele salir (primer tramo de la descripción), si tiene. */
@@ -130,6 +134,23 @@ export function parseSchedule(description: string | null, dueDay: number | null)
 export function scheduleTag(s: FixedSchedule): string | null {
   if (s.kind === 'weekly') return `Cada ${WEEKDAYS[s.weekday]}`
   return s.days.length > 1 ? `Días ${s.days.join(', ')}` : null
+}
+
+const UNTIL_RE = /^hasta (\d{4}-\d{2})$/i
+
+/** Último mes (YYYY-MM) de un fijo en cuotas — tramo "Hasta 2027-01" —, o null si no termina. */
+export function parseUntil(description: string | null): string | null {
+  for (const seg of (description ?? '').split(' · ')) {
+    const u = UNTIL_RE.exec(seg.trim())
+    if (u) return u[1]!
+  }
+  return null
+}
+
+const monthsBetween = (from: string, to: string) => {
+  const [fy, fm] = from.split('-').map(Number) as [number, number]
+  const [ty, tm] = to.split('-').map(Number) as [number, number]
+  return (ty - fy) * 12 + (tm - fm)
 }
 
 export function scheduleLabel(s: FixedSchedule): string {
@@ -274,8 +295,14 @@ export function cashSummary({
   const [y, m] = monthKey.split('-').map(Number) as [number, number]
   const fixed: FixedItem[] = expenses
     .filter((e) => e.due_day !== null && e.due_day >= 1 && e.due_day <= 31 && !isOtherIncome(e.category) && !isBalanceSnapshot(e.category))
+    // En cuotas y ya terminado: no se muestra más.
+    .filter((e) => {
+      const until = parseUntil(e.description)
+      return !until || monthKey <= until
+    })
     .map((e) => {
       const schedule = parseSchedule(e.description, e.due_day)
+      const until = parseUntil(e.description)
       // Solo cuentan las fechas desde que se creó (creado el 21 con día 20: arranca el mes siguiente).
       const thisMonth = occurrences(schedule, y, m - 1).filter((d) => d >= e.expense_date)
       const paidCount = expenses.filter(
@@ -289,6 +316,14 @@ export function cashSummary({
       const unpaid = thisMonth.slice(paidCount)
       const pending = unpaid.length > 0
       const nextDate = pending ? unpaid[0]! : occurrences(schedule, y, m)[0]!
+      const startMonth = e.expense_date.slice(0, 7)
+      const installment = until
+        ? {
+            n: Math.min(monthsBetween(startMonth, nextDate.slice(0, 7)), monthsBetween(startMonth, until)) + 1,
+            total: monthsBetween(startMonth, until) + 1,
+          }
+        : null
+      const paidThisMonth = thisMonth.length > 0 && !pending
       return {
         id: e.id,
         name: stripPersonalPrefix(e.category),
@@ -299,9 +334,11 @@ export function cashSummary({
         personal: isPersonalExpense(e.category),
         nextDate,
         daysLeft: daysBetween(today, nextDate),
-        paidThisMonth: thisMonth.length > 0 && !pending,
+        paidThisMonth,
         pending,
         remaining: unpaid.length,
+        installment,
+        lastPaid: !!until && paidThisMonth && monthKey === until,
         perMonth: e.amount * occurrences(schedule, y, m - 1).length,
         account: splitAccount(e.description, accountNames).account,
       }

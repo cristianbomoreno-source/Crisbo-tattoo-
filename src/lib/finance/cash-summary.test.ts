@@ -129,4 +129,21 @@ describe('cashSummary', () => {
     expect(scheduleTag({ kind: 'weekly', weekday: 0 })).toBe('Cada domingo')
     expect(scheduleTag({ kind: 'monthly', days: [8] })).toBeNull()
   })
+
+  it('en cuotas: arranca el mes que se dice, cuenta la cuota y desaparece al terminar', () => {
+    const def = exp({ id: 'p', category: 'Personal · Préstamo esposa', amount: 476_667, due_day: 30, description: 'Hasta 2027-01', expense_date: '2026-11-01' })
+    const oct = cashSummary({ today: '2026-10-26', accounts: [], payments: [], expenses: [def] })
+    expect(oct.fixedPersonal[0]).toMatchObject({ pending: false, nextDate: '2026-11-30', installment: { n: 1, total: 3 } })
+    const dec = cashSummary({ today: '2026-12-10', accounts: [], payments: [], expenses: [def] })
+    expect(dec.fixedPersonal[0]).toMatchObject({ pending: true, installment: { n: 2, total: 3 } })
+    const jan = cashSummary({
+      today: '2027-01-30',
+      accounts: [],
+      payments: [],
+      expenses: [def, exp({ category: 'Personal · Préstamo esposa', amount: 476_667, description: 'Pago fijo', expense_date: '2027-01-30' })],
+    })
+    expect(jan.fixedPersonal[0]).toMatchObject({ lastPaid: true, installment: { n: 3, total: 3 } })
+    const feb = cashSummary({ today: '2027-02-02', accounts: [], payments: [], expenses: [def] })
+    expect(feb.fixedPersonal).toHaveLength(0)
+  })
 })

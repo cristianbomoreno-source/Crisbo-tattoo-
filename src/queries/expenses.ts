@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
-import { parseSchedule, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
+import { todayKey } from '@/lib/calendar/utils'
+import { parseSchedule, parseUntil, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
 import { BALANCE_PREFIX } from '@/lib/expenses/scope'
 
 export type Expense = {
@@ -37,7 +38,8 @@ export async function getExpenses(from?: string, to?: string, { includeFixed = f
 }
 
 /** Gastos fijos mensuales (con día de vencimiento) - usados para alertas.
- * Los semanales ("Cada domingo") se quedan en el Resumen de caja. */
+ * Los semanales ("Cada domingo") se quedan en el Resumen de caja y los de
+ * cuotas ya terminadas ("Hasta 2027-01") no avisan más. */
 export async function getFixedExpenses(): Promise<Result<Expense[]>> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -47,7 +49,13 @@ export async function getFixedExpenses(): Promise<Result<Expense[]>> {
     .order('due_day', { ascending: true })
 
   if (error) return dbError(error)
-  return ok((data as Expense[]).filter((e) => parseSchedule(e.description, e.due_day).kind === 'monthly'))
+  const month = todayKey().slice(0, 7)
+  return ok(
+    (data as Expense[]).filter((e) => {
+      const until = parseUntil(e.description)
+      return parseSchedule(e.description, e.due_day).kind === 'monthly' && (!until || month <= until)
+    })
+  )
 }
 
 /** Todas las filas, de a 1.000 (tope de Supabase por consulta). */
