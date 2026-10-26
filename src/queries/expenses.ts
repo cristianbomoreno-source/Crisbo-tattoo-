@@ -3,7 +3,7 @@ import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
 import { todayKey } from '@/lib/calendar/utils'
 import { parseSchedule, parseUntil, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
-import { BALANCE_PREFIX } from '@/lib/expenses/scope'
+import { LEDGER_ONLY_PREFIXES } from '@/lib/expenses/scope'
 
 export type Expense = {
   id: string
@@ -25,8 +25,9 @@ export async function getExpenses(from?: string, to?: string, { includeFixed = f
     .from('expenses')
     .select('id, category, description, amount, expense_date, due_day, created_at')
     .order('expense_date', { ascending: false })
-    // Saldos escritos a mano en el Resumen de caja: no son gastos.
-    .not('category', 'like', `${BALANCE_PREFIX}%`)
+  // Saldos, entradas, salidas sin clasificar y traslados del libro de cada
+  // cuenta (Resumen de caja): mueven plata pero no son gastos.
+  for (const prefix of LEDGER_ONLY_PREFIXES) query = query.not('category', 'like', `${prefix}%`)
 
   if (!includeFixed) query = query.is('due_day', null)
   if (from) query = query.gte('expense_date', from)
@@ -78,8 +79,14 @@ export async function getCashData(): Promise<
   const supabase = await createClient()
   try {
     const [payments, expenses] = await Promise.all([
-      fetchAll<CashPayment>((from, to) =>
-        supabase.from('payments').select('amount, paid_at, payment_method, created_at').order('paid_at').range(from, to)
+      // Los tipos generados ven el join como arreglo; en runtime es un objeto.
+      fetchAll<CashPayment>(
+        (from, to) =>
+          supabase
+            .from('payments')
+            .select('id, amount, paid_at, payment_method, created_at, projects(name, clients(name))')
+            .order('paid_at')
+            .range(from, to) as unknown as PromiseLike<{ data: CashPayment[] | null; error: { message: string } | null }>
       ),
       fetchAll<CashExpense>((from, to) =>
         supabase

@@ -112,3 +112,28 @@ export async function setAccountBalanceAction(account: string, amount: number): 
   revalidatePath('/dashboard')
   return ok(undefined)
 }
+
+/** Cambia qué es un movimiento del libro de una cuenta (Resumen de caja):
+ * gasto personal / del negocio / sin clasificar, venta suelta / entrada que
+ * no es venta, o traslado a otra cuenta propia. Solo toca la categoría y,
+ * en un traslado, la descripción (cuenta de origen primero). */
+export async function reclassifyExpenseAction(id: string, category: string, description?: string | null): Promise<Result<void>> {
+  const cat = category.trim().slice(0, 40)
+  if (!cat) return err('VALIDATION_ERROR', 'Falta la categoría')
+
+  const artist = await getArtistAndStudio()
+  if (!artist) return err('AUTH_ERROR', 'No autenticado')
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('expenses')
+    .update({ category: cat, ...(description !== undefined ? { description: description?.slice(0, 200) ?? null } : {}) })
+    .eq('studio_id', artist.studio_id)
+    .eq('id', id)
+  if (error) return dbError(error)
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/settings/gastos')
+  revalidatePath('/dashboard/settings/finanzas')
+  return ok(undefined)
+}

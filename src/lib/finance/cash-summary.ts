@@ -1,5 +1,8 @@
 import {
   BALANCE_PREFIX,
+  MOVE_IN_PREFIX,
+  MOVE_OUT_PREFIX,
+  TRANSFER_PREFIX,
   isBalanceSnapshot,
   isOtherIncome,
   isPersonalExpense,
@@ -14,9 +17,13 @@ import {
  * - Cuenta de un cobro = `payments.payment_method`.
  * - Cuenta de un gasto / ingreso suelto = primer tramo de `description`
  *   ("Nequi · nota") cuando coincide con una cuenta conocida.
- * - Saldo real de una cuenta = fila "Saldo · Nequi" con el monto y, en la
- *   descripción, el instante en que se contó. Desde ese corte el saldo suma
- *   y resta solo lo registrado después. También crea cuentas nuevas.
+ * - Saldo de una cuenta = fila "Saldo · Nequi" con el monto y, en la
+ *   descripción, el instante del corte (saldo inicial). Desde ese corte el
+ *   saldo suma y resta solo lo registrado después. También crea cuentas.
+ * - Movimientos que no son venta ni gasto, para que el libro de la cuenta
+ *   cuadre con el extracto del banco: "Entrada · Cadena" (entró, no es
+ *   venta), "Salida · A 3202107769" (salió, sin clasificar) y
+ *   "Transferencia · Efectivo" (de la cuenta de la descripción a otra propia).
  * - Gasto fijo = fila de `expenses` con `due_day`: es solo la DEFINICIÓN
  *   (nombre, monto, cuándo, cuenta habitual en la descripción) y se repite
  *   desde su `expense_date`. No es plata que salió. Por defecto es una vez al
@@ -33,10 +40,12 @@ export const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', '
 export type FixedSchedule = { kind: 'monthly'; days: number[] } | { kind: 'weekly'; weekday: number }
 
 export type CashPayment = {
+  id?: string
   amount: number
   paid_at: string | null
   payment_method: string | null
   created_at?: string | null
+  projects?: { name: string | null; clients: { name: string | null } | null } | null
 }
 export type CashExpense = {
   id: string
@@ -53,10 +62,32 @@ export type AccountBalance = {
   /** Movimientos desde el último saldo escrito (o desde siempre). */
   income: number
   expenses: number
+  /** Traslados a otras cuentas propias (salen) y desde ellas (entran). */
+  transfersOut: number
+  transfersIn: number
   balance: number
-  /** Último saldo escrito a mano, si hay. */
+  /** Último saldo escrito a mano (saldo inicial del libro), si hay. */
   setAmount: number | null
   setAt: string | null
+}
+
+export type LedgerKind = 'income' | 'expense' | 'transfer-out' | 'transfer-in'
+
+/** Un renglón del libro de una cuenta. */
+export type LedgerEntry = {
+  /** `p:<id>` cobro, `e:<id>` fila de expenses (una transferencia sale en las dos cuentas). */
+  key: string
+  expenseId: string | null
+  date: string
+  name: string
+  kind: LedgerKind
+  amount: number
+  /** "Venta", "Ingreso", "Entrada", "Personal", "Negocio", "Sin clasificar" o "Transferencia". */
+  tipo: string
+  account: string
+  /** La otra cuenta de una transferencia. */
+  otherAccount: string | null
+  note: string | null
 }
 
 export type FixedItem = {
@@ -108,18 +139,21 @@ export type CashSummary = {
   /** Todo lo que falta pagar este mes (cada fecha pendiente cuenta). */
   upcomingTotal: number
   monthExpenses: MonthExpense[]
+  /** Libro de todas las cuentas (lo que movió cada saldo desde su saldo inicial), lo más reciente primero. */
+  ledger: LedgerEntry[]
 }
 
 const WEEKLY_RE = /^cada (domingo|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado)$/i
 const DAYS_RE = /^d[ií]as ([\d ,y]+)$/i
+const stripAccents = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
 
 /** Cuándo se repite un gasto fijo (ver el comentario de arriba). */
 export function parseSchedule(description: string | null, dueDay: number | null): FixedSchedule {
   for (const seg of (description ?? '').split(' · ').map((s) => s.trim())) {
     const w = WEEKLY_RE.exec(seg)
     if (w) {
-      const name = w[1]!.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-      return { kind: 'weekly', weekday: WEEKDAYS.findIndex((d) => d.normalize('NFD').replace(/[̀-ͯ]/g, '') === name) }
+      const name = stripAccents(w[1]!.toLowerCase())
+      return { kind: 'weekly', weekday: WEEKDAYS.findIndex((d) => stripAccents(d) === name) }
     }
     const d = DAYS_RE.exec(seg)
     if (d) {
@@ -184,6 +218,15 @@ function occurrences(s: FixedSchedule, year: number, month0: number): string[] {
   return [...new Set(s.days.map((d) => key(new Date(Date.UTC(year, month0, Math.min(d, last))))))].sort()
 }
 
+const bogotaDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' })
+/** YYYY-MM-DD en Bogotá de un instante (o el día tal cual si ya es una fecha). */
+function dayOf(value: string | null | undefined, fallback: string): string {
+  if (!value) return fallback
+  if (value.length === 10) return value
+  const t = Date.parse(value)
+  return Number.isNaN(t) ? fallback : bogotaDay.format(new Date(t))
+}
+
 function daysBetween(fromKey: string, toKey: string): number {
   return Math.round((Date.parse(`${toKey}T00:00:00Z`) - Date.parse(`${fromKey}T00:00:00Z`)) / 86400000)
 }
@@ -216,6 +259,9 @@ export function cashSummary({
     if (n && !accountNames.some((a) => a.toLowerCase() === n.toLowerCase())) accountNames.push(n)
   }
   for (const p of payments) if (p.payment_method) addName(p.payment_method)
+  for (const e of expenses) {
+    if (e.category.startsWith(TRANSFER_PREFIX)) addName(e.category.slice(TRANSFER_PREFIX.length).trim())
+  }
 
   // Último saldo escrito a mano por cuenta.
   const snapshots = new Map<string, { amount: number; at: number; iso: string; day: string }>()
@@ -236,7 +282,8 @@ export function cashSummary({
     let b = byAccount.get(k)
     if (!b) {
       const snap = name ? snapshots.get(name.toLowerCase()) : undefined
-      byAccount.set(k, (b = { name: k, income: 0, expenses: 0, balance: 0, setAmount: snap?.amount ?? null, setAt: snap?.iso ?? null }))
+      b = { name: k, income: 0, expenses: 0, transfersOut: 0, transfersIn: 0, balance: 0, setAmount: snap?.amount ?? null, setAt: snap?.iso ?? null }
+      byAccount.set(k, b)
     }
     return b
   }
@@ -250,11 +297,26 @@ export function cashSummary({
   const canonical = (m: string | null) => (m ? accountNames.find((a) => a.toLowerCase() === m.toLowerCase()) ?? m : null)
 
   const month = { income: 0, business: 0, personal: 0 }
+  const ledger: LedgerEntry[] = []
 
   for (const p of payments) {
     const account = canonical(p.payment_method)
+    const day = dayOf(p.paid_at, today)
     if (p.paid_at?.slice(0, 7) === monthKey) month.income += p.amount
-    if (!beforeSnapshot(account, at(p.created_at, p.paid_at), p.paid_at)) bucket(account).income += p.amount
+    if (beforeSnapshot(account, at(p.created_at, p.paid_at), day)) continue
+    bucket(account).income += p.amount
+    ledger.push({
+      key: `p:${p.id ?? ledger.length}`,
+      expenseId: null,
+      date: day,
+      name: p.projects?.clients?.name || 'Cobro',
+      kind: 'income',
+      amount: p.amount,
+      tipo: 'Venta',
+      account: account ?? NO_ACCOUNT,
+      otherAccount: null,
+      note: p.projects?.name ?? null,
+    })
   }
 
   const monthExpenses: MonthExpense[] = []
@@ -262,14 +324,55 @@ export function cashSummary({
     if (e.due_day !== null || isBalanceSnapshot(e.category)) continue // definición de un fijo o saldo: no es plata que se movió
     const { account, note } = splitAccount(e.description, accountNames)
     const inMonth = e.expense_date.slice(0, 7) === monthKey
-    const counted = !beforeSnapshot(account, at(e.created_at, e.expense_date), e.expense_date)
+    const t = at(e.created_at, e.expense_date)
+    const counted = !beforeSnapshot(account, t, e.expense_date)
+    const entry = (kind: LedgerKind, name: string, tipo: string, acc: string | null, other: string | null = null): LedgerEntry => ({
+      key: `e:${e.id}${kind === 'transfer-in' ? ':in' : ''}`,
+      expenseId: e.id,
+      date: e.expense_date,
+      name,
+      kind,
+      amount: e.amount,
+      tipo,
+      account: acc ?? NO_ACCOUNT,
+      otherAccount: other,
+      note: kind === 'transfer-in' ? null : note,
+    })
+
+    if (e.category.startsWith(TRANSFER_PREFIX)) {
+      const to = canonical(e.category.slice(TRANSFER_PREFIX.length).trim())
+      if (counted) {
+        bucket(account).transfersOut += e.amount
+        ledger.push(entry('transfer-out', note || `A ${to}`, 'Transferencia', account, to))
+      }
+      if (!beforeSnapshot(to, t, e.expense_date)) {
+        bucket(to).transfersIn += e.amount
+        ledger.push(entry('transfer-in', note || `Desde ${account ?? NO_ACCOUNT}`, 'Transferencia', to, account ?? NO_ACCOUNT))
+      }
+      continue
+    }
+    if (e.category.startsWith(MOVE_IN_PREFIX) || e.category.startsWith(MOVE_OUT_PREFIX)) {
+      if (!counted) continue
+      const isIn = e.category.startsWith(MOVE_IN_PREFIX)
+      const name = e.category.slice((isIn ? MOVE_IN_PREFIX : MOVE_OUT_PREFIX).length).trim()
+      if (isIn) bucket(account).income += e.amount
+      else bucket(account).expenses += e.amount
+      ledger.push(entry(isIn ? 'income' : 'expense', name, isIn ? 'Entrada' : 'Sin clasificar', account))
+      continue
+    }
     if (isOtherIncome(e.category)) {
-      if (counted) bucket(account).income += e.amount
+      if (counted) {
+        bucket(account).income += e.amount
+        ledger.push(entry('income', e.category.split(' · ').slice(1).join(' · ') || 'Ingreso', 'Ingreso', account))
+      }
       if (inMonth) month.income += e.amount
       continue
     }
-    if (counted) bucket(account).expenses += e.amount
     const personal = isPersonalExpense(e.category)
+    if (counted) {
+      bucket(account).expenses += e.amount
+      ledger.push(entry('expense', stripPersonalPrefix(e.category), personal ? 'Personal' : 'Negocio', account))
+    }
     if (inMonth) {
       if (personal) month.personal += e.amount
       else month.business += e.amount
@@ -286,7 +389,7 @@ export function cashSummary({
   }
 
   for (const n of accountNames) bucket(n)
-  for (const b of byAccount.values()) b.balance = (b.setAmount ?? 0) + b.income - b.expenses
+  for (const b of byAccount.values()) b.balance = (b.setAmount ?? 0) + b.income - b.expenses - b.transfersOut + b.transfersIn
   // Cuentas conocidas primero (aunque estén en cero), "Sin cuenta" al final.
   const accounts = [
     ...accountNames.map((n) => byAccount.get(n)!),
@@ -358,5 +461,6 @@ export function cashSummary({
     upcoming,
     upcomingTotal: upcoming.reduce((s, f) => s + f.amount * f.remaining, 0),
     monthExpenses: monthExpenses.sort((a, b) => b.date.localeCompare(a.date)),
+    ledger: ledger.sort((a, b) => b.date.localeCompare(a.date)),
   }
 }

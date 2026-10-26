@@ -5,22 +5,15 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { toast } from 'sonner'
-import { ArrowLeft, Briefcase, Check, Pencil, Plus, Trash2, User, Wallet } from 'lucide-react'
+import { ArrowLeft, Briefcase, Check, Plus, Trash2, User, Wallet } from 'lucide-react'
 
-import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction, setAccountBalanceAction } from '@/actions/expenses'
+import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction } from '@/actions/expenses'
+import { AccountBookCard, Fab, LedgerView, NewRecordSheet, useSaveBalance } from '@/components/home/cash-ledger'
 import { personalCategory } from '@/lib/expenses/scope'
 import { todayKey } from '@/lib/calendar/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  NO_ACCOUNT,
-  WEEKDAYS,
-  scheduleTag,
-  type AccountBalance,
-  type CashSummary,
-  type FixedItem,
-  type FixedSchedule,
-} from '@/lib/finance/cash-summary'
+import { NO_ACCOUNT, WEEKDAYS, scheduleTag, type CashSummary, type FixedItem, type FixedSchedule } from '@/lib/finance/cash-summary'
 import { cop } from '@/lib/projects/metrics'
 import { cn } from '@/lib/utils'
 
@@ -28,7 +21,11 @@ export type Receivable = { total: number; count: number }
 
 function shortDate(key: string) {
   const [y, m, d] = key.split('-').map(Number) as [number, number, number]
-  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  })
 }
 
 function whenLabel(f: FixedItem) {
@@ -69,132 +66,162 @@ export function CashSummarySheet({
   const accounts = summary.accounts.map((a) => a.name).filter((n) => n !== NO_ACCOUNT)
   const monthOut = month.business + month.personal
   const shortfall = summary.upcomingTotal - summary.total
+  // Cuentas que se muestran: las que tienen saldo inicial o movimientos.
+  const shown = summary.accounts.filter((a) => a.setAt || a.income || a.expenses || a.transfersIn || a.transfersOut)
+  const [view, setView] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const viewed = view ? (summary.accounts.find((a) => a.name === view) ?? null) : null
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          setView(null)
+          setAdding(false)
+        }
+        onOpenChange(o)
+      }}
+    >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/40 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
         <DialogPrimitive.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto bg-background pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-foreground outline-none duration-250 ease-out data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right motion-reduce:animate-none">
-          <header className="sticky top-0 z-10 flex items-center gap-2 bg-background/95 px-4 py-3 backdrop-blur">
-            <DialogPrimitive.Close
-              aria-label="Volver a Inicio"
-              className="grid size-10 place-items-center rounded-full hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <ArrowLeft className="size-5" />
-            </DialogPrimitive.Close>
-            <DialogPrimitive.Title className="font-display text-lg font-semibold">Resumen de caja</DialogPrimitive.Title>
-          </header>
-
-          <div className="space-y-6 px-4">
-            {/* Total disponible */}
-            <section className="rounded-[28px] bg-card p-5">
-              <p className="text-xs font-medium text-muted-foreground">Debería haber en total</p>
-              <p className={cn('mt-1 font-display text-3xl font-bold tabular-nums', summary.total < 0 && 'text-destructive')}>
-                {cop(summary.total)}
-              </p>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                <Stat label="Entró este mes" value={month.income} />
-                <Stat label="Negocio" value={month.business} negative />
-                <Stat label="Personal" value={month.personal} negative />
-              </div>
-              {monthOut > 0 && month.income > 0 && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Este mes te queda {cop(month.income - monthOut)} después de gastos.
+          {adding && <NewRecordSheet accounts={accounts} defaultAccount={viewed?.name ?? null} onClose={() => setAdding(false)} />}
+          {viewed ? (
+            <>
+              <DialogPrimitive.Title className="sr-only">{viewed.name}</DialogPrimitive.Title>
+              <LedgerView
+                account={viewed}
+                entries={summary.ledger.filter((e) => e.account === viewed.name)}
+                accounts={accounts}
+                onBack={() => setView(null)}
+                onAdd={() => setAdding(true)}
+              />
+            </>
+          ) : (
+            <>
+              <header className="sticky top-0 z-10 bg-muted/95 px-4 pb-4 pt-3 text-center backdrop-blur">
+                <div className="flex items-center gap-2">
+                  <DialogPrimitive.Close
+                    aria-label="Volver a Inicio"
+                    className="grid size-10 place-items-center rounded-full hover:bg-background/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ArrowLeft className="size-5" />
+                  </DialogPrimitive.Close>
+                  <DialogPrimitive.Title className="flex-1 font-display text-lg font-semibold">Resumen de caja</DialogPrimitive.Title>
+                  <span className="size-10" />
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">Saldo disponible</p>
+                <p className={cn('font-display text-3xl font-bold tabular-nums', summary.total < 0 && 'text-destructive')}>
+                  {cop(summary.total)}
                 </p>
-              )}
-            </section>
+              </header>
 
-            {/* Por cuenta: una tarjeta por cuenta; tocarla deja escribir cuánto hay */}
-            <section>
-              <SectionTitle>Por cuenta</SectionTitle>
-              <div className="grid grid-cols-2 gap-2">
-                {summary.accounts.map((a) => (
-                  <AccountCard key={a.name} account={a} />
-                ))}
-                <NewAccountCard />
-              </div>
-              <p className="mt-2 px-1 text-xs text-muted-foreground">
-                Toca una cuenta para escribir cuánto hay de verdad. Desde ahí suma los cobros y resta los gastos que registres con esa cuenta.
-              </p>
-            </section>
-
-            {/* Próximos pagos */}
-            <section>
-              <SectionTitle>Próximos pagos</SectionTitle>
-              {summary.upcoming.length === 0 ? (
-                <Empty>No tienes gastos fijos pendientes este mes.</Empty>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    {summary.upcoming.map((f) => (
-                      <FixedRow key={f.id} item={f} accounts={accounts} showScope />
-                    ))}
+              <div className="space-y-6 px-4 pb-20 pt-4">
+                {/* Este mes */}
+                <section>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <Stat label="Entró este mes" value={month.income} />
+                    <Stat label="Negocio" value={month.business} negative />
+                    <Stat label="Personal" value={month.personal} negative />
                   </div>
-                  <div className="mt-2 flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm">
-                    <span className="text-muted-foreground">Total por pagar</span>
-                    <span className="font-semibold tabular-nums">{cop(summary.upcomingTotal)}</span>
-                  </div>
-                  {shortfall > 0 && (
-                    <p className="mt-2 px-1 text-xs text-amber-500">
-                      Te faltan {cop(shortfall)} para cubrir todo lo que falta pagar este mes.
+                  {monthOut > 0 && month.income > 0 && (
+                    <p className="mt-2 px-1 text-xs text-muted-foreground">
+                      Este mes te queda {cop(month.income - monthOut)} después de gastos.
                     </p>
                   )}
-                </>
-              )}
-            </section>
+                </section>
 
-            {receivable.total > 0 && (
-              <section className="flex items-center justify-between rounded-2xl bg-card px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium">Por cobrar a clientes</p>
-                  <p className="text-xs text-muted-foreground">
-                    {receivable.count} {receivable.count === 1 ? 'proyecto con saldo' : 'proyectos con saldo'}
-                  </p>
-                </div>
-                <p className="font-semibold tabular-nums text-primary">{cop(receivable.total)}</p>
-              </section>
-            )}
+                {/* Cuentas: tocar una abre su libro de movimientos */}
+                <section>
+                  <SectionTitle>Cuentas</SectionTitle>
+                  <div className="space-y-2">
+                    {shown.map((a) => (
+                      <AccountBookCard key={a.name} account={a} onOpen={() => setView(a.name)} />
+                    ))}
+                    <NewAccountCard />
+                  </div>
+                </section>
 
-            {/* Fijos: se guardan una vez y se repiten cada mes en su día */}
-            <AddFixedForm accounts={accounts} />
-            <FixedSection title="Gastos fijos del negocio" icon={Briefcase} items={summary.fixedBusiness} accounts={accounts} />
-            <FixedSection title="Gastos fijos personales" icon={User} items={summary.fixedPersonal} accounts={accounts} />
-
-            {/* Gastos del mes */}
-            <section>
-              <SectionTitle>Gastos de este mes</SectionTitle>
-              {summary.monthExpenses.length === 0 ? (
-                <Empty>Todavía no hay gastos este mes.</Empty>
-              ) : (
-                <div className="divide-y divide-border/60 rounded-2xl bg-card">
-                  {summary.monthExpenses.map((e) => (
-                    <div key={e.id} className="flex items-center gap-3 px-4 py-3">
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
-                        {e.personal ? <User className="size-4" /> : <Briefcase className="size-4" />}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{e.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {shortDate(e.date)}
-                          {e.account && ` · ${e.account}`}
-                          {e.note && ` · ${e.note}`}
-                        </p>
+                {/* Próximos pagos */}
+                <section>
+                  <SectionTitle>Próximos pagos</SectionTitle>
+                  {summary.upcoming.length === 0 ? (
+                    <Empty>No tienes gastos fijos pendientes este mes.</Empty>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        {summary.upcoming.map((f) => (
+                          <FixedRow key={f.id} item={f} accounts={accounts} showScope />
+                        ))}
                       </div>
-                      <p className="shrink-0 text-sm font-semibold tabular-nums">−{cop(e.amount)}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+                      <div className="mt-2 flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm">
+                        <span className="text-muted-foreground">Total por pagar</span>
+                        <span className="font-semibold tabular-nums">{cop(summary.upcomingTotal)}</span>
+                      </div>
+                      {shortfall > 0 && (
+                        <p className="mt-2 px-1 text-xs text-amber-500">
+                          Te faltan {cop(shortfall)} para cubrir todo lo que falta pagar este mes.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </section>
 
-            <Link
-              href="/dashboard/settings/gastos"
-              className="flex items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-semibold hover:bg-muted"
-            >
-              <Plus className="size-4" />
-              Registrar gasto o gasto fijo
-            </Link>
-          </div>
+                {receivable.total > 0 && (
+                  <section className="flex items-center justify-between rounded-2xl bg-card px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium">Por cobrar a clientes</p>
+                      <p className="text-xs text-muted-foreground">
+                        {receivable.count} {receivable.count === 1 ? 'proyecto con saldo' : 'proyectos con saldo'}
+                      </p>
+                    </div>
+                    <p className="font-semibold tabular-nums text-primary">{cop(receivable.total)}</p>
+                  </section>
+                )}
+
+                {/* Fijos: se guardan una vez y se repiten cada mes en su día */}
+                <AddFixedForm accounts={accounts} />
+                <FixedSection title="Gastos fijos del negocio" icon={Briefcase} items={summary.fixedBusiness} accounts={accounts} />
+                <FixedSection title="Gastos fijos personales" icon={User} items={summary.fixedPersonal} accounts={accounts} />
+
+                {/* Gastos del mes */}
+                <section>
+                  <SectionTitle>Gastos de este mes</SectionTitle>
+                  {summary.monthExpenses.length === 0 ? (
+                    <Empty>Todavía no hay gastos este mes.</Empty>
+                  ) : (
+                    <div className="divide-y divide-border/60 rounded-2xl bg-card">
+                      {summary.monthExpenses.map((e) => (
+                        <div key={e.id} className="flex items-center gap-3 px-4 py-3">
+                          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+                            {e.personal ? <User className="size-4" /> : <Briefcase className="size-4" />}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{e.name}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {shortDate(e.date)}
+                              {e.account && ` · ${e.account}`}
+                              {e.note && ` · ${e.note}`}
+                            </p>
+                          </div>
+                          <p className="shrink-0 text-sm font-semibold tabular-nums">−{cop(e.amount)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <Link
+                  href="/dashboard/settings/gastos"
+                  className="flex items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-semibold hover:bg-muted"
+                >
+                  Ver todos los gastos
+                </Link>
+              </div>
+              <Fab onClick={() => setAdding(true)} />
+            </>
+          )}
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
@@ -319,11 +346,7 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
           <p className="text-sm font-semibold tabular-nums">{cop(f.amount)}</p>
           {f.schedule.kind === 'weekly' && <p className="text-[10px] text-muted-foreground">cada uno</p>}
           {f.pending && (
-            <button
-              type="button"
-              onClick={() => setChoosing((v) => !v)}
-              className="mt-0.5 text-xs font-semibold text-primary"
-            >
+            <button type="button" onClick={() => setChoosing((v) => !v)} className="mt-0.5 text-xs font-semibold text-primary">
               {choosing ? 'Cancelar' : 'Marcar pagado'}
             </button>
           )}
@@ -362,7 +385,6 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
   )
 }
 
-
 type Frequency = 'once' | 'days' | 'weekly'
 
 const FREQUENCIES: { value: Frequency; label: string }[] = [
@@ -393,7 +415,10 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
     const list = [...new Set(raw.split(/\D+/).filter(Boolean).map(Number))].sort((a, b) => a - b)
     if (!list.length || list.some((d) => d < 1 || d > 31)) return 'Los días deben estar entre 1 y 31'
     if (frequency === 'days' && list.length < 2) return 'Escribe al menos dos días (ej. 5, 20)'
-    return { kind: 'monthly', days: frequency === 'once' ? list.slice(0, 1) : list }
+    return {
+      kind: 'monthly',
+      days: frequency === 'once' ? list.slice(0, 1) : list,
+    }
   }
 
   function save() {
@@ -488,7 +513,12 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
         />
       )}
       {frequency === 'days' && (
-        <Input inputMode="numeric" placeholder="Días del mes separados por coma (ej. 5, 20)" value={days} onChange={(e) => setDays(e.target.value)} />
+        <Input
+          inputMode="numeric"
+          placeholder="Días del mes separados por coma (ej. 5, 20)"
+          value={days}
+          onChange={(e) => setDays(e.target.value)}
+        />
       )}
       {frequency === 'weekly' && (
         <div className="grid grid-cols-7 gap-1">
@@ -501,7 +531,7 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
               aria-pressed={weekday === i}
               className={cn(
                 'rounded-full border py-2 text-xs font-semibold capitalize',
-                weekday === i ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                weekday === i ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted',
               )}
             >
               {d.slice(0, 2)}
@@ -519,7 +549,7 @@ function AddFixedForm({ accounts }: { accounts: string[] }) {
               onClick={() => setAccount(account === a ? null : a)}
               className={cn(
                 'rounded-full border px-3 py-1.5 text-xs font-medium',
-                account === a ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                account === a ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted',
               )}
             >
               {a}
@@ -546,7 +576,12 @@ function Segmented<T extends string | boolean>({
   small?: boolean
 }) {
   return (
-    <div className="grid gap-1 rounded-full bg-muted p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+    <div
+      className="grid gap-1 rounded-full bg-muted p-1"
+      style={{
+        gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))`,
+      }}
+    >
       {options.map((o) => (
         <button
           key={String(o.value)}
@@ -555,94 +590,13 @@ function Segmented<T extends string | boolean>({
           className={cn(
             'rounded-full py-2 font-semibold',
             small ? 'text-xs' : 'text-sm',
-            value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground'
+            value === o.value ? 'bg-background shadow-sm' : 'text-muted-foreground',
           )}
         >
           {o.label}
         </button>
       ))}
     </div>
-  )
-}
-
-function useSaveBalance(onDone: () => void) {
-  const router = useRouter()
-  const [pending, startTransition] = useTransition()
-  function save(account: string, raw: string) {
-    const amount = Number(raw.replace(/\D/g, ''))
-    if (!raw.trim()) return toast.error('Escribe cuánto hay')
-    startTransition(async () => {
-      const result = await setAccountBalanceAction(account, amount)
-      if (!result.success) {
-        toast.error(result.error.message)
-        return
-      }
-      toast.success(`${account.trim()}: ${cop(amount)}`)
-      onDone()
-      router.refresh()
-    })
-  }
-  return { save, pending }
-}
-
-/** Tarjeta de una cuenta: saldo esperado; al tocarla se escribe el saldo real. */
-function AccountCard({ account: a }: { account: AccountBalance }) {
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState('')
-  const { save, pending } = useSaveBalance(() => setEditing(false))
-  const isNoAccount = a.name === NO_ACCOUNT
-
-  if (editing) {
-    return (
-      <div className="col-span-2 space-y-2 rounded-2xl border border-primary/60 bg-card p-3">
-        <p className="text-sm font-semibold">¿Cuánto hay en {a.name}?</p>
-        <Input
-          autoFocus
-          type="number"
-          inputMode="numeric"
-          placeholder={String(Math.max(0, a.balance))}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && save(a.name, value)}
-        />
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" className="flex-1" onClick={() => setEditing(false)}>
-            Cancelar
-          </Button>
-          <Button type="button" className="flex-1" disabled={pending} onClick={() => save(a.name, value)}>
-            Guardar
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  const moved = a.income > 0 || a.expenses > 0
-  return (
-    <button
-      type="button"
-      disabled={isNoAccount}
-      onClick={() => {
-        setValue('')
-        setEditing(true)
-      }}
-      className="flex min-h-[92px] flex-col justify-between gap-1 rounded-2xl bg-card p-3 text-left enabled:hover:bg-muted/60"
-    >
-      <span className="flex w-full items-center justify-between gap-1">
-        <span className={cn('truncate text-xs font-medium', isNoAccount ? 'text-muted-foreground' : 'text-foreground/80')}>{a.name}</span>
-        {!isNoAccount && <Pencil className="size-3 shrink-0 text-muted-foreground" />}
-      </span>
-      <span className={cn('font-display text-lg font-bold tabular-nums', a.balance < 0 && 'text-destructive')}>{cop(a.balance)}</span>
-      <span className="w-full truncate text-[11px] text-muted-foreground tabular-nums">
-        {a.setAt
-          ? `Contado ${shortDate(a.setAt.slice(0, 10))}${moved ? ` · +${cop(a.income)} −${cop(a.expenses)}` : ''}`
-          : moved
-            ? `+${cop(a.income)} · −${cop(a.expenses)}`
-            : isNoAccount
-              ? 'Registrado sin cuenta'
-              : 'Toca para poner el saldo'}
-      </span>
-    </button>
   )
 }
 
@@ -672,7 +626,13 @@ function NewAccountCard() {
   return (
     <div className="col-span-2 space-y-2 rounded-2xl border border-primary/60 bg-card p-3">
       <p className="text-sm font-semibold">Nueva cuenta</p>
-      <Input autoFocus placeholder="Nombre (ej. Bancolombia, Ahorros)" maxLength={30} value={name} onChange={(e) => setName(e.target.value)} />
+      <Input
+        autoFocus
+        placeholder="Nombre (ej. Bancolombia, Ahorros)"
+        maxLength={30}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <Input type="number" inputMode="numeric" placeholder="¿Cuánto hay? (COP)" value={value} onChange={(e) => setValue(e.target.value)} />
       <div className="flex gap-2">
         <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>

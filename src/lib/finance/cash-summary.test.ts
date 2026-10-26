@@ -149,4 +149,33 @@ describe('cashSummary', () => {
     const feb = cashSummary({ today: '2027-02-02', accounts: [], payments: [], expenses: [def] })
     expect(feb.fixedPersonal).toHaveLength(0)
   })
+
+  it('libro: entradas y salidas que no son venta ni gasto, y traslados entre cuentas', () => {
+    const s = cashSummary({
+      today: '2026-10-26',
+      accounts: ['Daviplata', 'Efectivo'],
+      payments: [{ id: 'p1', amount: 370_000, paid_at: '2026-10-24T23:07:00Z', payment_method: 'Daviplata', projects: { name: 'Cita', clients: { name: 'Tatiana' } } }],
+      expenses: [
+        exp({ category: 'Saldo · Daviplata', amount: 100_000, description: '2026-10-01T05:00:00.000Z', expense_date: '2026-10-01' }),
+        exp({ category: 'Entrada · Cadena (mi turno)', amount: 2_100_000, description: 'Daviplata', expense_date: '2026-10-03' }),
+        exp({ category: 'Salida · Pago deuda Angie', amount: 350_000, description: 'Daviplata', expense_date: '2026-10-16' }),
+        exp({ id: 't', category: 'Transferencia · Efectivo', amount: 200_000, description: 'Daviplata · Retiro cajero', expense_date: '2026-10-18' }),
+        exp({ category: 'Personal · Mercado', amount: 250_000, description: 'Daviplata', expense_date: '2026-10-24' }),
+      ],
+    })
+    const dav = s.accounts.find((a) => a.name === 'Daviplata')!
+    expect(dav).toMatchObject({ setAmount: 100_000, income: 2_470_000, expenses: 600_000, transfersOut: 200_000, balance: 1_770_000 })
+    expect(s.accounts.find((a) => a.name === 'Efectivo')).toMatchObject({ transfersIn: 200_000, balance: 200_000 })
+    // Ni la cadena ni la deuda son ventas o gastos del mes.
+    expect(s.month).toEqual({ income: 370_000, business: 0, personal: 250_000 })
+    const davLedger = s.ledger.filter((e) => e.account === 'Daviplata')
+    expect(davLedger.map((e) => [e.kind, e.tipo, e.name])).toEqual([
+      ['income', 'Venta', 'Tatiana'],
+      ['expense', 'Personal', 'Mercado'],
+      ['transfer-out', 'Transferencia', 'Retiro cajero'],
+      ['expense', 'Sin clasificar', 'Pago deuda Angie'],
+      ['income', 'Entrada', 'Cadena (mi turno)'],
+    ])
+    expect(s.ledger.find((e) => e.kind === 'transfer-in')).toMatchObject({ account: 'Efectivo', otherAccount: 'Daviplata' })
+  })
 })

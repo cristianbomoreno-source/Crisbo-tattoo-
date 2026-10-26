@@ -34,3 +34,18 @@ export const BALANCE_PREFIX = 'Saldo · '
 export function isBalanceSnapshot(category: string) {
   return category.startsWith(BALANCE_PREFIX)
 }
+
+/** Movimientos de una cuenta que no son ventas ni gastos (Resumen de caja →
+ * libro de la cuenta): plata que entró sin ser venta ("Entrada · Cadena"),
+ * plata que salió sin clasificar ("Salida · A 3202107769") y traslados entre
+ * cuentas propias ("Transferencia · Efectivo", cuenta de origen en la
+ * descripción). Mueven el saldo de la cuenta pero Finanzas y Gastos no los
+ * cuentan; `getExpenses` los excluye. */
+export const MOVE_IN_PREFIX = 'Entrada · '
+export const MOVE_OUT_PREFIX = 'Salida · '
+export const TRANSFER_PREFIX = 'Transferencia · '
+export const LEDGER_ONLY_PREFIXES = [BALANCE_PREFIX, MOVE_IN_PREFIX, MOVE_OUT_PREFIX, TRANSFER_PREFIX]
+
+export function isLedgerOnly(category: string) {
+  return LEDGER_ONLY_PREFIXES.some((p) => category.startsWith(p))
+}
