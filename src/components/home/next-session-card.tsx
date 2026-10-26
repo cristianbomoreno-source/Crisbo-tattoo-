@@ -144,6 +144,8 @@ export function NextSessionCard({
       }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      // Con varias citas el swipe lateral cambia de cita (no abre la caja de Inicio).
+      data-no-page-swipe={sessions.length > 1 ? '' : undefined}
       className="relative cursor-pointer overflow-hidden rounded-[1.75rem] bg-card transition-colors hover:bg-card/80"
     >
       {/* Tarjeta completa por-cita: cada swipe/flechita cambia `session.id`,

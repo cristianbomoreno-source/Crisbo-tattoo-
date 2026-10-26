@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cop } from '@/lib/projects/metrics'
 import { todayKey } from '@/lib/calendar/utils'
-import { isOtherIncome } from '@/lib/expenses/scope'
+import { isOtherIncome, personalCategory } from '@/lib/expenses/scope'
+import { cn } from '@/lib/utils'
 
 function formatDay(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
@@ -23,13 +24,15 @@ function formatDay(iso: string): string {
 /** Panel de gastos/costos del estudio — categorías 100% libres (el
  * tatuador escribe la que quiera, sin lista fija para elegir). Mismo
  * patrón de UI que `fechas-panel.tsx`: lista + formulario de alta simple. */
-export function GastosPanel({ expenses }: { expenses: Expense[] }) {
+export function GastosPanel({ expenses, accounts }: { expenses: Expense[]; accounts: string[] }) {
   const router = useRouter()
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(todayKey())
   const [dueDay, setDueDay] = useState('')
+  const [personal, setPersonal] = useState(false)
+  const [account, setAccount] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   // Los "Ingreso · …" del atajo se listan para poder borrarlos, pero no son gasto.
@@ -52,8 +55,10 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
     }
     startTransition(async () => {
       const result = await createExpenseAction({
-        category: category.trim(),
-        description: description.trim() || undefined,
+        category: personal ? personalCategory(category.trim()) : category.trim(),
+        // Misma convención que los atajos del iPhone: la cuenta va primero en
+        // la descripción ("Nequi · nota") — así la lee el Resumen de caja.
+        description: [account, description.trim()].filter(Boolean).join(' · ') || undefined,
         amount: Number(amount),
         expense_date: date,
         due_day: dueDayNum,
@@ -95,6 +100,18 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
         </div>
 
         <div className="space-y-2.5 rounded-2xl border border-border p-4">
+          <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+            {[false, true].map((p) => (
+              <button
+                key={String(p)}
+                type="button"
+                onClick={() => setPersonal(p)}
+                className={cn('rounded-full py-2 text-sm font-semibold', personal === p ? 'bg-background shadow-sm' : 'text-muted-foreground')}
+              >
+                {p ? 'Personal' : 'Negocio'}
+              </button>
+            ))}
+          </div>
           <Input placeholder="Categoría (ej. Arriendo, Insumos, Publicidad...)" value={category} onChange={(e) => setCategory(e.target.value)} maxLength={40} />
           <Input placeholder="Descripción (opcional)" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={200} />
           <div className="grid grid-cols-2 gap-2.5">
@@ -113,6 +130,24 @@ export function GastosPanel({ expenses }: { expenses: Expense[] }) {
               className="flex-1"
             />
             <p className="text-xs text-muted-foreground">Opcional: si es gasto fijo mensual</p>
+          </div>
+          <div>
+            <p className="mb-1.5 text-xs text-muted-foreground">¿De qué cuenta sale? (opcional)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {accounts.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setAccount(account === a ? null : a)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-xs font-medium',
+                    account === a ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+                  )}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
           </div>
           <Button type="button" onClick={add} disabled={pending} className="w-full gap-1.5">
             <Plus className="size-4" strokeWidth={2} />

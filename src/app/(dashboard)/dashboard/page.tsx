@@ -6,7 +6,7 @@ import { getProjectIdsWithMedicalAlert, getMedicalAlertsByProject } from '@/quer
 import { getActiveWorkShift } from '@/queries/work-shifts'
 import { getQuotes } from '@/queries/quotes'
 import { getConsents } from '@/queries/consents'
-import { getFixedExpenses } from '@/queries/expenses'
+import { getFixedExpenses, getCashData } from '@/queries/expenses'
 import { getStudioHomeData } from '@/queries/studio-home'
 import { HomeGreeting } from '@/components/home/home-greeting'
 import { OnboardingChecklist } from '@/components/home/onboarding-checklist'
@@ -17,6 +17,9 @@ import { CalendarCard } from '@/components/home/calendar-card'
 import { NextSessionCard } from '@/components/home/next-session-card'
 import { ExpenseAlertsCard } from '@/components/home/expense-alerts-card'
 import { HomeDesktopGate } from '@/components/home/home-responsive'
+import { HomeSwipe } from '@/components/home/home-swipe'
+import { cashSummary, type CashSummary } from '@/lib/finance/cash-summary'
+import { PAYMENT_METHOD_OPTIONS } from '@/lib/validations/studio'
 import { RestDayGate } from '@/components/home/rest-day-gate'
 import { EstudioHome } from '@/components/home/estudio/estudio-home'
 import { todayKey, getMonthKeys, dayKey, TZ, nowAsWallClock, expandClosedWeekdays } from '@/lib/calendar/utils'
@@ -123,14 +126,20 @@ export default async function DashboardPage() {
   let quoteStatuses: { status: string | null }[] = []
   let pendingConsents = 0
   let expenseAlerts: UpcomingExpenseAlert[] = []
+  // Resumen de caja (deslizar ← en Inicio móvil): solo el dueño ve la plata del estudio.
+  const isOwner = studio?.role === 'owner'
+  const cashAccounts = studio?.paymentMethods?.length ? studio.paymentMethods : [...PAYMENT_METHOD_OPTIONS]
+  let cash: CashSummary | null = null
   try {
-    const [activeShiftResult, quotesResult, consentsResult, fixedExpensesResult] =
+    const [activeShiftResult, quotesResult, consentsResult, fixedExpensesResult, cashResult] =
       await Promise.all([
         studio ? getActiveWorkShift(studio.artistId) : null,
         getQuotes(),
         getConsents(),
         getFixedExpenses(),
+        isOwner ? getCashData() : null,
       ])
+    if (cashResult?.success) cash = cashSummary({ ...cashResult.data, accounts: cashAccounts, today })
     activeShift = activeShiftResult?.success ? activeShiftResult.data : null
     const quotes = quotesResult?.success ? quotesResult.data : []
     const consents = consentsResult?.success ? consentsResult.data : []
@@ -176,10 +185,15 @@ export default async function DashboardPage() {
   // (para sacarle la última foto de galería a la próxima sesión).
   const balances: Record<string, ProjectBalance> = {}
   const projectsById: Record<string, (typeof projects)[number]> = {}
+  const receivable = { total: 0, count: 0 }
   for (const p of projects) {
     const deposits = p.payments.reduce((sum, x) => sum + (x.amount ?? 0), 0)
     balances[p.id] = { deposits, pending: Math.max(0, calculateBalance(p)) }
     projectsById[p.id] = p
+    if (p.status !== 'quote' && balances[p.id]!.pending > 0) {
+      receivable.total += balances[p.id]!.pending
+      receivable.count += 1
+    }
   }
 
   // Sesiones de HOY ordenadas por hora, con la foto más reciente de cada
@@ -306,7 +320,15 @@ export default async function DashboardPage() {
       {/* Móvil: se renderiza siempre, directo, sin pasar por ningún gate ni
           depender de JS — exactamente como antes de que existiera la
           versión de escritorio. `md:hidden` es solo presentación. */}
-      <div className="md:hidden">{mobileHome}</div>
+      <div className="md:hidden">
+        {cash ? (
+          <HomeSwipe summary={cash} receivable={receivable} accounts={cashAccounts}>
+            {mobileHome}
+          </HomeSwipe>
+        ) : (
+          mobileHome
+        )}
+      </div>
 
       {/* iPad/escritorio: `HomeDesktopGate` decide en el cliente si monta
           `HomeDesktop` — nunca se monta en un teléfono, ni siquiera oculto. */}
