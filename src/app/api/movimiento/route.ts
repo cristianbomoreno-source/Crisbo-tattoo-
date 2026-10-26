@@ -18,7 +18,9 @@ import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcut
 const BUSINESS = ['Insumos', 'Arriendo', 'Servicios', 'Publicidad', 'Transporte', 'Equipo', 'Otro']
 const PERSONAL = ['Comida', 'Transporte', 'Hogar', 'Salud', 'Ocio', 'Deudas', 'Otro']
 
-const isIncome = (movimiento: string) => /entr|ingres/i.test(movimiento)
+// El atajo puede mandar "✅ Ingreso" y el iPhone a veces corta el enlace en
+// el espacio, así que solo llega el ✅: también cuenta como ingreso.
+const isIncome = (movimiento: string) => /entr|ingres|✅/i.test(movimiento)
 
 type OpenProject = {
   id: string
