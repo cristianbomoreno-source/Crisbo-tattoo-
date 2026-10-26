@@ -8,7 +8,7 @@ import { quickEntryAuthorized, quickEntryStudioId, plainText as text } from '@/l
 
 /** Atajo "Caja Crisbo" del iPhone: un solo flujo lineal (sin bloques "Si")
  * para registrar plata que entró o salió.
- *  1. Elige "Entró dinero" / "Salió dinero" y escribe el monto.
+ *  1. Elige "Ingreso" / "Gasto" (o "Entró"/"Salió") y escribe el monto.
  *  2. GET ?movimiento=… devuelve las opciones, una por renglón:
  *     - Salió: "Negocio · Insumos", "Personal · Comida", …
  *     - Entró: proyectos con saldo, "Cliente · Proyecto · debe $X · #abc123"
@@ -18,7 +18,7 @@ import { quickEntryAuthorized, quickEntryStudioId, plainText as text } from '@/l
 const BUSINESS = ['Insumos', 'Arriendo', 'Servicios', 'Publicidad', 'Transporte', 'Equipo', 'Otro']
 const PERSONAL = ['Comida', 'Transporte', 'Hogar', 'Salud', 'Ocio', 'Deudas', 'Otro']
 
-const isIncome = (movimiento: string) => /entr/i.test(movimiento)
+const isIncome = (movimiento: string) => /entr|ingres/i.test(movimiento)
 
 type OpenProject = {
   id: string
