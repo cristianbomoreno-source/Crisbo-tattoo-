@@ -10,7 +10,8 @@ import { getFixedExpenses, getCashData } from '@/queries/expenses'
 import { getStudioHomeData } from '@/queries/studio-home'
 import { HomeGreeting } from '@/components/home/home-greeting'
 import { OnboardingChecklist } from '@/components/home/onboarding-checklist'
-import { TodayCards } from '@/components/home/today-cards'
+import { OpenCajaRow } from '@/components/home/open-caja-row'
+import { durationLabel } from '@/lib/quote-wizard/duration'
 import { MonthSummaryCard } from '@/components/home/month-summary'
 import { TodayAppointments, type ProjectBalance } from '@/components/home/today-appointments'
 import { CalendarCard } from '@/components/home/calendar-card'
@@ -175,9 +176,7 @@ export default async function DashboardPage() {
   const clientesHoy = new Set(
     todaySessions.map((s) => s.projects?.clients?.name).filter(Boolean)
   ).size
-  const horasHoy = Math.round(
-    (todaySessions.reduce((sum, s) => sum + (s.duration_minutes ?? 0), 0) / 60) * 10
-  ) / 10
+  const minutosHoy = todaySessions.reduce((sum, s) => sum + (s.duration_minutes ?? 0), 0)
   const monthKey = today.slice(0, 7)
   const summary = monthSummary(monthKey, sessions, projects, quoteStatuses, new Date().toISOString())
 
@@ -261,14 +260,6 @@ export default async function DashboardPage() {
 
       <OnboardingChecklist stepsDone={studio?.onboardingStepsDone ?? []} />
 
-      <CalendarCard
-        days={days}
-        today={today}
-        todaySessions={todaySessions}
-        balances={balances}
-        blockedDays={blockedKeys}
-      />
-
       {cardSessions.length > 0 && (
         <NextSessionCard
           key={daysUntil ? 'upcoming' : 'today'}
@@ -282,23 +273,17 @@ export default async function DashboardPage() {
         />
       )}
 
-      <TodayCards citasHoy={citasHoy} clientesHoy={clientesHoy} horasHoy={horasHoy} />
-
-      <MonthSummaryCard
-        monthKey={monthKey}
-        summary={summary}
-        projects={projects}
-        todaySessions={todaySessions}
-        paymentMethods={studio?.paymentMethods}
-      />
-
-      {expenseAlerts.length > 0 && (
-        <ExpenseAlertsCard alerts={expenseAlerts} />
-      )}
-
       <section className="space-y-2" data-tour="home-today-sessions">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">Sesiones de hoy</h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold">Hoy</h2>
+            {citasHoy > 0 && (
+              <p className="text-[13px] text-muted-foreground">
+                {citasHoy} {citasHoy === 1 ? 'cita' : 'citas'}
+                {clientesHoy > 0 && clientesHoy !== citasHoy && ` · ${clientesHoy} clientes`} · {durationLabel(minutosHoy)}
+              </p>
+            )}
+          </div>
           <a
             href="/dashboard?openCalendar=1"
             className="text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -312,6 +297,20 @@ export default async function DashboardPage() {
           medicalAlertProjectIds={medicalAlertProjectIds}
         />
       </section>
+
+      <MonthSummaryCard
+        monthKey={monthKey}
+        summary={summary}
+        projects={projects}
+        todaySessions={todaySessions}
+        paymentMethods={studio?.paymentMethods}
+      />
+
+      {cash && <OpenCajaRow total={cash.total} accounts={cash.accounts.filter((a) => a.setAt).length} />}
+
+      {expenseAlerts.length > 0 && <ExpenseAlertsCard alerts={expenseAlerts} />}
+
+      <CalendarCard days={days} today={today} todaySessions={todaySessions} balances={balances} blockedDays={blockedKeys} />
     </div>
   )
 

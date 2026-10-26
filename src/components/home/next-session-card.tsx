@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { durationLabel } from '@/lib/quote-wizard/duration'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import { CalendarCheck2, Clock3, Wallet, BadgeCheck, TriangleAlert, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -259,7 +260,7 @@ export function NextSessionCard({
 
             <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock3 className="size-3.5" strokeWidth={2} />
-              {session.duration_minutes} min
+              {durationLabel(session.duration_minutes ?? 60)}
             </div>
           </div>
 

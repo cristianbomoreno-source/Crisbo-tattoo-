@@ -107,7 +107,7 @@ export function WorkShiftCard({
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           <Play className="size-4" strokeWidth={2} aria-hidden="true" />
-          Iniciar sesión
+          Empezar jornada
         </button>
       )}
       {!shift && (

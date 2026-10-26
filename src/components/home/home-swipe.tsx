@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { CashSummarySheet, type Receivable } from '@/components/home/cash-summary-sheet'
+import { OPEN_CAJA_EVENT } from '@/components/home/open-caja-row'
 import type { CashSummary } from '@/lib/finance/cash-summary'
 
 /** Elementos que ya usan el gesto horizontal (carrusel de "Próxima sesión",
@@ -42,6 +43,13 @@ export function HomeSwipe({
   const pathname = usePathname()
   const [open, setOpen] = useState(() => searchParams.get('caja') === '1')
   const start = useRef<{ x: number; y: number } | null>(null)
+
+  // La fila "Caja y cuentas" de Inicio la abre con un evento.
+  useEffect(() => {
+    const onOpen = () => setOpen(true)
+    window.addEventListener(OPEN_CAJA_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_CAJA_EVENT, onOpen)
+  }, [])
 
   // Limpia `?caja=1` para que un refresh no vuelva a abrirlo.
   useEffect(() => {

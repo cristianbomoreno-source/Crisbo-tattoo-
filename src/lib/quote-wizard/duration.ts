@@ -22,3 +22,11 @@ export function parseDurationLabel(label: string | null | undefined): number | n
   if (!match) return null
   return Number(match[1]) * 60 + Number(match[2])
 }
+
+/** Duración para leer de un vistazo: "45 min", "2 h", "1 h 30 min". */
+export function durationLabel(min: number): string {
+  if (min < 60) return `${min} min`
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return m ? `${h} h ${m} min` : `${h} h`
+}
