@@ -18,3 +18,13 @@ export function quickEntryStudioId() {
 /** Texto plano: el atajo lo muestra tal cual o lo divide por renglones. */
 export const plainText = (body: string, status = 200) =>
   new NextResponse(body, { status, headers: { 'content-type': 'text/plain; charset=utf-8' } })
+
+/** Error de validación en español para la notificación del atajo: si el
+ * campo ni llegó (cuerpo JSON vacío o clave mal escrita), dice cuál falta. */
+export function quickEntryIssue(issue: { path: PropertyKey[]; code: string; message: string } | undefined) {
+  if (!issue) return '❌ Datos inválidos'
+  const field = String(issue.path[0] ?? '')
+  if (issue.code === 'invalid_type' && /undefined/.test(issue.message))
+    return `❌ Falta el campo "${field}" en el Cuerpo de la solicitud (JSON)`
+  return `❌ ${field ? field + ': ' : ''}${issue.message}`
+}

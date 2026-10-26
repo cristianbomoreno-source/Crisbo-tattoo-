@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { todayKey } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
 import { personalCategory } from '@/lib/expenses/scope'
-import { quickEntryAuthorized, quickEntryStudioId, plainText as text } from '@/lib/expenses/quick-entry'
+import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Atajo "Caja Crisbo" del iPhone: un solo flujo lineal (sin bloques "Si")
  * para registrar plata que entró o salió.
@@ -77,8 +77,8 @@ export async function POST(req: Request) {
   const studioId = quickEntryStudioId()
   if (!studioId) return text('❌ Falta configurar el estudio', 500)
 
-  const parsed = schema.safeParse(await req.json().catch(() => null))
-  if (!parsed.success) return text(`❌ ${parsed.error.issues[0]?.message ?? 'Datos inválidos'}`, 400)
+  const parsed = schema.safeParse(await req.json().catch(() => ({})))
+  if (!parsed.success) return text(quickEntryIssue(parsed.error.issues[0]), 400)
   const { movimiento, opcion, medio, nota } = parsed.data
   const monto = Math.round(parsed.data.monto)
   const cleanNota = nota && nota !== '-' ? nota : null
