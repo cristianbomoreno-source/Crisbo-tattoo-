@@ -1,9 +1,5 @@
-import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { todayKey } from '@/lib/calendar/utils'
-import { cop } from '@/lib/projects/metrics'
-import { personalCategory, OTHER_INCOME_OPTIONS, OTHER_INCOME_PREFIX } from '@/lib/expenses/scope'
+import { movementOptions, saveMovement } from '@/lib/expenses/movement'
 import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcutBody, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Atajo "Caja Crisbo" del iPhone: un solo flujo lineal (sin bloques "Si")
@@ -12,42 +8,13 @@ import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcut
  *  2. GET ?movimiento=… devuelve las opciones, una por renglón:
  *     - Salió: "Negocio · Insumos", "Personal · Comida", …
  *     - Entró: "Abono de cita nueva", "Venta de producto", "Otro ingreso"
- *       (sin proyecto, ver OTHER_INCOME_PREFIX) y los proyectos con saldo,
- *       "Cliente · Proyecto · debe $X · #abc123"
+ *       y los proyectos con saldo, "Cliente · Proyecto · debe $X · #abc123"
  *  3. Elige opción, medio (Nequi, Bold, …) y nota → POST aquí.
- * Gastos → `expenses` (personales con prefijo, ver lib/expenses/scope.ts);
- * ingresos → `payments` del proyecto elegido, igual que la Caja de Inicio. */
-const BUSINESS = ['Insumos', 'Arriendo', 'Servicios', 'Publicidad', 'Transporte', 'Equipo', 'Otro']
-const PERSONAL = ['Comida', 'Transporte', 'Hogar', 'Salud', 'Ocio', 'Deudas', 'Otro']
+ * Cómo se guarda cada cosa: lib/expenses/movement.ts. */
 
 // El atajo puede mandar "✅ Ingreso" y el iPhone a veces corta el enlace en
 // el espacio, así que solo llega el ✅: también cuenta como ingreso.
 const isIncome = (movimiento: string) => /entr|ingres|✅/i.test(movimiento)
-
-type OpenProject = {
-  id: string
-  name: string
-  total_value: number | null
-  clients: { name: string } | null
-  payments: { amount: number }[]
-  balance: number
-}
-
-async function openProjects(studioId: string): Promise<OpenProject[]> {
-  const { data, error } = await createAdminClient()
-    .from('projects')
-    .select('id, name, total_value, clients(name), payments(amount)')
-    .eq('studio_id', studioId)
-    .neq('status', 'cancelled')
-    .order('updated_at', { ascending: false })
-  if (error) throw new Error(error.message)
-  return ((data ?? []) as unknown as Omit<OpenProject, 'balance'>[])
-    .map((p) => ({ ...p, balance: (p.total_value ?? 0) - p.payments.reduce((s, x) => s + (x.amount ?? 0), 0) }))
-    .filter((p) => p.balance > 0)
-}
-
-const projectLine = (p: OpenProject) =>
-  `${p.clients?.name ?? 'Sin cliente'} · ${p.name} · debe ${cop(p.balance)} · #${p.id.slice(0, 6)}`
 
 export async function GET(req: Request) {
   if (!quickEntryAuthorized(req)) return text('❌ Token inválido', 401)
@@ -55,12 +22,8 @@ export async function GET(req: Request) {
   if (!studioId) return text('❌ Falta configurar el estudio', 500)
 
   const movimiento = new URL(req.url).searchParams.get('movimiento') ?? ''
-  if (!isIncome(movimiento)) {
-    return text([...BUSINESS.map((c) => `Negocio · ${c}`), ...PERSONAL.map((c) => `Personal · ${c}`)].join('\n'))
-  }
   try {
-    const projects = await openProjects(studioId)
-    return text([...OTHER_INCOME_OPTIONS, ...projects.slice(0, 40).map(projectLine)].join('\n'))
+    return text((await movementOptions(studioId, isIncome(movimiento))).join('\n'))
   } catch (e) {
     console.error('[movimiento]', (e as Error).message)
     return text('❌ No se pudieron cargar los proyectos', 500)
@@ -82,71 +45,14 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await readShortcutBody(req))
   if (!parsed.success) return text(quickEntryIssue(parsed.error.issues[0]), 400)
-  const { movimiento, opcion, medio, nota } = parsed.data
-  const monto = Math.round(parsed.data.monto)
-  const cleanNota = nota && nota !== '-' ? nota : null
-  const supabase = createAdminClient()
+  const { movimiento, monto, opcion, medio, nota } = parsed.data
 
-  const otherIncome = OTHER_INCOME_OPTIONS.find((o) => o.toLowerCase() === opcion.toLowerCase())
-  if (isIncome(movimiento) && otherIncome) {
-    const { error } = await supabase.from('expenses').insert({
-      studio_id: studioId,
-      category: OTHER_INCOME_PREFIX + otherIncome,
-      description: [medio, cleanNota].filter(Boolean).join(' · ') || null,
-      amount: monto,
-      expense_date: todayKey(),
-    })
-    if (error) {
-      console.error('[movimiento] other income', error.message)
-      return text('❌ No se pudo guardar, intenta de nuevo', 500)
-    }
-    revalidatePath('/dashboard/settings/gastos')
-    revalidatePath('/dashboard/settings/finanzas')
-    return text(`✅ Entró ${cop(monto)} · ${otherIncome}`)
-  }
-
-  if (isIncome(movimiento)) {
-    const ref = opcion.match(/#([0-9a-f]{6})\s*$/i)?.[1]?.toLowerCase()
-    if (!ref) return text('❌ Elige un proyecto de la lista', 400)
-    const project = (await openProjects(studioId)).find((p) => p.id.startsWith(ref))
-    if (!project) return text('❌ Ese proyecto ya no tiene saldo pendiente', 400)
-    if (monto > project.balance) return text(`❌ Supera el saldo pendiente (${cop(project.balance)})`, 400)
-
-    const { error } = await supabase.from('payments').insert({
-      studio_id: studioId,
-      project_id: project.id,
-      amount: monto,
-      payment_method: medio || null,
-      notes: cleanNota,
-    })
-    if (error) {
-      console.error('[movimiento] payment', error.message)
-      return text('❌ No se pudo guardar, intenta de nuevo', 500)
-    }
-    revalidatePath(`/dashboard/projects/${project.id}`)
-    revalidatePath('/dashboard/projects')
-    revalidatePath('/dashboard')
-    revalidatePath('/dashboard/settings/finanzas')
-    const left = project.balance - monto
-    const who = project.clients?.name ?? project.name
-    return text(`✅ Entró ${cop(monto)} · ${who}${left > 0 ? ` · queda ${cop(left)}` : ' · ¡pagado completo!'}`)
-  }
-
-  const [scope, ...rest] = opcion.split(' · ')
-  const category = rest.join(' · ').trim() || opcion
-  const personal = /personal/i.test(scope ?? '')
-  const { error } = await supabase.from('expenses').insert({
-    studio_id: studioId,
-    category: personal ? personalCategory(category) : category.slice(0, 40),
-    description: [medio, cleanNota].filter(Boolean).join(' · ') || null,
-    amount: monto,
-    expense_date: todayKey(),
+  const res = await saveMovement(studioId, {
+    income: isIncome(movimiento),
+    monto,
+    opcion,
+    medio: medio || null,
+    nota: nota && nota !== '-' ? nota : null,
   })
-  if (error) {
-    console.error('[movimiento] expense', error.message)
-    return text('❌ No se pudo guardar, intenta de nuevo', 500)
-  }
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
-  return text(`✅ Salió ${cop(monto)} · ${personal ? 'Personal' : 'Negocio'} · ${category}`)
+  return text(res.message, res.ok ? 200 : 400)
 }
