@@ -4,7 +4,9 @@ import { getProjects } from '@/queries/projects'
 import { getClients } from '@/queries/clients'
 import { getBlockedDayKeys } from '@/queries/blocked-days'
 import { getCurrentStudio } from '@/queries/studio'
-import { getFixedExpenses } from '@/queries/expenses'
+import { getCashData, getFixedExpenses } from '@/queries/expenses'
+import { cashSummary } from '@/lib/finance/cash-summary'
+import { PAYMENT_METHOD_OPTIONS } from '@/lib/validations/studio'
 import { monthMetrics, monthHeatmap, daysInMonth, sessionsInMonth, type StudioSchedule } from '@/lib/home/month-metrics'
 import { todayKey, shiftMonth } from '@/lib/calendar/utils'
 import { accentColorFor } from '@/lib/pdf/quote-template-data'
@@ -25,7 +27,7 @@ import {
   genderBreakdown,
   ageStats,
 } from '@/lib/stats/period-metrics'
-import { calculateUpcomingExpenseAlerts, getSmartRecommendations } from '@/lib/finance/alerts'
+import { alertsFromFixedItems, calculateUpcomingExpenseAlerts, getSmartRecommendations } from '@/lib/finance/alerts'
 
 import { StatsHero } from '@/components/stats/stats-hero'
 import { StatsSummaryStrip } from '@/components/stats/stats-summary-strip'
@@ -64,7 +66,7 @@ export default async function StatsPage({
   const toD = new Date(Date.UTC(year, month0 + 1, 0))
   toD.setUTCDate(toD.getUTCDate() + 7)
 
-  const [quotesResult, sessionsResult, projectsResult, clientsResult, blockedKeys, studio, fixedExpensesResult] = await Promise.all([
+  const [quotesResult, sessionsResult, projectsResult, clientsResult, blockedKeys, studio, fixedExpensesResult, cashResult] = await Promise.all([
     getQuotes(),
     getSessions(fromD.toISOString(), toD.toISOString()),
     getProjects(),
@@ -72,6 +74,7 @@ export default async function StatsPage({
     getBlockedDayKeys(fromD.toISOString().slice(0, 10), toD.toISOString().slice(0, 10)),
     getCurrentStudio(),
     getFixedExpenses(),
+    getCashData(),
   ])
   const quotes = quotesResult.success ? quotesResult.data : []
   const sessions = sessionsResult.success ? sessionsResult.data : []
@@ -143,7 +146,17 @@ export default async function StatsPage({
   const accentColor = accentColorFor(studio?.quoteTemplateColor)
 
   // Calcular recomendaciones inteligentes
-  const expenseAlerts = calculateUpcomingExpenseAlerts(fixedExpenses, 0)
+  // Con los pagos registrados, un gasto fijo ya pagado este mes no sale como urgente.
+  const cash = cashResult.success
+    ? cashSummary({
+        ...cashResult.data,
+        accounts: studio?.paymentMethods?.length ? studio.paymentMethods : [...PAYMENT_METHOD_OPTIONS],
+        today: todayKey(),
+      })
+    : null
+  const expenseAlerts = cash
+    ? alertsFromFixedItems([...cash.fixedBusiness, ...cash.fixedPersonal])
+    : calculateUpcomingExpenseAlerts(fixedExpenses, 0)
   const pendingPaymentsAmount = projectsFull.reduce((sum, p) => {
     const paid = p.payments.reduce((s, pay) => s + (pay.amount ?? 0), 0)
     return sum + Math.max(0, (p.total_value ?? 0) - paid)

@@ -1,3 +1,4 @@
+import type { FixedItem } from './cash-summary'
 import type { FinanceHealth } from './metrics'
 
 /**
@@ -272,4 +273,47 @@ export function getSmartRecommendations(
     const priorityOrder = { high: 0, medium: 1, low: 2 }
     return priorityOrder[a.priority] - priorityOrder[b.priority]
   })
+}
+
+/**
+ * Alertas de gastos fijos a partir del Resumen de caja (`cashSummary`): sabe
+ * qué ya se pagó este mes (un fijo pagado salta a su fecha del mes
+ * siguiente), usa lo que falta pagar con descuento y avisa de los vencidos.
+ * Los ingresos fijos no generan alerta.
+ */
+export function alertsFromFixedItems(items: FixedItem[]): UpcomingExpenseAlert[] {
+  const alerts: UpcomingExpenseAlert[] = []
+  for (const f of items) {
+    if (f.income) continue
+    const days = f.daysLeft
+    const amount = f.pending ? f.dueAmount : f.amount
+    const dailyTargetToPayIt = days > 0 ? Math.ceil(amount / days) : amount
+    let status: UpcomingExpenseAlert['status']
+    let message: string
+    if (f.pending && days < 0) {
+      status = 'urgent'
+      message = `${f.name} venció hace ${-days} día${days === -1 ? '' : 's'}. Faltan ${amount.toLocaleString('es-CO')} COP.`
+    } else if (days <= 0) {
+      status = 'urgent'
+      message = `${f.name} vence hoy. Necesitas ${amount.toLocaleString('es-CO')} COP.`
+    } else if (days <= 3) {
+      status = 'urgent'
+      message = `${f.name} vence en ${days} día${days > 1 ? 's' : ''}. Genera ${dailyTargetToPayIt.toLocaleString('es-CO')} COP/día.`
+    } else if (days <= 7) {
+      status = 'warning'
+      message = `${f.name} vence en ${days} días. Meta diaria: ${dailyTargetToPayIt.toLocaleString('es-CO')} COP.`
+    } else {
+      status = 'ok'
+      message = `${f.name} vence el ${f.nextDate.slice(8)}. Tienes ${days} días.`
+    }
+    alerts.push({
+      expense: { id: f.id, name: f.name, amount, due_day: f.dueDay },
+      daysUntilDue: Math.max(0, days),
+      dailyTargetToPayIt,
+      status,
+      message,
+    })
+  }
+  const order = { urgent: 0, warning: 1, ok: 2 }
+  return alerts.sort((a, b) => order[a.status] - order[b.status] || a.daysUntilDue - b.daysUntilDue)
 }

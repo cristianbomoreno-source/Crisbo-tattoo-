@@ -20,7 +20,7 @@ export function ExpenseAlertsCard({ alerts }: Props) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">Gastos proximos</h2>
+        <h2 className="text-base font-semibold">Gastos próximos</h2>
         {(urgentCount > 0 || warningCount > 0) && (
           <div className="flex gap-1.5">
             {urgentCount > 0 && (

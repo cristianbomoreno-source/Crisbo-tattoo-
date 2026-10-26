@@ -28,7 +28,7 @@ import { greetingWord } from '@/lib/home/month-metrics'
 import { monthSummary } from '@/lib/home/day-metrics'
 import { calculateBalance } from '@/lib/projects/metrics'
 import { weekCounts } from '@/lib/home/metrics'
-import { calculateUpcomingExpenseAlerts, type UpcomingExpenseAlert } from '@/lib/finance/alerts'
+import { alertsFromFixedItems, calculateUpcomingExpenseAlerts, type UpcomingExpenseAlert } from '@/lib/finance/alerts'
 
 export default async function DashboardPage() {
   const today = todayKey()
@@ -148,8 +148,11 @@ export default async function DashboardPage() {
     quoteStatuses = quotes
     pendingConsents = consents.filter((c) => !c.signed_at).length
 
-    // Calcular alertas de gastos fijos
-    if (fixedExpensesResult.success) {
+    // Alertas de gastos fijos: con el Resumen de caja (dueño) saben qué ya se
+    // pagó este mes; sin él, el cálculo viejo por día del mes.
+    if (cash) {
+      expenseAlerts = alertsFromFixedItems([...cash.fixedBusiness, ...cash.fixedPersonal])
+    } else if (fixedExpensesResult.success) {
       const fixedExpenses = fixedExpensesResult.data
         .filter((e) => e.due_day !== null)
         .map((e) => ({
