@@ -8,8 +8,10 @@
  *  - "Bold CF: Has recibido una transferencia por un valor de $373.809,96 …" → entró
  *  - "BoldCF: Realizaste una transferencia a traves de llaves por un valor de $375.000,00 …" → salió
  *  - "Bold CF: Has ingresado exitosamente a tu cuenta Bold."      → ignorar (inicio de sesión)
+ *  - "Nequi: Tu negocio CRISBO TATTOO recibio $1.000 de NOMBRE  el 26/10/2026 a las 03:19 a.m. a través de Bre-B …" → entró (Nequi Negocios)
  * Cada banco separa miles y decimales distinto, ver parseAmount. */
-export type SmsMovement = { income: boolean; amount: number; medio: string; comercio: string | null }
+/** comercio: dónde se pagó (gastos); pagador: quién mandó la plata (ingresos). */
+export type SmsMovement = { income: boolean; amount: number; medio: string; comercio: string | null; pagador: string | null }
 
 const plain = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
@@ -28,7 +30,7 @@ export function parseAmount(raw: string): number | null {
 }
 
 const IGNORE = [/no te alcanz/, /ingresado exitosamente/, /temporary hold/, /rechaz/, /codigo de (verificacion|seguridad)/, /\bclave\b/]
-const INCOME = [/\brecibiste\b/, /has recibido/, /te (envio|envi[oó]|consigno|transfirio)/, /te llego/]
+const INCOME = [/\brecibiste\b/, /\brecibio\b/,/has recibido/, /te (envio|envi[oó]|consigno|transfirio)/, /te llego/]
 const EXPENSE = [/\bpagaste\b/, /compra de/, /realizaste una (transferencia|compra|pago)/, /\benviaste\b/, /transferiste/, /\bretiraste\b/, /retiro de/]
 
 function bankOf(text: string) {
@@ -52,5 +54,14 @@ export function parseBankSms(sms: string): SmsMovement | null {
   if (!amount || amount <= 0) return null
 
   const comercio = sms.match(/\ben\s+([^.\n]+?)(?:\s+\d{2}\/\d{2}\/\d{4}.*)?$/i)?.[1]?.trim() ?? null
-  return { income, amount, medio: bankOf(text), comercio: expense && comercio && !/tu cuenta/i.test(comercio) ? comercio.slice(0, 60) : null }
+  const pagador = income
+    ? sms.match(/recib\w*\s+\$?\s?[\d.,]+\s+de\s+(.+?)(?:\s+el\s+\d|\s+a\s+trav|[.\n]|$)/i)?.[1]?.replace(/\s+/g, ' ').trim() ?? null
+    : null
+  return {
+    income,
+    amount,
+    medio: bankOf(text),
+    comercio: expense && comercio && !/tu cuenta/i.test(comercio) ? comercio.slice(0, 60) : null,
+    pagador: pagador ? pagador.slice(0, 60) : null,
+  }
 }

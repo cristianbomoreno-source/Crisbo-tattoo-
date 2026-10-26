@@ -35,7 +35,8 @@ export async function POST(req: Request) {
 
   if (!opcion) {
     try {
-      const summary = `${SKIP_PREFIX} · ${movement.income ? 'Entró' : 'Salió'} ${cop(movement.amount)} por ${movement.medio}`
+      const who = movement.pagador ? ` de ${movement.pagador}` : ''
+      const summary = `${SKIP_PREFIX} · ${movement.income ? 'Entró' : 'Salió'} ${cop(movement.amount)}${who} por ${movement.medio}`
       return text([summary, ...(await movementOptions(studioId, movement.income))].join('\n'))
     } catch (e) {
       console.error('[movimiento/sms]', (e as Error).message)
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
     monto: movement.amount,
     opcion,
     medio: movement.medio,
-    nota: movement.comercio,
+    nota: movement.comercio ?? (movement.pagador ? `de ${movement.pagador}` : null),
   })
   return text(res.message, res.ok ? 200 : 400)
 }
