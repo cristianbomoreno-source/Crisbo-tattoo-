@@ -115,6 +115,11 @@ export function CashSummarySheet({
                 <p className={cn('font-display text-3xl font-bold tabular-nums', summary.total < 0 && 'text-destructive')}>
                   {cop(summary.total)}
                 </p>
+                {summary.total < 0 && (
+                  <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
+                    Da negativo cuando a una cuenta le falta su saldo inicial. Toca la cuenta y ponle cuánto tiene.
+                  </p>
+                )}
               </header>
 
               <div className="space-y-6 px-4 pb-20 pt-4">
@@ -147,7 +152,7 @@ export function CashSummarySheet({
                 <section>
                   <SectionTitle>Próximos pagos</SectionTitle>
                   {summary.upcoming.length === 0 ? (
-                    <Empty>No tienes gastos fijos pendientes este mes.</Empty>
+                    <Empty>Todo al día: no te queda nada por pagar este mes.</Empty>
                   ) : (
                     <>
                       <div className="space-y-2">
@@ -301,12 +306,13 @@ function FixedSection({
 
 function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts: string[]; showScope?: boolean }) {
   const router = useRouter()
-  const [choosing, setChoosing] = useState(false)
-  const [discounting, setDiscounting] = useState(false)
+  const [panel, setPanel] = useState<'pay' | 'discount' | 'delete' | null>(null)
   const [discountValue, setDiscountValue] = useState('')
   const [pending, startTransition] = useTransition()
   const urgent = f.pending && f.daysLeft <= 3
   const b = badge(f.schedule)
+  const kind = f.income ? 'ingreso fijo' : 'gasto fijo'
+  const toggle = (p: typeof panel) => setPanel((cur) => (cur === p ? null : p))
 
   function pay(account: string | null) {
     startTransition(async () => {
@@ -315,8 +321,18 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         toast.error(result.error.message)
         return
       }
-      toast.success(`${f.name} marcado como ${f.income ? 'recibido' : 'pagado'}`)
-      setChoosing(false)
+      const paidId = result.data.id
+      toast.success(`${f.name}: ${cop(f.dueAmount)} ${f.income ? 'recibido' : 'pagado'}${account ? ` · ${account}` : ''}`, {
+        action: {
+          label: 'Deshacer',
+          onClick: async () => {
+            const undo = await deleteExpenseAction(paidId)
+            if (!undo.success) toast.error(undo.error.message)
+            router.refresh()
+          },
+        },
+      })
+      setPanel(null)
       router.refresh()
     })
   }
@@ -330,29 +346,28 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         return
       }
       toast.success(amount ? `${f.name}: descuento de ${cop(amount)} este mes` : `${f.name}: sin descuento`)
-      setDiscounting(false)
+      setPanel(null)
       router.refresh()
     })
   }
 
   function remove() {
-    if (!window.confirm(`¿Eliminar el gasto fijo "${f.name}"? Deja de aparecer cada mes; los pagos ya registrados se conservan.`)) return
     startTransition(async () => {
       const result = await deleteExpenseAction(f.id)
       if (!result.success) {
         toast.error(result.error.message)
         return
       }
-      toast.success('Gasto fijo eliminado')
+      toast.success(`${f.name} ya no se repite`)
       router.refresh()
     })
   }
 
   return (
-    <div className={cn('rounded-2xl bg-card px-4 py-3', urgent && 'ring-1 ring-amber-500/50')}>
+    <div className={cn('rounded-2xl bg-card px-4 py-3', urgent && 'ring-1 ring-warning/50')}>
       <div className="flex items-center gap-3">
         <div className="w-12 shrink-0 text-center">
-          <p className="text-[10px] uppercase text-muted-foreground">{b.top}</p>
+          <p className="text-[11px] uppercase text-muted-foreground">{b.top}</p>
           <p className={cn('font-display font-bold leading-none tabular-nums', b.main.length > 3 ? 'text-xs' : 'text-lg')}>{b.main}</p>
         </div>
         <div className="min-w-0 flex-1">
@@ -365,8 +380,8 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
             )}
             {showScope && <span className="ml-1.5 text-xs font-normal text-muted-foreground">· {f.personal ? 'Personal' : 'Negocio'}</span>}
           </p>
-          <p className={cn('text-xs', f.paidThisMonth ? 'text-emerald-500' : urgent ? 'text-amber-500' : 'text-muted-foreground')}>
-            {f.paidThisMonth && <Check className="mr-1 inline size-3" />}
+          <p className={cn('text-xs', f.paidThisMonth ? 'text-income' : urgent ? 'text-warning' : 'text-muted-foreground')}>
+            {f.paidThisMonth && <Check className="mr-1 inline size-3" aria-hidden="true" />}
             {whenLabel(f)}
           </p>
           {f.remaining > 1 && (
@@ -374,54 +389,61 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
               Faltan {f.remaining} pagos este mes · {cop(f.amount * f.remaining - f.discount)}
             </p>
           )}
-          {f.discount > 0 && f.pending && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400">Descuento este mes −{cop(f.discount)}</p>
-          )}
+          {f.discount > 0 && f.pending && <p className="text-xs text-income">Descuento este mes −{cop(f.discount)}</p>}
         </div>
         <div className="shrink-0 text-right">
           {f.discount > 0 && f.pending ? (
             <>
-              <p className="text-[11px] text-muted-foreground line-through tabular-nums">{cop(f.amount)}</p>
+              <p className="text-xs text-muted-foreground line-through tabular-nums">{cop(f.amount)}</p>
               <p className="text-sm font-semibold tabular-nums">{cop(f.dueAmount)}</p>
             </>
           ) : (
-            <p className={cn('text-sm font-semibold tabular-nums', f.income && 'text-emerald-600 dark:text-emerald-400')}>
+            <p className={cn('text-sm font-semibold tabular-nums', f.income && 'text-income')}>
               {f.income ? '+' : ''}
               {cop(f.amount)}
             </p>
           )}
-          {f.schedule.kind === 'weekly' && <p className="text-[10px] text-muted-foreground">cada uno</p>}
-          {f.pending && (
-            <button type="button" onClick={() => setChoosing((v) => !v)} className="mt-0.5 text-xs font-semibold text-primary">
-              {choosing ? 'Cancelar' : f.income ? 'Marcar recibido' : 'Marcar pagado'}
-            </button>
-          )}
-          {f.pending && !f.income && !choosing && (
-            <button
-              type="button"
-              onClick={() => {
-                setDiscountValue(f.discount ? String(f.discount) : '')
-                setDiscounting((v) => !v)
-              }}
-              className="mt-0.5 block w-full text-right text-[11px] font-medium text-muted-foreground"
-            >
-              {discounting ? 'Cerrar' : 'Descuento'}
-            </button>
-          )}
-          {!showScope && !f.pending && (
-            <button
-              type="button"
-              onClick={remove}
-              disabled={pending}
-              aria-label={`Eliminar ${f.name}`}
-              className="mt-0.5 text-muted-foreground hover:text-destructive disabled:opacity-50"
-            >
-              <Trash2 className="size-3.5" />
-            </button>
-          )}
+          {f.schedule.kind === 'weekly' && <p className="text-[11px] text-muted-foreground">cada uno</p>}
         </div>
       </div>
-      {discounting && (
+
+      {/* Acciones en una fila: pagar y descuento a la izquierda; dejar de repetir lejos, a la derecha. */}
+      {(f.pending || !showScope) && (
+        <div className="mt-2.5 flex items-center gap-2">
+          {f.pending && (
+            <Button type="button" size="sm" variant={panel === 'pay' ? 'secondary' : 'default'} onClick={() => toggle('pay')}>
+              {panel === 'pay' ? 'Cancelar' : f.income ? 'Marcar recibido' : 'Marcar pagado'}
+            </Button>
+          )}
+          {f.pending && !f.income && panel !== 'pay' && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setDiscountValue(f.discount ? String(f.discount) : '')
+                toggle('discount')
+              }}
+            >
+              {panel === 'discount' ? 'Cerrar' : 'Descuento'}
+            </Button>
+          )}
+          {!showScope && (
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="ghost"
+              className="ml-auto text-muted-foreground hover:text-destructive"
+              aria-label={`Dejar de repetir ${f.name}`}
+              onClick={() => toggle('delete')}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      {panel === 'discount' && (
         <div className="mt-3 flex items-center gap-2 border-t border-border/60 pt-3">
           <Input
             autoFocus
@@ -431,26 +453,44 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
             value={discountValue}
             onChange={(e) => setDiscountValue(e.target.value)}
           />
-          <Button type="button" size="sm" disabled={pending} onClick={saveDiscount}>
+          <Button type="button" disabled={pending} onClick={saveDiscount}>
             Guardar
           </Button>
         </div>
       )}
-      {choosing && (
+      {panel === 'pay' && (
         <div className="mt-3 border-t border-border/60 pt-3">
-          <p className="mb-2 text-xs text-muted-foreground">{f.income ? '¿A qué cuenta llegó?' : '¿De qué cuenta salió?'}</p>
-          <div className="flex flex-wrap gap-1.5">
+          <p className="mb-2 text-xs text-muted-foreground">
+            {f.income ? `¿A qué cuenta llegaron los ${cop(f.dueAmount)}?` : `¿De qué cuenta salieron los ${cop(f.dueAmount)}?`}
+          </p>
+          <div className="flex flex-wrap gap-2">
             {[...(f.account ? [f.account] : []), ...accounts.filter((a) => a !== f.account), null].map((a) => (
               <button
                 key={a ?? NO_ACCOUNT}
                 type="button"
                 disabled={pending}
                 onClick={() => pay(a)}
-                className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                className="min-h-10 rounded-full border border-border px-3.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
               >
                 {a ?? NO_ACCOUNT}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+      {panel === 'delete' && (
+        <div className="mt-3 space-y-2.5 border-t border-border/60 pt-3">
+          <p className="text-sm">
+            ¿Dejar de repetir <span className="font-semibold">{f.name}</span>? Ya no aparecerá cada mes. Lo que ya{' '}
+            {f.income ? 'recibiste' : 'pagaste'} se conserva.
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setPanel(null)}>
+              Cancelar
+            </Button>
+            <Button type="button" variant="destructive" className="flex-1" disabled={pending} onClick={remove}>
+              Eliminar {kind}
+            </Button>
           </div>
         </div>
       )}

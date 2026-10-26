@@ -220,7 +220,7 @@ export function NextSessionCard({
                     e.stopPropagation()
                     go(-1)
                   }}
-                  className="grid size-6 place-items-center rounded-full text-primary disabled:opacity-30"
+                  className="grid size-6 pointer-coarse:size-10 place-items-center rounded-full text-primary disabled:opacity-30"
                 >
                   <ChevronLeft className="size-4" strokeWidth={2.2} />
                 </button>
@@ -232,7 +232,7 @@ export function NextSessionCard({
                     e.stopPropagation()
                     go(1)
                   }}
-                  className="grid size-6 place-items-center rounded-full text-primary disabled:opacity-30"
+                  className="grid size-6 pointer-coarse:size-10 place-items-center rounded-full text-primary disabled:opacity-30"
                 >
                   <ChevronRight className="size-4" strokeWidth={2.2} />
                 </button>
@@ -274,7 +274,7 @@ export function NextSessionCard({
             />
             {/* Saldo del proyecto: cobrar ahí mismo (pago ligado a esta cita). */}
             {paidUp ? (
-              <span className="flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2.5 text-sm font-semibold text-emerald-500">
+              <span className="flex items-center gap-2 rounded-full bg-income/15 px-4 py-2.5 text-sm font-semibold text-income">
                 <BadgeCheck className="size-4" strokeWidth={2.2} aria-hidden="true" />
                 Pagado
               </span>

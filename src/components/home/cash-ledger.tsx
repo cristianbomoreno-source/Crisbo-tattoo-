@@ -25,19 +25,19 @@ import { cn } from '@/lib/utils'
 
 const KIND_STYLE = {
   income: {
-    bar: 'bg-emerald-500',
-    pill: 'bg-emerald-600 text-white dark:bg-emerald-500',
+    bar: 'bg-income',
+    pill: 'bg-income text-income-foreground',
     sign: '+',
   },
   expense: { bar: 'bg-red-500', pill: 'bg-red-500 text-white', sign: '−' },
   'transfer-out': {
-    bar: 'bg-sky-500',
-    pill: 'bg-sky-600 text-white dark:bg-sky-500',
+    bar: 'bg-transfer',
+    pill: 'bg-transfer text-transfer-foreground',
     sign: '−',
   },
   'transfer-in': {
-    bar: 'bg-sky-500',
-    pill: 'bg-sky-600 text-white dark:bg-sky-500',
+    bar: 'bg-transfer',
+    pill: 'bg-transfer text-transfer-foreground',
     sign: '+',
   },
 } as const
@@ -86,14 +86,10 @@ export function AccountBookCard({ account: a, onOpen }: { account: AccountBalanc
       </span>
       <span className="mt-3 grid gap-1 text-sm tabular-nums">
         <Line label="Saldo inicial" value={cop(a.setAmount ?? 0)} />
-        <Line label="Ingresos" value={cop(a.income)} className="pl-3 text-emerald-600 dark:text-emerald-400" />
+        <Line label="Ingresos" value={cop(a.income)} className="pl-3 text-income" />
         <Line label="Gastos" value={cop(a.expenses)} className="pl-3 text-red-500" />
         {(a.transfersIn > 0 || a.transfersOut > 0) && (
-          <Line
-            label="Transferencias"
-            value={`${transfers >= 0 ? '+' : '−'} ${cop(Math.abs(transfers))}`}
-            className="pl-3 text-sky-600 dark:text-sky-400"
-          />
+          <Line label="Transferencias" value={`${transfers >= 0 ? '+' : '−'} ${cop(Math.abs(transfers))}`} className="pl-3 text-transfer" />
         )}
         <Line
           label="Saldo"
@@ -174,6 +170,13 @@ export function LedgerView({
         <p className={cn('font-display text-3xl font-bold tabular-nums', account.balance < 0 && 'text-destructive')}>
           {cop(account.balance)}
         </p>
+        {account.balance < 0 && !editing && (
+          <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
+            {account.setAt
+              ? 'Salió más de lo que había. Revisa si falta anotar una entrada o corrige el saldo con el lápiz.'
+              : 'Falta el saldo inicial de esta cuenta: tócale el lápiz y escribe cuánto tiene.'}
+          </p>
+        )}
         {editing && (
           <div className="mx-auto mt-3 max-w-xs space-y-2 text-left">
             <p className="text-xs text-muted-foreground">
@@ -213,7 +216,7 @@ export function LedgerView({
 
       <div className="flex items-center justify-between gap-2 border-t border-border/60 bg-muted/40 px-4 py-3 text-sm font-semibold tabular-nums">
         <span className="text-muted-foreground">Total</span>
-        <span className="rounded-full bg-emerald-600 px-3 py-1 text-white dark:bg-emerald-500">+ {cop(totalIn)}</span>
+        <span className="rounded-full bg-income px-3 py-1 text-income-foreground">+ {cop(totalIn)}</span>
         <span className="rounded-full bg-red-500 px-3 py-1 text-white">− {cop(totalOut)}</span>
       </div>
       {account.setAt && (
@@ -417,7 +420,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-full border px-3 py-1.5 text-xs font-medium disabled:opacity-50',
+        'min-h-10 rounded-full border px-3.5 text-sm font-medium disabled:opacity-50',
         active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:bg-muted',
       )}
     >
@@ -568,8 +571,8 @@ export function NewRecordSheet({
             <div className="grid grid-cols-3 gap-1 rounded-full bg-muted p-1">
               {(
                 [
-                  ['income', 'Ingreso', 'bg-emerald-600 text-white dark:bg-emerald-500'],
-                  ['transfer', 'Transferencia', 'bg-sky-600 text-white dark:bg-sky-500'],
+                  ['income', 'Ingreso', 'bg-income text-income-foreground'],
+                  ['transfer', 'Transferencia', 'bg-transfer text-transfer-foreground'],
                   ['expense', 'Egreso', 'bg-red-500 text-white'],
                 ] as const
               ).map(([k, label, on]) => (

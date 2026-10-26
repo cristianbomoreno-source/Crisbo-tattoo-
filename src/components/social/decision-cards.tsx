@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import type { DecisionCard, Light } from '@/lib/social/decisions'
 
 const LIGHT: Record<Light, { dot: string; ring: string; label: string }> = {
-  good: { dot: 'bg-emerald-500', ring: 'ring-emerald-500/30', label: 'Bien' },
+  good: { dot: 'bg-income', ring: 'ring-income/30', label: 'Bien' },
   warn: { dot: 'bg-amber-400', ring: 'ring-amber-400/40', label: 'Atención' },
   bad: { dot: 'bg-rose-500', ring: 'ring-rose-500/40', label: 'Actuar ya' },
   none: { dot: 'bg-zinc-400', ring: 'ring-foreground/10', label: 'Sin datos' },

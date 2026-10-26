@@ -27,7 +27,7 @@ export function WorkingTodayRow({ team }: { team: ArtistToday[] }) {
                 aria-hidden="true"
                 className={cn(
                   'absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full ring-2 ring-card',
-                  member.presence === 'working' ? 'bg-emerald-400' : 'bg-muted-foreground/50'
+                  member.presence === 'working' ? 'bg-income' : 'bg-muted-foreground/50'
                 )}
               />
             </span>

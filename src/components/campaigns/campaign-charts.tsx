@@ -34,7 +34,7 @@ export function Kpi({ label, value, sub, tone }: { label: string; value: string;
         className={cn(
           'font-display text-xl font-semibold tabular-nums',
           tone === 'primary' && 'text-primary',
-          tone === 'good' && 'text-emerald-600 dark:text-emerald-400'
+          tone === 'good' && 'text-income'
         )}
       >
         {value}

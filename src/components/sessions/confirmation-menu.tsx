@@ -14,7 +14,7 @@ import { setSessionConfirmationAction } from '@/actions/sessions'
 import type { Confirmation } from '@/lib/appointments/confirmation'
 
 export const CONFIRMATION_STYLES: Record<Confirmation, { label: string; icon: typeof CircleCheck; className: string }> = {
-  confirmed: { label: 'Cita confirmada', icon: CircleCheck, className: 'bg-emerald-500 text-white' },
+  confirmed: { label: 'Cita confirmada', icon: CircleCheck, className: 'bg-income text-income-foreground' },
   pending: { label: 'Cita por confirmar', icon: CircleDashed, className: 'bg-amber-400 text-amber-950' },
   cancelled: { label: 'Cita cancelada', icon: CircleX, className: 'bg-destructive text-white' },
 }

@@ -10,8 +10,8 @@ import type { CustomRecipient } from '@/queries/custom-campaigns'
 const STATUS: Record<string, { label: string; className: string }> = {
   pending: { label: 'Pendiente', className: 'bg-muted text-muted-foreground' },
   sent: { label: 'Enviado', className: 'bg-muted text-muted-foreground' },
-  delivered: { label: 'Entregado', className: 'bg-sky-400/15 text-sky-700 dark:text-sky-300' },
-  read: { label: 'Leído', className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
+  delivered: { label: 'Entregado', className: 'bg-transfer/15 text-transfer' },
+  read: { label: 'Leído', className: 'bg-income/15 text-income' },
   failed: { label: 'No llegó', className: 'bg-destructive/15 text-destructive' },
 }
 

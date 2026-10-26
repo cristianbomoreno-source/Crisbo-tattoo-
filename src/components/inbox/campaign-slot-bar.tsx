@@ -38,7 +38,7 @@ export function CampaignSlotBar({ info }: { info: CampaignChatInfo }) {
         disabled={pending || (!taken && left <= 0)}
         className={cn(
           'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-semibold disabled:opacity-50',
-          taken ? 'bg-emerald-500 text-white' : 'bg-muted text-foreground hover:bg-accent'
+          taken ? 'bg-income text-income-foreground' : 'bg-muted text-foreground hover:bg-accent'
         )}
       >
         <Ticket className="size-3.5" />

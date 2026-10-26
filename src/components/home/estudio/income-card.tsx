@@ -53,7 +53,7 @@ export function IncomeCard({
 
           <div className="mt-3 flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+              <span className="size-1.5 rounded-full bg-income" aria-hidden="true" />
               Ingresado <span className="font-semibold tabular-nums">{formatCOP(deposits)}</span>
             </span>
             <span className="flex items-center gap-1.5">

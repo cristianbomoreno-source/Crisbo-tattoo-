@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 import type { ArtistToday } from '@/queries/studio-home'
 
 const STATUS_LABEL: Record<ArtistToday['status'], { text: string; className: string; dot: string }> = {
-  in_session: { text: 'En sesión', className: 'text-sky-400', dot: 'bg-sky-400' },
-  available: { text: 'Disponible', className: 'text-emerald-400', dot: 'bg-emerald-400' },
+  in_session: { text: 'En sesión', className: 'text-transfer', dot: 'bg-transfer' },
+  available: { text: 'Disponible', className: 'text-income', dot: 'bg-income' },
   next_appointment: { text: 'Próxima cita', className: 'text-amber-400', dot: 'bg-amber-400' },
   off: { text: 'Descanso', className: 'text-muted-foreground', dot: 'bg-muted-foreground/50' },
 }

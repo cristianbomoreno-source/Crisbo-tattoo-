@@ -14,9 +14,9 @@ import { nowAsWallClock } from '@/lib/calendar/utils'
 import type { ArtistToday, StudioSession } from '@/queries/studio-home'
 
 const STATUS_STYLES: Record<string, { border: string; icon: string; label: string }> = {
-  scheduled_future: { border: 'border-l-emerald-400', icon: '🟢', label: 'Confirmada' },
+  scheduled_future: { border: 'border-l-income', icon: '🟢', label: 'Confirmada' },
   rescheduled: { border: 'border-l-amber-400', icon: '🟡', label: 'Pendiente' },
-  in_progress: { border: 'border-l-sky-400', icon: '🔵', label: 'En sesión' },
+  in_progress: { border: 'border-l-transfer', icon: '🔵', label: 'En sesión' },
   completed: { border: 'border-l-muted-foreground/40', icon: '⚪', label: 'Finalizada' },
   cancelled: { border: 'border-l-red-500', icon: '🔴', label: 'Cancelada' },
 }

@@ -43,14 +43,14 @@ type Tab = 'todos' | CampaignGroup | 'quitados'
 const TEMPLATE_STATUS: Record<string, { label: string; className: string }> = {
   MISSING: { label: 'Sin crear', className: 'bg-muted text-muted-foreground' },
   PENDING: { label: 'En revisión', className: 'bg-amber-400/15 text-amber-700 dark:text-amber-300' },
-  APPROVED: { label: 'Aprobada', className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
+  APPROVED: { label: 'Aprobada', className: 'bg-income/15 text-income' },
   REJECTED: { label: 'Rechazada', className: 'bg-destructive/15 text-destructive' },
 }
 
 const SEND_STATUS: Record<string, { label: string; className: string }> = {
   sent: { label: 'Enviado', className: 'bg-muted text-muted-foreground' },
-  delivered: { label: 'Entregado', className: 'bg-sky-400/15 text-sky-700 dark:text-sky-300' },
-  read: { label: 'Leído', className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
+  delivered: { label: 'Entregado', className: 'bg-transfer/15 text-transfer' },
+  read: { label: 'Leído', className: 'bg-income/15 text-income' },
   failed: { label: 'No llegó', className: 'bg-destructive/15 text-destructive' },
 }
 
@@ -609,12 +609,12 @@ export function CampaignView({
                         </span>
                       )}
                       {r.reply === 'yes' && (
-                        <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                        <span className="rounded-full bg-income px-2 py-0.5 text-[10px] font-semibold text-income-foreground">
                           Quiere cupo
                         </span>
                       )}
                       {r.wroteBack && !r.reply && (
-                        <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-300">
+                        <span className="rounded-full bg-transfer/15 px-2 py-0.5 text-[10px] font-semibold text-transfer">
                           Escribió
                         </span>
                       )}

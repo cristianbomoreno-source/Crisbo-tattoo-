@@ -44,6 +44,11 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  /* Plata que entra / traslados entre cuentas (libro de caja, cobros). Salidas usan --destructive. */
+  --color-income: var(--income);
+  --color-income-foreground: var(--income-foreground);
+  --color-transfer: var(--transfer);
+  --color-transfer-foreground: var(--transfer-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -97,6 +102,10 @@
   --warning-foreground: oklch(0.205 0 0);
   --info: oklch(0.6196 0.0761 241.38);
   --info-foreground: oklch(0.99 0 0);
+  --income: #237a52;
+  --income-foreground: #ffffff;
+  --transfer: #2f6f9f;
+  --transfer-foreground: #ffffff;
   --border: rgba(22, 19, 15, 0.1);
   --input: rgba(22, 19, 15, 0.16);
   --ring: #c8923a;
@@ -147,6 +156,10 @@
   --warning-foreground: oklch(0.205 0 0);
   --info: oklch(0.6196 0.0761 241.38);
   --info-foreground: oklch(0.99 0 0);
+  --income: #4cc08a;
+  --income-foreground: #0a0a09;
+  --transfer: #5aa7e0;
+  --transfer-foreground: #0a0a09;
   --border: rgba(242, 236, 227, 0.07);
   --input: rgba(242, 236, 227, 0.13);
   --ring: #d9a54a;
@@ -256,6 +269,10 @@
   --warning-foreground: #ffffff;
   --info: #525252;
   --info-foreground: #ffffff;
+  --income: #2f6b4f;
+  --income-foreground: #ffffff;
+  --transfer: #3d6585;
+  --transfer-foreground: #ffffff;
   --border: #e5e5e5;
   --input: #dcdcdc;
   --ring: #171717;

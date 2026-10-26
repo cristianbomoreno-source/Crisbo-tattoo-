@@ -85,11 +85,11 @@ export function CampaignStatsView({
           <Funnel
             steps={[
               { label: 'Enviados', value: s.people, className: 'bg-muted-foreground/40' },
-              { label: 'Les llegó', value: reached, className: 'bg-sky-500' },
-              { label: 'Leyeron', value: s.status.read, className: 'bg-emerald-500' },
+              { label: 'Les llegó', value: reached, className: 'bg-transfer' },
+              { label: 'Leyeron', value: s.status.read, className: 'bg-income' },
               { label: 'Respondieron', value: s.replied, className: 'bg-primary' },
               { label: 'Cotizando / agendados', value: interested, className: 'bg-amber-500' },
-              { label: 'Citas nuevas', value: s.bookings, className: 'bg-emerald-600' },
+              { label: 'Citas nuevas', value: s.bookings, className: 'bg-income' },
             ]}
           />
         </ChartCard>
@@ -109,8 +109,8 @@ export function CampaignStatsView({
               center={`${pct(reached, s.people)}%`}
               centerSub="les llegó"
               parts={[
-                { label: 'Leído', value: s.status.read, stroke: 'stroke-emerald-500', dot: 'bg-emerald-500' },
-                { label: 'Entregado', value: s.status.delivered, stroke: 'stroke-sky-500', dot: 'bg-sky-500' },
+                { label: 'Leído', value: s.status.read, stroke: 'stroke-income', dot: 'bg-income' },
+                { label: 'Entregado', value: s.status.delivered, stroke: 'stroke-transfer', dot: 'bg-transfer' },
                 { label: 'Enviado', value: s.status.sent, stroke: 'stroke-muted-foreground/50', dot: 'bg-muted-foreground/50' },
                 { label: 'No llegó', value: s.status.failed, stroke: 'stroke-destructive', dot: 'bg-destructive' },
               ]}
@@ -162,10 +162,10 @@ export function CampaignStatsView({
           >
             <StackBar
               parts={[
-                { label: 'Nuevo', value: s.stages.nuevo, className: 'bg-sky-500' },
+                { label: 'Nuevo', value: s.stages.nuevo, className: 'bg-transfer' },
                 { label: 'Cotizando', value: s.stages.cotizando, className: 'bg-violet-500' },
                 { label: 'Abono', value: s.stages.abono, className: 'bg-amber-500' },
-                { label: 'Agendado', value: s.stages.agendado, className: 'bg-emerald-500' },
+                { label: 'Agendado', value: s.stages.agendado, className: 'bg-income' },
                 { label: 'Perdido', value: s.stages.perdido, className: 'bg-muted-foreground/50' },
               ]}
             />
@@ -195,12 +195,12 @@ export function CampaignStatsView({
               items={[
                 ...(s.buttons
                   ? [
-                      { label: s.buttons.yesLabel, value: s.buttons.yes, className: 'bg-emerald-500' },
+                      { label: s.buttons.yesLabel, value: s.buttons.yes, className: 'bg-income' },
                       { label: s.buttons.noLabel, value: s.buttons.no, className: 'bg-muted-foreground/50' },
                     ]
                   : []),
                 { label: 'Escribieron', value: s.replied, className: 'bg-primary' },
-                { label: 'Solo reaccionaron', value: s.reactedOnly, className: 'bg-sky-500' },
+                { label: 'Solo reaccionaron', value: s.reactedOnly, className: 'bg-transfer' },
                 ...(s.reminder ? [{ label: 'Respondieron al recordatorio', value: s.reminder.replied, className: 'bg-amber-500' }] : []),
               ]}
             />

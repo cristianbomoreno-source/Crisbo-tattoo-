@@ -186,7 +186,7 @@ export function MetaConnectForm({ connected, savedAt }: { connected: boolean; sa
     <div className="space-y-3">
       {connected && (
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-300">
+          <span className="rounded-full bg-income/15 px-2.5 py-1 font-medium text-income">
             Conectado{savedAt ? ` el ${new Date(savedAt).toLocaleDateString('es-CO')}` : ''}
           </span>
           <Button size="sm" variant="ghost" onClick={disconnect} disabled={pending}>

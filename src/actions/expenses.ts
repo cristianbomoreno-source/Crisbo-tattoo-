@@ -55,7 +55,7 @@ export async function deleteExpenseAction(id: string): Promise<Result<void>> {
 /** "Marcar pagado" de un gasto fijo desde el Resumen de caja de Inicio: crea
  * el gasto del mes (misma categoría y monto, sin `due_day`) con la cuenta de
  * donde salió la plata — ver `FIXED_PAYMENT_MARK` en lib/finance/cash-summary.ts. */
-export async function payFixedExpenseAction(id: string, account?: string | null): Promise<Result<void>> {
+export async function payFixedExpenseAction(id: string, account?: string | null): Promise<Result<{ id: string }>> {
   const artist = await getArtistAndStudio()
   if (!artist) return err('AUTH_ERROR', 'No autenticado')
 
@@ -70,19 +70,24 @@ export async function payFixedExpenseAction(id: string, account?: string | null)
 
   // Con descuento este mes se paga menos (tramo "Descuento AAAA-MM monto").
   const discount = Math.min(discountFor(fixed.description, todayKey().slice(0, 7)), fixed.amount)
-  const { error } = await supabase.from('expenses').insert({
-    studio_id: artist.studio_id,
-    category: fixed.category,
-    amount: fixed.amount - discount,
-    expense_date: todayKey(),
-    description: [account?.trim().slice(0, 40), FIXED_PAYMENT_MARK].filter(Boolean).join(' · '),
-  })
+  const { data: paid, error } = await supabase
+    .from('expenses')
+    .insert({
+      studio_id: artist.studio_id,
+      category: fixed.category,
+      amount: fixed.amount - discount,
+      expense_date: todayKey(),
+      description: [account?.trim().slice(0, 40), FIXED_PAYMENT_MARK].filter(Boolean).join(' · '),
+    })
+    .select('id')
+    .single()
   if (error) return dbError(error)
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings/gastos')
   revalidatePath('/dashboard/settings/finanzas')
-  return ok(undefined)
+  // El id permite "Deshacer" desde el aviso (borra ese pago).
+  return ok({ id: paid.id })
 }
 
 /** "¿Cuánto hay?" de una tarjeta de cuenta en el Resumen de caja: guarda el

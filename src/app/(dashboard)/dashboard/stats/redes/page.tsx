@@ -137,7 +137,7 @@ export default async function SocialStatsPage() {
           <StackedMonthBars
             items={business.monthly.map((m) => ({ label: monthShort(m.month), values: [m.leadsWhatsapp, m.leadsInstagram] }))}
             series={[
-              { label: 'WhatsApp', className: 'bg-emerald-500/80' },
+              { label: 'WhatsApp', className: 'bg-income/80' },
               { label: 'Instagram', className: 'bg-fuchsia-500/80' },
             ]}
           />
@@ -150,10 +150,10 @@ export default async function SocialStatsPage() {
       >
         <Funnel
           steps={[
-            { label: 'Escribieron', value: f.total, className: 'bg-sky-400' },
+            { label: 'Escribieron', value: f.total, className: 'bg-transfer' },
             { label: 'Pidieron precio', value: f.cotizando + f.abono + f.agendado, className: 'bg-violet-400' },
             { label: 'Les pedí abono', value: f.abono + f.agendado, className: 'bg-amber-400' },
-            { label: 'Agendaron', value: f.agendado, className: 'bg-emerald-500' },
+            { label: 'Agendaron', value: f.agendado, className: 'bg-income' },
           ]}
         />
       </ChartCard>
@@ -266,7 +266,7 @@ export default async function SocialStatsPage() {
             <MonthBars
               items={ads.monthly.map((m) => ({ label: monthShort(m.month), value: m.spend, highlight: m.month === thisMonth }))}
               format={copShort}
-              barClass="bg-sky-500/60"
+              barClass="bg-transfer/60"
             />
           </ChartCard>
           <ChartCard
@@ -279,7 +279,7 @@ export default async function SocialStatsPage() {
                   label: c.name,
                   value: c.conversations,
                   hint: `${cop(c.spend)} gastados · ${c.conversations ? `${cop(c.spend / c.conversations)} por conversación` : 'sin conversaciones'}`,
-                  className: c.conversations ? 'bg-emerald-500' : 'bg-rose-500',
+                  className: c.conversations ? 'bg-income' : 'bg-rose-500',
                 }))}
               />
             ) : (

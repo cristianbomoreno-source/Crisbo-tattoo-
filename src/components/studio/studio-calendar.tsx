@@ -11,8 +11,8 @@ import { PaidBadge } from '@/components/calendar/calendar-nav'
 type StudioSession = SessionWithProject & { artists: { id: string; name: string } | null }
 
 const COLORS = [
-  { dot: 'bg-emerald-400', text: 'text-emerald-400', ring: 'ring-emerald-400' },
-  { dot: 'bg-sky-400', text: 'text-sky-400', ring: 'ring-sky-400' },
+  { dot: 'bg-income', text: 'text-income', ring: 'ring-income' },
+  { dot: 'bg-transfer', text: 'text-transfer', ring: 'ring-transfer' },
   { dot: 'bg-violet-400', text: 'text-violet-400', ring: 'ring-violet-400' },
   { dot: 'bg-amber-400', text: 'text-amber-400', ring: 'ring-amber-400' },
   { dot: 'bg-rose-400', text: 'text-rose-400', ring: 'ring-rose-400' },
@@ -108,7 +108,7 @@ export function StudioCalendar({
                     key={s.id}
                     className={cn(
                       'flex items-center gap-3 rounded-xl px-3.5 py-2.5',
-                      isSessionGreen(s) ? 'bg-emerald-500/15 ring-1 ring-emerald-500/40' : 'bg-background'
+                      isSessionGreen(s) ? 'bg-income/15 ring-1 ring-income/40' : 'bg-background'
                     )}
                   >
                     <span className={cn('size-2 shrink-0 rounded-full', color.dot)} />

@@ -68,7 +68,7 @@ export function MonthGrid({
                   : blocked
                     ? 'bg-muted-foreground/15 text-muted-foreground'
                     : green
-                      ? 'bg-emerald-500/25 text-foreground'
+                      ? 'bg-income/25 text-foreground'
                       : busy
                         ? 'bg-primary/20 text-foreground hover:bg-primary/25'
                         : 'text-foreground hover:bg-accent'
@@ -84,7 +84,7 @@ export function MonthGrid({
             >
               {day}
               {paid && (
-                <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-emerald-600 text-white">
+                <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-income text-income-foreground">
                   <Check className="size-2.5" strokeWidth={3.5} aria-hidden="true" />
                 </span>
               )}

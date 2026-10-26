@@ -31,7 +31,7 @@ import {
 type Mode = CreateCampaignInput['mode']
 
 const TEMPLATE_STATUS: Record<string, { label: string; className: string }> = {
-  APPROVED: { label: 'Aprobada', className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
+  APPROVED: { label: 'Aprobada', className: 'bg-income/15 text-income' },
   PENDING: { label: 'En revisión', className: 'bg-amber-400/15 text-amber-700 dark:text-amber-300' },
   REJECTED: { label: 'Rechazada', className: 'bg-destructive/15 text-destructive' },
   MISSING: { label: 'Creándose', className: 'bg-muted text-muted-foreground' },

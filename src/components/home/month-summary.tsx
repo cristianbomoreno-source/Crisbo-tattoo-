@@ -54,7 +54,7 @@ export function MonthSummaryCard({
             <p
               className={cn(
                 'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium',
-                up ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-destructive/15 text-destructive'
+                up ? 'bg-income/15 text-income' : 'bg-destructive/15 text-destructive'
               )}
             >
               {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}

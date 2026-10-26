@@ -209,7 +209,7 @@ export function SessionConfirmDialog({
           {balance !== null && info && info.totalValue > 0 && (
             <span
               className={`absolute top-3 left-3 rounded-full px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm ${
-                balance <= 0 ? 'bg-emerald-500/90 text-white' : 'bg-black/55 text-white'
+                balance <= 0 ? 'bg-income/90 text-white' : 'bg-black/55 text-white'
               }`}
             >
               {balance <= 0 ? 'Pagado ✓' : `Saldo ${cop(balance)}`}

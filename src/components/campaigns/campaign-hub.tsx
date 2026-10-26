@@ -7,9 +7,9 @@ import { pct } from './campaign-charts'
 export type HubBadge = { label: string; tone: 'active' | 'pending' | 'done' | 'off' }
 
 const BADGE_TONE: Record<HubBadge['tone'], string> = {
-  active: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300',
+  active: 'bg-income/15 text-income',
   pending: 'bg-amber-400/15 text-amber-700 dark:text-amber-300',
-  done: 'bg-sky-400/15 text-sky-700 dark:text-sky-300',
+  done: 'bg-transfer/15 text-transfer',
   off: 'bg-muted text-muted-foreground',
 }
 
@@ -81,7 +81,7 @@ export function CampaignHub({
                     <p className="text-[10px] text-muted-foreground">respondieron · {pct(c.replied, reached)}%</p>
                   </div>
                   <div className="rounded-xl bg-muted/50 py-2">
-                    <p className="font-display text-base font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    <p className="font-display text-base font-semibold tabular-nums text-income">
                       {c.bookings}
                     </p>
                     <p className="text-[10px] text-muted-foreground">citas nuevas</p>

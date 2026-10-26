@@ -18,7 +18,7 @@ const FIELDS = [
 ]
 
 const STATUS: Record<string, { label: string; className: string }> = {
-  APPROVED: { label: 'Aprobada', className: 'bg-emerald-400/15 text-emerald-300' },
+  APPROVED: { label: 'Aprobada', className: 'bg-income/15 text-income' },
   PENDING: { label: 'En revisión de Meta', className: 'bg-amber-400/15 text-amber-200' },
   REJECTED: { label: 'Rechazada', className: 'bg-destructive/15 text-destructive' },
   PAUSED: { label: 'Pausada por Meta', className: 'bg-amber-400/15 text-amber-200' },
@@ -108,7 +108,7 @@ export function WhatsAppDataFormCard({
         </p>
       )}
       {status === 'APPROVED' && (
-        <p className="rounded-lg bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200">
+        <p className="rounded-lg bg-income/10 px-3 py-2 text-xs text-income">
           Listo: en cualquier chat de Mensajes toca <strong>Enviar formulario</strong>. Funciona incluso si pasaron más
           de 24 h desde el último mensaje del cliente.
         </p>

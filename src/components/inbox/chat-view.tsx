@@ -312,7 +312,7 @@ export function ChatView({
             aria-hidden
             className={cn(
               'absolute right-0 bottom-0 size-3 rounded-full ring-2 ring-card',
-              windowOpen ? 'bg-emerald-500' : 'bg-muted-foreground/50'
+              windowOpen ? 'bg-income' : 'bg-muted-foreground/50'
             )}
           />
         </span>
@@ -322,7 +322,7 @@ export function ChatView({
             {instagram ? (
               <InstagramIcon className="mr-1 size-3 shrink-0 text-pink-500" />
             ) : (
-              <MessageCircle className="mr-1 size-3 shrink-0 text-emerald-500" />
+              <MessageCircle className="mr-1 size-3 shrink-0 text-income" />
             )}
             {instagram
               ? conversation.ig_username
@@ -331,7 +331,7 @@ export function ChatView({
               : formatWaPhone(conversation.wa_id)}
             <span className="mx-1.5 opacity-50">·</span>
             {windowOpen && remaining ? (
-              <span className="text-emerald-600 dark:text-emerald-400">Responde libre · {remaining}</span>
+              <span className="text-income">Responde libre · {remaining}</span>
             ) : (
               <span>{instagram ? 'Ventana cerrada' : 'Solo plantillas'}</span>
             )}
@@ -615,7 +615,7 @@ function StatusIcon({ status }: { status: WaMessage['status'] }) {
     case 'delivered':
       return <CheckCheck className="size-3.5" aria-label="Entregado" />
     case 'read':
-      return <CheckCheck className="size-3.5 text-sky-400" aria-label="Leído" />
+      return <CheckCheck className="size-3.5 text-transfer" aria-label="Leído" />
     case 'failed':
       return <AlertCircle className="size-3.5 text-destructive" aria-label="No enviado" />
     default:

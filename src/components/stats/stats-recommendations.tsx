@@ -11,7 +11,7 @@ const typeIcons: Record<SmartRecommendationType, typeof AlertTriangle> = {
 
 const typeColors: Record<SmartRecommendationType, string> = {
   alert: 'text-red-400 bg-red-500/10',
-  income: 'text-emerald-400 bg-emerald-500/10',
+  income: 'text-income bg-income/10',
   expense: 'text-amber-400 bg-amber-500/10',
   goal: 'text-primary bg-primary/10',
   info: 'text-blue-400 bg-blue-500/10',

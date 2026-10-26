@@ -120,7 +120,7 @@ export function CalendarNav({
           !busy && !blocked && !selected && 'text-foreground hover:bg-accent',
           blocked && !selected && 'bg-muted-foreground/15 text-muted-foreground',
           busy && !blocked && !selected && !green && 'bg-primary/20 text-foreground',
-          green && !selected && 'bg-emerald-500/25 text-foreground',
+          green && !selected && 'bg-income/25 text-foreground',
           selected && 'bg-primary text-primary-foreground',
           isToday && !selected && 'ring-1 ring-primary/50'
         )}
@@ -135,7 +135,7 @@ export function CalendarNav({
       >
         {day}
         {paid && (
-          <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-emerald-600 text-white">
+          <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-income text-income-foreground">
             <Check className="size-2.5" strokeWidth={3.5} aria-hidden="true" />
           </span>
         )}
@@ -257,7 +257,7 @@ export function CalendarNav({
                   (allSessionsGreen(items) ? (
                     <span className="flex shrink-0 items-center gap-1">
                       {allSessionsPaid(items) && <PaidBadge />}
-                      <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[12px] font-semibold">
+                      <span className="rounded-full bg-income/20 px-2 py-0.5 text-[12px] font-semibold">
                         {items.length}
                       </span>
                     </span>
@@ -411,7 +411,7 @@ const SNAP_MINUTES = 15
 /** Chip verde "Pagado" para las citas cuyo proyecto ya se pagó completo. */
 export function PaidBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-px text-[11px] font-semibold text-white">
+    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-income px-1.5 py-px text-[11px] font-semibold text-income-foreground">
       <Check className="size-3" strokeWidth={3} aria-hidden="true" />
       Pagado
     </span>
@@ -633,7 +633,7 @@ function DayTimeline({
                 s.status === 'cancelled'
                   ? 'bg-muted/40 opacity-60'
                   : green
-                    ? 'border-emerald-500/60 bg-emerald-500/20'
+                    ? 'border-income/60 bg-income/20'
                     : 'bg-primary/15',
                 isDragging && 'border-primary opacity-90'
               )}

@@ -66,13 +66,13 @@ function StatCard({
 }) {
   const bgClasses = {
     default: 'bg-foreground/[0.03]',
-    success: 'bg-emerald-500/10',
+    success: 'bg-income/10',
     warning: 'bg-amber-500/10',
     primary: 'bg-primary/10',
   }
   const iconClasses = {
     default: 'text-muted-foreground',
-    success: 'text-emerald-400',
+    success: 'text-income',
     warning: 'text-amber-400',
     primary: 'text-primary',
   }

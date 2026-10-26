@@ -174,7 +174,7 @@ export function InboxShell({
                   onClick={() => setChannelFilter(ch.key)}
                   aria-pressed={channelFilter === ch.key}
                   className={cn(
-                    'flex h-7 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors',
+                    'flex h-7 pointer-coarse:h-9 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors',
                     channelFilter === ch.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
@@ -194,7 +194,7 @@ export function InboxShell({
                 onClick={() => setFilter(f.key)}
                 aria-pressed={filter === f.key}
                 className={cn(
-                  'flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition-colors',
+                  'flex h-7 pointer-coarse:h-9 shrink-0 items-center gap-1.5 rounded-full px-2.5 pointer-coarse:px-3 text-xs font-medium transition-colors',
                   filter === f.key
                     ? 'bg-foreground text-background'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -244,7 +244,7 @@ export function InboxShell({
                       <span
                         className={cn(
                           'absolute -right-0.5 -bottom-0.5 grid size-4.5 place-items-center rounded-full text-white ring-2 ring-card',
-                          instagram ? 'bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600' : 'bg-emerald-500'
+                          instagram ? 'bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600' : 'bg-income'
                         )}
                         title={instagram ? 'Instagram' : 'WhatsApp'}
                       >
