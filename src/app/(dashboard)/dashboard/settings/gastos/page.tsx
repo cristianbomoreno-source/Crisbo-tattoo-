@@ -8,7 +8,7 @@ export default async function GastosSettingsPage() {
   const studio = await getCurrentStudio()
   if (!studio || studio.role !== 'owner') redirect('/dashboard/settings')
 
-  const result = await getExpenses()
+  const result = await getExpenses(undefined, undefined, { includeFixed: true })
   const expenses = result.success ? result.data : []
 
   return (

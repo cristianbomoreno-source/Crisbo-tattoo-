@@ -36,8 +36,7 @@ export function GastosPanel({ expenses, accounts }: { expenses: Expense[]; accou
   const [pending, startTransition] = useTransition()
 
   // Los "Ingreso · …" del atajo se listan para poder borrarlos, pero no son gasto.
-  const total = expenses.filter((e) => !isOtherIncome(e.category)).reduce((sum, e) => sum + e.amount, 0)
-  const fixedExpenses = expenses.filter((e) => e.due_day !== null)
+  const total = expenses.filter((e) => !isOtherIncome(e.category) && e.due_day === null).reduce((sum, e) => sum + e.amount, 0)
 
   function add() {
     if (!category.trim()) {

@@ -13,13 +13,18 @@ export type Expense = {
   created_at: string
 }
 
-export async function getExpenses(from?: string, to?: string): Promise<Result<Expense[]>> {
+/** Gastos reales (plata que salió). Las filas con `due_day` son la
+ * DEFINICIÓN de un gasto fijo mensual (se repite cada mes en su día), no un
+ * gasto: se excluyen salvo `includeFixed` (Ajustes → Gastos las lista para
+ * poder borrarlas). El pago de cada mes es una fila normal "… · Pago fijo". */
+export async function getExpenses(from?: string, to?: string, { includeFixed = false } = {}): Promise<Result<Expense[]>> {
   const supabase = await createClient()
   let query = supabase
     .from('expenses')
     .select('id, category, description, amount, expense_date, due_day, created_at')
     .order('expense_date', { ascending: false })
 
+  if (!includeFixed) query = query.is('due_day', null)
   if (from) query = query.gte('expense_date', from)
   if (to) query = query.lte('expense_date', to)
 

@@ -8,10 +8,11 @@ import { isOtherIncome, isPersonalExpense, stripPersonalPrefix } from '@/lib/exp
  * - Cuenta de un cobro = `payments.payment_method`.
  * - Cuenta de un gasto / ingreso suelto = primer tramo de `description`
  *   ("Nequi · nota") cuando coincide con una cuenta conocida.
- * - Gasto fijo = fila de `expenses` con `due_day`. Esa fila cuenta como el
- *   pago del mes de su `expense_date`; los meses siguientes se marca pagado
- *   con una fila normal de la misma categoría y descripción "… · Pago fijo"
- *   (`payFixedExpenseAction`). Así Finanzas suma cada mes una sola vez.
+ * - Gasto fijo = fila de `expenses` con `due_day`: es solo la DEFINICIÓN
+ *   (nombre, monto, día, cuenta habitual en la descripción) y se repite cada
+ *   mes desde su `expense_date`. No es plata que salió. Cada mes se marca
+ *   pagado con una fila normal de la misma categoría y descripción
+ *   "… · Pago fijo" (`payFixedExpenseAction`) — esa sí cuenta como gasto.
  */
 export const FIXED_PAYMENT_MARK = 'Pago fijo'
 export const NO_ACCOUNT = 'Sin cuenta'
@@ -38,6 +39,10 @@ export type FixedItem = {
   nextDate: string
   daysLeft: number
   paidThisMonth: boolean
+  /** Le toca este mes y no está pagado (va a "Próximos pagos"). */
+  pending: boolean
+  /** Cuenta de donde suele salir (primer tramo de la descripción), si tiene. */
+  account: string | null
 }
 
 export type MonthExpense = {
@@ -56,7 +61,7 @@ export type CashSummary = {
   month: { income: number; business: number; personal: number }
   fixedBusiness: FixedItem[]
   fixedPersonal: FixedItem[]
-  /** Fijos sin pagar este mes, por fecha. */
+  /** Fijos que tocan este mes y no están pagados, por fecha. */
   upcoming: FixedItem[]
   upcomingTotal: number
   monthExpenses: MonthExpense[]
@@ -121,6 +126,7 @@ export function cashSummary({
 
   const monthExpenses: MonthExpense[] = []
   for (const e of expenses) {
+    if (e.due_day !== null) continue // definición de un fijo, no plata que salió
     const { account, note } = splitAccount(e.description, accountNames)
     const inMonth = e.expense_date.slice(0, 7) === monthKey
     if (isOtherIncome(e.category)) {
@@ -157,9 +163,10 @@ export function cashSummary({
   const fixed: FixedItem[] = expenses
     .filter((e) => e.due_day !== null && e.due_day >= 1 && e.due_day <= 31 && !isOtherIncome(e.category))
     .map((e) => {
-      const paidThisMonth =
-        e.expense_date.slice(0, 7) === monthKey ||
-        expenses.some(
+      const thisMonthDate = dueDateIn(y, m - 1, e.due_day!)
+      // Creado después de la fecha de este mes: arranca el mes siguiente.
+      const startsNextMonth = e.expense_date > thisMonthDate
+      const paidThisMonth = expenses.some(
           (x) =>
             x.id !== e.id &&
             x.due_day === null &&
@@ -167,7 +174,8 @@ export function cashSummary({
             x.expense_date.slice(0, 7) === monthKey &&
             (x.description ?? '').includes(FIXED_PAYMENT_MARK)
         )
-      const nextDate = paidThisMonth ? dueDateIn(y, m, e.due_day!) : dueDateIn(y, m - 1, e.due_day!)
+      const pending = !paidThisMonth && !startsNextMonth
+      const nextDate = pending ? thisMonthDate : dueDateIn(y, m, e.due_day!)
       return {
         id: e.id,
         name: stripPersonalPrefix(e.category),
@@ -177,11 +185,13 @@ export function cashSummary({
         nextDate,
         daysLeft: daysBetween(today, nextDate),
         paidThisMonth,
+        pending,
+        account: splitAccount(e.description, accountNames).account,
       }
     })
     .sort((a, b) => a.nextDate.localeCompare(b.nextDate))
 
-  const upcoming = fixed.filter((f) => !f.paidThisMonth)
+  const upcoming = fixed.filter((f) => f.pending)
 
   return {
     accounts,

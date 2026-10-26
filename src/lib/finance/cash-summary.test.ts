@@ -22,6 +22,7 @@ describe('cashSummary', () => {
       ],
       expenses: [
         exp({ amount: 80_000, description: 'Nequi · tintas' }),
+        exp({ category: 'Arriendo', amount: 1_000_000, due_day: 5, expense_date: '2026-10-01' }),
         exp({ category: 'Ingreso · Venta de producto', amount: 30_000, description: 'Efectivo' }),
         exp({ category: 'Personal · Comida', amount: 20_000, description: 'almuerzo' }),
       ],
@@ -33,7 +34,7 @@ describe('cashSummary', () => {
     expect(s.monthExpenses.find((e) => e.personal)?.name).toBe('Comida')
   })
 
-  it('gastos fijos: pagado por su propia fila o por un "Pago fijo" del mes; si no, fecha de este mes', () => {
+  it('gastos fijos: la definición no es gasto; cada mes queda pendiente hasta un "Pago fijo"', () => {
     const s = cashSummary({
       today: '2026-10-26',
       accounts: [],
@@ -42,15 +43,19 @@ describe('cashSummary', () => {
         exp({ id: 'arriendo', category: 'Arriendo', amount: 1_500_000, due_day: 5, expense_date: '2026-08-01' }),
         exp({ category: 'Arriendo', amount: 1_500_000, description: 'Nequi · Pago fijo', expense_date: '2026-10-04' }),
         exp({ id: 'luz', category: 'Servicios', amount: 200_000, due_day: 31, expense_date: '2026-09-01' }),
-        exp({ id: 'cel', category: 'Personal · Celular', amount: 60_000, due_day: 20, expense_date: '2026-10-01' }),
+        exp({ id: 'cel', category: 'Personal · Celular', amount: 60_000, due_day: 20, expense_date: '2026-10-21', description: 'Nequi' }),
       ],
     })
+    // Las definiciones no restan plata; solo el pago del arriendo.
+    expect(s.month.business).toBe(1_500_000)
+    expect(s.monthExpenses).toHaveLength(1)
     const arriendo = s.fixedBusiness.find((f) => f.id === 'arriendo')!
     expect(arriendo.paidThisMonth).toBe(true)
     expect(arriendo.nextDate).toBe('2026-11-05')
     const luz = s.fixedBusiness.find((f) => f.id === 'luz')!
     expect(luz).toMatchObject({ paidThisMonth: false, nextDate: '2026-10-31', daysLeft: 5 })
-    expect(s.fixedPersonal[0]).toMatchObject({ name: 'Celular', paidThisMonth: true, nextDate: '2026-11-20' })
+    // Creado el 21 con día 20: este mes ya pasó, arranca en noviembre.
+    expect(s.fixedPersonal[0]).toMatchObject({ name: 'Celular', paidThisMonth: false, pending: false, nextDate: '2026-11-20' })
     expect(s.upcoming.map((f) => f.id)).toEqual(['luz'])
     expect(s.upcomingTotal).toBe(200_000)
   })

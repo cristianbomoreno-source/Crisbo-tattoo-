@@ -5,9 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { toast } from 'sonner'
-import { ArrowLeft, Briefcase, Check, Plus, User, Wallet } from 'lucide-react'
+import { ArrowLeft, Briefcase, Check, Plus, Trash2, User, Wallet } from 'lucide-react'
 
-import { payFixedExpenseAction } from '@/actions/expenses'
+import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction } from '@/actions/expenses'
+import { personalCategory } from '@/lib/expenses/scope'
+import { todayKey } from '@/lib/calendar/utils'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { NO_ACCOUNT, type CashSummary, type FixedItem } from '@/lib/finance/cash-summary'
 import { cop } from '@/lib/projects/metrics'
 import { cn } from '@/lib/utils'
@@ -21,6 +25,7 @@ function shortDate(key: string) {
 
 function whenLabel(f: FixedItem) {
   if (f.paidThisMonth) return `Pagado · próximo ${shortDate(f.nextDate)}`
+  if (!f.pending) return `Empieza el ${shortDate(f.nextDate)}`
   if (f.daysLeft < 0) return `Vencido hace ${-f.daysLeft} ${f.daysLeft === -1 ? 'día' : 'días'}`
   if (f.daysLeft === 0) return 'Vence hoy'
   if (f.daysLeft === 1) return 'Vence mañana'
@@ -144,7 +149,8 @@ export function CashSummarySheet({
               </section>
             )}
 
-            {/* Fijos */}
+            {/* Fijos: se guardan una vez y se repiten cada mes en su día */}
+            <AddFixedForm accounts={accounts} />
             <FixedSection title="Gastos fijos del negocio" icon={Briefcase} items={summary.fixedBusiness} accounts={accounts} />
             <FixedSection title="Gastos fijos personales" icon={User} items={summary.fixedPersonal} accounts={accounts} />
 
@@ -231,7 +237,7 @@ function FixedSection({
         {monthly > 0 && <span className="text-xs text-muted-foreground tabular-nums">{cop(monthly)} al mes</span>}
       </div>
       {items.length === 0 ? (
-        <Empty>Sin gastos fijos. Agrégalos con un día de vencimiento en Ajustes → Gastos.</Empty>
+        <Empty>Sin gastos fijos todavía.</Empty>
       ) : (
         <div className="space-y-2">
           {items.map((f) => (
@@ -247,7 +253,7 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
   const router = useRouter()
   const [choosing, setChoosing] = useState(false)
   const [pending, startTransition] = useTransition()
-  const urgent = !f.paidThisMonth && f.daysLeft <= 3
+  const urgent = f.pending && f.daysLeft <= 3
 
   function pay(account: string | null) {
     startTransition(async () => {
@@ -258,6 +264,19 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
       }
       toast.success(`${f.name} marcado como pagado`)
       setChoosing(false)
+      router.refresh()
+    })
+  }
+
+  function remove() {
+    if (!window.confirm(`¿Eliminar el gasto fijo "${f.name}"? Deja de aparecer cada mes; los pagos ya registrados se conservan.`)) return
+    startTransition(async () => {
+      const result = await deleteExpenseAction(f.id)
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      toast.success('Gasto fijo eliminado')
       router.refresh()
     })
   }
@@ -281,7 +300,7 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         </div>
         <div className="shrink-0 text-right">
           <p className="text-sm font-semibold tabular-nums">{cop(f.amount)}</p>
-          {!f.paidThisMonth && (
+          {f.pending && (
             <button
               type="button"
               onClick={() => setChoosing((v) => !v)}
@@ -290,13 +309,24 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
               {choosing ? 'Cancelar' : 'Marcar pagado'}
             </button>
           )}
+          {!showScope && !f.pending && (
+            <button
+              type="button"
+              onClick={remove}
+              disabled={pending}
+              aria-label={`Eliminar ${f.name}`}
+              className="mt-0.5 text-muted-foreground hover:text-destructive disabled:opacity-50"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
         </div>
       </div>
       {choosing && (
         <div className="mt-3 border-t border-border/60 pt-3">
           <p className="mb-2 text-xs text-muted-foreground">¿De qué cuenta salió?</p>
           <div className="flex flex-wrap gap-1.5">
-            {[...accounts, null].map((a) => (
+            {[...(f.account ? [f.account] : []), ...accounts.filter((a) => a !== f.account), null].map((a) => (
               <button
                 key={a ?? NO_ACCOUNT}
                 type="button"
@@ -311,5 +341,112 @@ function FixedRow({ item: f, accounts, showScope }: { item: FixedItem; accounts:
         </div>
       )}
     </div>
+  )
+}
+
+/** Alta de un gasto fijo mensual: se guarda una vez (fila con `due_day`) y
+ * aparece cada mes en su día como pendiente hasta marcarlo pagado. */
+function AddFixedForm({ accounts }: { accounts: string[] }) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [personal, setPersonal] = useState(false)
+  const [name, setName] = useState('')
+  const [amount, setAmount] = useState('')
+  const [day, setDay] = useState('')
+  const [account, setAccount] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  function save() {
+    const dueDay = Number(day)
+    if (!name.trim()) return toast.error('Escribe qué es (ej. Arriendo)')
+    if (!amount || Number(amount) <= 0) return toast.error('Ingresa el monto')
+    if (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31) return toast.error('El día debe estar entre 1 y 31')
+    startTransition(async () => {
+      const result = await createExpenseAction({
+        category: personal ? personalCategory(name.trim()) : name.trim(),
+        description: account ?? undefined,
+        amount: Number(amount),
+        expense_date: todayKey(),
+        due_day: dueDay,
+      })
+      if (!result.success) {
+        toast.error(result.error.message)
+        return
+      }
+      toast.success(`${name.trim()} guardado: se repite el día ${dueDay} de cada mes`)
+      setName('')
+      setAmount('')
+      setDay('')
+      setAccount(null)
+      setOpen(false)
+      router.refresh()
+    })
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground"
+      >
+        <Plus className="size-4" />
+        Agregar gasto fijo
+      </button>
+    )
+  }
+
+  return (
+    <section className="space-y-2.5 rounded-2xl border border-border p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold">Nuevo gasto fijo mensual</h2>
+        <button type="button" onClick={() => setOpen(false)} className="text-xs font-semibold text-muted-foreground">
+          Cancelar
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+        {[false, true].map((p) => (
+          <button
+            key={String(p)}
+            type="button"
+            onClick={() => setPersonal(p)}
+            className={cn('rounded-full py-2 text-sm font-semibold', personal === p ? 'bg-background shadow-sm' : 'text-muted-foreground')}
+          >
+            {p ? 'Personal' : 'Negocio'}
+          </button>
+        ))}
+      </div>
+      <Input
+        placeholder={personal ? 'Qué es (ej. Celular, Gimnasio)' : 'Qué es (ej. Arriendo, Internet)'}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        maxLength={28}
+      />
+      <div className="grid grid-cols-[1fr_7.5rem] gap-2.5">
+        <Input type="number" inputMode="numeric" placeholder="Monto (COP)" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <Input type="number" inputMode="numeric" placeholder="Día (1-31)" min={1} max={31} value={day} onChange={(e) => setDay(e.target.value)} />
+      </div>
+      <div>
+        <p className="mb-1.5 text-xs text-muted-foreground">¿De qué cuenta lo pagas? (opcional)</p>
+        <div className="flex flex-wrap gap-1.5">
+          {accounts.map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAccount(account === a ? null : a)}
+              className={cn(
+                'rounded-full border px-3 py-1.5 text-xs font-medium',
+                account === a ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted'
+              )}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+      </div>
+      <Button type="button" onClick={save} disabled={pending} className="w-full">
+        Guardar — se repite cada mes
+      </Button>
+    </section>
   )
 }
