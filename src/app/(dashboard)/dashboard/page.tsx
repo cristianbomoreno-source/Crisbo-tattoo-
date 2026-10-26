@@ -322,7 +322,7 @@ export default async function DashboardPage() {
           versión de escritorio. `md:hidden` es solo presentación. */}
       <div className="md:hidden">
         {cash ? (
-          <HomeSwipe summary={cash} receivable={receivable} accounts={cashAccounts}>
+          <HomeSwipe summary={cash} receivable={receivable}>
             {mobileHome}
           </HomeSwipe>
         ) : (

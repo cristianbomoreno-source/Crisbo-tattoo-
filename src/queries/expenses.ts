@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { ok, type Result } from '@/lib/errors/types'
 import { dbError } from '@/lib/errors/db'
-import type { CashPayment, CashExpense } from '@/lib/finance/cash-summary'
+import { parseSchedule, type CashPayment, type CashExpense } from '@/lib/finance/cash-summary'
+import { BALANCE_PREFIX } from '@/lib/expenses/scope'
 
 export type Expense = {
   id: string
@@ -23,6 +24,8 @@ export async function getExpenses(from?: string, to?: string, { includeFixed = f
     .from('expenses')
     .select('id, category, description, amount, expense_date, due_day, created_at')
     .order('expense_date', { ascending: false })
+    // Saldos escritos a mano en el Resumen de caja: no son gastos.
+    .not('category', 'like', `${BALANCE_PREFIX}%`)
 
   if (!includeFixed) query = query.is('due_day', null)
   if (from) query = query.gte('expense_date', from)
@@ -33,7 +36,8 @@ export async function getExpenses(from?: string, to?: string, { includeFixed = f
   return ok(data as Expense[])
 }
 
-/** Gastos fijos (con día de vencimiento definido) - usados para alertas */
+/** Gastos fijos mensuales (con día de vencimiento) - usados para alertas.
+ * Los semanales ("Cada domingo") se quedan en el Resumen de caja. */
 export async function getFixedExpenses(): Promise<Result<Expense[]>> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -43,7 +47,7 @@ export async function getFixedExpenses(): Promise<Result<Expense[]>> {
     .order('due_day', { ascending: true })
 
   if (error) return dbError(error)
-  return ok(data as Expense[])
+  return ok((data as Expense[]).filter((e) => parseSchedule(e.description, e.due_day).kind === 'monthly'))
 }
 
 /** Todas las filas, de a 1.000 (tope de Supabase por consulta). */
@@ -67,12 +71,12 @@ export async function getCashData(): Promise<
   try {
     const [payments, expenses] = await Promise.all([
       fetchAll<CashPayment>((from, to) =>
-        supabase.from('payments').select('amount, paid_at, payment_method').order('paid_at').range(from, to)
+        supabase.from('payments').select('amount, paid_at, payment_method, created_at').order('paid_at').range(from, to)
       ),
       fetchAll<CashExpense>((from, to) =>
         supabase
           .from('expenses')
-          .select('id, category, description, amount, expense_date, due_day')
+          .select('id, category, description, amount, expense_date, due_day, created_at')
           .order('expense_date')
           .range(from, to)
       ),

@@ -30,12 +30,10 @@ export function HomeSwipe({
   children,
   summary,
   receivable,
-  accounts,
 }: {
   children: React.ReactNode
   summary: CashSummary
   receivable: Receivable
-  accounts: string[]
 }) {
   const [open, setOpen] = useState(false)
   const start = useRef<{ x: number; y: number } | null>(null)
@@ -67,7 +65,7 @@ export function HomeSwipe({
         <ChevronLeft className="size-3.5" />
       </button>
 
-      <CashSummarySheet open={open} onOpenChange={setOpen} summary={summary} receivable={receivable} accounts={accounts} />
+      <CashSummarySheet open={open} onOpenChange={setOpen} summary={summary} receivable={receivable} />
     </div>
   )
 }

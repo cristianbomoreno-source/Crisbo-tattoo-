@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cashSummary, type CashExpense } from './cash-summary'
+import { cashSummary, parseSchedule, scheduleTag, type CashExpense } from './cash-summary'
 
 const exp = (o: Partial<CashExpense>): CashExpense => ({
   id: Math.random().toString(36).slice(2),
@@ -68,5 +68,65 @@ describe('cashSummary', () => {
       expenses: [exp({ category: 'Internet', amount: 90_000, due_day: 10, expense_date: '2026-09-02' })],
     })
     expect(s.upcoming[0]).toMatchObject({ nextDate: '2026-10-10', daysLeft: -16 })
+  })
+
+  it('semanal: la cadena cada domingo pide cada domingo del mes que falte', () => {
+    // Octubre 2026: domingos 4, 11, 18, 25. Hoy 26; ya se pagaron 3.
+    const pago = (d: string) => exp({ category: 'Personal · Cadena', amount: 50_000, description: 'Nequi · Pago fijo', expense_date: d })
+    const s = cashSummary({
+      today: '2026-10-26',
+      accounts: ['Nequi'],
+      payments: [],
+      expenses: [
+        exp({ id: 'cadena', category: 'Personal · Cadena', amount: 50_000, due_day: 1, description: 'Nequi · Cada domingo', expense_date: '2026-09-01' }),
+        pago('2026-10-04'),
+        pago('2026-10-11'),
+        pago('2026-10-19'),
+      ],
+    })
+    const c = s.fixedPersonal[0]!
+    expect(c).toMatchObject({ scheduleLabel: 'Cada domingo', pending: true, remaining: 1, nextDate: '2026-10-25', daysLeft: -1, perMonth: 200_000, account: 'Nequi' })
+    expect(s.upcomingTotal).toBe(50_000)
+  })
+
+  it('varios días al mes: cada fecha es un pago', () => {
+    const s = cashSummary({
+      today: '2026-10-12',
+      accounts: [],
+      payments: [],
+      expenses: [
+        exp({ id: 'q', category: 'Nómina', amount: 700_000, due_day: 15, description: 'Días 15, 30', expense_date: '2026-09-01' }),
+      ],
+    })
+    expect(s.fixedBusiness[0]).toMatchObject({ scheduleLabel: 'Días 15 y 30', remaining: 2, nextDate: '2026-10-15', perMonth: 1_400_000 })
+    expect(s.upcomingTotal).toBe(1_400_000)
+  })
+
+  it('saldo escrito a mano: es el punto de partida y crea la cuenta', () => {
+    const s = cashSummary({
+      today: '2026-10-26',
+      accounts: ['Nequi'],
+      payments: [
+        { amount: 100_000, paid_at: '2026-10-20T15:00:00Z', created_at: '2026-10-20T15:00:00Z', payment_method: 'Nequi' },
+        { amount: 40_000, paid_at: '2026-10-26T18:00:00Z', created_at: '2026-10-26T18:00:00Z', payment_method: 'Nequi' },
+      ],
+      expenses: [
+        exp({ category: 'Saldo · Nequi', amount: 300_000, description: '2026-10-25T12:00:00.000Z', expense_date: '2026-10-25' }),
+        exp({ category: 'Saldo · Bancolombia', amount: 1_000_000, description: '2026-10-25T12:00:00.000Z', expense_date: '2026-10-25' }),
+        exp({ category: 'Insumos', amount: 10_000, description: 'Bancolombia', created_at: '2026-10-26T10:00:00Z', expense_date: '2026-10-26' }),
+      ],
+    })
+    const by = Object.fromEntries(s.accounts.map((a) => [a.name, a.balance]))
+    expect(by).toEqual({ Nequi: 340_000, Bancolombia: 990_000 })
+    // El saldo no es gasto del mes.
+    expect(s.month.business).toBe(10_000)
+  })
+
+  it('horario: se guarda y se lee de la descripción', () => {
+    expect(parseSchedule('Nequi · Cada sábado', 1)).toEqual({ kind: 'weekly', weekday: 6 })
+    expect(parseSchedule('Días 5, 20', 5)).toEqual({ kind: 'monthly', days: [5, 20] })
+    expect(parseSchedule('Nequi', 8)).toEqual({ kind: 'monthly', days: [8] })
+    expect(scheduleTag({ kind: 'weekly', weekday: 0 })).toBe('Cada domingo')
+    expect(scheduleTag({ kind: 'monthly', days: [8] })).toBeNull()
   })
 })

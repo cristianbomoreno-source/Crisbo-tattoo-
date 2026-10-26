@@ -14,6 +14,7 @@ import { cop } from '@/lib/projects/metrics'
 import { todayKey } from '@/lib/calendar/utils'
 import { isOtherIncome, personalCategory } from '@/lib/expenses/scope'
 import { cn } from '@/lib/utils'
+import { parseSchedule, scheduleLabel } from '@/lib/finance/cash-summary'
 
 function formatDay(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
@@ -171,7 +172,10 @@ export function GastosPanel({ expenses, accounts }: { expenses: Expense[]; accou
                 </p>
                 {e.due_day && (
                   <p className="mt-0.5 text-xs text-amber-400">
-                    Vence el día {e.due_day} de cada mes
+                    {(() => {
+                      const sch = parseSchedule(e.description, e.due_day)
+                      return sch.kind === 'weekly' ? `Se repite ${scheduleLabel(sch).toLowerCase()}` : `${scheduleLabel(sch)} de cada mes`
+                    })()}
                   </p>
                 )}
               </div>

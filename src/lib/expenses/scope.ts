@@ -25,3 +25,12 @@ export const OTHER_INCOME_OPTIONS = ['Abono de cita nueva', 'Venta de producto',
 export function isOtherIncome(category: string) {
   return category.startsWith(OTHER_INCOME_PREFIX)
 }
+
+/** Saldo real de una cuenta que el dueño escribe en el Resumen de caja
+ * ("Saldo · Nequi"). Es un punto de corte, no un gasto: desde ahí el saldo
+ * sigue con lo que se registre después. `getExpenses` lo excluye. */
+export const BALANCE_PREFIX = 'Saldo · '
+
+export function isBalanceSnapshot(category: string) {
+  return category.startsWith(BALANCE_PREFIX)
+}

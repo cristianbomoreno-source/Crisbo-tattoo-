@@ -7,6 +7,7 @@ import { createExpenseSchema } from '@/lib/validations/expenses'
 import { revalidatePath } from 'next/cache'
 import { todayKey } from '@/lib/calendar/utils'
 import { FIXED_PAYMENT_MARK } from '@/lib/finance/cash-summary'
+import { BALANCE_PREFIX } from '@/lib/expenses/scope'
 
 async function getArtistAndStudio() {
   const supabase = await createClient()
@@ -49,6 +50,7 @@ export async function deleteExpenseAction(id: string): Promise<Result<void>> {
     .eq('id', id)
   if (error) return dbError(error)
 
+  revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings/gastos')
   revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
@@ -82,5 +84,31 @@ export async function payFixedExpenseAction(id: string, account?: string | null)
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings/gastos')
   revalidatePath('/dashboard/settings/finanzas')
+  return ok(undefined)
+}
+
+/** "¿Cuánto hay?" de una tarjeta de cuenta en el Resumen de caja: guarda el
+ * saldo real como corte ("Saldo · Nequi", con el instante en la descripción).
+ * Desde ahí el saldo de esa cuenta sigue con lo que se registre después.
+ * Con un nombre nuevo, crea la cuenta. */
+export async function setAccountBalanceAction(account: string, amount: number): Promise<Result<void>> {
+  const name = account.trim().replace(/\s*·\s*/g, ' ').slice(0, 40 - BALANCE_PREFIX.length)
+  if (!name) return err('VALIDATION_ERROR', 'Escribe el nombre de la cuenta')
+  if (!Number.isFinite(amount) || amount < 0) return err('VALIDATION_ERROR', 'El saldo no puede ser negativo')
+
+  const artist = await getArtistAndStudio()
+  if (!artist) return err('AUTH_ERROR', 'No autenticado')
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('expenses').insert({
+    studio_id: artist.studio_id,
+    category: `${BALANCE_PREFIX}${name}`,
+    amount: Math.round(amount),
+    expense_date: todayKey(),
+    description: new Date().toISOString(),
+  })
+  if (error) return dbError(error)
+
+  revalidatePath('/dashboard')
   return ok(undefined)
 }
