@@ -58,6 +58,8 @@ describe('cashSummary', () => {
     expect(s.fixedPersonal[0]).toMatchObject({ name: 'Celular', paidThisMonth: false, pending: false, nextDate: '2026-11-20' })
     expect(s.upcoming.map((f) => f.id)).toEqual(['luz'])
     expect(s.upcomingTotal).toBe(200_000)
+    // Fijos de octubre: arriendo (pagado) + luz; el celular arranca en noviembre.
+    expect(s.fixedMonthTotal).toBe(1_700_000)
   })
 
   it('un fijo sin pagar cuya fecha ya pasó queda con días negativos (vencido)', () => {

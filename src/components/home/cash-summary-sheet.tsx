@@ -96,6 +96,14 @@ export function CashSummarySheet({
                 <Stat label="Negocio" value={month.business} negative />
                 <Stat label="Personal" value={month.personal} negative />
               </div>
+              {summary.fixedMonthTotal > 0 && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Ventas del mes menos gastos fijos ({cop(summary.fixedMonthTotal)}):{' '}
+                  <span className={cn('font-semibold text-foreground', month.income < summary.fixedMonthTotal && 'text-destructive')}>
+                    {cop(month.income - summary.fixedMonthTotal)}
+                  </span>
+                </p>
+              )}
               {monthOut > 0 && month.income > 0 && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   Este mes te queda {cop(month.income - monthOut)} después de gastos.

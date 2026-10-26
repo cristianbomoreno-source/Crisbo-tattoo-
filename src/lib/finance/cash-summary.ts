@@ -79,6 +79,8 @@ export type FixedItem = {
   remaining: number
   /** Lo que cuesta en un mes (monto × veces del mes). */
   perMonth: number
+  /** Lo que toca pagar ESTE mes (fechas desde que se creó), pagado o no. */
+  thisMonthTotal: number
   /** Cuenta de donde suele salir (primer tramo de la descripción), si tiene. */
   account: string | null
 }
@@ -103,6 +105,8 @@ export type CashSummary = {
   upcoming: FixedItem[]
   /** Todo lo que falta pagar este mes (cada fecha pendiente cuenta). */
   upcomingTotal: number
+  /** Todos los fijos de este mes (negocio + personal), pagados o no: se descuentan de las ventas del mes. */
+  fixedMonthTotal: number
   monthExpenses: MonthExpense[]
 }
 
@@ -303,6 +307,7 @@ export function cashSummary({
         pending,
         remaining: unpaid.length,
         perMonth: e.amount * occurrences(schedule, y, m - 1).length,
+        thisMonthTotal: e.amount * thisMonth.length,
         account: splitAccount(e.description, accountNames).account,
       }
     })
@@ -318,6 +323,7 @@ export function cashSummary({
     fixedPersonal: fixed.filter((f) => f.personal),
     upcoming,
     upcomingTotal: upcoming.reduce((s, f) => s + f.amount * f.remaining, 0),
+    fixedMonthTotal: fixed.reduce((s, f) => s + f.thisMonthTotal, 0),
     monthExpenses: monthExpenses.sort((a, b) => b.date.localeCompare(a.date)),
   }
 }

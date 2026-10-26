@@ -27,15 +27,20 @@ export function MonthSummaryCard({
   projects,
   todaySessions,
   paymentMethods,
+  fixedThisMonth = 0,
 }: {
   monthKey: string
   summary: MonthSummary
   projects: ProjectSummary[]
   todaySessions: SessionWithProject[]
   paymentMethods?: string[] | null
+  /** Gastos fijos del mes (negocio + personal, pagados o no; solo el dueño):
+   * se descuentan de las ventas — ver `fixedMonthTotal` en lib/finance/cash-summary.ts. */
+  fixedThisMonth?: number
 }) {
   const delta = deltaPct(summary.income, summary.prevIncome)
   const up = delta !== null && delta >= 0
+  const net = summary.income - fixedThisMonth
 
   return (
     <section className="space-y-3 rounded-[1.5rem] bg-card p-3.5 sm:p-5">
@@ -46,10 +51,20 @@ export function MonthSummaryCard({
 
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">Dinero ingresado</p>
-          <p className="mt-0.5 truncate font-title text-[1.75rem] leading-tight font-bold tabular-nums">
-            {cop(summary.income)}
+          <p className="text-xs text-muted-foreground">{fixedThisMonth > 0 ? 'Ventas menos gastos fijos' : 'Dinero ingresado'}</p>
+          <p
+            className={cn(
+              'mt-0.5 truncate font-title text-[1.75rem] leading-tight font-bold tabular-nums',
+              net < 0 && 'text-destructive'
+            )}
+          >
+            {cop(fixedThisMonth > 0 ? net : summary.income)}
           </p>
+          {fixedThisMonth > 0 && (
+            <p className="mt-0.5 truncate text-[12px] text-muted-foreground tabular-nums">
+              Ventas {cop(summary.income)} · Fijos de {monthName(monthKey)} −{cop(fixedThisMonth)}
+            </p>
+          )}
           {delta !== null ? (
             <p
               className={cn(
@@ -59,6 +74,7 @@ export function MonthSummaryCard({
             >
               {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
               {up ? '+' : ''}
+              {fixedThisMonth > 0 ? 'ventas ' : ''}
               {delta}% vs {monthName(monthKey, -1)}
             </p>
           ) : (
