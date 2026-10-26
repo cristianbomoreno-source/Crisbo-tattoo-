@@ -86,9 +86,9 @@ export const TATUADOR_TOUR_STEPS: TourStep[] = [
   {
     id: 'nav-quotes',
     title: 'Cotizaciones',
-    body: 'Aquí llegan las solicitudes de tus clientes y las que cargas tú a mano.',
+    body: 'Aquí llegan las solicitudes de tus clientes y las que cargas tú a mano. En el celular están en la pestaña Estudio.',
     route: '/dashboard/quotes',
-    target: { keys: ['nav-quotes'], placement: 'top' },
+    target: { keys: ['nav-quotes', 'nav-studio'], placement: 'top' },
   },
   {
     id: 'quote-create',

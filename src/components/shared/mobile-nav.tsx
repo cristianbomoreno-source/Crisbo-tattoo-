@@ -8,14 +8,15 @@ import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 
 /**
  * Navegación móvil de Crisbo Tattoo (<lg): barra flotante en forma de
- * píldora (estilo YouVersion) separada del borde inferior, de 5 posiciones
+ * píldora (estilo YouVersion) separada del borde inferior, de 4 posiciones
  * (Inicio, Proyectos, Mensajes, Estudio). Sin botón central: el menú-pulpo
  * se eliminó (2026-10-26). Íconos y etiquetas en el color del texto; la
  * pestaña activa se marca con una píldora gris detrás, no con color. En
  * escritorio (lg+) se oculta; ahí manda el sidebar.
  *
- * La pestaña "Estudio" navega directo a /dashboard/settings (el Centro de
- * control del estudio, ver studio-control-center.tsx).
+ * La pestaña "Estudio" navega directo a /dashboard/settings: arriba lista los
+ * módulos que no caben en la barra (Cotizaciones, Caja, Clientes,
+ * Consentimientos, Galería, Estadísticas — ver studio-modules.tsx).
  */
 export function MobileNav() {
   const pathname = usePathname()
@@ -41,7 +42,7 @@ export function MobileNav() {
       {MOBILE_TAB_ITEMS.map((item) => (
         <TabLink key={item.href} href={item.href} label={item.label} icon={item.icon} active={isActive(item.href)} tour={tourTag(item.href)} />
       ))}
-      <TabLink href="/dashboard/settings" label="Estudio" icon={LayoutGrid} active={isActive('/dashboard/settings')} />
+      <TabLink href="/dashboard/settings" label="Estudio" icon={LayoutGrid} active={isActive('/dashboard/settings')} tour="nav-studio" />
     </nav>
   )
 }

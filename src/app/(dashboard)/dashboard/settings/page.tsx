@@ -10,6 +10,7 @@ import {
   computeStudioStatus,
 } from '@/components/settings/studio-control-center'
 import { StudioBrand } from '@/components/shared/studio-brand'
+import { StudioModules } from '@/components/settings/studio-modules'
 import { listJoinRequests, listTeam } from '@/actions/team'
 import { getDisabledFeatures } from '@/queries/features'
 import { getSettingsMetrics } from '@/queries/settings-metrics'
@@ -42,6 +43,7 @@ export default async function SettingsPage() {
         <PageHeader kicker={studio.accountKind === 'estudio' ? 'Estudio' : 'Tatuador'} title="Ajustes del estudio" />
         <div className="mx-auto max-w-lg space-y-4">
           <InvitationBanner invitations={myInvitations} />
+          <StudioModules isOwner={false} />
           <div className="flex items-center gap-4 rounded-2xl bg-card p-4">
             <StudioBrand name={studio.name} logoUrl={studio.logoUrl} />
           </div>

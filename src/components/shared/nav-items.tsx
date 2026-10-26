@@ -31,7 +31,7 @@ export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/dashboard/gallery', label: 'Galería', icon: Images },
 ]
 
-/** Pestañas laterales de la barra inferior móvil (Inicio y Proyectos a la izquierda del FAB; Mensajes a la derecha, en el lugar que antes tenía Cotizaciones — sigue a mano en el menú). La pestaña "Estudio" navega directo a /dashboard/settings. */
+/** Pestañas de la barra inferior móvil (más "Estudio", que lleva a /dashboard/settings con el resto de módulos arriba). */
 const MOBILE_TAB_HREFS = ['/dashboard', '/dashboard/projects', '/dashboard/inbox']
 export const MOBILE_TAB_ITEMS = MOBILE_TAB_HREFS.map((href) => NAV_ITEMS.find((i) => i.href === href)!)
 

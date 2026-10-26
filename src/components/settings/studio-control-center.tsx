@@ -24,6 +24,7 @@ import { TutorialButton } from '@/components/settings/tutorial-button'
 import { QuickActionsRow } from '@/components/settings/quick-actions-row'
 import { cn } from '@/lib/utils'
 import { InstagramIcon } from '@/components/shared/instagram-icon'
+import { StudioModules } from '@/components/settings/studio-modules'
 
 /*
  * ══ Panel de control del estudio (rediseño) ═════════════════════════════
@@ -218,6 +219,9 @@ export function StudioControlCenter({
           {isEstudio ? 'Estudio' : 'Tatuador'}
         </span>
       </div>
+
+      {/* ═══ Módulos (solo celular: la barra inferior no los tiene) ═══ */}
+      <StudioModules isOwner />
 
       {/* ═══ Héroe: identidad + progreso + métricas ═══ */}
       <section data-tour="settings-hero" className="rounded-[2rem] border border-border/60 bg-card p-5 sm:p-7">

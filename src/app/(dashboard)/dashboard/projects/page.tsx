@@ -26,11 +26,7 @@ export default async function ProjectsPage({
         kicker="Tu estudio"
         title="Proyectos"
         description="Todos tus proyectos de tatuaje"
-        action={
-          <div className="hidden lg:block">
-            <CreateProjectDialog clients={clients} />
-          </div>
-        }
+        action={<CreateProjectDialog clients={clients} />}
       />
       <ProjectsBoard
         projects={projects}
