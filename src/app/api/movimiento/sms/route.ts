@@ -6,12 +6,14 @@ import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcut
 
 /** Automatización "Al recibir SMS de Nequi/Daviplata/Bold" del iPhone. El
  * atajo hace dos POST aquí con el texto del mensaje:
- *  1. `{ sms }` → "IGNORAR" si no es un movimiento (login, pago rechazado,
+ *  1. `{ sms }` → respuesta vacía si no es un movimiento (login, pago rechazado,
  *     código…), o las opciones de "¿De qué?" por renglón. La primera es
  *     "No registrar · Entró $X por Banco": muestra el monto y sirve para
  *     plata entre cuentas propias.
  *  2. `{ sms, opcion }` → guarda con el monto y banco leídos del SMS. */
-const IGNORE = 'IGNORAR'
+// Vacío: el atajo lo detecta con "Si Contenido de URL no tiene ningún valor"
+// ("es" no aparece porque el iPhone toma la respuesta como archivo).
+const IGNORE = ''
 const SKIP_PREFIX = 'No registrar'
 
 const schema = z.object({
