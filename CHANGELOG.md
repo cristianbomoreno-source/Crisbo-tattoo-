@@ -4,6 +4,11 @@ Todos los cambios importantes de OFINK serán registrados en este archivo.
 
 ## [Unreleased]
 
+### Added
+
+- **Registro rápido de gastos desde el iPhone** (`POST /api/quick-expense`): el atajo "Gasto Crisbo" (Tocar atrás ×2, o aviso al cerrar Nequi/Daviplata/Nu) pide monto, negocio/personal, categoría y nota y lo guarda en `expenses` del estudio `QUICK_EXPENSE_STUDIO_ID`, autenticado con `Authorization: Bearer QUICK_EXPENSE_TOKEN` (variables de Vercel). Responde texto plano para que el atajo lo muestre.
+- **Gastos personales separados en Finanzas**: se guardan con la categoría prefijada `Personal · …` (sin columna nueva, `lib/expenses/scope.ts`). Ya no cuentan como costo del estudio en Ingresos vs. gastos ni en la dona; tienen su propia tarjeta "Gastos personales (sacados del negocio)" con la utilidad que queda después de lo personal.
+
 ## [1.29.0] - 2026-07-29
 
 ### Added

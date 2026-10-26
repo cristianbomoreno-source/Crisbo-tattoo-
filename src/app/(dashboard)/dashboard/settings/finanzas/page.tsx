@@ -36,7 +36,8 @@ import { FinanceCajaCard } from '@/components/finance/finance-caja'
 import { FinancePendingCard } from '@/components/finance/finance-pending'
 import { FinanceProductionGrid } from '@/components/finance/finance-production'
 import { FinanceTopServicesCard, FinanceTopClientsCard } from '@/components/finance/finance-rankings'
-import { FinanceIncomeVsExpensesCard, FinanceExpensesDonut } from '@/components/finance/finance-expenses'
+import { FinanceIncomeVsExpensesCard, FinanceExpensesDonut, FinancePersonalCard } from '@/components/finance/finance-expenses'
+import { isPersonalExpense, stripPersonalPrefix } from '@/lib/expenses/scope'
 
 function getDefaultDates() {
   const today = new Date()
@@ -78,7 +79,10 @@ export default async function FinanzasPage({
   const sessions = sessionsResult.success ? sessionsResult.data : []
   const projects = projectsResult.success ? projectsResult.data : []
   const clients = clientsResult.success ? clientsResult.data : []
-  const rangeExpenses = expensesResult.success ? expensesResult.data : []
+  const allRangeExpenses = expensesResult.success ? expensesResult.data : []
+  // Los gastos personales no son costo del estudio: van aparte como retiros.
+  const rangeExpenses = allRangeExpenses.filter((e) => !isPersonalExpense(e.category))
+  const personalExpenses = allRangeExpenses.filter((e) => isPersonalExpense(e.category))
 
   // Datos filtrados por el rango seleccionado
   const rangeQuotes = quotesInRange(quotes, fromDate, toDate)
@@ -152,6 +156,16 @@ export default async function FinanzasPage({
     .map(([category, amount]) => ({ category, amount }))
     .sort((a, b) => b.amount - a.amount)
 
+  const personalByCategory = Object.entries(
+    personalExpenses.reduce<Record<string, number>>((acc, e) => {
+      const category = stripPersonalPrefix(e.category)
+      acc[category] = (acc[category] ?? 0) + e.amount
+      return acc
+    }, {})
+  )
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount)
+
   return (
     <SettingsSubpage
       title="Finanzas"
@@ -187,6 +201,9 @@ export default async function FinanzasPage({
             <FinanceIncomeVsExpensesCard income={collected} expenses={totalExpenses} />
             <FinanceExpensesDonut totals={expensesByCategory} />
           </>
+        )}
+        {personalExpenses.length > 0 && (
+          <FinancePersonalCard totals={personalByCategory} profit={profit ?? collected} />
         )}
         <FinanceTopServicesCard rows={topServicesByRevenue(rangeQuotes)} />
         <FinanceTopClientsCard rows={topClientsByRevenue(projects)} />

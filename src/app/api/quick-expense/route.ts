@@ -1,0 +1,58 @@
+import { timingSafeEqual } from 'node:crypto'
+import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { todayKey } from '@/lib/calendar/utils'
+import { cop } from '@/lib/projects/metrics'
+import { personalCategory } from '@/lib/expenses/scope'
+
+/** Registro rápido de gastos desde el atajo del iPhone ("Gasto Crisbo"):
+ * Tocar atrás ×2 o al cerrar Nequi/Daviplata/Nu → el atajo pide monto,
+ * negocio/personal, categoría y nota y hace POST aquí con
+ * `Authorization: Bearer QUICK_EXPENSE_TOKEN`. Se guarda en el estudio
+ * QUICK_EXPENSE_STUDIO_ID. Responde texto plano para que el atajo lo muestre. */
+const schema = z.object({
+  monto: z.coerce.number().positive('El monto debe ser mayor a 0'),
+  tipo: z.string().trim().toLowerCase().pipe(z.enum(['negocio', 'personal'])),
+  categoria: z.string().trim().min(1, 'Falta la categoría').max(28),
+  nota: z.string().trim().max(200).optional(),
+})
+
+function authorized(req: Request) {
+  const got = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
+  const secret = process.env.QUICK_EXPENSE_TOKEN?.trim()
+  if (!got || !secret || got.length !== secret.length) return false
+  return timingSafeEqual(Buffer.from(got), Buffer.from(secret))
+}
+
+const text = (body: string, status = 200) =>
+  new NextResponse(body, { status, headers: { 'content-type': 'text/plain; charset=utf-8' } })
+
+export async function POST(req: Request) {
+  if (!authorized(req)) return text('❌ Token inválido', 401)
+  const studioId = process.env.QUICK_EXPENSE_STUDIO_ID?.trim()
+  if (!studioId) return text('❌ Falta configurar el estudio', 500)
+
+  const parsed = schema.safeParse(await req.json().catch(() => null))
+  if (!parsed.success) return text(`❌ ${parsed.error.issues[0]?.message ?? 'Datos inválidos'}`, 400)
+
+  const { monto, tipo, categoria, nota } = parsed.data
+  const { error } = await createAdminClient()
+    .from('expenses')
+    .insert({
+      studio_id: studioId,
+      category: tipo === 'personal' ? personalCategory(categoria) : categoria,
+      description: nota || null,
+      amount: Math.round(monto),
+      expense_date: todayKey(),
+    })
+  if (error) {
+    console.error('[quick-expense]', error.message)
+    return text('❌ No se pudo guardar, intenta de nuevo', 500)
+  }
+
+  revalidatePath('/dashboard/settings/gastos')
+  revalidatePath('/dashboard/settings/finanzas')
+  return text(`✅ ${cop(Math.round(monto))} · ${tipo === 'personal' ? 'Personal' : 'Negocio'} · ${categoria}`)
+}

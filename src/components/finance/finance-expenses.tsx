@@ -91,3 +91,38 @@ export function FinanceExpensesDonut({ totals }: { totals: CategoryTotal[] }) {
     </div>
   )
 }
+
+/** Plata del negocio que se fue en gastos personales del dueño (registrados
+ * como "Personal · …"). No cuenta como costo del estudio; se compara con la
+ * utilidad para ver si lo que se saca alcanza a cubrirse. */
+export function FinancePersonalCard({ totals, profit }: { totals: CategoryTotal[]; profit: number }) {
+  const sum = totals.reduce((s, t) => s + t.amount, 0)
+  if (sum <= 0) return null
+  const left = profit - sum
+
+  return (
+    <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
+      <h3 className="font-display text-xs font-semibold text-muted-foreground">
+        Gastos personales (sacados del negocio)
+      </h3>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Total</span>
+        <span className="font-display text-lg font-semibold tabular-nums">{cop(sum)}</span>
+      </div>
+      <div className="mt-3 space-y-2">
+        {totals.map((t) => (
+          <div key={t.category} className="flex items-center justify-between text-sm">
+            <span className="min-w-0 flex-1 truncate text-muted-foreground">{t.category}</span>
+            <span className="shrink-0 tabular-nums text-foreground/80">{cop(t.amount)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between rounded-2xl bg-foreground/[0.03] px-4 py-3">
+        <span className="text-sm text-muted-foreground">Utilidad después de lo personal</span>
+        <span className={`font-display text-sm font-semibold tabular-nums ${left >= 0 ? 'text-primary' : 'text-red-400'}`}>
+          {cop(left)}
+        </span>
+      </div>
+    </div>
+  )
+}
