@@ -85,9 +85,10 @@ y peso. `--font-wordmark` (Orbitron) es solo para el logotipo.
 
 ## 6. Inicio (móvil)
 
-Orden: saludo → próxima cita (con foto) → **Hoy** (lista con resumen de
-citas y horas) → plata del mes + "Caja y cuentas" → alertas de gastos →
-calendario. Cada dato aparece una vez.
+Orden: saludo → **ventas del mes** → **calendario** (lo primero que se
+mira, a pedido del dueño) → próxima cita (con foto) → **Hoy** (lista con
+resumen de citas y horas) → "Caja y cuentas" → alertas de gastos. Cada dato
+aparece una vez.
 
 ## 7. Movimiento
 

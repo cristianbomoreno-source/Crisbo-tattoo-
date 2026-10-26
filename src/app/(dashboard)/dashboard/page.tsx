@@ -260,6 +260,17 @@ export default async function DashboardPage() {
 
       <OnboardingChecklist stepsDone={studio?.onboardingStepsDone ?? []} />
 
+      {/* Arriba: ventas del mes y el calendario; luego la próxima cita y Hoy. */}
+      <MonthSummaryCard
+        monthKey={monthKey}
+        summary={summary}
+        projects={projects}
+        todaySessions={todaySessions}
+        paymentMethods={studio?.paymentMethods}
+      />
+
+      <CalendarCard days={days} today={today} todaySessions={todaySessions} balances={balances} blockedDays={blockedKeys} />
+
       {cardSessions.length > 0 && (
         <NextSessionCard
           key={daysUntil ? 'upcoming' : 'today'}
@@ -298,19 +309,9 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <MonthSummaryCard
-        monthKey={monthKey}
-        summary={summary}
-        projects={projects}
-        todaySessions={todaySessions}
-        paymentMethods={studio?.paymentMethods}
-      />
-
       {cash && <OpenCajaRow total={cash.total} accounts={cash.accounts.filter((a) => a.setAt).length} />}
 
       {expenseAlerts.length > 0 && <ExpenseAlertsCard alerts={expenseAlerts} />}
-
-      <CalendarCard days={days} today={today} todaySessions={todaySessions} balances={balances} blockedDays={blockedKeys} />
     </div>
   )
 
