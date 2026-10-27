@@ -61,6 +61,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ClientLinkDialog } from './client-link-dialog'
 import { LeadBar } from './lead-bar'
+import { ClientCrmSheet } from './client-crm-sheet'
+import { leadStageInfo } from '@/lib/whatsapp-cloud/lead'
 import { CampaignSlotBar } from './campaign-slot-bar'
 import type { CampaignChatInfo } from '@/queries/campaigns'
 import {
@@ -106,6 +108,7 @@ export function ChatView({
   const [draft, setDraft] = useState('')
   const [lastInboundAt, setLastInboundAt] = useState(conversation.last_inbound_at)
   const [linkOpen, setLinkOpen] = useState(false)
+  const [crmOpen, setCrmOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [sending, startSending] = useTransition()
   const [archiving, startArchiving] = useTransition()
@@ -296,16 +299,22 @@ export function ChatView({
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header: contacto + acciones principales. */}
-      <header className="flex items-center gap-2.5 border-b border-border/60 px-2 py-2.5 sm:gap-3 sm:px-4">
+      <header className="flex items-center gap-2 px-3 pt-2 pb-1 sm:gap-3 sm:px-4 sm:pt-3">
         <Link
           href="/dashboard/inbox"
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent/60 lg:hidden"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary transition-transform duration-150 ease-out active:scale-[0.94] lg:hidden"
           aria-label="Volver a los chats"
         >
           <ArrowLeft className="size-5" />
         </Link>
+        <button
+          type="button"
+          onClick={() => (client ? setCrmOpen(true) : setLinkOpen(true))}
+          aria-label={client ? 'Ver ficha del cliente' : 'Guardar como cliente'}
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left active:opacity-70 sm:gap-3"
+        >
         <span className="relative shrink-0">
-          <span className="grid size-10 place-items-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+          <span className={cn('grid size-11 place-items-center rounded-full text-[15px] font-bold text-white', leadStageInfo(conversation.lead_stage).tile)}>
             {chatInitials(name.replace(/^@/, ''))}
           </span>
           <span
@@ -317,7 +326,7 @@ export function ChatView({
           />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] leading-tight font-semibold">{name}</p>
+          <p className="truncate text-[1.0625rem] leading-tight font-semibold">{name}</p>
           <p suppressHydrationWarning className="mt-0.5 flex items-center truncate text-xs text-muted-foreground">
             {instagram ? (
               <InstagramIcon className="mr-1 size-3 shrink-0 text-pink-500" />
@@ -337,18 +346,16 @@ export function ChatView({
             )}
           </p>
         </div>
+        </button>
         <Button size="sm" onClick={() => setScheduleOpen(true)} className="shrink-0">
           <CalendarPlus />
           <span className="hidden sm:inline">Agendar cita</span>
         </Button>
         {client ? (
-          <Link
-            href={`/dashboard/clients/${client.id}`}
-            className="hidden h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium ring-1 ring-border hover:bg-accent sm:flex"
-          >
-            <UserRound className="size-3.5" />
-            Ver ficha
-          </Link>
+          <Button size="sm" variant="secondary" onClick={() => setCrmOpen(true)} className="shrink-0">
+            <UserRound />
+            <span className="hidden sm:inline">Ficha</span>
+          </Button>
         ) : (
           <Button size="sm" variant="outline" onClick={() => setLinkOpen(true)} className="shrink-0">
             <UserPlus />
@@ -358,13 +365,13 @@ export function ChatView({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Más opciones"
-            className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-foreground"
           >
             <MoreVertical className="size-4.5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             {client && (
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/clients/${client.id}`)}>
+              <DropdownMenuItem onClick={() => setCrmOpen(true)}>
                 <UserRound />
                 Ver ficha del cliente
               </DropdownMenuItem>
@@ -383,11 +390,17 @@ export function ChatView({
       </header>
 
       {/* Seguimiento del lead: etapa del embudo + recordatorio. */}
-      <LeadBar conversationId={conversation.id} stage={conversation.lead_stage} followUpAt={conversation.follow_up_at} />
+      <LeadBar
+        conversationId={conversation.id}
+        clientId={conversation.client_id}
+        stage={conversation.lead_stage}
+        followUpAt={conversation.follow_up_at}
+      />
+      {client && <ClientCrmSheet clientId={client.id} channel={instagram ? 'instagram' : 'whatsapp'} open={crmOpen} onOpenChange={setCrmOpen} />}
       {campaign && <CampaignSlotBar info={campaign} />}
 
       {/* Mensajes */}
-      <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto bg-background/40 px-3 py-4">
+      <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {messages.map((m, i) => {
           const prev = messages[i - 1]
           const showDay = !prev || !sameDay(prev.created_at, m.created_at)
@@ -395,7 +408,7 @@ export function ChatView({
             <div key={m.id}>
               {showDay && (
                 <div className="my-3 flex justify-center">
-                  <span className="rounded-full bg-muted px-3 py-1 text-[12px] font-medium capitalize text-muted-foreground">
+                  <span className="px-3 py-1 text-[13px] font-semibold capitalize text-muted-foreground">
                     {formatDayLabel(m.created_at)}
                   </span>
                 </div>
@@ -407,11 +420,11 @@ export function ChatView({
       </div>
 
       {/* Composer */}
-      <footer className="border-t border-border/60 p-2 sm:p-3">
+      <footer className="px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-4 lg:pb-3">
         {windowOpen ? (
           <>
             {showReplyDraft && (
-              <div className="mb-2 rounded-xl border border-primary/30 bg-primary/5 p-2.5">
+              <div className="mb-2 rounded-[1.25rem] bg-primary/10 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1 text-[12px] font-semibold text-primary">
                     <Sparkles className="size-3" />
@@ -470,9 +483,9 @@ export function ChatView({
                 }}
                 rows={1}
                 placeholder="Escribe un mensaje"
-                className="max-h-40 min-h-10 flex-1 resize-none rounded-xl bg-muted px-3 py-2.5 text-sm outline-none [field-sizing:content] placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                className="max-h-40 min-h-11 flex-1 resize-none rounded-[1.375rem] bg-foreground/[0.08] px-4 py-2.5 !text-[1.0625rem] outline-none [field-sizing:content] placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
               />
-              <Button size="icon-lg" onClick={send} disabled={sending || !draft.trim()} aria-label="Enviar">
+              <Button size="icon-lg" onClick={send} disabled={sending || !draft.trim()} aria-label="Enviar" className="size-11 shrink-0">
                 <Send />
               </Button>
             </div>
@@ -561,8 +574,8 @@ function MessageBubble({ message: m }: { message: WaMessage }) {
     <div className={cn('flex', out ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[70%]',
-          out ? 'rounded-br-md bg-primary/20 text-foreground' : 'rounded-bl-md bg-card text-foreground ring-1 ring-border/50',
+          'max-w-[80%] rounded-[1.25rem] px-3.5 py-2 text-[1.0625rem] leading-snug sm:max-w-[65%]',
+          out ? 'rounded-br-md bg-primary/90 text-primary-foreground' : 'rounded-bl-md bg-foreground/[0.1] text-foreground',
           m.status === 'failed' && 'ring-1 ring-destructive/60'
         )}
       >
@@ -596,7 +609,7 @@ function MessageBubble({ message: m }: { message: WaMessage }) {
           <p className="italic text-muted-foreground">Mensaje no soportado (ábrelo en el teléfono).</p>
         )}
         {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
-        <div className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
+        <div className="mt-0.5 flex items-center justify-end gap-1 text-[11px] opacity-60">
           <span>{formatMessageTime(m.created_at)}</span>
           {out && <StatusIcon status={m.status} />}
         </div>

@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { BellOff, BellRing, Check, ChevronDown, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { setFollowUp, setLeadStage } from '@/actions/whatsapp'
+import { markLeadLostAction } from '@/actions/crm'
+import { LostReasonDialog } from './lost-reason-dialog'
 import {
   FOLLOW_UP_OPTIONS,
   LEAD_STAGES,
@@ -35,14 +37,18 @@ export function LeadBar({
   conversationId,
   stage: initialStage,
   followUpAt: initialFollowUp,
+  clientId = null,
 }: {
   conversationId: string
+  /** Cliente vinculado: ahí se guarda el motivo si el lead se pierde. */
+  clientId?: string | null
   stage: LeadStage
   followUpAt: string | null
 }) {
   const [stage, setStage] = useState<LeadStage>(initialStage)
   const [followUp, setFollowUpState] = useState(initialFollowUp)
   const [, startTransition] = useTransition()
+  const [askLost, setAskLost] = useState(false)
 
   const currentIndex = PIPELINE.findIndex((s) => s.key === stage)
   const lost = stage === 'perdido'
@@ -50,6 +56,10 @@ export function LeadBar({
 
   function changeStage(next: LeadStage) {
     if (next === stage) return
+    if (next === 'perdido') {
+      setAskLost(true)
+      return
+    }
     const prev = stage
     setStage(next)
     startTransition(async () => {
@@ -58,6 +68,20 @@ export function LeadBar({
         setStage(prev)
         toast.error(result.error.message)
       }
+    })
+  }
+
+  function confirmLost(reason: string) {
+    setAskLost(false)
+    const prev = stage
+    setStage('perdido')
+    setFollowUpState(null)
+    startTransition(async () => {
+      const result = await markLeadLostAction(conversationId, clientId, reason)
+      if (!result.success) {
+        setStage(prev)
+        toast.error(result.error.message)
+      } else toast.success(`Perdido · ${reason}`)
     })
   }
 
@@ -76,7 +100,8 @@ export function LeadBar({
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-2 py-2 sm:px-3">
+    <div className="flex items-center gap-2 px-3 py-2">
+      <LostReasonDialog open={askLost} onOpenChange={setAskLost} onPick={confirmLost} />
       {/* Embudo: los pasos anteriores quedan marcados como hechos. */}
       <div
         role="radiogroup"
@@ -88,37 +113,32 @@ export function LeadBar({
           const done = !lost && currentIndex > i
           return (
             <div key={s.key} className="flex shrink-0 items-center gap-1">
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className={cn('h-px w-2.5 sm:w-4', done || active ? 'bg-primary/60' : 'bg-border')}
-                />
-              )}
+              {i > 0 && <span aria-hidden className={cn('h-0.5 w-2 rounded-full sm:w-3', done || active ? 'bg-primary/60' : 'bg-border')} />}
               <button
                 type="button"
                 role="radio"
                 aria-checked={active}
                 onClick={() => changeStage(s.key)}
                 className={cn(
-                  'flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors',
+                  'flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-95',
                   active
-                    ? cn(s.chip, 'ring-1 ring-current/30')
+                    ? cn(s.tile, 'text-white')
                     : done
-                      ? 'text-foreground hover:bg-accent/60'
-                      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+                      ? 'bg-foreground/[0.06] text-foreground'
+                      : 'bg-foreground/[0.06] text-muted-foreground'
                 )}
               >
                 {done ? (
                   <Check className="size-3.5 text-primary" />
-                ) : (
-                  <span className={cn('size-2 rounded-full', active ? s.dot : 'bg-muted-foreground/40')} />
+                ) : active ? null : (
+                  <span className="size-2 rounded-full bg-muted-foreground/40" />
                 )}
                 {s.label}
               </button>
             </div>
           )
         })}
-        <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-border" />
         <button
           type="button"
           role="radio"
@@ -126,10 +146,8 @@ export function LeadBar({
           onClick={() => changeStage(lost ? 'nuevo' : 'perdido')}
           title={lost ? 'Reabrir lead' : 'Marcar como perdido'}
           className={cn(
-            'flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors',
-            lost
-              ? 'bg-destructive/15 text-destructive ring-1 ring-destructive/30'
-              : 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
+            'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-95',
+            lost ? 'tile-gray text-white' : 'bg-foreground/[0.06] text-muted-foreground'
           )}
         >
           <XCircle className="size-3.5" />
@@ -141,12 +159,12 @@ export function LeadBar({
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            'flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors',
+            'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-colors',
             followUp
               ? due
-                ? 'bg-destructive text-white hover:bg-destructive/90'
-                : 'bg-primary/15 text-primary hover:bg-primary/25'
-              : 'bg-card text-foreground ring-1 ring-border hover:bg-accent'
+                ? 'bg-destructive text-white'
+                : 'bg-primary/15 text-primary'
+              : 'bg-foreground/[0.08] text-foreground'
           )}
         >
           <BellRing className="size-3.5" />

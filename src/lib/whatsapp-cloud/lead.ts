@@ -5,11 +5,11 @@
  */
 
 export const LEAD_STAGES = [
-  { key: 'nuevo', label: 'Nuevo', short: 'Nuevo', dot: 'bg-sky-400', chip: 'bg-sky-400/15 text-sky-700 dark:text-sky-300' },
-  { key: 'cotizando', label: 'Cotizando', short: 'Cotizando', dot: 'bg-violet-400', chip: 'bg-violet-400/15 text-violet-700 dark:text-violet-300' },
-  { key: 'abono', label: 'Esperando abono', short: 'Abono', dot: 'bg-amber-400', chip: 'bg-amber-400/15 text-amber-700 dark:text-amber-300' },
-  { key: 'agendado', label: 'Agendado', short: 'Agendado', dot: 'bg-emerald-400', chip: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
-  { key: 'perdido', label: 'Perdido', short: 'Perdido', dot: 'bg-zinc-500', chip: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400' },
+  { key: 'nuevo', tile: 'tile-blue', label: 'Nuevo', short: 'Nuevo', dot: 'bg-sky-400', chip: 'bg-sky-400/15 text-sky-700 dark:text-sky-300' },
+  { key: 'cotizando', tile: 'tile-purple', label: 'Cotizando', short: 'Cotizando', dot: 'bg-violet-400', chip: 'bg-violet-400/15 text-violet-700 dark:text-violet-300' },
+  { key: 'abono', tile: 'tile-gold', label: 'Esperando abono', short: 'Abono', dot: 'bg-amber-400', chip: 'bg-amber-400/15 text-amber-700 dark:text-amber-300' },
+  { key: 'agendado', tile: 'tile-green', label: 'Agendado', short: 'Agendado', dot: 'bg-emerald-400', chip: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300' },
+  { key: 'perdido', tile: 'tile-gray', label: 'Perdido', short: 'Perdido', dot: 'bg-zinc-500', chip: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400' },
 ] as const
 
 export type LeadStage = (typeof LEAD_STAGES)[number]['key']

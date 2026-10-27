@@ -80,7 +80,8 @@ export type WaConversation = {
   /** Recordatorio de seguimiento; null = sin recordatorio. */
   follow_up_at: string | null
   created_at: string
-  client: { id: string; name: string; phone: string | null } | null
+  /** source = origen del lead; preferred_services = etiquetas del CRM (lib/crm/options.ts). */
+  client: { id: string; name: string; phone: string | null; source?: string | null; preferred_services?: string[] | null } | null
 }
 
 export type WaMessage = {
@@ -102,7 +103,7 @@ export type WaMessage = {
   created_at: string
 }
 
-const CONVERSATION_SELECT = '*, client:clients(id, name, phone)'
+const CONVERSATION_SELECT = '*, client:clients(id, name, phone, source, preferred_services)'
 
 /** RLS (`studio_id = get_studio_id()`) limita a las del estudio activo. */
 export async function getConversations(): Promise<Result<WaConversation[]>> {
