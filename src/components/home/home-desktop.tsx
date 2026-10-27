@@ -1,11 +1,10 @@
 import { HomeGreeting } from '@/components/home/home-greeting'
 import { WorkShiftCard } from '@/components/home/work-shift-card'
-import { SectionTitle } from '@/components/shared/large-title'
 import { NextSessionCard } from '@/components/home/next-session-card'
 import type { MedicalAlert } from '@/queries/consent-links'
 import { CalendarCard } from '@/components/home/calendar-card'
 import { MonthSummaryCard } from '@/components/home/month-summary'
-import { TodayAppointments, type ProjectBalance } from '@/components/home/today-appointments'
+import { type ProjectBalance } from '@/components/home/today-appointments'
 import { PendingImportantCard } from '@/components/home/pending-important-card'
 import { ExpenseAlertsCard } from '@/components/home/expense-alerts-card'
 import type { SessionWithProject } from '@/queries/sessions'
@@ -87,7 +86,6 @@ export function HomeDesktop({
   unscheduledApproved,
   projects,
   paymentMethods,
-  medicalAlertProjectIds,
   medicalAlerts,
   expenseAlerts = [],
 }: HomeDesktopProps) {
@@ -120,22 +118,6 @@ export function HomeDesktop({
             blockedDays={blockedDays}
           />
 
-          <section className="space-y-3" data-tour="home-today-sessions">
-            <SectionTitle
-              title="Hoy"
-              subtitle={`${todaySessions.length} ${todaySessions.length === 1 ? 'cita' : 'citas'}`}
-              action={
-                <a href="/dashboard?openCalendar=1" className="rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold">
-                  Ver agenda
-                </a>
-              }
-            />
-            <TodayAppointments
-              sessions={todaySessions}
-              balances={balances}
-              medicalAlertProjectIds={medicalAlertProjectIds}
-            />
-          </section>
         </div>
 
         <div className="space-y-6 lg:col-span-3">
