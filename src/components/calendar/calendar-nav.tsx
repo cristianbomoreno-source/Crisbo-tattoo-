@@ -107,6 +107,7 @@ export function CalendarNav({
     const selected = dKey === selectedDay
     const paid = busy && !blocked && allSessionsPaid(byDay[dKey])
     const green = busy && !blocked && allSessionsGreen(byDay[dKey])
+    const count = byDay[dKey]?.length ?? 0
     return (
       <button
         type="button"
@@ -115,30 +116,31 @@ export function CalendarNav({
           onViewChange('day')
         }}
         title={blocked ? 'Día bloqueado' : paid ? 'Citas pagadas' : green ? 'Citas finalizadas' : undefined}
-        className={cn(
-          'relative flex aspect-square items-center justify-center rounded-xl text-sm font-medium tabular-nums transition-colors',
-          !busy && !blocked && !selected && 'text-foreground hover:bg-accent',
-          blocked && !selected && 'bg-muted-foreground/15 text-muted-foreground',
-          busy && !blocked && !selected && !green && 'bg-primary/20 text-foreground',
-          green && !selected && 'bg-income/25 text-foreground',
-          selected && 'bg-primary text-primary-foreground',
-          isToday && !selected && 'ring-1 ring-primary/50'
-        )}
-        style={
-          blocked && !selected
-            ? {
-                backgroundImage:
-                  'repeating-linear-gradient(135deg, color-mix(in oklab, var(--foreground) 8%, transparent) 0px, color-mix(in oklab, var(--foreground) 8%, transparent) 3px, transparent 3px, transparent 7px)',
-              }
-            : undefined
-        }
+        className="group flex h-12 flex-col items-center justify-start gap-1 pt-0.5 focus-visible:outline-none"
       >
-        {day}
-        {paid && (
-          <span className="absolute right-0.5 top-0.5 grid size-3.5 place-items-center rounded-full bg-income text-income-foreground">
-            <Check className="size-2.5" strokeWidth={3.5} aria-hidden="true" />
-          </span>
-        )}
+        <span
+          className={cn(
+            'grid size-9 place-items-center rounded-full text-[1.0625rem] tabular-nums transition-[background-color,transform] duration-150 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-ring',
+            selected
+              ? 'bg-primary font-bold text-primary-foreground'
+              : isToday
+                ? 'font-bold text-primary group-hover:bg-secondary'
+                : blocked
+                  ? 'text-muted-foreground/45 line-through decoration-1'
+                  : busy
+                    ? 'font-semibold text-foreground group-hover:bg-secondary'
+                    : 'text-foreground/90 group-hover:bg-secondary',
+          )}
+        >
+          {day}
+        </span>
+        <span className="flex h-1.5 items-center gap-0.5" aria-hidden="true">
+          {busy &&
+            !blocked &&
+            Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+              <span key={i} className={cn('size-1.5 rounded-full', green ? 'bg-income' : 'bg-primary')} />
+            ))}
+        </span>
         {blocked && <span className="sr-only"> (día bloqueado)</span>}
         {paid && <span className="sr-only"> (pagado)</span>}
       </button>
@@ -147,15 +149,15 @@ export function CalendarNav({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1.5 rounded-full bg-muted p-1">
+      <div className="flex gap-1 rounded-full bg-foreground/[0.07] p-1">
         {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => onViewChange(v)}
             className={cn(
-              'flex-1 rounded-full py-1.5 text-sm font-medium transition-colors',
-              view === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+              'flex-1 rounded-full py-2 text-[15px] font-semibold transition-[background-color,color] duration-150 ease-out',
+              view === v ? 'bg-foreground/15 text-foreground shadow-sm' : 'text-muted-foreground'
             )}
           >
             {v === 'day' ? 'Día' : v === 'week' ? 'Semana' : 'Mes'}
@@ -165,28 +167,30 @@ export function CalendarNav({
 
       {view === 'month' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              aria-label="Mes anterior"
-              onClick={() => onMonthKeyChange((m) => shiftMonth(m, -1))}
-              className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <span className="text-sm font-medium capitalize">{monthLabel}</span>
-            <button
-              type="button"
-              aria-label="Mes siguiente"
-              onClick={() => onMonthKeyChange((m) => shiftMonth(m, 1))}
-              className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted"
-            >
-              <ChevronRight className="size-4" />
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-title text-[1.5rem] leading-tight font-bold tracking-tight text-primary capitalize">{monthLabel}</span>
+            <span className="flex gap-2">
+              <button
+                type="button"
+                aria-label="Mes anterior"
+                onClick={() => onMonthKeyChange((m) => shiftMonth(m, -1))}
+                className="grid size-10 place-items-center rounded-full bg-foreground/[0.07] transition-transform duration-150 ease-out active:scale-90"
+              >
+                <ChevronLeft className="size-5" strokeWidth={2.4} />
+              </button>
+              <button
+                type="button"
+                aria-label="Mes siguiente"
+                onClick={() => onMonthKeyChange((m) => shiftMonth(m, 1))}
+                className="grid size-10 place-items-center rounded-full bg-foreground/[0.07] transition-transform duration-150 ease-out active:scale-90"
+              >
+                <ChevronRight className="size-5" strokeWidth={2.4} />
+              </button>
+            </span>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center">
+          <div className="grid grid-cols-7 gap-y-1 text-center">
             {WEEKDAYS.map((w, i) => (
-              <span key={i} className="text-[11px] font-medium text-muted-foreground">
+              <span key={i} className="pb-1 text-[12px] font-semibold text-muted-foreground">
                 {w}
               </span>
             ))}
@@ -221,8 +225,8 @@ export function CalendarNav({
                   onViewChange('day')
                 }}
                 className={cn(
-                  'flex w-full items-start gap-3 rounded-2xl p-3 text-left transition-colors',
-                  k === today ? 'bg-primary/10' : blocked ? 'bg-muted-foreground/10' : 'bg-background hover:bg-accent/60'
+                  'flex w-full items-center gap-3.5 rounded-[1.25rem] p-3 text-left transition-transform duration-150 ease-out active:scale-[0.98]',
+                  k === today ? 'bg-primary/12' : blocked ? 'bg-foreground/[0.04]' : 'bg-foreground/[0.07]'
                 )}
                 style={
                   blocked && k !== today
@@ -234,19 +238,19 @@ export function CalendarNav({
                 }
               >
                 <div className="w-11 shrink-0 text-center">
-                  <p className="text-[11px] font-medium uppercase text-muted-foreground">{label}</p>
-                  <p className="text-lg font-semibold tabular-nums leading-none">{day}</p>
+                  <p className={cn('text-[12px] font-semibold uppercase', k === today ? 'text-primary' : 'text-muted-foreground')}>{label}</p>
+                  <p className="font-title text-[1.5rem] leading-none font-bold tabular-nums">{day}</p>
                 </div>
-                <div className="min-w-0 flex-1 pt-0.5">
+                <div className="min-w-0 flex-1">
                   {blocked ? (
                     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Lock className="size-3" strokeWidth={1.8} />
                       Bloqueado
                     </p>
                   ) : items.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Sin citas</p>
+                    <p className="text-[15px] text-muted-foreground">Sin citas</p>
                   ) : (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="line-clamp-2 text-[15px] text-foreground/85">
                       {items
                         .map((s) => `${formatTime(s.scheduled_at)} ${s.projects?.clients?.name ?? ''}`)
                         .join(' · ')}
@@ -291,14 +295,14 @@ export function CalendarNav({
                   data-day-picker={k}
                   onClick={() => onSelectedDayChange(() => k)}
                   className={cn(
-                    'flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-xs font-medium transition-colors data-[drop-hover=true]:ring-2 data-[drop-hover=true]:ring-primary',
+                    'flex flex-1 flex-col items-center gap-1 rounded-full py-2 text-[15px] font-semibold transition-[background-color,transform] duration-150 ease-out active:scale-95 data-[drop-hover=true]:ring-2 data-[drop-hover=true]:ring-primary',
                     selected
                       ? 'bg-primary text-primary-foreground'
                       : dayBlockedMini
-                        ? 'bg-muted-foreground/15 text-muted-foreground'
+                        ? 'text-muted-foreground/50'
                         : busy
-                          ? 'bg-primary/20 text-foreground hover:bg-primary/25'
-                          : 'bg-background text-foreground hover:bg-accent'
+                          ? 'bg-primary/15 text-foreground'
+                          : 'text-foreground hover:bg-foreground/[0.07]'
                   )}
                   style={
                     dayBlockedMini && !selected
@@ -309,7 +313,7 @@ export function CalendarNav({
                       : undefined
                   }
                 >
-                  <span className="uppercase opacity-70">{weekdayLabel}</span>
+                  <span className="text-[11px] uppercase opacity-70">{weekdayLabel}</span>
                   <span className="tabular-nums">{day}</span>
                 </button>
               )
@@ -317,7 +321,7 @@ export function CalendarNav({
           </div>
 
           <div
-            className="space-y-3 border-t border-border pt-3"
+            className="space-y-3 pt-1"
             onTouchStart={(e) => {
               touchStartX.current = e.touches[0]!.clientX
             }}
@@ -329,7 +333,7 @@ export function CalendarNav({
               onSelectedDayChange((d) => shiftDay(d, delta < 0 ? 1 : -1))
             }}
           >
-            <p className="text-sm font-medium capitalize">{dayLabelText}</p>
+            <p className="font-title text-[1.25rem] font-bold tracking-tight capitalize">{dayLabelText}</p>
 
             {onToggleBlockDay &&
               (confirmingBlock ? (

@@ -5,6 +5,7 @@ import { cop } from '@/lib/projects/metrics'
 import { deltaPct } from '@/lib/home/month-metrics'
 import { CajaButton } from '@/components/home/caja-button'
 import { TileGrid } from '@/components/ui/tile'
+import { OPEN_AGENDA_EVENT } from '@/components/home/agenda-list-dialog'
 import type { MonthSummary } from '@/lib/home/day-metrics'
 import type { ProjectSummary } from '@/queries/projects'
 import type { SessionWithProject } from '@/queries/sessions'
@@ -70,7 +71,7 @@ export function MonthSummaryCard({
 
       <div className="grid grid-cols-2 gap-3">
         <TileGrid
-          href="/dashboard?openCalendar=1"
+          onClick={() => window.dispatchEvent(new Event(OPEN_AGENDA_EVENT))}
           tone="indigo"
           icon="spiral-calendar"
           subtitle={summary.upcoming > 0 ? `${summary.upcoming} por venir` : 'Ninguna por venir'}

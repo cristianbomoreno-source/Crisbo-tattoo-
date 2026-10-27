@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { ChevronRight, CalendarDays } from 'lucide-react'
+import { CaretRight } from '@phosphor-icons/react'
 import { MonthGrid } from '@/components/home/month-grid'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { QuickScheduleDialog } from '@/components/calendar/quick-schedule-dialog'
-import { AgendaListDialog } from '@/components/home/agenda-list-dialog'
+import { AgendaListDialog, OPEN_AGENDA_EVENT } from '@/components/home/agenda-list-dialog'
 import type { ProjectBalance } from '@/components/home/today-appointments'
 import type { SessionWithProject } from '@/queries/sessions'
 
@@ -63,29 +63,33 @@ export function CalendarCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  return (
-    <section className="space-y-3 rounded-[1.5rem] bg-card p-3.5 sm:p-5" data-tour="calendar-card">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">Calendario</h2>
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedDay(today)
-            setInitialView('month')
-            setDialogOpen(true)
-          }}
-          className="flex items-center gap-0.5 text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          Ver todo
-          <ChevronRight className="size-4" strokeWidth={2.2} />
-        </button>
-      </div>
+  // Tarjeta "citas" de Inicio (u otro botón) → listado de citas.
+  useEffect(() => {
+    const open = () => setAgendaOpen(true)
+    window.addEventListener(OPEN_AGENDA_EVENT, open)
+    return () => window.removeEventListener(OPEN_AGENDA_EVENT, open)
+  }, [])
 
+  return (
+    <section className="space-y-3 rounded-[2rem] bg-card p-4 sm:p-5" data-tour="calendar-card">
       <div data-tour="calendar-week-strip">
         <MonthGrid
           days={days}
           today={today}
           blockedDays={blockedDays}
+          action={
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDay(today)
+                setInitialView('month')
+                setDialogOpen(true)
+              }}
+              className="shrink-0 rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold transition-transform duration-150 ease-out active:scale-[0.95]"
+            >
+              Ver todo
+            </button>
+          }
           onSelectDay={(key) => {
             setSelectedDay(key)
             // Día con citas → su horario (desde ahí se agenda en un hueco libre).
@@ -107,10 +111,13 @@ export function CalendarCard({
           setInitialView('day')
           setDialogOpen(true)
         }}
-        className="flex items-center gap-2 text-xs text-muted-foreground"
+        className="flex w-full items-center justify-between rounded-2xl bg-secondary px-4 py-3 text-left transition-transform duration-150 ease-out active:scale-[0.98]"
       >
-        <CalendarDays className="size-3.5 text-primary" strokeWidth={2} />
-        {count === 0 ? 'Sin sesiones hoy' : `${count} ${count === 1 ? 'sesión' : 'sesiones'} hoy`}
+        <span className="flex items-center gap-2.5 text-[15px] font-semibold">
+          <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+          {count === 0 ? 'Sin sesiones hoy' : `${count} ${count === 1 ? 'sesión' : 'sesiones'} hoy`}
+        </span>
+        <CaretRight className="size-4 text-muted-foreground" weight="bold" />
       </button>
 
       <HomeCalendarDialog
