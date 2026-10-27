@@ -184,7 +184,7 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
 
       {/* Foto de portada — solo se usa en el Home de iPad/escritorio. */}
       <section className="mb-8">
-        <p className="mb-2 font-display text-xs font-semibold text-foreground">
+        <p className="mb-2 text-[13px] font-semibold text-foreground">
           Foto de portada
         </p>
         <p className="mb-3 text-xs text-muted-foreground">

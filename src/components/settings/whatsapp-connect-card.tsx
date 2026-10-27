@@ -87,7 +87,7 @@ export function WhatsAppConnectCard({
       )}
 
       <section className="space-y-4 rounded-2xl bg-card p-4">
-        <h2 className="font-display text-sm font-semibold">
+        <h2 className="text-[1.0625rem] font-semibold">
           {account ? 'Actualizar conexión' : 'Conectar número'}
         </h2>
 
@@ -132,7 +132,7 @@ export function WhatsAppConnectCard({
       </section>
 
       <section className="space-y-3 rounded-2xl bg-card p-4 text-sm">
-        <h2 className="font-display text-sm font-semibold">Webhook</h2>
+        <h2 className="text-[1.0625rem] font-semibold">Webhook</h2>
         <p className="text-muted-foreground">
           Al conectar, Crisbo Tattoo le pide a Meta que mande los mensajes de <strong>este número</strong> a:
         </p>

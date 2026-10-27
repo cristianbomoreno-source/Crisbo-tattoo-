@@ -51,7 +51,7 @@ export function AccountsManager({ accounts }: { accounts: MyAccount[] }) {
             <div
               key={account.artistId}
               className={cn(
-                'flex items-center gap-3.5 rounded-2xl border bg-card p-4',
+                'flex items-center gap-3.5 rounded-[1.25rem] bg-card p-4',
                 account.isActive ? 'border-primary/60' : 'border-border/60'
               )}
             >

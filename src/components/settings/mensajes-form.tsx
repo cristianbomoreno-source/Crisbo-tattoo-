@@ -127,7 +127,7 @@ export function MensajesForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
           {TEMPLATES.map((tpl) => (
-            <div key={tpl.name} className="rounded-2xl border border-foreground/8 bg-card p-4">
+            <div key={tpl.name} className="rounded-[1.25rem] bg-card p-4">
               <FormField
                 control={form.control}
                 name={tpl.name}

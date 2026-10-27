@@ -40,7 +40,7 @@ export function ThemeToggle() {
           <Icon className="size-5" strokeWidth={1.8} aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-sm font-semibold text-foreground">
+          <span className="block text-[1.0625rem] font-semibold text-foreground">
             Apariencia
           </span>
           <span className="mt-0.5 block truncate text-xs text-muted-foreground">
@@ -59,7 +59,7 @@ export function ThemeToggle() {
           aria-checked={current === 'dark'}
           onClick={() => select('dark')}
           className={cn(
-            'flex-1 rounded-full px-3 py-1.5 font-display text-xs font-semibold transition-colors',
+            'flex-1 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors',
             current === 'dark'
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
@@ -73,7 +73,7 @@ export function ThemeToggle() {
           aria-checked={current === 'light'}
           onClick={() => select('light')}
           className={cn(
-            'flex-1 rounded-full px-3 py-1.5 font-display text-xs font-semibold transition-colors',
+            'flex-1 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors',
             current === 'light'
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
@@ -87,7 +87,7 @@ export function ThemeToggle() {
           aria-checked={current === 'minimal'}
           onClick={() => select('minimal')}
           className={cn(
-            'flex-1 rounded-full px-3 py-1.5 font-display text-xs font-semibold transition-colors',
+            'flex-1 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors',
             current === 'minimal'
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'

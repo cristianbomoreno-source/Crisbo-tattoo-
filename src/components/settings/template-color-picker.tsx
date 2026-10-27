@@ -43,7 +43,7 @@ export function TemplateColorPicker({ initialColor }: { initialColor: string | n
 
   return (
     <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-      <p className="font-display text-sm font-semibold text-foreground">
+      <p className="text-[1.0625rem] font-semibold text-foreground">
         Color de la cotización
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { toast } from 'sonner'
@@ -234,12 +233,6 @@ export function CashSummarySheet({
                   )}
                 </section>
 
-                <Link
-                  href="/dashboard/settings/gastos"
-                  className="flex items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-semibold hover:bg-muted"
-                >
-                  Ver todos los gastos
-                </Link>
               </div>
               <Fab onClick={() => setAdding(true)} />
             </>

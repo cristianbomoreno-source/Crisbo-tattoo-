@@ -138,7 +138,6 @@ async function payToAnyClient(
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath('/dashboard/projects')
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/finanzas')
   const left = open ? open.balance - monto : 0
   return {
     ok: true,
@@ -181,8 +180,6 @@ export async function saveMovement(studioId: string, m: Movement): Promise<SaveR
       return { ok: false, message: '❌ No se pudo guardar, intenta de nuevo' }
     }
     revalidatePath('/dashboard')
-    revalidatePath('/dashboard/settings/gastos')
-    revalidatePath('/dashboard/settings/finanzas')
     return { ok: true, message: `✅ Entró ${cop(monto)} · ${otherIncome}` }
   }
 
@@ -211,7 +208,6 @@ export async function saveMovement(studioId: string, m: Movement): Promise<SaveR
     revalidatePath(`/dashboard/projects/${project.id}`)
     revalidatePath('/dashboard/projects')
     revalidatePath('/dashboard')
-    revalidatePath('/dashboard/settings/finanzas')
     const left = project.balance - monto
     const who = project.clients?.name ?? project.name
     return { ok: true, message: `✅ Entró ${cop(monto)} · ${who}${left > 0 ? ` · queda ${cop(left)}` : ' · ¡pagado completo!'}` }
@@ -232,7 +228,5 @@ export async function saveMovement(studioId: string, m: Movement): Promise<SaveR
     return { ok: false, message: '❌ No se pudo guardar, intenta de nuevo' }
   }
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
   return { ok: true, message: `✅ Salió ${cop(monto)} · ${personal ? 'Personal' : 'Negocio'} · ${category}` }
 }

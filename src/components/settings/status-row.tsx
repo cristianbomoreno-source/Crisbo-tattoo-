@@ -31,19 +31,19 @@ export function StatusRow({
     <Link
       href={href}
       data-tour={tourTag}
-      className="group flex min-h-9 items-center gap-2.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex min-h-[3.25rem] items-center gap-3 rounded-[1.25rem] bg-card px-4 py-2 transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span
         aria-hidden="true"
         className={cn(
-          'grid size-4.5 shrink-0 place-items-center rounded-full text-[11px] font-bold',
-          ok ? 'bg-primary/20 text-primary' : 'bg-amber-400/15 text-amber-400'
+          'grid size-6 shrink-0 place-items-center rounded-full text-[13px] font-bold',
+          ok ? 'bg-income/20 text-income' : 'bg-warning/20 text-warning'
         )}
       >
         {ok ? '✓' : '!'}
       </span>
-      <span className="min-w-0 flex-1 truncate text-[14px] text-foreground/90">{label}</span>
-      {value ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{value}</span> : null}
+      <span className="min-w-0 flex-1 truncate text-[1.0625rem]">{label}</span>
+      {value ? <span className="shrink-0 text-[15px] tabular-nums text-muted-foreground">{value}</span> : null}
     </Link>
   )
 }

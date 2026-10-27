@@ -71,7 +71,7 @@ export function WhatsAppDataFormCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <ClipboardList className="size-4 text-primary" />
-          <h2 className="font-display text-sm font-semibold">Formulario de datos</h2>
+          <h2 className="text-[1.0625rem] font-semibold">Formulario de datos</h2>
         </div>
         {badge && (
           <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium', badge.className)}>

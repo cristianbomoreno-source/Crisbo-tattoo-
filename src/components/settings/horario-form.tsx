@@ -55,7 +55,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
     <SettingsSubpage title="Horario" description="Los días y horas en que trabajas.">
       <div className="space-y-6">
         <div>
-          <div id="dias-label" className="mb-1.5 font-display text-xs font-medium text-foreground">
+          <div id="dias-label" className="mb-1.5 text-[15px] font-medium text-foreground">
             Días de atención
           </div>
           <div className="flex gap-1.5" role="group" aria-labelledby="dias-label">
@@ -83,7 +83,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="open-time" className="mb-1.5 block font-display text-xs font-medium text-foreground">
+            <label htmlFor="open-time" className="mb-1.5 block text-[15px] font-medium text-foreground">
               Apertura
             </label>
             <select id="open-time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} className={selectClass}>
@@ -96,7 +96,7 @@ export function HorarioForm({ openDays: initialDays, openTime: initialOpen, clos
             </select>
           </div>
           <div>
-            <label htmlFor="close-time" className="mb-1.5 block font-display text-xs font-medium text-foreground">
+            <label htmlFor="close-time" className="mb-1.5 block text-[15px] font-medium text-foreground">
               Cierre
             </label>
             <select id="close-time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} className={selectClass}>

@@ -1,57 +1,37 @@
 import Link from 'next/link'
 import {
-  Store,
-  Wallet,
-  Users,
-  UsersRound,
-  Bot,
-  Paintbrush,
-  User,
-  MapPin,
-  Link2,
-  ChevronRight,
-  HelpCircle,
-  MessageCircle,
-} from 'lucide-react'
-
+  CalendarX,
+  CaretRight,
+  ChatCircleText,
+  Clock,
+  CreditCard,
+  Cube,
+  IdentificationBadge,
+  InstagramLogo,
+  Palette,
+  PaintBrush,
+  Storefront,
+  Target,
+  UserSwitch,
+  UsersThree,
+  WhatsappLogo,
+} from '@phosphor-icons/react/dist/ssr'
 import type { CurrentStudio } from '@/queries/studio'
 import type { FeatureKey } from '@/lib/features/catalog'
-import type { SettingsMetrics } from '@/queries/settings-metrics'
-import { FeatureLockedRow } from '@/components/shared/feature-locked-row'
 import { LogoutButton } from '@/components/shared/logout-button'
 import { VersionInfo } from '@/components/settings/version-info'
 import { TutorialButton } from '@/components/settings/tutorial-button'
-import { QuickActionsRow } from '@/components/settings/quick-actions-row'
-import { cn } from '@/lib/utils'
-import { InstagramIcon } from '@/components/shared/instagram-icon'
 import { StudioModules } from '@/components/settings/studio-modules'
 import { LargeTitle } from '@/components/shared/large-title'
+import { SettingsGroup, SettingsRow } from '@/components/settings/settings-list'
+import { LinkPageCard } from '@/components/settings/link-page-card'
 
-/*
- * ══ Panel de control del estudio (rediseño) ═════════════════════════════
- * Cápsula de cuenta + héroe (identidad, progreso, métricas reales) +
- * cuadrícula de tarjetas compactas por módulo (cada una entra a su propia
- * página-hub o a la de siempre) + accesos rápidos + ayuda reducida.
- * Cero cambios de lógica/rutas: cada destino sigue siendo el mismo Link de
- * siempre — solo cambió cómo se agrupa y se muestra.
- */
-
-// ── Estado real del estudio, calculado en el servidor ──────────────────────
-
-export type StudioStatus = ReturnType<typeof computeStudioStatus>
-
+/** Qué tan completo está el estudio (tarjeta de perfil de Estudio). */
 export function computeStudioStatus(studio: CurrentStudio, blockedDaysCount: number) {
   const checks = {
     perfil: !!(studio.name && studio.city && studio.logoUrl),
     horario: !!(studio.openDays?.length && studio.openTime && studio.closeTime),
-    abono: studio.depositValue !== null,
     pagos: (studio.paymentMethods?.length ?? 0) > 0,
-    politicas: !!(
-      studio.paymentPolicy ||
-      studio.cancellationPolicy ||
-      (studio.studioRules?.length ?? 0) > 0
-    ),
-    precios: studio.pricePresets.length > 0,
     mensajes: !!studio.quoteMessageTemplate,
     whatsapp: !!studio.whatsappPhone,
     artista: !!studio.artistName,
@@ -66,128 +46,33 @@ export function computeStudioStatus(studio: CurrentStudio, blockedDaysCount: num
   }
 }
 
-// ── Piezas visuales ────────────────────────────────────────────────────────
+export type StudioStatus = ReturnType<typeof computeStudioStatus>
 
-/** Anillo de progreso del héroe (SVG a mano, sin librerías). */
-function ProgressRing({ pct }: { pct: number }) {
-  const R = 34
-  const C = 2 * Math.PI * R
-  return (
-    <div className="relative grid size-[4.5rem] shrink-0 place-items-center sm:size-20">
-      <svg viewBox="0 0 84 84" className="absolute inset-0 -rotate-90">
-        <circle cx="42" cy="42" r={R} fill="none" strokeWidth="6" className="stroke-border" />
-        <circle
-          cx="42"
-          cy="42"
-          r={R}
-          fill="none"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={C * (1 - pct / 100)}
-          className="stroke-primary transition-[stroke-dashoffset] duration-700 ease-out"
-        />
-      </svg>
-      <span className="flex flex-col items-center leading-none">
-        <span className="font-title font-bold text-lg tabular-nums">
-          {pct}
-          <span className="text-xs text-muted-foreground">%</span>
-        </span>
-        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">Listo</span>
-      </span>
-    </div>
-  )
+const DAY_ORDER = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM']
+const DAY_SHORT: Record<string, string> = { LUN: 'Lun', MAR: 'Mar', MIE: 'Mié', JUE: 'Jue', VIE: 'Vie', SAB: 'Sáb', DOM: 'Dom' }
+
+/** "Lun – Sáb" si los días son seguidos; si no, la cantidad. */
+function daysLabel(days: string[] | null) {
+  const idx = (days ?? [])
+    .map((d) => DAY_ORDER.indexOf(d))
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b)
+  if (idx.length === 0) return null
+  if (idx.length === 7) return 'Todos los días'
+  const consecutive = idx.every((v, i) => i === 0 || v === idx[i - 1]! + 1)
+  return consecutive ? `${DAY_SHORT[DAY_ORDER[idx[0]!]!]} – ${DAY_SHORT[DAY_ORDER[idx[idx.length - 1]!]!]}` : `${idx.length} días`
 }
 
-/** Métrica compacta de la fila bajo el héroe. */
-function MetricPill({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 text-center">
-      <span className="font-title font-bold text-lg tabular-nums leading-none sm:text-xl">{value}</span>
-      <span className="text-[11px] leading-tight text-muted-foreground">{label}</span>
-    </div>
-  )
-}
-
-/** Tarjeta compacta de módulo: toda la tarjeta es el Link de entrada. */
-function CompactCard({
-  href,
-  icon: Icon,
-  title,
-  locked,
-  className,
-  children,
-}: {
-  href: string
-  icon: React.ElementType
-  title: string
-  locked?: boolean
-  className?: string
-  children: React.ReactNode
-}) {
-  if (locked) {
-    return (
-      <div className={cn('flex flex-col justify-between rounded-[1.5rem] border border-border/60 bg-card p-4', className)}>
-        <span className="grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground">
-          <Icon className="size-5" strokeWidth={1.7} aria-hidden="true" />
-        </span>
-        <div className="mt-3">
-          <h3 className="font-title font-bold text-sm leading-none text-muted-foreground">{title}</h3>
-          <div className="mt-2.5">
-            <FeatureLockedRow label="Disponible con suscripción" />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'group flex flex-col justify-between rounded-[1.5rem] border border-border/60 bg-card p-4 transition-all hover:border-primary/40 hover:bg-accent/30 active:scale-[0.98]',
-        className
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <span className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Icon className="size-5" strokeWidth={1.7} aria-hidden="true" />
-        </span>
-        <ChevronRight
-          className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-          strokeWidth={2}
-          aria-hidden="true"
-        />
-      </div>
-      <div className="mt-3">
-        <h3 className="font-title font-bold text-sm leading-none">{title}</h3>
-        <div className="mt-2">{children}</div>
-      </div>
-    </Link>
-  )
-}
-
-/** Insignia/chip de estado dentro de una CompactCard (p. ej. "Todo configurado ✓"). */
-function StatusChip({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-1 text-[12px] font-medium',
-        ok ? 'bg-primary/15 text-primary' : 'bg-amber-400/15 text-amber-400'
-      )}
-    >
-      {label}
-      {ok && <span aria-hidden="true">✓</span>}
-    </span>
-  )
-}
-
-// ── El panel de control ─────────────────────────────────────────────────────
-
+/**
+ * Pestaña Estudio, al estilo de Ajustes del iPhone (oct 2026): tarjetas de
+ * color de los módulos, la tarjeta de perfil del estudio (como la del Apple
+ * ID, con el % configurado), la página de links y listas agrupadas con todo
+ * lo configurable, sin páginas intermedias. Los estados son reales (WhatsApp
+ * e Instagram conectados, días bloqueados, medios de pago…).
+ */
 export function StudioControlCenter({
   studio,
   status,
-  metrics,
   pendingRequests = 0,
   teamSize = 1,
   disabledFeatures = new Set(),
@@ -196,170 +81,160 @@ export function StudioControlCenter({
 }: {
   studio: CurrentStudio
   status: StudioStatus
-  /** Clientes, citas, ingresos y tasa de cierre del mes — ver queries/settings-metrics.ts. */
-  metrics: SettingsMetrics
   /** Solicitudes de ingreso pendientes de aprobar. */
   pendingRequests?: number
   /** Tatuadores activos del estudio (incluye al dueño). */
   teamSize?: number
   /** Módulos apagados por un admin de Crisbo Tattoo (ver /admin → Módulos por cuenta). */
   disabledFeatures?: Set<FeatureKey>
-  /** Si el estudio ya conectó su número de la API de WhatsApp (Ajustes → WhatsApp). */
   whatsappConnected?: boolean
-  /** Si el estudio ya conectó su cuenta de Instagram (Ajustes → Instagram). */
   instagramConnected?: boolean
 }) {
   const { checks } = status
   const isEstudio = studio.accountKind === 'estudio'
+  const hours = studio.openTime && studio.closeTime ? `${studio.openTime.slice(0, 5)} – ${studio.closeTime.slice(0, 5)}` : null
+  const methods = studio.paymentMethods?.length ?? 0
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="mx-auto max-w-2xl space-y-6">
       <LargeTitle title="Estudio" avatar={{ initial: studio.name.charAt(0).toUpperCase(), photoUrl: studio.logoUrl }} />
       <span className="sr-only">{isEstudio ? 'Cuenta de estudio' : 'Cuenta de tatuador'}</span>
 
-      {/* ═══ Módulos (solo celular: la barra inferior no los tiene) ═══ */}
       <StudioModules isOwner />
 
-      {/* ═══ Héroe: identidad + progreso + métricas ═══ */}
-      <section data-tour="settings-hero" className="rounded-[2rem] border border-border/60 bg-card p-5 sm:p-7">
-        <div className="flex items-center gap-4 sm:gap-5">
-          <div className="flex min-w-0 flex-1 items-center gap-4">
-            {studio.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={studio.logoUrl}
-                alt=""
-                loading="eager"
-                decoding="async"
-                className="size-14 shrink-0 rounded-full border border-border object-cover sm:size-16"
-              />
-            ) : (
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 font-title font-bold text-2xl text-primary sm:size-16">
-                {studio.name.charAt(0).toUpperCase()}
-              </span>
-            )}
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="truncate font-title font-bold text-xl leading-none sm:text-2xl">{studio.name}</h1>
-                <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 font-display text-[11px] font-bold text-primary-foreground">
-                  Pro
-                </span>
-              </div>
-              {studio.city ? (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="size-3" strokeWidth={2} aria-hidden="true" />
-                  {studio.city}
-                </p>
-              ) : null}
-              <Link
-                href="/dashboard/settings/enlace"
-                className="mt-1.5 inline-flex max-w-full items-center gap-1 truncate text-xs text-primary hover:underline"
-              >
-                <Link2 className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
-                crisbotattoo.com/t/{studio.slug}
-              </Link>
-            </div>
-          </div>
-          <ProgressRing pct={status.pct} />
-        </div>
-
-        <div className="mt-5 flex items-stretch divide-x divide-border/60 border-t border-border/60 pt-4">
-          <MetricPill value={String(metrics.clientsCount)} label="Clientes" />
-          <MetricPill value={String(metrics.sessionsThisMonth)} label="Citas este mes" />
-          <MetricPill value={`$${Math.round(metrics.incomeThisMonth / 1000)}K`} label="Ingresos del mes" />
-          <MetricPill value={`${metrics.conversionPct}%`} label="Tasa de cierre" />
-        </div>
-      </section>
-
-      {/* ═══ Cuadrícula de módulos ═══ */}
-      <div className="grid grid-cols-2 gap-3.5">
-        <CompactCard href="/dashboard/settings/estudio" icon={Store} title="Estudio">
-          <StatusChip ok={status.missing === 0} label={status.missing === 0 ? 'Todo configurado' : `${status.missing} pendientes`} />
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/clientes" icon={Users} title="Clientes">
-          <StatusChip ok label={`${metrics.clientsCount} clientes`} />
-        </CompactCard>
-
-        <CompactCard
-          href="/dashboard/settings/bot"
-          icon={Bot}
-          title="Bot de solicitudes"
-          locked={disabledFeatures.has('bot')}
-          className="ring-1 ring-primary/25"
-        >
-          <div className="flex flex-wrap items-center gap-1.5">
-            <StatusChip ok label="Activo" />
-            {checks.whatsapp && <StatusChip ok label="WhatsApp" />}
-          </div>
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/whatsapp" icon={MessageCircle} title="WhatsApp Business">
-          <StatusChip ok={whatsappConnected} label={whatsappConnected ? 'Conectado' : 'Sin conectar'} />
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/instagram" icon={InstagramIcon} title="Instagram">
-          <StatusChip ok={instagramConnected} label={instagramConnected ? 'Conectado' : 'Sin conectar'} />
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/cotizaciones" icon={Wallet} title="Cotizaciones">
-          <StatusChip
-            ok={checks.precios}
-            label={checks.precios ? `${studio.pricePresets.length} precios base` : 'Sin precios'}
-          />
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/personalizacion" icon={Paintbrush} title="Personalización">
-          <div className="flex items-center gap-1.5">
-            <span
-              aria-hidden="true"
-              className="size-4 shrink-0 rounded-full border border-border/60"
-              style={{ backgroundColor: studio.quoteTemplateColor || 'var(--primary)' }}
-            />
-            <span className="text-[12px] text-muted-foreground">Tema oscuro</span>
-          </div>
-        </CompactCard>
-
-        <CompactCard href="/dashboard/settings/cuenta" icon={User} title="Cuenta">
-          <StatusChip ok label="Plan PRO" />
-        </CompactCard>
-
-        {isEstudio && (
-          <CompactCard href="/dashboard/settings/equipo" icon={UsersRound} title="Equipo" className="col-span-2">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <StatusChip ok label={`${teamSize} / 20 tatuadores`} />
-              {pendingRequests > 0 && <StatusChip ok={false} label={`${pendingRequests} solicitud(es)`} />}
-            </div>
-          </CompactCard>
+      {/* Tarjeta de perfil (como la del Apple ID) */}
+      <Link
+        href="/dashboard/settings/perfil"
+        data-tour="settings-hero"
+        className="flex items-center gap-4 rounded-[1.25rem] bg-card p-4 transition-transform duration-150 ease-out active:scale-[0.98]"
+      >
+        {studio.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={studio.logoUrl} alt="" className="size-16 shrink-0 rounded-full object-cover" />
+        ) : (
+          <span className="tile-gold grid size-16 shrink-0 place-items-center rounded-full text-[1.75rem] font-bold text-white">
+            {studio.name.charAt(0).toUpperCase()}
+          </span>
         )}
-      </div>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[1.375rem] leading-tight font-bold tracking-tight">{studio.name}</span>
+          <span className="block truncate text-[15px] text-muted-foreground">{studio.city || 'Perfil del estudio, logo y ciudad'}</span>
+          <span className="mt-2 flex items-center gap-2">
+            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.08]">
+              <span className="block h-full rounded-full bg-primary" style={{ width: `${status.pct}%` }} />
+            </span>
+            <span className="shrink-0 text-[13px] font-semibold text-muted-foreground tabular-nums">
+              {status.missing === 0 ? 'Completo' : `${status.pct}%`}
+            </span>
+          </span>
+        </span>
+        <CaretRight className="size-4 shrink-0 text-muted-foreground/70" weight="bold" />
+      </Link>
 
-      {/* ═══ Accesos rápidos ═══ */}
-      <div>
-        <p className="mb-2 px-1 font-display text-[12px] font-semibold text-muted-foreground">
-          Accesos rápidos
-        </p>
-        <QuickActionsRow slug={studio.slug} whatsappConnected={checks.whatsapp} />
-      </div>
+      <LinkPageCard slug={studio.slug} />
 
-      {/* ═══ Ayuda y soporte (reducida) ═══ */}
-      <section className="rounded-[1.75rem] border border-border/60 bg-card p-2">
-        <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-1">
-          <HelpCircle className="size-3.5 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
-          <p className="font-display text-[12px] font-semibold text-muted-foreground">
-            Ayuda y soporte
-          </p>
-        </div>
-        <div className="mt-1">
-          <TutorialButton />
-        </div>
-        <div className="border-t border-border/60">
-          <VersionInfo />
-        </div>
-        <div className="mt-1 border-t border-border/60 pt-1">
-          <LogoutButton />
-        </div>
-      </section>
+      <SettingsGroup title="Tu estudio">
+        <SettingsRow
+          href="/dashboard/settings/perfil"
+          icon={Storefront}
+          tone="tile-gold"
+          label="Perfil del estudio"
+          pending={!checks.perfil}
+          tourTag="settings-perfil"
+        />
+        <SettingsRow
+          href="/dashboard/settings/horario"
+          icon={Clock}
+          tone="tile-blue"
+          label="Horario"
+          value={checks.horario ? `${daysLabel(studio.openDays) ?? ''}${hours ? ` · ${hours}` : ''}` : 'Configurar'}
+          pending={!checks.horario}
+        />
+        <SettingsRow
+          href="/dashboard/settings/fechas"
+          icon={CalendarX}
+          tone="tile-red"
+          label="Fechas especiales"
+          value={status.blockedDaysCount > 0 ? `${status.blockedDaysCount} bloqueadas` : 'Ninguna'}
+        />
+        <SettingsRow
+          href="/dashboard/settings/pagos"
+          icon={CreditCard}
+          tone="tile-green"
+          label="Medios de pago"
+          value={methods > 0 ? `${methods}` : 'Configurar'}
+          pending={methods === 0}
+        />
+        <SettingsRow href="/dashboard/settings/metas" icon={Target} tone="tile-sunset" label="Metas del mes" />
+      </SettingsGroup>
+
+      <SettingsGroup title="Conexiones">
+        <SettingsRow
+          href="/dashboard/settings/whatsapp"
+          icon={WhatsappLogo}
+          tone="tile-green"
+          label="WhatsApp Business"
+          value={whatsappConnected ? 'Conectado' : 'Sin conectar'}
+          pending={!whatsappConnected}
+        />
+        <SettingsRow
+          href="/dashboard/settings/instagram"
+          icon={InstagramLogo}
+          tone="tile-purple"
+          label="Instagram"
+          value={instagramConnected ? 'Conectado' : 'Sin conectar'}
+          pending={!instagramConnected}
+        />
+        <SettingsRow
+          href="/dashboard/settings/mensajes"
+          icon={ChatCircleText}
+          tone="tile-teal"
+          label="Plantillas de mensajes"
+          pending={!checks.mensajes}
+        />
+      </SettingsGroup>
+
+      <SettingsGroup title="Operación">
+        <SettingsRow
+          href="/dashboard/settings/inventario"
+          icon={Cube}
+          tone="tile-brown"
+          label="Inventario de insumos"
+          locked={disabledFeatures.has('inventory')}
+        />
+        {isEstudio && (
+          <SettingsRow
+            href="/dashboard/settings/equipo"
+            icon={UsersThree}
+            tone="tile-indigo"
+            label="Equipo"
+            value={pendingRequests > 0 ? `${pendingRequests} solicitud${pendingRequests === 1 ? '' : 'es'}` : `${teamSize} / 20`}
+            pending={pendingRequests > 0}
+          />
+        )}
+      </SettingsGroup>
+
+      <SettingsGroup title="Apariencia">
+        <SettingsRow href="/dashboard/settings/personalizacion" icon={Palette} tone="tile-purple" label="Tema y colores" />
+        <SettingsRow href="/dashboard/settings/enlace/personalizar" icon={PaintBrush} tone="tile-sunset" label="Diseño de la página de links" />
+      </SettingsGroup>
+
+      <SettingsGroup title="Cuenta">
+        <SettingsRow
+          href="/dashboard/settings/artista"
+          icon={IdentificationBadge}
+          tone="tile-gray"
+          label="Perfil de artista"
+          pending={!checks.artista}
+        />
+        <SettingsRow href="/dashboard/settings/cuentas" icon={UserSwitch} tone="tile-slate" label="Cuentas Crisbo Tattoo" />
+      </SettingsGroup>
+
+      <SettingsGroup title="Ayuda">
+        <TutorialButton />
+        <VersionInfo />
+        <LogoutButton className="min-h-[3.25rem] rounded-none px-4 text-[1.0625rem] font-normal text-destructive hover:bg-destructive/10" />
+      </SettingsGroup>
     </div>
   )
 }

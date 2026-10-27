@@ -18,10 +18,10 @@ export default async function EnlaceSettingsPage() {
       <div className="mx-auto max-w-2xl px-4">
         <Link
           href="/dashboard/settings/enlace/personalizar"
-          className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          className="mt-6 flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-4 text-[1.0625rem] font-semibold text-primary-foreground transition-transform duration-150 ease-out active:scale-[0.97]"
         >
           <Paintbrush className="size-4" />
-          Personalizar Mi Link
+          Cambiar el diseño
         </Link>
         <StudioLinksPanel slug={studio.slug} initialLinks={linksResult.success ? linksResult.data : []} />
       </div>

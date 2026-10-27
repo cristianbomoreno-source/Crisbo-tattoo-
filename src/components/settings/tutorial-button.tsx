@@ -22,10 +22,12 @@ export function TutorialButton() {
     <button
       type="button"
       onClick={handleClick}
-      className="group flex min-h-9 items-center gap-2.5 rounded-lg px-1.5 py-1 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-h-[3.25rem] w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
-      <HelpCircle className="size-4 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate text-[14px] text-foreground/90">Repetir tutorial guiado</span>
+      <span className="tile-blue grid size-8 shrink-0 place-items-center rounded-[0.55rem] text-white">
+        <HelpCircle className="size-[18px]" strokeWidth={2.2} aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[1.0625rem]">Repetir tutorial guiado</span>
     </button>
   )
 }

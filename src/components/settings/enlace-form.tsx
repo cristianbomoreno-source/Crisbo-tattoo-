@@ -27,11 +27,11 @@ export function EnlaceForm({ initialSlug }: { initialSlug: string }) {
   const [pending, startTransition] = useTransition()
 
   const origin = useSyncExternalStore(emptySubscribe, getOrigin, getServerOrigin)
-  const url = `${origin}/t/${slug}`
+  const url = `${origin}/l/${slug}`
   const changed = slug !== initialSlug
 
   function copy() {
-    navigator.clipboard.writeText(`${window.location.origin}/t/${slug}`)
+    navigator.clipboard.writeText(`${window.location.origin}/l/${slug}`)
     setCopied(true)
     toast.success('Enlace copiado')
     setTimeout(() => setCopied(false), 2000)
@@ -50,25 +50,25 @@ export function EnlaceForm({ initialSlug }: { initialSlug: string }) {
   }
 
   return (
-    <SettingsSubpage title="Enlace público" description="Tu link para que los clientes te encuentren.">
+    <SettingsSubpage title="Página de links" description="Tu página con todos tus enlaces, como Linktree. Aquí eliges la dirección y los botones.">
       <div className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="settings-slug">Tu enlace</Label>
           <div className="flex gap-2">
-            <div className="flex flex-1 items-center rounded-md border border-input bg-transparent pl-3">
-              <span className="shrink-0 text-sm text-muted-foreground">t/</span>
+            <div className="flex h-12 flex-1 items-center rounded-2xl bg-foreground/[0.07] pl-4">
+              <span className="shrink-0 text-[1.0625rem] text-muted-foreground">l/</span>
               <Input
                 id="settings-slug"
                 value={slug}
                 onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
-                className="border-0 pl-1 focus-visible:ring-0"
+                className="h-12 border-0 bg-transparent pl-1 focus-visible:bg-transparent focus-visible:ring-0"
               />
             </div>
-            <Button type="button" variant="outline" size="icon" onClick={copy} aria-label="Copiar enlace">
+            <Button type="button" variant="secondary" size="icon" onClick={copy} aria-label="Copiar enlace" className="size-12">
               {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">{url}</p>
+          <p className="text-[13px] text-muted-foreground">{url}</p>
           {changed && (
             <p className="text-xs text-warning">Ojo: al cambiar el enlace, el anterior deja de funcionar.</p>
           )}

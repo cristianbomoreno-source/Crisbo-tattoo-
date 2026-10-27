@@ -33,8 +33,6 @@ export async function createExpenseAction(input: unknown): Promise<Result<{ id: 
   if (error) return dbError(error)
 
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok({ id: data.id })
 }
 
@@ -47,8 +45,6 @@ export async function deleteExpenseAction(id: string): Promise<Result<void>> {
   if (error) return dbError(error)
 
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
 }
 
@@ -84,8 +80,6 @@ export async function payFixedExpenseAction(id: string, account?: string | null)
   if (error) return dbError(error)
 
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
   // El id permite "Deshacer" desde el aviso (borra ese pago).
   return ok({ id: paid.id })
 }
@@ -139,8 +133,6 @@ export async function reclassifyExpenseAction(id: string, category: string, desc
   if (error) return dbError(error)
 
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/gastos')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
 }
 

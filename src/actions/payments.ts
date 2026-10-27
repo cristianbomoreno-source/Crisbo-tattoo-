@@ -83,7 +83,6 @@ export async function createPaymentAction(input: unknown): Promise<Result<void>>
   revalidatePath(`/dashboard/projects/${parsed.data.project_id}`)
   revalidatePath('/dashboard/projects')
   revalidatePath('/dashboard')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
 }
 
@@ -117,7 +116,6 @@ export async function updatePaymentDateAction(input: unknown): Promise<Result<vo
   revalidatePath('/dashboard/projects')
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/stats')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
 }
 
@@ -151,6 +149,5 @@ export async function deletePaymentAction(input: unknown): Promise<Result<void>>
   revalidatePath('/dashboard/projects')
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/stats')
-  revalidatePath('/dashboard/settings/finanzas')
   return ok(undefined)
 }

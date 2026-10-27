@@ -62,11 +62,11 @@ export function PagosForm({ initialMethods }: { initialMethods: string[] }) {
                 onClick={() => toggle(method)}
                 aria-pressed={active}
                 className={cn(
-                  'flex items-center justify-between rounded-xl border bg-card p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'flex items-center justify-between rounded-[1.25rem] bg-card p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
                 )}
               >
-                <span className={cn('font-display text-sm font-semibold', active ? 'text-primary' : 'text-foreground')}>
+                <span className={cn('text-[1.0625rem] font-semibold', active ? 'text-primary' : 'text-foreground')}>
                   {method}
                 </span>
                 <span
@@ -104,7 +104,7 @@ export function PagosForm({ initialMethods }: { initialMethods: string[] }) {
 
         {/* Agregar método personalizado */}
         <div className="space-y-1.5">
-          <label htmlFor="custom-method" className="block font-display text-xs font-medium text-foreground">
+          <label htmlFor="custom-method" className="block text-[15px] font-medium text-foreground">
             Agregar otro método
           </label>
           <div className="flex gap-2">

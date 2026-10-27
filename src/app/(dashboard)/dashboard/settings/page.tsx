@@ -13,14 +13,11 @@ import { StudioBrand } from '@/components/shared/studio-brand'
 import { StudioModules } from '@/components/settings/studio-modules'
 import { listJoinRequests, listTeam } from '@/actions/team'
 import { getDisabledFeatures } from '@/queries/features'
-import { getSettingsMetrics } from '@/queries/settings-metrics'
 import { getInstagramAccountStatus, getWhatsAppAccountStatus } from '@/queries/whatsapp'
 
 /**
- * Ajustes = Centro de control del estudio (ver studio-control-center.tsx):
- * héroe con identidad + anillo de progreso, y módulos-tarjeta con estado
- * real. Cada fila de estado y cada flecha de módulo son Links directos a
- * las subpáginas de siempre — sin previsualización embebida.
+ * Pestaña Estudio (ver studio-control-center.tsx): módulos, perfil del
+ * estudio, página de links y listas agrupadas al estilo de Ajustes de iOS.
  */
 export default async function SettingsPage() {
   const studio = await getCurrentStudio()
@@ -71,11 +68,10 @@ export default async function SettingsPage() {
 
   const status = computeStudioStatus(studio, blockedDays.length)
 
-  const [requestsResult, teamResult, disabledFeatures, metrics, whatsappAccount, instagramAccount] = await Promise.all([
+  const [requestsResult, teamResult, disabledFeatures, whatsappAccount, instagramAccount] = await Promise.all([
     listJoinRequests(),
     listTeam(),
     getDisabledFeatures(studio.id),
-    getSettingsMetrics(),
     getWhatsAppAccountStatus(),
     getInstagramAccountStatus(),
   ])
@@ -88,7 +84,6 @@ export default async function SettingsPage() {
       <StudioControlCenter
         studio={studio}
         status={status}
-        metrics={metrics}
         pendingRequests={pendingRequests}
         teamSize={teamSize}
         disabledFeatures={disabledFeatures}

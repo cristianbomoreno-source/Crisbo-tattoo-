@@ -88,23 +88,23 @@ export function VersionInfo() {
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 px-2 py-1.5">
+    <div className="flex min-h-[3.25rem] items-center justify-between gap-3 px-4 py-2">
       <div className="min-w-0">
-        <p className="font-display text-sm font-semibold">Acerca de Crisbo Tattoo</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
+        <p className="text-[1.0625rem]">Acerca de Crisbo Tattoo</p>
+        <p className="text-[13px] text-muted-foreground">
           Versión {APP_VERSION} · build {BUILD_SHA}
         </p>
       </div>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         onClick={checkForUpdates}
         disabled={checking}
         className="shrink-0"
       >
         <RefreshCw className={checking ? 'size-4 animate-spin' : 'size-4'} strokeWidth={1.8} aria-hidden="true" />
-        {checking ? 'Buscando…' : 'Buscar actualizaciones'}
+        {checking ? 'Buscando…' : 'Actualizar'}
       </Button>
     </div>
   )

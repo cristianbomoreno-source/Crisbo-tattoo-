@@ -71,14 +71,14 @@ export function ArtistaForm({ name: iName, styles: iStyles, experienceRange: iEx
     <SettingsSubpage title="Tu perfil de artista" description="Nombre, especialidad y experiencia.">
       <div className="space-y-6">
         <div>
-          <label htmlFor="artist-name" className="mb-1.5 block font-display text-xs font-medium text-foreground">
+          <label htmlFor="artist-name" className="mb-1.5 block text-[15px] font-medium text-foreground">
             ¿Cómo te llamas?
           </label>
           <Input id="artist-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
         </div>
 
         <div>
-          <div className="mb-2 font-display text-xs font-medium text-foreground">Estilos que tatúas</div>
+          <div className="mb-2 text-[15px] font-medium text-foreground">Estilos que tatúas</div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {STYLE_OPTIONS.map((style) => {
               const active = styles.includes(style)
@@ -89,11 +89,11 @@ export function ArtistaForm({ name: iName, styles: iStyles, experienceRange: iEx
                   onClick={() => toggleStyle(style)}
                   aria-pressed={active}
                   className={cn(
-                    'flex items-center justify-between gap-2 rounded-xl border bg-card px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'flex items-center justify-between gap-2 rounded-[1.25rem] bg-card px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
                   )}
                 >
-                  <span className={cn('font-display text-xs font-medium', active ? 'text-primary' : 'text-foreground')}>
+                  <span className={cn('text-[15px] font-medium', active ? 'text-primary' : 'text-foreground')}>
                     {style}
                   </span>
                   {active && <Check className="size-3.5 shrink-0 text-primary" strokeWidth={3} aria-hidden="true" />}
@@ -104,7 +104,7 @@ export function ArtistaForm({ name: iName, styles: iStyles, experienceRange: iEx
         </div>
 
         <div>
-          <label htmlFor="artist-exp" className="mb-1.5 block font-display text-xs font-medium text-foreground">
+          <label htmlFor="artist-exp" className="mb-1.5 block text-[15px] font-medium text-foreground">
             Años de experiencia
           </label>
           <select id="artist-exp" value={experienceRange} onChange={(e) => setExperienceRange(e.target.value)} className={selectClass}>
@@ -148,7 +148,7 @@ function ThreeStateToggle({
 }) {
   return (
     <div>
-      <div className="mb-1.5 font-display text-xs font-medium text-foreground">{label}</div>
+      <div className="mb-1.5 text-[15px] font-medium text-foreground">{label}</div>
       <div className="flex gap-2">
         {([
           { v: true, t: 'Sí' },
@@ -162,7 +162,7 @@ function ThreeStateToggle({
               onClick={() => onChange(active ? undefined : v)}
               aria-pressed={active}
               className={cn(
-                'h-10 flex-1 cursor-pointer rounded-md border font-display text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'h-10 flex-1 cursor-pointer rounded-md border text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:border-primary/40'
               )}
             >

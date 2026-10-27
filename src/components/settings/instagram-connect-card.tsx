@@ -80,7 +80,7 @@ export function InstagramConnectCard({
       )}
 
       <section className="space-y-4 rounded-2xl bg-card p-4">
-        <h2 className="font-display text-sm font-semibold">{account ? 'Actualizar token' : 'Conectar cuenta'}</h2>
+        <h2 className="text-[1.0625rem] font-semibold">{account ? 'Actualizar token' : 'Conectar cuenta'}</h2>
         <div className="space-y-1.5">
           <Label htmlFor="ig-token">Token de acceso de Instagram</Label>
           <Input
@@ -102,7 +102,7 @@ export function InstagramConnectCard({
       </section>
 
       <section className="space-y-3 rounded-2xl bg-card p-4 text-sm">
-        <h2 className="font-display text-sm font-semibold">Webhook</h2>
+        <h2 className="text-[1.0625rem] font-semibold">Webhook</h2>
         <p className="text-muted-foreground">
           En la app de Meta, en Instagram → Webhooks, pega esta URL de devolución de llamada y suscríbete al campo{' '}
           <code>messages</code>:

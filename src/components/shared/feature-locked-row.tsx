@@ -15,15 +15,15 @@ export function FeatureLockedRow({ label }: { label: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex min-h-9 w-full items-center gap-2.5 rounded-lg px-1.5 py-1 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group flex min-h-[3.25rem] w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-foreground/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
         <span
           aria-hidden="true"
-          className="grid size-4.5 shrink-0 place-items-center rounded-full bg-foreground/10 text-muted-foreground"
+          className="grid size-8 shrink-0 place-items-center rounded-[0.55rem] bg-foreground/10 text-muted-foreground"
         >
-          <Lock className="size-2.5" strokeWidth={2.2} />
+          <Lock className="size-4" strokeWidth={2.2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[14px] text-muted-foreground">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-[1.0625rem] text-muted-foreground">{label}</span>
       </button>
 
       {open && (

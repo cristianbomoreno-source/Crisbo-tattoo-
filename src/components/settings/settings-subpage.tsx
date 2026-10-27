@@ -36,7 +36,7 @@ export function SettingsSubpage({
     return (
       <div>
         <div className="mb-4">
-          <h3 className="font-display text-sm font-semibold text-foreground">
+          <h3 className="text-[1.0625rem] font-semibold text-foreground">
             {title}
           </h3>
           {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
@@ -52,20 +52,17 @@ export function SettingsSubpage({
     // empuja contenido dentro del flujo normal, así que si no se reserva acá
     // la última tarjeta del formulario queda justo detrás de la barra.
     <div className="mx-auto max-w-xl pb-24 lg:pb-0">
-      <div className="mb-6 flex items-start gap-3">
+      <div className="mb-6">
         <Link
           href="/dashboard/settings"
-          aria-label="Volver a Ajustes"
-          className="mt-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Volver a Estudio"
+          className="mb-3 inline-flex h-10 items-center gap-1 rounded-full bg-secondary pr-4 pl-2.5 text-[15px] font-semibold transition-transform duration-150 ease-out active:scale-[0.96] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <ArrowLeft className="size-5" strokeWidth={1.8} aria-hidden="true" />
+          <ArrowLeft className="size-5" strokeWidth={2.2} aria-hidden="true" />
+          Estudio
         </Link>
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-semibold text-foreground">
-            {title}
-          </h1>
-          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-        </div>
+        <h1 className="large-title">{title}</h1>
+        {description && <p className="mt-1 text-[1.0625rem] text-muted-foreground">{description}</p>}
       </div>
       {children}
     </div>
@@ -115,9 +112,9 @@ export function SettingsSaveBar({
     )
   }
   return (
-    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background px-4 py-3 sm:px-6 lg:bottom-0 lg:left-64">
+    <div className="fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-40 px-4 py-2 sm:px-6 lg:bottom-4 lg:left-[16.5rem]">
       <div className="mx-auto max-w-xl">
-        <Button type="button" onClick={onSave} disabled={!dirty || saving} className="h-10 w-full sm:w-auto">
+        <Button type="button" onClick={onSave} disabled={!dirty || saving} className="h-12 w-full text-[1.0625rem] shadow-[0_10px_30px_-8px_rgb(0_0_0/0.6)]">
           {saving ? 'Guardando…' : label}
         </Button>
       </div>
