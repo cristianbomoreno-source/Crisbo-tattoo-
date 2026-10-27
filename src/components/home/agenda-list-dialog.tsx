@@ -69,7 +69,7 @@ export function AgendaListDialog({ open, onOpenChange }: { open: boolean; onOpen
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
         <div className="px-5 pt-5 pb-3">
-          <DialogTitle className="large-title">Citas</DialogTitle>
+          <DialogTitle className="text-[2.125rem] leading-[1.1] font-bold tracking-tight">Citas</DialogTitle>
           <p className="text-[1.0625rem] text-muted-foreground">
             {loading ? 'Cargando…' : `${upcoming.length} ${upcoming.length === 1 ? 'cita' : 'citas'} por venir`}
           </p>

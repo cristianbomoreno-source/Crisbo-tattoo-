@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ChevronLeft } from 'lucide-react'
 import { CashSummarySheet, type Receivable } from '@/components/home/cash-summary-sheet'
 import { OPEN_CAJA_EVENT } from '@/components/home/open-caja-row'
 import type { CashSummary } from '@/lib/finance/cash-summary'
@@ -25,8 +24,8 @@ function ownsHorizontalSwipe(target: EventTarget | null): boolean {
 /**
  * Inicio móvil: deslizar de derecha a izquierda abre el Resumen de caja.
  * Solo cuenta un gesto claramente horizontal (≥ 70px y el doble de largo
- * que de alto) para no pelear con el scroll vertical. La pestañita del
- * borde derecho hace lo mismo con un toque y deja ver que el gesto existe.
+ * que de alto) para no pelear con el scroll vertical. La entrada visible es
+ * la tarjeta "Caja y cuentas" (la pestañita del borde se quitó a pedido).
  * `/dashboard?caja=1` (Estudio → Caja y cuentas) lo abre directo.
  */
 export function HomeSwipe({
@@ -73,18 +72,6 @@ export function HomeSwipe({
       }}
     >
       {children}
-
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Abrir resumen de caja"
-        className="fixed right-0 top-1/2 z-20 flex h-16 w-11 -translate-y-1/2 items-center justify-end md:hidden"
-      >
-        {/* Se ve angosta para no tapar el contenido; el área táctil mide 44px. */}
-        <span className="flex h-14 w-4 items-center justify-center rounded-l-full bg-foreground/10 text-foreground/60 backdrop-blur">
-          <ChevronLeft className="size-3.5" />
-        </span>
-      </button>
 
       <CashSummarySheet open={open} onOpenChange={setOpen} summary={summary} receivable={receivable} />
     </div>

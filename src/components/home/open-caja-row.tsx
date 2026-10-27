@@ -5,8 +5,7 @@ import { TileRow } from '@/components/ui/tile'
 
 export const OPEN_CAJA_EVENT = 'crisbo:open-caja'
 
-/** Entrada visible al Resumen de caja en Inicio (además del gesto ← y la
- * pestañita del borde): la caja se revisa a diario, no debe ser un secreto.
+/** Entrada visible al Resumen de caja en Inicio (además del gesto ←): la caja se revisa a diario, no debe ser un secreto.
  * Tarjeta de color como "Logros" de Apple Games. */
 export function OpenCajaRow({ total, accounts }: { total: number; accounts: number }) {
   return (

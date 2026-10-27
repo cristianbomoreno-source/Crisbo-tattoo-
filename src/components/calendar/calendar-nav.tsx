@@ -116,30 +116,32 @@ export function CalendarNav({
           onViewChange('day')
         }}
         title={blocked ? 'Día bloqueado' : paid ? 'Citas pagadas' : green ? 'Citas finalizadas' : undefined}
-        className="group flex h-12 flex-col items-center justify-start gap-1 pt-0.5 focus-visible:outline-none"
+        className="group grid h-12 place-items-center focus-visible:outline-none"
       >
         <span
           className={cn(
-            'grid size-9 place-items-center rounded-full text-[1.0625rem] tabular-nums transition-[background-color,transform] duration-150 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-ring',
-            selected
-              ? 'bg-primary font-bold text-primary-foreground'
-              : isToday
-                ? 'font-bold text-primary group-hover:bg-secondary'
-                : blocked
-                  ? 'text-muted-foreground/45 line-through decoration-1'
-                  : busy
-                    ? 'font-semibold text-foreground group-hover:bg-secondary'
-                    : 'text-foreground/90 group-hover:bg-secondary',
+            'relative grid size-10 place-items-center text-[1.0625rem] tabular-nums transition-[background-color,transform] duration-150 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-ring',
+            busy && !blocked
+              ? cn(
+                  'rounded-[0.85rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)]',
+                  green ? 'tile-green' : 'tile-gold',
+                  (selected || isToday) && 'ring-2 ring-primary ring-offset-2 ring-offset-popover',
+                )
+              : selected
+                ? 'rounded-full bg-primary font-bold text-primary-foreground'
+                : isToday
+                  ? 'rounded-full font-bold text-primary group-hover:bg-secondary'
+                  : blocked
+                    ? 'rounded-full text-muted-foreground/45 line-through decoration-1'
+                    : 'rounded-full text-foreground/90 group-hover:bg-secondary',
           )}
         >
           {day}
-        </span>
-        <span className="flex h-1.5 items-center gap-0.5" aria-hidden="true">
-          {busy &&
-            !blocked &&
-            Array.from({ length: Math.min(count, 3) }).map((_, i) => (
-              <span key={i} className={cn('size-1.5 rounded-full', green ? 'bg-income' : 'bg-primary')} />
-            ))}
+          {busy && !blocked && count > 1 && (
+            <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-white text-[10px] font-bold text-black">
+              {count}
+            </span>
+          )}
         </span>
         {blocked && <span className="sr-only"> (día bloqueado)</span>}
         {paid && <span className="sr-only"> (pagado)</span>}

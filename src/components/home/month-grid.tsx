@@ -7,10 +7,10 @@ const WEEKDAYS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 
 /**
  * Mes completo en la tarjeta "Calendario" del Inicio, al estilo del
- * Calendario de iPhone: el mes en grande arriba, números sueltos (sin
- * cuadros), hoy en un círculo dorado y un punto por cita debajo de cada día
- * (hasta 3). Puntos verdes = citas finalizadas o pagadas; días bloqueados en
- * gris tenue. Tocar un día abre el popup en vista Día (o agendar, si está libre).
+ * Calendario de iPhone: el mes en grande arriba y números sueltos; los días
+ * con cita se rellenan como un cuadrito de las tarjetas de color (dorado, o
+ * verde si ya están finalizadas o pagadas) con el número de citas si hay más
+ * de una; hoy va en un círculo dorado; días bloqueados en gris tenue. Tocar un día abre el popup en vista Día (o agendar, si está libre).
  */
 export function MonthGrid({
   days,
@@ -64,27 +64,30 @@ export function MonthGrid({
               aria-label={`Día ${day}${isToday ? ' (hoy)' : ''}: ${
                 blocked ? 'bloqueado' : paid ? `${d.count} cita(s) pagadas` : busy ? `${d.count} cita(s)` : 'libre'
               }`}
-              className="group flex h-12 flex-col items-center justify-start gap-1 pt-0.5 focus-visible:outline-none"
+              className="group grid h-12 place-items-center focus-visible:outline-none"
             >
               <span
                 className={cn(
-                  'grid size-9 place-items-center rounded-full text-[1.0625rem] tabular-nums transition-[background-color,transform] duration-150 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-ring',
-                  isToday
-                    ? 'bg-primary font-bold text-primary-foreground'
-                    : blocked
-                      ? 'text-muted-foreground/45 line-through decoration-1'
-                      : busy
-                        ? 'font-semibold text-foreground group-hover:bg-secondary'
-                        : 'text-foreground/90 group-hover:bg-secondary',
+                  'relative grid size-10 place-items-center text-[1.0625rem] tabular-nums transition-[background-color,transform] duration-150 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-ring',
+                  busy
+                    ? cn(
+                        'rounded-[0.85rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)]',
+                        green ? 'tile-green' : 'tile-gold',
+                        isToday && 'ring-2 ring-primary ring-offset-2 ring-offset-card',
+                      )
+                    : isToday
+                      ? 'rounded-full bg-primary font-bold text-primary-foreground'
+                      : blocked
+                        ? 'rounded-full text-muted-foreground/45 line-through decoration-1'
+                        : 'rounded-full text-foreground/90 group-hover:bg-secondary',
                 )}
               >
                 {day}
-              </span>
-              <span className="flex h-1.5 items-center gap-0.5" aria-hidden="true">
-                {busy &&
-                  Array.from({ length: Math.min(d.count, 3) }).map((_, i) => (
-                    <span key={i} className={cn('size-1.5 rounded-full', green ? 'bg-income' : 'bg-primary')} />
-                  ))}
+                {busy && d.count > 1 && (
+                  <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-white text-[10px] font-bold text-black">
+                    {d.count}
+                  </span>
+                )}
               </span>
             </button>
           )

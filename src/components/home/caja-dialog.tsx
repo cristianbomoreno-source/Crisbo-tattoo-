@@ -3,10 +3,10 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Wallet, Search, ChevronLeft } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CaretLeft, MagnifyingGlass } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 import { createPaymentAction } from '@/actions/payments'
 import { ProjectCompletionStep } from '@/components/home/project-completion-step'
 import { calculateBalance, cop } from '@/lib/projects/metrics'
@@ -117,189 +117,176 @@ export function CajaDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {step.view === 'detail' && (
-              <button
-                type="button"
-                onClick={() => setStep({ view: 'list' })}
-                aria-label="Volver"
-                className="-ml-1 flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
-              >
-                <ChevronLeft className="size-4" strokeWidth={2} />
-              </button>
-            )}
-            <Wallet className="size-4 text-primary" strokeWidth={2} />
-            {step.view === 'list' ? 'Caja' : 'Cobro'}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0">
+        <div className="flex items-center gap-2 px-5 pt-5 pb-3 pr-14">
+          {step.view === 'detail' && (
+            <button
+              type="button"
+              onClick={() => setStep({ view: 'list' })}
+              aria-label="Volver"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-foreground/[0.08] transition-transform duration-150 ease-out active:scale-90"
+            >
+              <CaretLeft className="size-5" weight="bold" />
+            </button>
+          )}
+          <DialogTitle className="text-[2.125rem] leading-[1.1] font-bold tracking-tight">{step.view === 'list' ? 'Caja' : 'Cobro'}</DialogTitle>
+        </div>
 
-        {step.view === 'list' && (
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <p className="font-display text-xs font-semibold text-muted-foreground">
-                Cobros pendientes del día
-              </p>
-              {todayRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No tienes cobros pendientes hoy.</p>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+          {step.view === 'list' && (
+            <div className="space-y-6">
+              <section className="space-y-2.5">
+                <h3 className="font-title text-[1.25rem] font-bold tracking-tight">Por cobrar hoy</h3>
+                {todayRows.length === 0 ? (
+                  <p className="rounded-[1.25rem] bg-foreground/[0.06] px-4 py-3.5 text-[15px] text-muted-foreground">
+                    No tienes cobros pendientes hoy.
+                  </p>
+                ) : (
+                  todayRows.map((p) => <ProjectRow key={p.id} project={p} highlight onClick={() => openDetail(p)} />)
+                )}
+              </section>
+
+              <section className="space-y-2.5">
+                <h3 className="font-title text-[1.25rem] font-bold tracking-tight">Abono de otro proyecto</h3>
+                <div className="relative">
+                  <MagnifyingGlass
+                    className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-muted-foreground"
+                    weight="bold"
+                  />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Buscar cliente o proyecto"
+                    className="h-12 w-full rounded-full bg-foreground/[0.08] pr-4 pl-11 text-[1.0625rem] outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </div>
+                <div className="space-y-2.5">
+                  {otherRows.length === 0 ? (
+                    <p className="py-2 text-center text-[15px] text-muted-foreground">Sin resultados.</p>
+                  ) : (
+                    otherRows.map((p) => <ProjectRow key={p.id} project={p} onClick={() => openDetail(p)} />)
+                  )}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {step.view === 'detail' && detail && (
+            <div className="space-y-5">
+              {/* Resumen como tarjeta de color (estilo "Logros" de Apple Games). */}
+              <div className="tile-teal rounded-[1.75rem] p-5 text-white">
+                <p className="truncate text-[1.25rem] leading-tight font-bold">{detail.clients?.name ?? '—'}</p>
+                <p className="truncate text-[15px] text-white/70">{detail.name}</p>
+                <p className="mt-4 text-[13px] font-semibold tracking-wide text-white/70 uppercase">Saldo pendiente</p>
+                <p className="font-title text-[2.25rem] leading-none font-bold tabular-nums">{cop(calculateBalance(detail))}</p>
+                <p className="mt-1.5 text-[15px] text-white/70">
+                  de {cop(detail.total_value ?? 0)}
+                </p>
+              </div>
+
+              {detail.payments.length > 0 && (
+                <section className="space-y-2">
+                  <h3 className="font-title text-[1.125rem] font-bold tracking-tight">Abonos</h3>
+                  <ul className="divide-y divide-border overflow-hidden rounded-[1.25rem] bg-foreground/[0.06]">
+                    {[...detail.payments]
+                      .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())
+                      .map((pay) => (
+                        <li key={pay.id} className="flex items-center justify-between px-4 py-3 text-[15px]">
+                          <span className="text-muted-foreground">
+                            {new Date(pay.paid_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                            {pay.payment_method ? ` · ${pay.payment_method}` : ''}
+                          </span>
+                          <span className="font-semibold tabular-nums">{cop(pay.amount)}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </section>
+              )}
+
+              {done && asking ? (
+                <ProjectCompletionStep projectId={detail.id} onDone={() => setAsking(false)} />
+              ) : done ? (
+                <p className="text-center text-[1.0625rem] font-semibold text-income">Cobro registrado ✓</p>
+              ) : calculateBalance(detail) <= 0 ? (
+                <p className="text-center text-[15px] text-muted-foreground">Sin saldo pendiente.</p>
               ) : (
-                <div className="space-y-2">
-                  {todayRows.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => openDetail(p)}
-                      className="flex w-full items-center justify-between gap-3 rounded-2xl bg-background p-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{p.clients?.name ?? '—'}</p>
-                        <p className="truncate text-xs text-muted-foreground">{p.name}</p>
-                      </div>
-                      <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">
-                        {cop(calculateBalance(p))}
-                      </span>
-                    </button>
-                  ))}
+                <div className="space-y-4">
+                  <label className="block">
+                    <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      Monto recibido
+                    </span>
+                    <input
+                      inputMode="numeric"
+                      value={amount ? cop(Number(amount.replace(/\D/g, '')) || 0) : ''}
+                      onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
+                      placeholder="$0"
+                      className="h-16 w-full rounded-[1.25rem] bg-foreground/[0.08] px-4 text-center font-title !text-[2rem] font-bold tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+
+                  <div>
+                    <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Cuenta</span>
+                    <div className="flex flex-wrap gap-2">
+                      {methods.map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMethod(m)}
+                          className={cn(
+                            'rounded-full px-4 py-2 text-[15px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-95',
+                            method === m ? 'bg-primary text-primary-foreground' : 'bg-foreground/[0.08] text-foreground',
+                          )}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button type="button" onClick={() => submit(detail.id)} disabled={saving} className="h-14 w-full text-[1.0625rem]">
+                    {saving ? 'Guardando…' : 'Registrar cobro'}
+                  </Button>
                 </div>
               )}
             </div>
-
-            <div className="space-y-2">
-              <p className="font-display text-xs font-semibold text-muted-foreground">
-                Abono de otro proyecto
-              </p>
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                  strokeWidth={1.7}
-                />
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar proyecto o cliente…"
-                  className="pl-8"
-                />
-              </div>
-              <div className="max-h-56 space-y-2 overflow-y-auto">
-                {otherRows.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Sin resultados.</p>
-                ) : (
-                  otherRows.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => openDetail(p)}
-                      className="flex w-full items-center justify-between gap-3 rounded-2xl bg-background p-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{p.clients?.name ?? '—'}</p>
-                        <p className="truncate text-xs text-muted-foreground">{p.name}</p>
-                      </div>
-                      <span className="shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
-                        {cop(calculateBalance(p))}
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step.view === 'detail' && detail && (
-          <div className="space-y-4">
-            <div className="rounded-2xl bg-background p-4">
-              <p className="text-sm font-semibold">{detail.clients?.name ?? '—'}</p>
-              <p className="text-xs text-muted-foreground">{detail.name}</p>
-
-              <div className="mt-3 space-y-1.5 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Valor del proyecto</span>
-                  <span className="font-semibold tabular-nums">{cop(detail.total_value ?? 0)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Saldo pendiente</span>
-                  <span className="font-semibold tabular-nums text-primary">
-                    {cop(calculateBalance(detail))}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {detail.payments.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="font-display text-xs font-semibold text-muted-foreground">
-                  Abonos realizados
-                </p>
-                <ul className="space-y-1.5">
-                  {[...detail.payments]
-                    .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())
-                    .map((pay) => (
-                      <li
-                        key={pay.id}
-                        className="flex items-center justify-between rounded-xl bg-background px-3 py-2 text-xs"
-                      >
-                        <span className="text-muted-foreground">
-                          {new Date(pay.paid_at).toLocaleDateString('es-CO', {
-                            day: 'numeric',
-                            month: 'short',
-                          })}
-                          {pay.payment_method ? ` · ${pay.payment_method}` : ''}
-                        </span>
-                        <span className="font-semibold tabular-nums">{cop(pay.amount)}</span>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            )}
-
-            {done && asking ? (
-              <ProjectCompletionStep projectId={detail.id} onDone={() => setAsking(false)} />
-            ) : done ? (
-              <p className="text-sm font-medium text-primary">Cobro registrado ✓</p>
-            ) : calculateBalance(detail) <= 0 ? (
-              <p className="text-sm text-muted-foreground">Sin saldo pendiente.</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <label className="block text-xs text-muted-foreground">Monto recibido</label>
-                  <Input inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs text-muted-foreground">Método de pago</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {methods.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setMethod(m)}
-                        className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                          method === m
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-input text-muted-foreground hover:bg-accent'
-                        }`}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={() => submit(detail.id)}
-                  disabled={saving}
-                  className="h-11 w-full"
-                >
-                  {saving ? 'Guardando…' : 'Registrar cobro'}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Fila de proyecto como la lista de Apple Games: cuadro de color con la
+ * inicial del cliente, nombre en negrita, proyecto en gris y el saldo en
+ * una píldora a la derecha. */
+function ProjectRow({ project, highlight, onClick }: { project: ProjectSummary; highlight?: boolean; onClick: () => void }) {
+  const name = project.clients?.name ?? '—'
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3.5 text-left transition-transform duration-150 ease-out active:scale-[0.98]"
+    >
+      <span
+        className={cn(
+          'grid size-12 shrink-0 place-items-center rounded-[0.9rem] text-[1.25rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]',
+          highlight ? 'tile-gold' : 'tile-gray',
+        )}
+      >
+        {name.charAt(0).toUpperCase()}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[1.0625rem] font-semibold">{name}</span>
+        <span className="block truncate text-[15px] text-muted-foreground">{project.name}</span>
+      </span>
+      <span
+        className={cn(
+          'shrink-0 rounded-full px-3.5 py-1.5 text-[15px] font-semibold tabular-nums',
+          highlight ? 'bg-primary/15 text-primary' : 'bg-foreground/[0.08]',
+        )}
+      >
+        {cop(calculateBalance(project))}
+      </span>
+    </button>
   )
 }
