@@ -203,6 +203,9 @@
        calendario) — solo evita que un desborde de layout en cualquier parte
        arrastre el documento completo hacia los lados. */
     overflow-x: hidden;
+    /* Sin rebote elástico en el documento: en el iPhone (sobre todo la app
+       instalada) el rebote arrastraba la barra de abajo con el contenido. */
+    overscroll-behavior-y: none;
   }
   body {
     @apply bg-background text-foreground;
@@ -214,7 +217,7 @@
        tomadas durante el bounce) en la PWA instalada. El padding de
        safe-area-inset-top en cada layout ya reserva el espacio correcto;
        esto solo evita que el rebote lo "empuje" momentáneamente. */
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: none;
   }
 
   /* Jerarquía tipográfica base: encabezados algo más compactos y con leve

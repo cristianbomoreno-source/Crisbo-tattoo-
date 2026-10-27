@@ -32,7 +32,7 @@ export function MobileNav() {
     <nav
       aria-label="Navegación principal"
       data-tour="nav-bar"
-      className="glass fixed inset-x-4 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
+      className="glass fixed inset-x-4 [transform:translate3d(0,0,0)] [backface-visibility:hidden] bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
     >
       {MOBILE_TAB_ITEMS.map((item) => (
         <TabLink
