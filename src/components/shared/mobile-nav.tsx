@@ -8,10 +8,9 @@ import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
 
 /**
  * Navegación móvil de Crisbo Tattoo (<lg): barra flotante en forma de
- * píldora (estilo YouVersion) separada del borde inferior, de 4 posiciones
- * (Inicio, Proyectos, Mensajes, Estudio). Sin botón central: el menú-pulpo
- * se eliminó (2026-10-26). Íconos y etiquetas en el color del texto; la
- * pestaña activa se marca con una píldora gris detrás, no con color. En
+ * píldora de vidrio (estilo Apple Games / iOS 26) separada del borde inferior, de 4 posiciones
+ * (Inicio, Proyectos, Mensajes, Estudio). Íconos siempre rellenos; la
+ * pestaña activa lleva una cápsula clara detrás y el ícono en dorado. En
  * escritorio (lg+) se oculta; ahí manda el sidebar.
  *
  * La pestaña "Estudio" navega directo a /dashboard/settings: arriba lista los
@@ -33,7 +32,7 @@ export function MobileNav() {
     <nav
       aria-label="Navegación principal"
       data-tour="nav-bar"
-      className="fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-16 items-stretch gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_8px_30px_-6px_rgb(0_0_0/0.35)] lg:hidden"
+      className="glass fixed inset-x-4 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
     >
       {MOBILE_TAB_ITEMS.map((item) => (
         <TabLink
@@ -70,11 +69,11 @@ function TabLink({
       aria-current={active ? 'page' : undefined}
       className={cn(
         'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full transition-[background-color,color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:scale-[0.96]',
-        active ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60',
+        active ? 'bg-[var(--glass-active)] text-foreground' : 'text-foreground/90',
       )}
     >
-      <Icon className={cn('size-6', active && 'text-primary')} weight={active ? 'fill' : 'regular'} />
-      <span className="max-w-full truncate text-[12px] font-semibold leading-none tracking-tight">{label}</span>
+      <Icon className={cn('size-[26px]', active && 'text-primary')} weight="fill" />
+      <span className={cn('max-w-full truncate text-[11px] leading-none font-medium', active && 'text-primary')}>{label}</span>
     </Link>
   )
 }

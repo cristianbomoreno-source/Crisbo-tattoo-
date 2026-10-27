@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import { CalendarCheck, CaretRight, ClipboardText, TrendDown, TrendUp } from '@phosphor-icons/react'
-import { cn } from '@/lib/utils'
+import { TrendDown, TrendUp } from '@phosphor-icons/react'
 import { cop } from '@/lib/projects/metrics'
 import { deltaPct } from '@/lib/home/month-metrics'
 import { CajaButton } from '@/components/home/caja-button'
+import { Icon3D } from '@/components/ui/icon-3d'
+import { TileGrid } from '@/components/ui/tile'
 import type { MonthSummary } from '@/lib/home/day-metrics'
 import type { ProjectSummary } from '@/queries/projects'
 import type { SessionWithProject } from '@/queries/sessions'
@@ -18,9 +18,10 @@ function monthName(monthKey: string, offset = 0) {
   return monthFmt.format(new Date(Date.UTC(Number(y), Number(m) - 1 + offset, 1)))
 }
 
-/** Tarjeta "Resumen del mes" de Inicio: dinero ingresado (con la
- * comparación contra el mes anterior), citas agendadas y cotizaciones en
- * espera. Mantiene el botón "Caja" para registrar los cobros de hoy. */
+/** Portada de Inicio al estilo Apple Games: tarjeta grande con degradado y
+ * brillo dorado, el dinero que entró este mes en grande, la comparación con
+ * el mes anterior y la píldora "Registrar cobro". Debajo, dos tarjetas de
+ * color: citas agendadas y cotizaciones en espera. */
 export function MonthSummaryCard({
   monthKey,
   summary,
@@ -38,86 +39,46 @@ export function MonthSummaryCard({
   const up = delta !== null && delta >= 0
 
   return (
-    <section className="space-y-3 rounded-[1.5rem] bg-card p-3.5 sm:p-5">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-base font-semibold">Resumen del mes</h2>
-        <span className="text-xs capitalize text-muted-foreground">{monthName(monthKey)}</span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">Dinero ingresado</p>
-          <p className="mt-0.5 truncate font-title text-[1.75rem] leading-tight font-bold tabular-nums">{cop(summary.income)}</p>
-          {delta !== null ? (
-            <p
-              className={cn(
-                'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium',
-                up ? 'bg-income/15 text-income' : 'bg-destructive/15 text-destructive',
-              )}
-            >
-              {up ? <TrendUp className="size-3.5" weight="bold" /> : <TrendDown className="size-3.5" weight="bold" />}
-              {up ? '+' : ''}
-              {delta}% vs {monthName(monthKey, -1)}
-            </p>
-          ) : (
-            <p className="mt-1 text-[12px] text-muted-foreground">Pagos registrados este mes</p>
-          )}
+    <div className="space-y-3">
+      <section className="relative overflow-hidden rounded-[2rem] bg-[radial-gradient(120%_80%_at_50%_0%,#9a6a2a_0%,#4a2f14_45%,#1a120a_100%)] px-5 pt-5 pb-6 text-center text-white">
+        {/* Rayos de luz detrás del ícono, como la portada de Apple Games. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[repeating-conic-gradient(from_0deg_at_50%_22%,rgb(255_214_150/0.10)_0deg_2deg,transparent_2deg_14deg)] [mask-image:radial-gradient(70%_60%_at_50%_22%,black,transparent)]"
+        />
+        <Icon3D name="money-bag" className="relative mx-auto size-24" />
+        <p className="relative mt-2 text-[13px] font-bold tracking-[0.08em] text-[#f3c98a] uppercase">Entró en {monthName(monthKey)}</p>
+        <p className="relative mt-1 font-title text-[2.75rem] leading-none font-bold tracking-tight tabular-nums">{cop(summary.income)}</p>
+        {delta !== null ? (
+          <p className="relative mt-2 inline-flex items-center gap-1 text-[1.0625rem] text-white/75">
+            {up ? <TrendUp className="size-4" weight="bold" /> : <TrendDown className="size-4" weight="bold" />}
+            {up ? '+' : ''}
+            {delta}% que en {monthName(monthKey, -1)}
+          </p>
+        ) : (
+          <p className="relative mt-2 text-[1.0625rem] text-white/75">Pagos registrados este mes</p>
+        )}
+        <div className="relative mt-5">
+          <CajaButton pill projects={projects} todaySessions={todaySessions} paymentMethods={paymentMethods} />
         </div>
-        <CajaButton projects={projects} todaySessions={todaySessions} paymentMethods={paymentMethods} />
-      </div>
+      </section>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Stat
+      <div className="grid grid-cols-2 gap-3">
+        <TileGrid
           href="/dashboard?openCalendar=1"
-          icon={CalendarCheck}
-          value={summary.scheduled}
-          label={summary.scheduled === 1 ? 'Cita agendada' : 'Citas agendadas'}
-          detail={summary.upcoming > 0 ? `${summary.upcoming} por venir` : 'Ninguna por venir'}
+          tone="indigo"
+          icon="spiral-calendar"
+          subtitle={summary.upcoming > 0 ? `${summary.upcoming} por venir` : 'Ninguna por venir'}
+          title={`${summary.scheduled} ${summary.scheduled === 1 ? 'cita' : 'citas'}`}
         />
-        <Stat
+        <TileGrid
           href="/dashboard/quotes"
-          icon={ClipboardText}
-          value={summary.waitingQuotes}
-          label={summary.waitingQuotes === 1 ? 'Cotización en espera' : 'Cotizaciones en espera'}
-          detail={summary.newQuotes > 0 ? `${summary.newQuotes} sin responder` : 'Todas respondidas'}
-          highlight={summary.newQuotes > 0}
+          tone="sunset"
+          icon="clipboard"
+          subtitle={summary.newQuotes > 0 ? `${summary.newQuotes} sin responder` : 'Todas respondidas'}
+          title={`${summary.waitingQuotes} en espera`}
         />
       </div>
-    </section>
-  )
-}
-
-function Stat({
-  href,
-  icon: Icon,
-  value,
-  label,
-  detail,
-  highlight,
-}: {
-  href: string
-  icon: React.ElementType
-  value: number
-  label: string
-  detail: string
-  highlight?: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col gap-2 rounded-2xl bg-background/60 p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-accent/60 active:scale-[0.98]"
-    >
-      <span className="flex items-center justify-between">
-        <span className="grid size-8 place-items-center rounded-full bg-primary/15 text-primary">
-          <Icon className="size-[18px]" weight="duotone" />
-        </span>
-        <CaretRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" weight="bold" />
-      </span>
-      <span>
-        <span className="block font-title text-xl leading-none font-bold tabular-nums">{value}</span>
-        <span className="mt-1 block text-xs font-medium">{label}</span>
-        <span className={cn('mt-0.5 block text-[12px]', highlight ? 'text-primary' : 'text-muted-foreground')}>{detail}</span>
-      </span>
-    </Link>
+    </div>
   )
 }

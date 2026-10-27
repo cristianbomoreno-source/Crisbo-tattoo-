@@ -25,6 +25,7 @@ import { QuickActionsRow } from '@/components/settings/quick-actions-row'
 import { cn } from '@/lib/utils'
 import { InstagramIcon } from '@/components/shared/instagram-icon'
 import { StudioModules } from '@/components/settings/studio-modules'
+import { LargeTitle } from '@/components/shared/large-title'
 
 /*
  * ══ Panel de control del estudio (rediseño) ═════════════════════════════
@@ -213,12 +214,8 @@ export function StudioControlCenter({
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      {/* ═══ Cápsula selectora de cuenta ═══ */}
-      <div className="flex justify-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 font-display text-xs font-bold text-primary">
-          {isEstudio ? 'Estudio' : 'Tatuador'}
-        </span>
-      </div>
+      <LargeTitle title="Estudio" avatar={{ initial: studio.name.charAt(0).toUpperCase(), photoUrl: studio.logoUrl }} />
+      <span className="sr-only">{isEstudio ? 'Cuenta de estudio' : 'Cuenta de tatuador'}</span>
 
       {/* ═══ Módulos (solo celular: la barra inferior no los tiene) ═══ */}
       <StudioModules isOwner />

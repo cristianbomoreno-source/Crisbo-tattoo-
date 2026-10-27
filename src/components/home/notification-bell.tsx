@@ -114,9 +114,9 @@ export function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         aria-label={unread > 0 ? `Notificaciones (${unread} sin leer)` : 'Notificaciones'}
-        className="relative grid size-11 place-items-center rounded-full bg-card text-foreground transition-colors hover:bg-accent"
+        className="relative grid size-12 place-items-center rounded-full bg-secondary text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.94]"
       >
-        <Bell className="size-5" strokeWidth={1.8} />
+        <Bell className="size-[22px]" strokeWidth={2.2} />
         {(unread > 0 || pushAvailable) && (
           <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-primary" />
         )}

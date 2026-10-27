@@ -8,7 +8,9 @@ import { getQuotes } from '@/queries/quotes'
 import { getConsents } from '@/queries/consents'
 import { getFixedExpenses, getCashData } from '@/queries/expenses'
 import { getStudioHomeData } from '@/queries/studio-home'
+import { CalendarDots } from '@phosphor-icons/react/dist/ssr'
 import { HomeGreeting } from '@/components/home/home-greeting'
+import { SectionTitle } from '@/components/shared/large-title'
 import { OnboardingChecklist } from '@/components/home/onboarding-checklist'
 import { OpenCajaRow } from '@/components/home/open-caja-row'
 import { durationLabel } from '@/lib/quote-wizard/duration'
@@ -251,7 +253,7 @@ export default async function DashboardPage() {
   }
 
   const mobileHome = (
-    <div className="space-y-3.5">
+    <div className="space-y-4">
       <div data-tour="home-greeting">
         <HomeGreeting
           name={studio?.artistName ?? null}
@@ -287,24 +289,24 @@ export default async function DashboardPage() {
         />
       )}
 
-      <section className="space-y-2" data-tour="home-today-sessions">
-        <div className="flex items-baseline justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold">Hoy</h2>
-            {citasHoy > 0 && (
-              <p className="text-[13px] text-muted-foreground">
-                {citasHoy} {citasHoy === 1 ? 'cita' : 'citas'}
-                {clientesHoy > 0 && clientesHoy !== citasHoy && ` · ${clientesHoy} clientes`} · {durationLabel(minutosHoy)}
-              </p>
-            )}
-          </div>
-          <a
-            href="/dashboard?openCalendar=1"
-            className="text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Ver agenda →
-          </a>
-        </div>
+      <section className="space-y-3 pt-2" data-tour="home-today-sessions">
+        <SectionTitle
+          title="Hoy"
+          subtitle={
+            citasHoy > 0
+              ? `${citasHoy} ${citasHoy === 1 ? 'cita' : 'citas'}${clientesHoy > 0 && clientesHoy !== citasHoy ? ` · ${clientesHoy} clientes` : ''} · ${durationLabel(minutosHoy)}`
+              : 'Sin citas'
+          }
+          action={
+            <a
+              href="/dashboard?openCalendar=1"
+              aria-label="Ver agenda"
+              className="grid size-12 place-items-center rounded-full bg-secondary transition-transform duration-150 ease-out active:scale-[0.94]"
+            >
+              <CalendarDots className="size-6" weight="bold" />
+            </a>
+          }
+        />
         <TodayAppointments
           sessions={todaySessions}
           balances={balances}

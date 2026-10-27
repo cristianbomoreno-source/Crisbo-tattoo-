@@ -1,7 +1,9 @@
-import Link from 'next/link'
 import { firstName } from '@/lib/home/month-metrics'
 import { NotificationBell } from '@/components/home/notification-bell'
+import { LargeTitle } from '@/components/shared/large-title'
 
+/** Encabezado de Inicio al estilo iOS: saludo pequeño, título grande "Inicio"
+ * y a la derecha la campana y el avatar del perfil. */
 export function HomeGreeting({
   name,
   greeting,
@@ -14,36 +16,14 @@ export function HomeGreeting({
   logoUrl?: string | null
 }) {
   const who = name ? firstName(name) : null
-  const initial = who ? who.charAt(0).toUpperCase() : 'O'
+  const initial = who ? who.charAt(0).toUpperCase() : 'C'
 
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="min-w-0">
-        <p className="text-base text-muted-foreground">{greeting}</p>
-        <h1 className="-mt-1 truncate font-title font-bold text-4xl leading-[0.95] text-primary sm:text-5xl">
-          {who ?? 'Crisbo Tattoo'}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{dateLabel}</p>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-2.5">
-        <NotificationBell />
-
-        <Link href="/dashboard/settings/perfil" aria-label="Tu perfil">
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logoUrl}
-              alt=""
-              className="size-11 rounded-full object-cover ring-2 ring-primary/70"
-            />
-          ) : (
-            <span className="grid size-11 place-items-center rounded-full bg-primary/15 font-title font-bold text-lg text-primary ring-2 ring-primary/40">
-              {initial}
-            </span>
-          )}
-        </Link>
-      </div>
+    <div>
+      <p className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
+        {who ? `${greeting}, ${who}` : greeting} · {dateLabel}
+      </p>
+      <LargeTitle title="Inicio" actions={<NotificationBell />} avatar={{ initial, photoUrl: logoUrl }} />
     </div>
   )
 }

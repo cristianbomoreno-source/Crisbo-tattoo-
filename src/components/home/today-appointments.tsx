@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ChevronRight, UserRound, CalendarCheck, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { CalendarCheck, AlertTriangle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/shared/empty-state'
 import { cop } from '@/lib/projects/metrics'
 import { formatTime } from '@/lib/calendar/utils'
@@ -96,7 +97,7 @@ export function TodayAppointments({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {sessions.map((s) => (
         <Row
           key={s.id}
@@ -154,45 +155,58 @@ function Row({
         ? { label: 'Abono', value: balance.deposits }
         : null
 
+  const [hh, rest] = formatTime(session.scheduled_at).split(':')
+  const done = session.status === 'completed' || session.status === 'cancelled'
+
+  // Fila al estilo de "Tus juegos" de Apple Games: cuadro grande de color con
+  // la hora (en lugar del ícono del juego), nombre en negrita, proyecto y
+  // saldo en gris, y la píldora gris "Finalizar" a la derecha.
   return (
     <Link
       href={`/dashboard/projects/${session.project_id}`}
-      className="flex items-center gap-3 rounded-2xl bg-background p-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex items-center gap-3.5 rounded-2xl py-1 transition-transform duration-150 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="w-14 shrink-0 leading-tight">
-        <p className="text-sm font-semibold tabular-nums">{formatTime(session.scheduled_at)}</p>
-      </div>
-
       <div
-        aria-hidden="true"
-        className="relative grid size-10 shrink-0 place-items-center rounded-full bg-card text-muted-foreground"
+        className={cn(
+          'relative grid size-[4.5rem] shrink-0 place-items-center rounded-[1.25rem] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]',
+          done ? 'tile-gray' : 'tile-gold',
+        )}
       >
-        <UserRound className="size-5" strokeWidth={1.6} />
+        <span className="text-center leading-none">
+          <span className="block font-title text-[1.375rem] font-bold tabular-nums">{hh}:{rest?.slice(0, 2)}</span>
+          <span className="mt-0.5 block text-[11px] font-semibold text-white/75 uppercase">{rest?.slice(2).trim() || 'h'}</span>
+        </span>
         {hasMedicalAlert && (
           <span
             title="Condición médica reportada"
-            className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-destructive text-destructive-foreground ring-2 ring-background"
+            className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-destructive text-white ring-2 ring-background"
           >
-            <AlertTriangle className="size-2.5" strokeWidth={2.5} />
+            <AlertTriangle className="size-3" strokeWidth={2.5} />
           </span>
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">{clientName}</p>
-        <p className="truncate text-xs text-muted-foreground">{session.projects?.name ?? 'Sesión'}</p>
+        <p className="truncate text-[1.1875rem] leading-tight font-semibold">{clientName}</p>
+        <p className="truncate text-[15px] text-muted-foreground">
+          {money ? (
+            <>
+              <span className={cn('font-medium tabular-nums', money.label === 'Pendiente' ? 'text-primary' : 'text-foreground/80')}>
+                {money.label === 'Pendiente' ? 'Debe' : 'Abonó'} {cop(money.value)}
+              </span>{' '}
+              · {session.projects?.name ?? 'Sesión'}
+            </>
+          ) : (
+            (session.projects?.name ?? 'Sesión')
+          )}
+        </p>
       </div>
 
-      {money && (
-        <div className="shrink-0 text-right leading-tight">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-            {money.label}
-          </p>
-          <p className="text-sm font-semibold tabular-nums">{cop(money.value)}</p>
-        </div>
-      )}
-
-      {session.status !== 'completed' && session.status !== 'cancelled' && (
+      {done ? (
+        <span className="shrink-0 rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold text-muted-foreground">
+          {session.status === 'completed' ? 'Lista' : 'Cancelada'}
+        </span>
+      ) : (
         <button
           type="button"
           aria-label="Finalizar sesión"
@@ -202,14 +216,11 @@ function Row({
             e.stopPropagation()
             onFinish()
           }}
-          className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1.5 text-xs font-medium text-primary transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="shrink-0 rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold transition-transform duration-150 ease-out active:scale-[0.95] disabled:opacity-50"
         >
-          <CheckCircle2 className="size-3.5" strokeWidth={2} aria-hidden="true" />
-          <span className="hidden sm:inline">{finishing ? 'Finalizando…' : 'Finalizar'}</span>
+          {finishing ? '…' : 'Finalizar'}
         </button>
       )}
-
-      <ChevronRight className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
     </Link>
   )
 }
