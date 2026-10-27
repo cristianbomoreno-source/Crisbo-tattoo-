@@ -26,8 +26,7 @@ export async function GET(req: Request) {
   const params = new URL(req.url).searchParams
   // ?medios=1 → las cuentas para "¿Por dónde?", una por renglón, para que el
   // atajo no tenga la lista escrita a mano (así no se queda sin Efectivo).
-  if (params.has('medios')) return text((await accountOptions(studioId)).join('
-'))
+  if (params.has('medios')) return text((await accountOptions(studioId)).join('\n'))
 
   const movimiento = params.get('movimiento') ?? ''
   try {
