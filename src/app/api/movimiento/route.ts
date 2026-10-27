@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { movementOptions, saveMovement } from '@/lib/expenses/movement'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { quickEntryAuthorized, quickEntryStudioId, quickEntryIssue, readShortcutBody, plainText as text } from '@/lib/expenses/quick-entry'
 
 /** Atajo "Caja Crisbo" del iPhone: un solo flujo lineal (sin bloques "Si")
@@ -22,13 +23,34 @@ export async function GET(req: Request) {
   const studioId = quickEntryStudioId()
   if (!studioId) return text('❌ Falta configurar el estudio', 500)
 
-  const movimiento = new URL(req.url).searchParams.get('movimiento') ?? ''
+  const params = new URL(req.url).searchParams
+  // ?medios=1 → las cuentas para "¿Por dónde?", una por renglón, para que el
+  // atajo no tenga la lista escrita a mano (así no se queda sin Efectivo).
+  if (params.has('medios')) return text((await accountOptions(studioId)).join('
+'))
+
+  const movimiento = params.get('movimiento') ?? ''
   try {
     return text((await movementOptions(studioId, isIncome(movimiento))).join('\n'))
   } catch (e) {
     console.error('[movimiento]', (e as Error).message)
     return text('❌ No se pudieron cargar los proyectos', 500)
   }
+}
+
+const BASE_ACCOUNTS = ['Efectivo', 'Nequi', 'Daviplata', 'Bold']
+
+/** Medios de pago del estudio (Estudio → Medios de pago) más las cuentas de
+ * siempre, sin repetir. Efectivo siempre va primero. */
+async function accountOptions(studioId: string) {
+  const { data } = await createAdminClient().from('studios').select('payment_methods').eq('id', studioId).maybeSingle()
+  const seen = new Set<string>()
+  return [...BASE_ACCOUNTS, ...(((data?.payment_methods as string[] | null) ?? []))].filter((m) => {
+    const k = m.trim().toLowerCase()
+    if (!k || seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
 }
 
 const schema = z.object({
