@@ -62,6 +62,10 @@ import {
 import { ClientLinkDialog } from './client-link-dialog'
 import { LeadBar } from './lead-bar'
 import { ClientCrmSheet } from './client-crm-sheet'
+import { CONTACT_GROUPS, type ContactGroup } from '@/lib/crm/contact-groups'
+import { setContactGroupAction } from '@/actions/crm'
+import { UsersThree } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { leadStageInfo } from '@/lib/whatsapp-cloud/lead'
 import { CampaignSlotBar } from './campaign-slot-bar'
 import type { CampaignChatInfo } from '@/queries/campaigns'
@@ -94,6 +98,7 @@ export function ChatView({
   clients,
   formTemplateStatus,
   campaign,
+  personalGroup = null,
 }: {
   conversation: WaConversation
   initialMessages: WaMessage[]
@@ -102,6 +107,8 @@ export function ChatView({
   formTemplateStatus: string | null
   /** Barra de cupos si al chat le llegó la campaña. */
   campaign?: CampaignChatInfo | null
+  /** Grupo "Personal" (familia, contador…) si este chat no es de un cliente. */
+  personalGroup?: ContactGroup | null
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState(initialMessages)
@@ -109,6 +116,21 @@ export function ChatView({
   const [lastInboundAt, setLastInboundAt] = useState(conversation.last_inbound_at)
   const [linkOpen, setLinkOpen] = useState(false)
   const [crmOpen, setCrmOpen] = useState(false)
+  const [groupOpen, setGroupOpen] = useState(false)
+  const [group, setGroup] = useState<ContactGroup | null>(personalGroup)
+  const [, startGroup] = useTransition()
+  function changeGroup(next: ContactGroup | null) {
+    const prev = group
+    setGroup(next)
+    setGroupOpen(false)
+    startGroup(async () => {
+      const res = await setContactGroupAction(conversation.id, next)
+      if (!res.success) {
+        setGroup(prev)
+        toast.error(res.error.message)
+      } else toast.success(next ? `Movido a Personal · ${next}. Sin notificaciones.` : 'De vuelta en clientes')
+    })
+  }
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [sending, startSending] = useTransition()
   const [archiving, startArchiving] = useTransition()
@@ -314,7 +336,7 @@ export function ChatView({
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left active:opacity-70 sm:gap-3"
         >
         <span className="relative shrink-0">
-          <span className={cn('grid size-11 place-items-center rounded-full text-[15px] font-bold text-white', leadStageInfo(conversation.lead_stage).tile)}>
+          <span className={cn('grid size-11 place-items-center rounded-full text-[15px] font-bold text-white', group ? 'tile-slate' : leadStageInfo(conversation.lead_stage).tile)}>
             {chatInitials(name.replace(/^@/, ''))}
           </span>
           <span
@@ -380,6 +402,17 @@ export function ChatView({
               <Link2 />
               {client ? 'Cambiar cliente vinculado' : 'Vincular a un cliente'}
             </DropdownMenuItem>
+            {group ? (
+              <DropdownMenuItem onClick={() => changeGroup(null)}>
+                <UserRound />
+                Volver a clientes
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => setGroupOpen(true)}>
+                <UsersThree />
+                Mover a Personal
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={toggleArchive} disabled={archiving}>
               {conversation.archived ? <ArchiveRestore /> : <Archive />}
@@ -390,12 +423,45 @@ export function ChatView({
       </header>
 
       {/* Seguimiento del lead: etapa del embudo + recordatorio. */}
+      {group ? (
+        <div className="flex items-center gap-2 px-3 py-2">
+          <span className="rounded-full bg-foreground/[0.1] px-3.5 py-1.5 text-[13px] font-semibold">Personal · {group}</span>
+          <button type="button" onClick={() => setGroupOpen(true)} className="text-[13px] font-semibold text-primary">
+            Cambiar
+          </button>
+          <span className="ml-auto text-[13px] text-muted-foreground">Sin notificaciones</span>
+        </div>
+      ) : (
       <LeadBar
         conversationId={conversation.id}
         clientId={conversation.client_id}
         stage={conversation.lead_stage}
         followUpAt={conversation.follow_up_at}
       />
+      )}
+      <Dialog open={groupOpen} onOpenChange={setGroupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mover a Personal</DialogTitle>
+            <DialogDescription>Sale de clientes y del embudo, y no te llegan notificaciones. Los mensajes siguen apareciendo.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            {CONTACT_GROUPS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => changeGroup(g)}
+                className={cn(
+                  'min-h-12 rounded-2xl px-3 text-[1.0625rem] font-semibold transition-transform duration-150 ease-out active:scale-95',
+                  group === g ? 'bg-primary text-primary-foreground' : 'bg-foreground/[0.07]',
+                )}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
       {client && <ClientCrmSheet clientId={client.id} channel={instagram ? 'instagram' : 'whatsapp'} open={crmOpen} onOpenChange={setCrmOpen} />}
       {campaign && <CampaignSlotBar info={campaign} />}
 

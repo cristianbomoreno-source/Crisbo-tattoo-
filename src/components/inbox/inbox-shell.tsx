@@ -7,6 +7,8 @@ import { MessageCircle } from 'lucide-react'
 import { Archive, BellRinging, Kanban, MagnifyingGlass, Megaphone } from '@phosphor-icons/react'
 import { LeadPipeline } from './lead-pipeline'
 import { visibleTags } from '@/lib/crm/options'
+import { CONTACT_GROUPS, type ContactGroup } from '@/lib/crm/contact-groups'
+import { UsersThree } from '@phosphor-icons/react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WaConversation } from '@/queries/whatsapp'
@@ -30,12 +32,15 @@ export function InboxShell({
   studioId,
   conversations,
   leadValues = {},
+  personalGroups = {},
   children,
 }: {
   studioId: string
   conversations: WaConversation[]
   /** Plata en juego por cliente (queries/crm.ts), para el embudo. */
   leadValues?: Record<string, number>
+  /** Chats "Personal" (familia, contador…): { conversationId: grupo }. */
+  personalGroups?: Record<string, ContactGroup>
   children: React.ReactNode
 }) {
   const router = useRouter()
@@ -47,10 +52,16 @@ export function InboxShell({
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Vista Chats / Embudo en la URL (?vista=embudo).
   const searchParams = useSearchParams()
-  const view: 'chats' | 'embudo' = searchParams.get('vista') === 'embudo' ? 'embudo' : 'chats'
-  function setView(v: 'chats' | 'embudo') {
-    router.replace(v === 'embudo' ? '/dashboard/inbox?vista=embudo' : '/dashboard/inbox')
+  const vista = searchParams.get('vista')
+  const view: 'chats' | 'embudo' | 'personal' = vista === 'embudo' || vista === 'personal' ? vista : 'chats'
+  function setView(v: 'chats' | 'embudo' | 'personal') {
+    router.replace(v === 'chats' ? '/dashboard/inbox' : `/dashboard/inbox?vista=${v}`)
   }
+  // Personal: gente que escribe pero no es cliente. Fuera de la bandeja de
+  // clientes, del embudo y de los conteos; se ve en su propia pestaña.
+  const personalMode = view === 'personal'
+  const [groupFilter, setGroupFilter] = useState<ContactGroup | 'todos'>('todos')
+  const isPersonal = (c: WaConversation) => !!personalGroups[c.id]
   // El embudo ocupa toda la pantalla; al abrir un chat o Campañas se ve la lista.
   const showPipeline = view === 'embudo' && !activeId
 
@@ -85,17 +96,21 @@ export function InboxShell({
     const q = query.trim().toLowerCase()
     return conversations.filter((c) => {
       if (c.archived !== showArchived) return false
+      if (isPersonal(c) !== personalMode) return false
       if (channelFilter !== 'todos' && chatChannel(c) !== channelFilter) return false
-      if (filter === 'seguimiento' ? !c.follow_up_at : filter !== 'todos' && c.lead_stage !== filter) return false
+      if (personalMode) {
+        if (groupFilter !== 'todos' && personalGroups[c.id] !== groupFilter) return false
+      } else if (filter === 'seguimiento' ? !c.follow_up_at : filter !== 'todos' && c.lead_stage !== filter) return false
       if (!q) return true
       return [c.client?.name, c.contact_name, c.ig_username, c.wa_id, c.last_message_preview]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q))
     })
-  }, [conversations, query, showArchived, filter, channelFilter])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, query, showArchived, filter, channelFilter, personalMode, groupFilter, personalGroups])
   // Recordatorios primero (los vencidos arriba) cuando se filtra por seguimiento.
   const sorted =
-    filter === 'seguimiento'
+    filter === 'seguimiento' && !personalMode
       ? [...visible].sort((a, b) => Date.parse(a.follow_up_at!) - Date.parse(b.follow_up_at!))
       : visible
 
@@ -103,8 +118,10 @@ export function InboxShell({
   // El selector de canal solo aparece cuando ya hay chats de Instagram.
   const hasInstagram = conversations.some((c) => chatChannel(c) === 'instagram')
   const inbox = conversations.filter(
-    (c) => c.archived === showArchived && (channelFilter === 'todos' || chatChannel(c) === channelFilter)
+    (c) => c.archived === showArchived && !isPersonal(c) && (channelFilter === 'todos' || chatChannel(c) === channelFilter)
   )
+  const personalChats = conversations.filter((c) => c.archived === showArchived && isPersonal(c))
+  const personalUnread = personalChats.filter((c) => c.unread_count > 0).length
   const dueCount = inbox.filter((c) => followUpDue(c.follow_up_at)).length
   const filters: { key: Filter; label: string; count: number; dot?: string }[] = [
     { key: 'todos', label: 'Todos', count: inbox.length },
@@ -167,11 +184,12 @@ export function InboxShell({
       </div>
 
       {/* Chats / Embudo */}
-      <div className="grid grid-cols-2 gap-1 rounded-full bg-foreground/[0.07] p-1">
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-foreground/[0.07] p-1">
         {(
           [
-            ['chats', 'Chats', MessageCircle],
+            ['chats', 'Clientes', MessageCircle],
             ['embudo', 'Embudo', Kanban],
+            ['personal', 'Personal', UsersThree],
           ] as const
         ).map(([v, label, Icon]) => (
           <button
@@ -186,6 +204,9 @@ export function InboxShell({
           >
             <Icon className="size-[18px]" />
             {label}
+            {v === 'personal' && personalUnread > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-foreground/20 px-1 text-[12px] font-bold tabular-nums">{personalUnread}</span>
+            )}
           </button>
         ))}
       </div>
@@ -196,7 +217,7 @@ export function InboxShell({
     return (
       <div className="-mx-4 -mt-4 sm:mx-0 sm:mt-0">
         {header}
-        <LeadPipeline conversations={conversations.filter((c) => !c.archived)} leadValues={leadValues} />
+        <LeadPipeline conversations={conversations.filter((c) => !c.archived && !isPersonal(c))} leadValues={leadValues} />
       </div>
     )
   }
@@ -245,7 +266,30 @@ export function InboxShell({
               ))}
             </div>
           )}
-          {/* Filtros por etapa del lead. */}
+          {/* Personal: filtro por grupo. Clientes: por etapa del lead. */}
+          {personalMode ? (
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]">
+              {(['todos', ...CONTACT_GROUPS] as const).map((g) => {
+                const count = g === 'todos' ? personalChats.length : personalChats.filter((c) => personalGroups[c.id] === g).length
+                if (g !== 'todos' && count === 0) return null
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGroupFilter(g)}
+                    aria-pressed={groupFilter === g}
+                    className={cn(
+                      'flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-95',
+                      groupFilter === g ? 'bg-primary text-primary-foreground' : 'bg-foreground/[0.08] text-foreground'
+                    )}
+                  >
+                    {g === 'todos' ? 'Todos' : g}
+                    {count > 0 && <span className="tabular-nums opacity-60">{count}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]">
             {filters.map((f) => (
               <button
@@ -268,16 +312,19 @@ export function InboxShell({
               </button>
             ))}
           </div>
+          )}
         </div>
 
         <ul className="flex-1 overflow-y-auto px-2 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-2">
           {sorted.length === 0 ? (
             <li className="p-6 text-center text-[15px] text-muted-foreground">
-              {conversations.length === 0
-                ? 'Aún no hay chats. Cuando un cliente te escriba por WhatsApp o Instagram, aparecerá aquí.'
-                : filter !== 'todos'
-                  ? 'No hay chats en esta etapa.'
-                  : 'Sin resultados.'}
+              {personalMode
+                ? 'Aquí van los chats de quienes no son clientes: familia, amigos, tu contador… Ábrelos y en ⋯ elige "Mover a Personal". No te llegan notificaciones de ellos.'
+                : conversations.length === 0
+                  ? 'Aún no hay chats. Cuando un cliente te escriba por WhatsApp o Instagram, aparecerá aquí.'
+                  : filter !== 'todos'
+                    ? 'No hay chats en esta etapa.'
+                    : 'Sin resultados.'}
             </li>
           ) : (
             sorted.map((c) => {
@@ -286,6 +333,7 @@ export function InboxShell({
               const stage = leadStageInfo(c.lead_stage)
               const due = followUpDue(c.follow_up_at)
               const tag = visibleTags(c.client?.preferred_services)[0]
+              const group = personalGroups[c.id]
               return (
                 <li key={c.id}>
                   <Link
@@ -296,7 +344,7 @@ export function InboxShell({
                     )}
                   >
                     <span className="relative shrink-0">
-                      <span className={cn('grid size-14 place-items-center rounded-full text-[1.0625rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)]', stage.tile)}>
+                      <span className={cn('grid size-14 place-items-center rounded-full text-[1.0625rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)]', group ? 'tile-slate' : stage.tile)}>
                         {chatInitials(name.replace(/^@/, ''))}
                       </span>
                       {/* Canal del chat. */}
@@ -334,9 +382,15 @@ export function InboxShell({
                         )}
                       </span>
                       <span className="mt-1 flex items-center gap-1.5 overflow-hidden">
-                        <span className={cn('inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold', stage.chip)}>
-                          {stage.short}
-                        </span>
+                        {group ? (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/[0.1] px-2 py-0.5 text-[12px] font-semibold">
+                            {group}
+                          </span>
+                        ) : (
+                          <span className={cn('inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold', stage.chip)}>
+                            {stage.short}
+                          </span>
+                        )}
                         {c.follow_up_at && (
                           <span
                             className={cn(
@@ -353,7 +407,7 @@ export function InboxShell({
                             {tag}
                           </span>
                         )}
-                        {!c.client && !c.answered_from_phone && (
+                        {!group && !c.client && !c.answered_from_phone && (
                           <span className="shrink-0 text-[12px] text-muted-foreground">Sin guardar</span>
                         )}
                       </span>

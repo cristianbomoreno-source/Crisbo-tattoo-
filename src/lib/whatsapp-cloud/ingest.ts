@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { BUTTON_NO, BUTTON_YES, CAMPAIGN_AUTO_REPLY, CAMPAIGN_AUTO_REPLY_NO } from '@/lib/campaigns/nuevos-trazos'
 import { sendTextMessage } from './api'
 import { sendPushToStudio } from '@/lib/push/send'
+import { withoutPersonalChats } from '@/lib/crm/contact-groups'
 import {
   messagePreview,
   normalizeWaPhone,
@@ -281,7 +282,8 @@ Firma: ${consent.signerName}`
   }
 
   await Promise.all(
-    [...notify.values()].map((n) => sendPushToStudio(n.studioId, { title: n.title, body: n.body, link: n.link }))
+    // Chats Personal (familia, contador…): llegan a la bandeja, sin push.
+    (await withoutPersonalChats(admin, notify)).map((n) => sendPushToStudio(n.studioId, { title: n.title, body: n.body, link: n.link }))
   )
 }
 

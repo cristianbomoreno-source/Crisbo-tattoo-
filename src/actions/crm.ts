@@ -8,6 +8,8 @@ import { dbError } from '@/lib/errors/db'
 import { getCurrentPermissions } from '@/queries/permissions'
 import { getProjectsByClient, type ProjectSummary } from '@/queries/projects'
 import { cleanTags, lostTag, LOST_TAG_PREFIX } from '@/lib/crm/options'
+import { isContactGroup, saveContactGroup } from '@/lib/crm/contact-groups'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type ClientCrm = {
   client: {
@@ -97,6 +99,24 @@ export async function markLeadLostAction(conversationId: string, clientId: strin
     const { data } = await supabase.from('clients').select('preferred_services').eq('id', clientId).maybeSingle()
     const prev = ((data?.preferred_services as string[] | null) ?? []).filter((t) => !t.startsWith(LOST_TAG_PREFIX))
     await supabase.from('clients').update({ preferred_services: cleanTags([...prev, lostTag(why)]) }).eq('id', clientId)
+  }
+  revalidatePath('/dashboard/inbox', 'layout')
+  return ok(null)
+}
+
+/** Mueve un chat a "Personal" (familia, amigos, contador…) o lo devuelve a
+ * clientes (`group = null`). Ver lib/crm/contact-groups.ts. */
+export async function setContactGroupAction(conversationId: string, group: string | null): Promise<Result<null>> {
+  if (group !== null && !isContactGroup(group)) return err('VALIDATION_ERROR', 'Grupo no válido')
+  // Con RLS: solo se encuentra si el chat es del estudio activo.
+  const supabase = await createClient()
+  const { data: conv, error } = await supabase.from('wa_conversations').select('id, studio_id').eq('id', conversationId).maybeSingle()
+  if (error) return dbError(error)
+  if (!conv) return err('NOT_FOUND', 'Chat no encontrado')
+  try {
+    await saveContactGroup(createAdminClient(), conv.studio_id as string, conversationId, group)
+  } catch (e) {
+    return err('UNKNOWN_ERROR', (e as Error).message)
   }
   revalidatePath('/dashboard/inbox', 'layout')
   return ok(null)

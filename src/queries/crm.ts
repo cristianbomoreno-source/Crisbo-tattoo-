@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { loadContactGroups, type ContactGroup } from '@/lib/crm/contact-groups'
 
 const WAITING_QUOTE_STATUSES = ['new', 'reviewed', 'quoted']
 
@@ -36,4 +38,9 @@ export async function getLeadValues(clientIds: string[]): Promise<Record<string,
     if (!values[clientId]) values[clientId] = q.price
   }
   return values
+}
+
+/** Chats "Personal" del estudio: { conversationId: grupo }. */
+export async function getContactGroups(studioId: string): Promise<Record<string, ContactGroup>> {
+  return loadContactGroups(createAdminClient(), studioId).catch(() => ({}))
 }

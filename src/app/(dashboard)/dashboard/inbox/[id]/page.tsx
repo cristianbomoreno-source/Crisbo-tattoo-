@@ -4,6 +4,7 @@ import { getClients } from '@/queries/clients'
 import { ChatView } from '@/components/inbox/chat-view'
 import { getCampaignChatInfo } from '@/queries/campaigns'
 import { getCurrentStudio } from '@/queries/studio'
+import { getContactGroups } from '@/queries/crm'
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -20,6 +21,8 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       ? await getCampaignChatInfo(id, conversationResult.data.client_id).catch(() => null)
       : null
 
+  const personalGroup = studio ? ((await getContactGroups(studio.id))[id] ?? null) : null
+
   const clients = clientsResult.success
     ? clientsResult.data.map((c) => ({ id: c.id, name: c.name, phone: c.phone }))
     : []
@@ -33,6 +36,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       clients={clients}
       formTemplateStatus={account?.formTemplateStatus ?? null}
       campaign={campaign}
+      personalGroup={personalGroup}
     />
   )
 }

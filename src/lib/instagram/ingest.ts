@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendPushToStudio } from '@/lib/push/send'
+import { withoutPersonalChats } from '@/lib/crm/contact-groups'
 import { messagePreview } from '@/lib/whatsapp-cloud/parse'
 import { fetchInstagramProfile, type IgAccountCredentials } from './api'
 import { loadInstagramAccountByIgUser } from './account'
@@ -139,6 +140,7 @@ export async function ingestInstagram(admin: Admin, events: IgEvent[]) {
   }
 
   await Promise.all(
-    [...notify.values()].map((n) => sendPushToStudio(n.studioId, { title: n.title, body: n.body, link: n.link }))
+    // Chats Personal (familia, contador…): llegan a la bandeja, sin push.
+    (await withoutPersonalChats(admin, notify)).map((n) => sendPushToStudio(n.studioId, { title: n.title, body: n.body, link: n.link }))
   )
 }

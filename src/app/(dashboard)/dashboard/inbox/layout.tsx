@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import { getCurrentStudio } from '@/queries/studio'
 import { getConversations, getInstagramAccountStatus, getWhatsAppAccountStatus } from '@/queries/whatsapp'
 import { InboxShell } from '@/components/inbox/inbox-shell'
-import { getLeadValues } from '@/queries/crm'
+import { getContactGroups, getLeadValues } from '@/queries/crm'
 import { PageHeader } from '@/components/shared/page-header'
 
 export default async function InboxLayout({ children }: { children: React.ReactNode }) {
@@ -50,10 +50,13 @@ export default async function InboxLayout({ children }: { children: React.ReactN
     )
   }
 
-  const leadValues = await getLeadValues(conversations.flatMap((c) => (c.client_id ? [c.client_id] : [])))
+  const [leadValues, personalGroups] = await Promise.all([
+    getLeadValues(conversations.flatMap((c) => (c.client_id ? [c.client_id] : []))),
+    getContactGroups(studio.id),
+  ])
 
   return (
-    <InboxShell studioId={studio.id} conversations={conversations} leadValues={leadValues}>
+    <InboxShell studioId={studio.id} conversations={conversations} leadValues={leadValues} personalGroups={personalGroups}>
       {children}
     </InboxShell>
   )
