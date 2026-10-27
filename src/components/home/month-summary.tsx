@@ -45,13 +45,13 @@ export function MonthSummaryCard({
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[repeating-conic-gradient(from_0deg_at_50%_22%,rgb(255_214_150/0.10)_0deg_2deg,transparent_2deg_14deg)] [mask-image:radial-gradient(70%_60%_at_50%_22%,black,transparent)]"
         />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/cb-isotipo-v2.png"
-          alt="Crisbo Tattoo"
-          draggable={false}
-          className="relative mx-auto size-24 object-contain drop-shadow-[0_0_18px_rgb(243_201_138/0.55)] select-none"
-        />
+        {/* Logo sin filtro de sombra: en Safari el drop-shadow dejaba ver el
+            recuadro de la imagen. El brillo dorado es un círculo difuminado detrás. */}
+        <div className="relative mx-auto grid size-24 place-items-center">
+          <span aria-hidden="true" className="absolute inset-2 rounded-full bg-[#f3c98a]/35 blur-2xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/cb-isotipo-mark.png" alt="Crisbo Tattoo" draggable={false} className="relative h-24 w-auto select-none" />
+        </div>
         <p className="relative mt-2 text-[13px] font-bold tracking-[0.08em] text-[#f3c98a] uppercase">Entró en {monthName(monthKey)}</p>
         <p className="relative mt-1 font-title text-[2.75rem] leading-none font-bold tracking-tight tabular-nums">{cop(summary.income)}</p>
         {delta !== null ? (
