@@ -1,25 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Image as ImageIcon, CalendarDays, Wallet, ArrowUpRight } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
-import { STATUS_LABELS } from '@/lib/projects/status'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { projectProgress } from '@/components/projects/project-card'
+import { Icon3D } from '@/components/ui/icon-3d'
+import { cn } from '@/lib/utils'
 import { ContactClientWhatsapp } from '@/components/projects/contact-client-whatsapp'
 import type { ProjectSummary } from '@/queries/projects'
-import {
-  calculateBalance,
-  getSessionStats,
-  nextSessionAt,
-  formatSessionDate,
-  cop,
-  latestPhotoUrl,
-} from '@/lib/projects/metrics'
+import { calculateBalance, nextSessionAt, formatSessionDate, cop, latestPhotoUrl } from '@/lib/projects/metrics'
 
 /**
  * Popup de detalle rápido de un proyecto: se abre al tocar cualquier parte
@@ -45,100 +33,81 @@ export function ProjectDetailDialog({
   )
 }
 
-function Content({
-  project,
-  contactClientTemplate,
-}: {
-  project: ProjectSummary
-  contactClientTemplate?: string | null
-}) {
-  const { total, done } = getSessionStats(project)
-  const sessionPct = total > 0 ? Math.round((done / total) * 100) : project.status === 'completed' ? 100 : 0
-  const pct = project.manual_progress ?? sessionPct
-  const complete = project.status === 'completed' || pct >= 100
+function Content({ project, contactClientTemplate }: { project: ProjectSummary; contactClientTemplate?: string | null }) {
+  const { pct, complete, label, total, done } = projectProgress(project)
   const clientName = project.clients?.name ?? 'Sin cliente'
   const cover = latestPhotoUrl(project.gallery)
   const next = nextSessionAt(project)
   const balance = Math.max(0, calculateBalance(project))
-  const statusText = complete
-    ? 'Completado'
-    : project.status === 'in_progress'
-      ? `${pct}% en proceso`
-      : STATUS_LABELS[project.status]
 
+  // Popup al estilo de las fichas de Apple Games: la foto arriba con el
+  // título encima sobre un degradado, el avance como barra, dos tarjetas de
+  // color (próxima sesión y saldo) y las acciones como píldoras.
   return (
     <DialogContent className="max-w-sm gap-0 overflow-hidden p-0 sm:max-w-md">
-      <div>
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+      <div
+        className={cn(
+          'relative aspect-[4/3] w-full overflow-hidden text-white',
+          !cover && (complete ? 'tile-green' : project.status === 'in_progress' ? 'tile-gold' : 'tile-slate'),
+        )}
+      >
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img loading="lazy" decoding="async" src={cover} alt="" className="absolute inset-0 size-full object-cover" />
         ) : (
-          <span className="grid size-full place-items-center">
-            <ImageIcon className="size-8 text-muted-foreground/30" strokeWidth={1.4} />
-          </span>
+          <Icon3D name={complete ? 'trophy' : 'fountain-pen'} className="absolute top-6 left-1/2 size-24 -translate-x-1/2" />
         )}
-        <div
-          className={`absolute left-3 top-3 rounded-full px-3 py-1.5 font-display text-[12px] font-bold ${
-            complete ? 'bg-primary text-primary-foreground' : 'bg-black/85 text-white'
-          }`}
-        >
-          {statusText}
+        <span className="absolute top-3.5 left-3.5 rounded-full border border-white/15 bg-black/35 px-3 py-1.5 text-[13px] font-semibold backdrop-blur-md">
+          {label}
+        </span>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pt-14 pb-4">
+          <DialogTitle className="truncate text-[1.75rem] leading-tight font-bold tracking-tight text-white">{clientName}</DialogTitle>
+          <DialogDescription className="truncate text-[1.0625rem] text-white/75">{project.name}</DialogDescription>
         </div>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
-        <DialogHeader className="space-y-1 text-left">
-          <DialogTitle className="font-display text-xl font-bold tracking-tight">
-            {clientName}
-          </DialogTitle>
-          <DialogDescription>{project.name}</DialogDescription>
-        </DialogHeader>
-
+      <div className="space-y-4 p-5">
         <div>
-          <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <span>Progreso</span>
-            <span className="font-bold tabular-nums text-foreground">{pct}%</span>
+          <div className="flex items-baseline justify-between">
+            <span className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Avance</span>
+            <span className="font-title text-[1.25rem] font-bold tabular-nums">{pct}%</span>
           </div>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-foreground/[0.08]">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+              className={cn('h-full rounded-full transition-[width] duration-500 ease-out', complete ? 'bg-income' : 'bg-primary')}
               style={{ width: `${pct}%` }}
             />
           </div>
           {total > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-[15px] text-muted-foreground">
               Sesión {done} de {total}
             </p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-muted/60 p-3">
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <CalendarDays className="size-3.5" strokeWidth={1.8} />
-              Próxima sesión
-            </span>
-            <p className="mt-1 font-display text-sm font-semibold">
-              {next ? formatSessionDate(next) : 'Sin agendar'}
+          <div className="tile-indigo relative min-h-24 overflow-hidden rounded-[1.5rem] p-3.5 text-white">
+            <Icon3D name="spiral-calendar" className="absolute top-2 right-2 size-10" />
+            <p className="absolute right-3.5 bottom-3.5 left-3.5">
+              <span className="block text-[12px] font-semibold text-white/75">Próxima sesión</span>
+              <span className="block truncate text-[1.0625rem] leading-tight font-bold">{next ? formatSessionDate(next) : 'Sin agendar'}</span>
             </p>
           </div>
-          <div className="rounded-xl bg-muted/60 p-3">
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Wallet className="size-3.5" strokeWidth={1.8} />
-              Saldo pendiente
-            </span>
-            <p className="mt-1 font-display text-sm font-semibold tabular-nums">{cop(balance)}</p>
+          <div className="tile-teal relative min-h-24 overflow-hidden rounded-[1.5rem] p-3.5 text-white">
+            <Icon3D name="money-bag" className="absolute top-2 right-2 size-10" />
+            <p className="absolute right-3.5 bottom-3.5 left-3.5">
+              <span className="block text-[12px] font-semibold text-white/75">Saldo pendiente</span>
+              <span className="block truncate font-title text-[1.25rem] leading-tight font-bold tabular-nums">{cop(balance)}</span>
+            </p>
           </div>
         </div>
 
         <div className="flex gap-2">
           <Link
             href={`/dashboard/projects/${project.id}`}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--primary-hover)]"
+            className="flex h-12 flex-1 items-center justify-center rounded-full bg-primary px-4 text-[1.0625rem] font-semibold text-primary-foreground transition-transform duration-150 ease-out active:scale-[0.97]"
           >
-            Ver proyecto completo
-            <ArrowUpRight className="size-4" strokeWidth={2.2} />
+            Ver proyecto
           </Link>
           <ContactClientWhatsapp
             phone={project.clients?.phone}
@@ -147,7 +116,6 @@ function Content({
             template={contactClientTemplate}
           />
         </div>
-      </div>
       </div>
     </DialogContent>
   )

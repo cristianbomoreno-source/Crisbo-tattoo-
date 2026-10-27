@@ -50,9 +50,9 @@ export function ContactClientWhatsapp({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`Contactar a ${clientName} por WhatsApp`}
-      className="flex size-10 items-center justify-center rounded-full bg-[#25D366] text-white transition-opacity hover:opacity-90"
+      className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white transition-transform duration-150 ease-out active:scale-[0.94]"
     >
-      <MessageCircle className="size-4.5" strokeWidth={2} aria-hidden />
+      <MessageCircle className="size-5" strokeWidth={2.2} aria-hidden />
     </a>
   )
 }

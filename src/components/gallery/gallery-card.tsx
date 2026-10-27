@@ -1,10 +1,11 @@
 'use client'
 
+import { Icon3D } from '@/components/ui/icon-3d'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import NextImage from 'next/image'
 import { toast } from 'sonner'
-import { Images, ChevronRight, Download, X } from 'lucide-react'
+import { ChevronRight, Download, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { GalleryUpload } from '@/components/gallery/gallery-upload'
 import { GalleryLightbox } from '@/components/gallery/gallery-lightbox'
@@ -60,14 +61,12 @@ export function GalleryCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-4 rounded-[1.75rem] bg-card p-5 text-left transition-colors hover:bg-card/80 sm:p-6"
+        className="tile-purple flex min-h-[6.5rem] w-full items-center gap-4 rounded-[2rem] px-5 py-4 text-left text-white transition-transform duration-150 ease-out active:scale-[0.97]"
       >
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-          <Images className="size-5" strokeWidth={2} />
-        </span>
+        <Icon3D name="framed-picture" className="size-14" />
         <span className="min-w-0 flex-1">
-          <span className="block text-base font-semibold">Galería</span>
-          <span className="block text-sm text-muted-foreground">
+          <span className="block text-[1.375rem] leading-tight font-bold tracking-tight">Galería</span>
+          <span className="block truncate text-[15px] text-white/75">
             {gallery.length === 0 ? 'Sin fotos todavía' : `${gallery.length} foto${gallery.length === 1 ? '' : 's'}`}
           </span>
         </span>
@@ -76,14 +75,14 @@ export function GalleryCard({
             {preview.map((g) => (
               <span
                 key={g.id}
-                className="relative size-9 overflow-hidden rounded-full ring-2 ring-card"
+                className="relative size-9 overflow-hidden rounded-full ring-2 ring-white/40"
               >
                 <NextImage src={g.url} alt="" fill className="object-cover" sizes="36px" />
               </span>
             ))}
           </span>
         )}
-        <ChevronRight className="size-4.5 shrink-0 text-muted-foreground" strokeWidth={2} />
+        <ChevronRight className="size-6 shrink-0 text-white/80" strokeWidth={2.4} />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

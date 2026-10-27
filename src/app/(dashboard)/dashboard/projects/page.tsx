@@ -1,7 +1,8 @@
 import { getProjects } from '@/queries/projects'
 import { getClients } from '@/queries/clients'
 import { getCurrentStudio } from '@/queries/studio'
-import { PageHeader } from '@/components/shared/page-header'
+import { Plus } from '@phosphor-icons/react/dist/ssr'
+import { LargeTitle } from '@/components/shared/large-title'
 import { CreateProjectDialog } from '@/components/projects/create-project-dialog'
 import { ProjectsBoard } from '@/components/projects/projects-board'
 
@@ -22,11 +23,22 @@ export default async function ProjectsPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        kicker="Tu estudio"
+      <LargeTitle
         title="Proyectos"
-        description="Todos tus proyectos de tatuaje"
-        action={<CreateProjectDialog clients={clients} />}
+        actions={
+          <CreateProjectDialog
+            clients={clients}
+            trigger={
+              <button
+                type="button"
+                aria-label="Nuevo proyecto"
+                className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 ease-out active:scale-[0.94]"
+              >
+                <Plus className="size-6" weight="bold" />
+              </button>
+            }
+          />
+        }
       />
       <ProjectsBoard
         projects={projects}

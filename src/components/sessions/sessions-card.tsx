@@ -1,7 +1,8 @@
 'use client'
 
+import { Icon3D } from '@/components/ui/icon-3d'
 import { useState } from 'react'
-import { CalendarDays, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ProjectSessions } from '@/components/sessions/project-sessions'
 import { formatSessionDate } from '@/lib/projects/metrics'
@@ -34,18 +35,16 @@ export function SessionsCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-4 rounded-[1.75rem] bg-card p-5 text-left transition-colors hover:bg-card/80 sm:p-6"
+        className="tile-indigo flex min-h-[6.5rem] w-full items-center gap-4 rounded-[2rem] px-5 py-4 text-left text-white transition-transform duration-150 ease-out active:scale-[0.97]"
       >
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-          <CalendarDays className="size-5" strokeWidth={2} />
-        </span>
+        <Icon3D name="spiral-calendar" className="size-14" />
         <span className="min-w-0 flex-1">
-          <span className="block text-base font-semibold">Sesiones</span>
-          <span className="block text-sm text-muted-foreground">
+          <span className="block text-[1.375rem] leading-tight font-bold tracking-tight">Sesiones</span>
+          <span className="block truncate text-[15px] text-white/75">
             {done} de {total} · {nextDate ? `próxima ${formatSessionDate(nextDate)}` : 'sin próximas'}
           </span>
         </span>
-        <ChevronRight className="size-4.5 shrink-0 text-muted-foreground" strokeWidth={2} />
+        <ChevronRight className="size-6 shrink-0 text-white/80" strokeWidth={2.4} />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

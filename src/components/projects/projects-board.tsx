@@ -3,15 +3,16 @@
 import * as React from 'react'
 import Link from 'next/link'
 
-import { ProjectCard } from '@/components/projects/project-card'
+import { ProjectCard, projectProgress } from '@/components/projects/project-card'
 import { ProjectDetailDialog } from '@/components/projects/project-detail-dialog'
 import { ProjectsToolbar } from '@/components/projects/projects-toolbar'
 import { ProductivityBand } from '@/components/projects/productivity-band'
-import { StatusBadge } from '@/components/shared/status-badge'
+import { SectionTitle } from '@/components/shared/large-title'
+import { RemotePhoto } from '@/components/shared/remote-photo'
 import { EmptyState } from '@/components/shared/empty-state'
 import { cn } from '@/lib/utils'
 import { productivityMetrics } from '@/lib/projects/productivity'
-import { getSessionStats, cop } from '@/lib/projects/metrics'
+import { cop, latestPhotoUrl } from '@/lib/projects/metrics'
 import { todayKey, shiftMonth, monthLabel } from '@/lib/calendar/utils'
 import type { ProjectSummary } from '@/queries/projects'
 
@@ -71,40 +72,36 @@ export function ProjectsBoard({
       <ProjectsToolbar />
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setChip('all')}
-          className={cn(
-            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            chip === 'all'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border text-muted-foreground hover:text-foreground',
-          )}
-        >
-          Todos
-        </button>
-        <button
-          type="button"
-          onClick={() => setChip('completed')}
-          className={cn(
-            'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            chip === 'completed'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border text-muted-foreground hover:text-foreground',
-          )}
-        >
-          Completados
-          <span className="size-1.5 rounded-full bg-[color:var(--success)]" aria-hidden="true" />
-        </button>
+        {(
+          [
+            ['all', 'Todos'],
+            ['completed', 'Completados'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setChip(key)}
+            className={cn(
+              'h-10 rounded-full px-4 text-[15px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+              chip === key ? 'bg-primary text-primary-foreground' : 'bg-foreground/[0.08] text-foreground',
+            )}
+          >
+            {label}
+          </button>
+        ))}
 
         {/* Filtro por mes */}
         <select
           value={monthFilter}
           onChange={(e) => setMonthFilter(e.target.value)}
           aria-label="Filtrar proyectos por mes"
-          className="cursor-pointer rounded-full border border-border bg-transparent px-3 py-1.5 font-display text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(
+            'h-10 cursor-pointer appearance-none rounded-full px-4 text-[15px] font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+            monthFilter !== 'all' ? 'bg-primary text-primary-foreground' : 'bg-foreground/[0.08] text-foreground',
+          )}
         >
-          <option value="all">Proyectos por mes</option>
+          <option value="all">Por mes</option>
           {months.map((m) => (
             <option key={m} value={m}>
               {capitalize(monthLabel(m))}
@@ -112,6 +109,8 @@ export function ProjectsBoard({
           ))}
         </select>
       </div>
+
+      <SectionTitle title="Tus proyectos" subtitle={`${visible.length} en total`} />
 
       {visible.length === 0 ? (
         <EmptyState
@@ -121,13 +120,13 @@ export function ProjectsBoard({
           }
         />
       ) : view === 'list' ? (
-        <div className="space-y-2.5">
+        <div className="space-y-4">
           {visible.map((p) => (
             <ProjectRow key={p.id} project={p} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
           {visible.map((p) => (
             <ProjectCard key={p.id} project={p} onOpen={setSelected} />
           ))}
@@ -143,26 +142,34 @@ export function ProjectsBoard({
   )
 }
 
-/** Fila compacta para la vista Lista. */
+/** Fila de la vista Lista, como "Tus juegos" de Apple Games: foto (o cuadro
+ * de color) grande y redondeada, cliente en negrita, proyecto y estado en
+ * gris, y el valor en una píldora gris a la derecha. */
 function ProjectRow({ project }: { project: ProjectSummary }) {
-  const { total, done } = getSessionStats(project)
-  const pct = total > 0 ? Math.round((done / total) * 100) : project.status === 'completed' ? 100 : 0
+  const { complete, label } = projectProgress(project)
   const value = project.total_value ?? 0
   const clientName = project.clients?.name ?? 'Sin cliente'
+  const cover = latestPhotoUrl(project.gallery)
   return (
     <Link
       href={`/dashboard/projects/${project.id}`}
-      className="flex min-h-14 items-center gap-3 rounded-2xl bg-card p-3 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex items-center gap-3.5 rounded-2xl transition-transform duration-150 ease-out active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-display text-sm font-medium leading-tight tracking-tight">
-          {clientName}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">{project.name}</p>
-      </div>
-      <StatusBadge status={project.status} />
-      <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground sm:inline">{pct}%</span>
-      <span className="shrink-0 text-sm font-semibold tabular-nums">{cop(value)}</span>
+      <span
+        className={cn(
+          'relative grid size-[4.5rem] shrink-0 place-items-center overflow-hidden rounded-[1.25rem] text-[1.5rem] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]',
+          !cover && (complete ? 'tile-green' : project.status === 'in_progress' ? 'tile-gold' : 'tile-slate'),
+        )}
+      >
+        {cover ? <RemotePhoto src={cover} width={200} className="absolute inset-0 size-full object-cover" /> : clientName.charAt(0).toUpperCase()}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[1.1875rem] leading-tight font-semibold">{clientName}</span>
+        <span className="block truncate text-[15px] text-muted-foreground">
+          {project.name} · <span className={cn(complete && 'text-income')}>{label}</span>
+        </span>
+      </span>
+      <span className="shrink-0 rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold tabular-nums">{cop(value)}</span>
     </Link>
   )
 }

@@ -2,12 +2,11 @@
 
 import * as React from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, LayoutGrid, List } from 'lucide-react'
+import { ListBullets, MagnifyingGlass, SquaresFour } from '@phosphor-icons/react'
+import { cn } from '@/lib/utils'
 
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-
-/** Barra de Proyectos: búsqueda server (?q=) con debounce + toggle cuadrícula/lista (?view=). */
+/** Barra de Proyectos: buscador en píldora (?q=, con debounce) y el selector
+ * cuadrícula/lista (?view=) como control segmentado de iOS. */
 export function ProjectsToolbar() {
   const router = useRouter()
   const pathname = usePathname()
@@ -38,40 +37,40 @@ export function ProjectsToolbar() {
   return (
     <div className="flex items-center gap-2">
       <div className="relative min-w-0 flex-1">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-          strokeWidth={1.7}
+        <MagnifyingGlass
+          className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-muted-foreground"
+          weight="bold"
         />
-        <Input
+        <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar proyecto o cliente…"
-          className="pl-8"
+          placeholder="Buscar proyecto o cliente"
           aria-label="Buscar proyectos"
+          className="h-12 w-full rounded-full bg-foreground/[0.08] pr-4 pl-11 text-[1.0625rem] outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
 
-      <div className="flex shrink-0 gap-0.5 rounded-lg border p-0.5">
-        <Button
-          type="button"
-          variant={view === 'grid' ? 'default' : 'ghost'}
-          size="icon-sm"
-          onClick={() => setView('grid')}
-          aria-label="Vista de cuadrícula"
-          aria-pressed={view === 'grid'}
-        >
-          <LayoutGrid className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={view === 'list' ? 'default' : 'ghost'}
-          size="icon-sm"
-          onClick={() => setView('list')}
-          aria-label="Vista de lista"
-          aria-pressed={view === 'list'}
-        >
-          <List className="size-4" />
-        </Button>
+      <div className="flex h-12 shrink-0 gap-1 rounded-full bg-foreground/[0.08] p-1">
+        {(
+          [
+            ['grid', SquaresFour, 'Vista de cuadrícula'],
+            ['list', ListBullets, 'Vista de lista'],
+          ] as const
+        ).map(([v, Icon, label]) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setView(v)}
+            aria-label={label}
+            aria-pressed={view === v}
+            className={cn(
+              'grid w-11 place-items-center rounded-full transition-[background-color,color] duration-150 ease-out',
+              view === v ? 'bg-foreground/15 text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            <Icon className="size-5" weight={view === v ? 'fill' : 'bold'} />
+          </button>
+        ))}
       </div>
     </div>
   )

@@ -14,14 +14,8 @@ import { SessionsCard } from '@/components/sessions/sessions-card'
 import { RegisterPaymentDialog } from '@/components/payments/register-payment-dialog'
 import { GalleryCard } from '@/components/gallery/gallery-card'
 import { ProjectCoverPhoto } from '@/components/projects/project-cover-photo'
-import {
-  ArrowLeft,
-  CalendarDays,
-  Wallet,
-  CircleDollarSign,
-  ShieldCheck,
-  Clock,
-} from 'lucide-react'
+import { CaretLeft, ShieldCheck } from '@phosphor-icons/react/dist/ssr'
+import { Icon3D, type Icon3DName } from '@/components/ui/icon-3d'
 import Link from 'next/link'
 import {
   calculateBalance,
@@ -31,26 +25,15 @@ import {
 } from '@/lib/projects/metrics'
 import { notFound } from 'next/navigation'
 
-/** Bloque de estadística: ícono en círculo lima + número + etiqueta — mismo
- * patrón que las tarjetas de Inicio (today-cards.tsx). */
-function StatBlock({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
-  value: string
-  label: string
-}) {
+/** Cifra del proyecto como tarjeta de color al estilo Apple Games. */
+function StatTile({ tone, icon, value, label }: { tone: string; icon: Icon3DName; value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 text-center">
-      <span className="grid size-8 place-items-center rounded-full bg-primary/15 text-primary">
-        <Icon className="size-4" strokeWidth={2} />
-      </span>
-      <div>
-        <p className="text-base font-semibold leading-none tabular-nums">{value}</p>
-        <p className="mt-1 text-[11px] text-muted-foreground">{label}</p>
-      </div>
+    <div className={`relative min-h-24 overflow-hidden rounded-[1.5rem] p-3.5 text-white ${tone}`}>
+      <Icon3D name={icon} className="absolute top-2 right-2 size-10" />
+      <p className="absolute right-3.5 bottom-3.5 left-3.5">
+        <span className="block truncate font-title text-[1.25rem] leading-tight font-bold tabular-nums">{value}</span>
+        <span className="block truncate text-[12px] font-semibold text-white/75">{label}</span>
+      </p>
     </div>
   )
 }
@@ -87,9 +70,9 @@ export default async function ProjectDetailPage({
         <Link
           href="/dashboard/projects"
           aria-label="Volver a proyectos"
-          className="flex size-10 items-center justify-center rounded-full bg-card text-foreground transition-colors hover:bg-accent"
+          className="grid size-12 place-items-center rounded-full bg-secondary text-foreground transition-transform duration-150 ease-out active:scale-[0.94]"
         >
-          <ArrowLeft className="size-4.5" strokeWidth={2} />
+          <CaretLeft className="size-6" weight="bold" />
         </Link>
         <div className="flex items-center gap-2">
           <ContactClientWhatsapp
@@ -104,53 +87,40 @@ export default async function ProjectDetailPage({
 
       {medicalAlert && <MedicalAlertBanner projectId={p.id} />}
 
-      {/* ===== Encabezado: foto + info ===== */}
-      <div className="space-y-3">
-        <ProjectCoverPhoto
-          projectName={p.name}
-          gallery={gallery.map((g) => ({ id: g.id, url: g.url, caption: g.caption }))}
-          coverPhotoId={latestPhoto?.id ?? null}
+      {/* ===== Encabezado: foto a lo ancho con el título encima (estilo Apple Games) ===== */}
+      <ProjectCoverPhoto
+        projectName={p.name}
+        gallery={gallery.map((g) => ({ id: g.id, url: g.url, caption: g.caption }))}
+        coverPhotoId={latestPhoto?.id ?? null}
+      >
+        <span
+          className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-[13px] font-semibold backdrop-blur-md"
+          title={consentSigned ? 'Consentimiento firmado' : 'Consentimiento pendiente'}
+        >
+          <ShieldCheck className={consentSigned ? 'size-4 text-primary' : 'size-4 text-white/60'} weight="fill" />
+          {consentSigned ? 'Consentimiento firmado' : 'Sin consentimiento'}
+        </span>
+        <h1 className="truncate text-[2rem] leading-tight font-bold tracking-tight">{p.clients?.name ?? p.name}</h1>
+        <p className="truncate text-[1.0625rem] text-white/75">{p.name}</p>
+      </ProjectCoverPhoto>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile tone="tile-indigo" icon="spiral-calendar" value={`${done} de ${total}`} label={total === 1 ? 'Sesión' : 'Sesiones'} />
+        <StatTile tone="tile-green" icon="coin" value={cop(paid)} label={balance > 0 ? 'Abonado' : 'Pagado completo'} />
+        <StatTile tone="tile-teal" icon="money-bag" value={cop(Math.max(0, balance))} label="Saldo pendiente" />
+        <StatTile
+          tone="tile-gold"
+          icon="hourglass-not-done"
+          value={p.worked_minutes > 0 ? `${Math.floor(p.worked_minutes / 60)}h ${String(p.worked_minutes % 60).padStart(2, '0')}m` : '—'}
+          label="Tatuado"
         />
-
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-2">
-            <h1 className="min-w-0 truncate font-title font-bold text-2xl leading-tight sm:text-3xl">
-              {p.clients?.name ?? p.name}
-            </h1>
-            <span
-              className={
-                consentSigned
-                  ? 'grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary'
-                  : 'grid size-8 shrink-0 place-items-center rounded-full bg-card text-muted-foreground'
-              }
-              title={consentSigned ? 'Consentimiento firmado' : 'Consentimiento pendiente'}
-              aria-label={consentSigned ? 'Consentimiento firmado' : 'Consentimiento pendiente'}
-            >
-              <ShieldCheck className="size-4" strokeWidth={2} />
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground">{p.name}</p>
-
-          <div className={`grid gap-2 pt-1 ${p.worked_minutes > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
-            <StatBlock icon={CalendarDays} value={String(total)} label={total === 1 ? 'Sesión' : 'Sesiones'} />
-            <StatBlock icon={Wallet} value={balance > 0 ? 'Pendiente' : 'Pagado'} label={cop(paid)} />
-            <StatBlock icon={CircleDollarSign} value={cop(balance)} label="Saldo" />
-            {p.worked_minutes > 0 && (
-              <StatBlock
-                icon={Clock}
-                value={`${Math.floor(p.worked_minutes / 60)}h ${String(p.worked_minutes % 60).padStart(2, '0')}m`}
-                label="Tatuado"
-              />
-            )}
-          </div>
-        </div>
       </div>
 
       {/* ===== Progreso del proyecto (editable — ver ProjectProgressEditor) ===== */}
       <ProjectProgressEditor projectId={p.id} pct={pct} manualProgress={p.manual_progress} />
 
       {/* ===== Editor de sesiones/abono/valor (compacto) ===== */}
-      <section className="grid grid-cols-2 gap-3 rounded-[1.75rem] bg-card p-4 sm:p-5">
+      <section className="grid grid-cols-2 gap-3 rounded-[2rem] bg-card p-4 sm:p-5">
         <ProjectValueEditor projectId={p.id} totalValue={p.total_value} />
         <SessionDepositEditor
           projectId={p.id}
@@ -172,9 +142,9 @@ export default async function ProjectDetailPage({
 
       {/* ===== Notas (si hay) ===== */}
       {p.notes && (
-        <section className="rounded-[1.75rem] bg-card p-4 sm:p-5">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Notas</p>
-          <p className="mt-1 text-sm">{p.notes}</p>
+        <section className="rounded-[2rem] bg-card p-4 sm:p-5">
+          <h2 className="font-title text-[1.25rem] font-bold tracking-tight">Notas</h2>
+          <p className="mt-1 text-[1.0625rem] text-foreground/85">{p.notes}</p>
         </section>
       )}
 

@@ -1,94 +1,92 @@
-import type { ReactNode } from 'react'
-import { Clock, Activity, CheckCircle2, Hourglass, type LucideIcon } from 'lucide-react'
+import { TrendDown, TrendUp } from '@phosphor-icons/react/dist/ssr'
 import { deltaPct } from '@/lib/home/month-metrics'
 import { formatHM, type Productivity } from '@/lib/projects/productivity'
+import { Icon3D, type Icon3DName } from '@/components/ui/icon-3d'
+import type { TileTone } from '@/components/ui/tile'
+import { cn } from '@/lib/utils'
 
-function DeltaTag({ cur, prev }: { cur: number; prev: number }) {
-  const pct = deltaPct(cur, prev)
-  if (pct === null) return null
-  const color =
-    pct > 0 ? 'text-[color:var(--success)]' : pct < 0 ? 'text-destructive' : 'text-muted-foreground'
-  const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : ''
-  return (
-    <p className={`mt-0.5 truncate text-[clamp(0.44rem,1.8vw,0.62rem)] tabular-nums ${color}`}>
-      {arrow}
-      {Math.abs(pct)}%
-    </p>
-  )
+// Clases literales para que Tailwind las encuentre (ver @utility tile-* en globals.css).
+const TONE: Partial<Record<TileTone, string>> = {
+  gold: 'tile-gold',
+  indigo: 'tile-indigo',
+  green: 'tile-green',
+  gray: 'tile-gray',
 }
 
-function Tile({
-  icon: Icon,
-  iconClass,
+function Stat({
+  tone,
+  icon,
   label,
   value,
-  delta,
+  cur,
+  prev,
 }: {
-  icon: LucideIcon
-  iconClass: string
+  tone: TileTone
+  icon: Icon3DName
   label: string
-  value: ReactNode
-  delta: ReactNode
+  value: React.ReactNode
+  cur: number
+  prev: number
 }) {
+  const pct = deltaPct(cur, prev)
   return (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl bg-muted/40 p-2.5 text-center sm:p-3">
-      <span className={`grid size-9 shrink-0 place-items-center rounded-full bg-card sm:size-11 ${iconClass}`}>
-        <Icon className="size-4 sm:size-5" strokeWidth={1.9} />
-      </span>
-      <div className="min-w-0">
-        <p className="truncate font-title font-bold text-[clamp(0.8rem,3.6vw,1.25rem)] leading-none tabular-nums">
-          {value}
-        </p>
-        <p className="mt-1 truncate text-[clamp(0.5rem,2vw,0.68rem)] text-muted-foreground">{label}</p>
-        {delta}
+    <div className={cn('relative min-h-28 overflow-hidden rounded-[1.75rem] p-4 text-white', TONE[tone])}>
+      <Icon3D name={icon} className="absolute top-2.5 right-2.5 size-12" />
+      <div className="absolute bottom-4 left-4 right-4">
+        {pct !== null && (
+          <p className="flex items-center gap-1 text-[13px] font-semibold text-white/75 tabular-nums">
+            {pct >= 0 ? <TrendUp className="size-3.5" weight="bold" /> : <TrendDown className="size-3.5" weight="bold" />}
+            {pct > 0 ? '+' : ''}
+            {pct}%
+          </p>
+        )}
+        <p className="font-title text-[1.625rem] leading-none font-bold tabular-nums">{value}</p>
+        <p className="mt-1 truncate text-[13px] font-semibold text-white/80">{label}</p>
       </div>
     </div>
   )
 }
 
 /**
- * Tarjeta de productividad del mes, con el mismo lenguaje visual que las
- * tarjetas de Inicio (contenedor grande, título tipo h2), pero en una sola
- * fila de 4 tarjetas horizontales (no apiladas verticalmente).
+ * Productividad del mes como tarjetas de color al estilo Apple Games (ícono
+ * 3D arriba a la derecha, cifra grande abajo y la variación contra el mes
+ * anterior). 2 columnas en el celular, 4 en la web.
  */
 export function ProductivityBand({ current, prev }: { current: Productivity; prev: Productivity }) {
   return (
-    <section className="space-y-4 rounded-[1.75rem] bg-card p-4 sm:p-6">
-      <h2 className="text-lg font-semibold">Productividad este mes</h2>
-
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
-        <Tile
-          icon={Clock}
-          iconClass="text-primary"
-          label="Horas tatuadas"
-          value={formatHM(current.tattooedMinutes)}
-          delta={<DeltaTag cur={current.tattooedMinutes} prev={prev.tattooedMinutes} />}
-        />
-
-        <Tile
-          icon={Activity}
-          iconClass="text-primary"
-          label="Sesiones realizadas"
-          value={current.sessionsDone}
-          delta={<DeltaTag cur={current.sessionsDone} prev={prev.sessionsDone} />}
-        />
-
-        <Tile
-          icon={CheckCircle2}
-          iconClass="text-[color:var(--success)]"
-          label="Proyectos finalizados"
-          value={current.projectsFinished}
-          delta={<DeltaTag cur={current.projectsFinished} prev={prev.projectsFinished} />}
-        />
-
-        <Tile
-          icon={Hourglass}
-          iconClass="text-muted-foreground"
-          label="Horas pendientes"
-          value={formatHM(current.pendingMinutes)}
-          delta={<DeltaTag cur={current.pendingMinutes} prev={prev.pendingMinutes} />}
-        />
-      </div>
+    <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Stat
+        tone="gold"
+        icon="fountain-pen"
+        label="Horas tatuadas"
+        value={formatHM(current.tattooedMinutes)}
+        cur={current.tattooedMinutes}
+        prev={prev.tattooedMinutes}
+      />
+      <Stat
+        tone="indigo"
+        icon="spiral-calendar"
+        label="Sesiones"
+        value={current.sessionsDone}
+        cur={current.sessionsDone}
+        prev={prev.sessionsDone}
+      />
+      <Stat
+        tone="green"
+        icon="trophy"
+        label="Finalizados"
+        value={current.projectsFinished}
+        cur={current.projectsFinished}
+        prev={prev.projectsFinished}
+      />
+      <Stat
+        tone="gray"
+        icon="hourglass-not-done"
+        label="Horas pendientes"
+        value={formatHM(current.pendingMinutes)}
+        cur={current.pendingMinutes}
+        prev={prev.pendingMinutes}
+      />
     </section>
   )
 }
