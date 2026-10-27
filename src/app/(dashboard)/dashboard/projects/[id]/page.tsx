@@ -13,6 +13,7 @@ import { parseDurationLabel } from '@/lib/quote-wizard/duration'
 import { SessionsCard } from '@/components/sessions/sessions-card'
 import { RegisterPaymentDialog } from '@/components/payments/register-payment-dialog'
 import { GalleryCard } from '@/components/gallery/gallery-card'
+import { ProjectPayments } from '@/components/payments/project-payments'
 import { ProjectCoverPhoto } from '@/components/projects/project-cover-photo'
 import { CaretLeft, ShieldCheck } from '@phosphor-icons/react/dist/ssr'
 import { Icon3D, type Icon3DName } from '@/components/ui/icon-3d'
@@ -139,6 +140,7 @@ export default async function ProjectDetailPage({
         nextDate={next}
       />
       <GalleryCard projectId={p.id} gallery={gallery} projectName={p.name} />
+      <ProjectPayments payments={p.payments} />
 
       {/* ===== Notas (si hay) ===== */}
       {p.notes && (

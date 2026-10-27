@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { ArrowLeft, ArrowLeftRight, Delete, Landmark, Pencil, Plus, X } from 'lucide-react'
 
 import { createExpenseAction, deleteExpenseAction, reclassifyExpenseAction, setAccountBalanceAction } from '@/actions/expenses'
+import { deletePaymentAction } from '@/actions/payments'
 import { MOVE_IN_PREFIX, MOVE_OUT_PREFIX, OTHER_INCOME_PREFIX, TRANSFER_PREFIX, personalCategory } from '@/lib/expenses/scope'
 import { todayKey } from '@/lib/calendar/utils'
 import { NO_ACCOUNT, type AccountBalance, type LedgerEntry } from '@/lib/finance/cash-summary'
@@ -247,14 +248,16 @@ export function Fab({ onClick }: { onClick: () => void }) {
   )
 }
 
-/** Un movimiento. Tocarlo deja cambiar qué fue o borrarlo (los cobros de clientes se editan en su proyecto). */
+/** Un movimiento. Tocarlo deja cambiar qué fue o borrarlo. Los cobros a clientes
+ * solo se pueden borrar (reversar el ingreso): salen de la caja, del proyecto y de Estadísticas. */
 function LedgerRow({ entry: e, accounts }: { entry: LedgerEntry; accounts: string[] }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [pending, startTransition] = useTransition()
   const style = KIND_STYLE[e.kind]
-  const editable = !!e.expenseId
+  const editable = !!e.expenseId || !!e.paymentId
+  const isPayment = !e.expenseId && !!e.paymentId
   const others = accounts.filter((a) => a !== e.account)
 
   function run(fn: () => Promise<{ success: boolean; error?: { message: string } }>, done: string) {
@@ -343,7 +346,42 @@ function LedgerRow({ entry: e, accounts }: { entry: LedgerEntry; accounts: strin
         </span>
       </button>
 
-      {open && editable && (
+      {open && isPayment && (
+        <div className="space-y-2.5 border-t border-border/60 bg-muted/30 px-4 py-3">
+          <p className="text-[15px] text-muted-foreground">
+            Es un cobro de un cliente. Si lo reversas, se quita de esta cuenta, del saldo pagado de su proyecto y de lo que entró en Estadísticas.
+          </p>
+          {confirmDelete ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="h-11 flex-1 rounded-full bg-secondary text-[15px] font-semibold"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(() => deletePaymentAction({ payment_id: e.paymentId! }), `Cobro reversado: ${cop(e.amount)}`)}
+                className="h-11 flex-1 rounded-full bg-destructive text-[15px] font-semibold text-white disabled:opacity-50"
+              >
+                {pending ? 'Reversando…' : `Sí, reversar ${cop(e.amount)}`}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="h-11 w-full rounded-full bg-destructive/15 text-[15px] font-semibold text-destructive"
+            >
+              Reversar este cobro
+            </button>
+          )}
+        </div>
+      )}
+
+      {open && editable && !isPayment && (
         <div className="space-y-2.5 border-t border-border/60 bg-muted/30 px-4 py-3">
           <p className="text-xs text-muted-foreground">¿Qué fue?</p>
           <div className="flex flex-wrap gap-1.5">

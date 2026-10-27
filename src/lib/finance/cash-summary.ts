@@ -81,6 +81,8 @@ export type LedgerEntry = {
   /** `p:<id>` cobro, `e:<id>` fila de expenses (una transferencia sale en las dos cuentas). */
   key: string
   expenseId: string | null
+  /** Cobro a un cliente (tabla payments): se puede borrar para reversar el ingreso. */
+  paymentId: string | null
   date: string
   name: string
   kind: LedgerKind
@@ -348,6 +350,7 @@ export function cashSummary({
     ledger.push({
       key: `p:${p.id ?? ledger.length}`,
       expenseId: null,
+      paymentId: p.id ?? null,
       date: day,
       name: p.projects?.clients?.name || 'Cobro',
       kind: 'income',
@@ -369,6 +372,7 @@ export function cashSummary({
     const entry = (kind: LedgerKind, name: string, tipo: string, acc: string | null, other: string | null = null): LedgerEntry => ({
       key: `e:${e.id}${kind === 'transfer-in' ? ':in' : ''}`,
       expenseId: e.id,
+      paymentId: null,
       date: e.expense_date,
       name,
       kind,
