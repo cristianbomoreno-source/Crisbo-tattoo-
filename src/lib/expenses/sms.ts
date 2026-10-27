@@ -9,6 +9,8 @@
  *  - "BoldCF: Realizaste una transferencia a traves de llaves por un valor de $375.000,00 …" → salió
  *  - "Bold CF: Has ingresado exitosamente a tu cuenta Bold."      → ignorar (inicio de sesión)
  *  - "Nequi: Tu negocio CRISBO TATTOO recibio $1.000 de NOMBRE  el 26/10/2026 a las 03:19 a.m. a través de Bre-B …" → entró (Nequi Negocios)
+ *  - "Nu: Pagaste $45.900,00 en EXITO" → salió. No es un SMS: lo arma la
+ *    automatización "Transacción" de Wallet (Apple Pay con la tarjeta Nu).
  * Cada banco separa miles y decimales distinto, ver parseAmount. */
 /** comercio: dónde se pagó (gastos); pagador: quién mandó la plata (ingresos). */
 export type SmsMovement = { income: boolean; amount: number; medio: string; comercio: string | null; pagador: string | null }

@@ -38,6 +38,13 @@ describe('parseBankSms', () => {
       .toEqual({ income: true, amount: 1000, medio: 'Nequi', comercio: null, pagador: 'CRISTIAN RICARDO BOJACA MORENO' })
   })
 
+  it('Apple Pay purchase with the Nu card (text built by the Wallet automation)', () => {
+    expect(parseBankSms('Nu: Pagaste $45.900,00 en EXITO CHAPINERO')).toEqual({
+      income: false, amount: 45900, medio: 'Nu', comercio: 'EXITO CHAPINERO', pagador: null,
+    })
+    expect(parseBankSms('Nu: Pagaste COP 12,000.00 en D1 SUBA')?.amount).toBe(12000)
+  })
+
   it('ignores failed payments, holds, logins and junk', () => {
     expect(parseBankSms('NEQUI: No te alcanzo para pagar 65.611,15 en ANTHROPIC* CLAUDE SUB')).toBeNull()
     expect(parseBankSms('NEQUI: Pagaste 0,00 en GOOGLE *TEMPORARY HOLD')).toBeNull()
