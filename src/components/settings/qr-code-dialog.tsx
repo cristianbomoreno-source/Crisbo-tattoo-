@@ -12,7 +12,7 @@ export function QrCodeDialog({ url, onClose }: { url: string; onClose: () => voi
         className="w-full max-w-xs rounded-[1.75rem] bg-card p-5 text-center shadow-2xl"
       >
         <div className="flex items-center justify-between">
-          <p className="font-display text-xs font-semibold text-muted-foreground">
+          <p className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
             Código QR
           </p>
           <button

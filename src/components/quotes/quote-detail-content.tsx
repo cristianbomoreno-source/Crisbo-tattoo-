@@ -156,7 +156,7 @@ export function QuoteDetailContent({
       <div className="space-y-3 px-4 pb-4">
         {/* RESUMEN */}
         <div className="rounded-2xl bg-card p-4">
-          <h3 className="mb-3 flex items-center gap-2 font-display text-xs font-semibold text-muted-foreground">
+          <h3 className="mb-3 flex items-center gap-2 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
             <FileText className="size-4" strokeWidth={1.8} aria-hidden />
             Resumen
           </h3>
@@ -225,7 +225,7 @@ export function QuoteDetailContent({
 
         {!isBot && q.notes && (
           <div className="rounded-2xl bg-card p-4">
-            <h3 className="mb-2 font-display text-xs font-semibold text-muted-foreground">
+            <h3 className="mb-2 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
               Notas
             </h3>
             <p className="text-sm text-foreground/90">{q.notes}</p>

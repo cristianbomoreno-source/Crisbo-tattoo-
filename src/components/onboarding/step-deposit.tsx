@@ -239,7 +239,7 @@ export function StepDeposit({ draft, patch }: OnboardingStepProps) {
                   mode === 'fixed' ? 'pl-8 pr-16' : 'pl-4 pr-10'
                 )}
               />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-display text-xs font-semibold text-muted-foreground">
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
                 {mode === 'fixed' ? 'COP' : '%'}
               </span>
             </div>

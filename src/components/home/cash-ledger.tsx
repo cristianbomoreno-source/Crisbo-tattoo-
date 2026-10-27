@@ -561,10 +561,10 @@ export function NewRecordSheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Popup className="fixed inset-y-0 right-0 z-[60] flex w-full max-w-md flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-foreground outline-none">
           <header className="flex items-center gap-2 px-4 py-3">
-            <DialogPrimitive.Close aria-label="Cerrar" className="grid size-10 place-items-center rounded-full hover:bg-muted">
+            <DialogPrimitive.Close aria-label="Cerrar" className="grid size-10 place-items-center rounded-full bg-secondary transition-transform duration-150 ease-out active:scale-90">
               <X className="size-5" />
             </DialogPrimitive.Close>
-            <DialogPrimitive.Title className="font-display text-lg font-semibold">Nuevo movimiento</DialogPrimitive.Title>
+            <DialogPrimitive.Title className="text-[1.625rem] leading-tight font-bold tracking-tight">Nuevo movimiento</DialogPrimitive.Title>
           </header>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4">

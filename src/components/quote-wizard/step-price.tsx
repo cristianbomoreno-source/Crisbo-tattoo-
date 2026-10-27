@@ -307,7 +307,7 @@ export function StepPrice({ draft, patch, studioDeposit }: StepPriceProps) {
           </span>
         </Label>
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-display text-xs font-semibold text-muted-foreground">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
             COP
           </span>
           <Input

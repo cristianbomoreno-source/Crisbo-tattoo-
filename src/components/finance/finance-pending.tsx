@@ -25,7 +25,7 @@ export function FinancePendingCard({ rows, template }: { rows: PendingRow[]; tem
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold text-muted-foreground">
+      <h3 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
         Pendientes por cobrar
       </h3>
       <div className="mt-4 flex flex-col gap-2.5">

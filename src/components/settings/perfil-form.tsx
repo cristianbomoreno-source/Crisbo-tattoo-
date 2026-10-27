@@ -347,7 +347,7 @@ export function PerfilForm({ logoUrl, coverPhotoUrl, defaults }: Props) {
           />
 
           <fieldset className="space-y-4 rounded-xl border border-border p-4">
-            <legend className="px-1 font-display text-xs font-semibold text-muted-foreground">
+            <legend className="px-1 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
               Redes del estudio
             </legend>
             <FormField

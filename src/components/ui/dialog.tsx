@@ -65,7 +65,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-3.5 right-3.5 bg-secondary"
+                className="absolute top-3.5 right-3.5 bg-foreground/10 hover:bg-foreground/15"
                 size="icon-sm"
               />
             }
@@ -84,7 +84,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2", className)}
+      className={cn("flex flex-col gap-1 pr-10", className)}
       {...props}
     />
   )
@@ -122,7 +122,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "font-heading text-xl leading-tight font-bold tracking-tight",
+        "font-heading text-[1.625rem] leading-tight font-bold tracking-tight",
         className
       )}
       {...props}

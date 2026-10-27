@@ -19,7 +19,7 @@ export function FinanceIncomeVsExpensesCard({
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold text-muted-foreground">
+      <h3 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
         Ingresos vs. gastos
       </h3>
       <div className="mt-4 flex flex-col gap-3">
@@ -66,7 +66,7 @@ export function FinanceExpensesDonut({ totals }: { totals: CategoryTotal[] }) {
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold text-muted-foreground">
+      <h3 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
         Gastos del estudio
       </h3>
       <div className="mt-4 flex items-center gap-5">
@@ -102,7 +102,7 @@ export function FinancePersonalCard({ totals, profit }: { totals: CategoryTotal[
 
   return (
     <div className="rounded-[28px] border border-foreground/8 bg-card p-5">
-      <h3 className="font-display text-xs font-semibold text-muted-foreground">
+      <h3 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
         Gastos personales (sacados del negocio)
       </h3>
       <div className="mt-4 flex items-center justify-between">

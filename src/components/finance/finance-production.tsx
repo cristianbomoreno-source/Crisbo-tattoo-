@@ -27,7 +27,7 @@ export function FinanceProductionGrid({
 
   return (
     <div>
-      <h3 className="mb-3 font-display text-xs font-semibold text-muted-foreground">
+      <h3 className="mb-3 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
         Producción del mes
       </h3>
       <div className="grid grid-cols-2 gap-2.5">

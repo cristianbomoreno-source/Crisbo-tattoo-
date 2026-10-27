@@ -50,26 +50,28 @@ export function FormSheet({
       <DialogPrimitive.Trigger render={trigger ?? <Button>{triggerLabel}</Button>} />
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop
-          className="fixed inset-0 z-50 bg-black/40 duration-150 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none"
+          className="fixed inset-0 z-50 bg-black/50 duration-150 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none"
         />
         <DialogPrimitive.Popup
           className={cn(
             // Móvil: hoja inferior. Alto máximo y padding respetan el notch/home
             // indicator (safe-area) para que el contenido y el botón de guardar
             // nunca queden cortados por la isla dinámica o la barra inferior.
-            'fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(90vh-env(safe-area-inset-bottom))] w-full flex-col gap-4 overflow-y-auto rounded-t-2xl bg-popover p-5 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-popover-foreground ring-1 ring-foreground/10 outline-none',
+            'fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(90vh-env(safe-area-inset-bottom))] w-full flex-col gap-4 overflow-y-auto rounded-t-[2rem] bg-popover p-5 pt-3 shadow-[0_-12px_40px_-10px_rgb(0_0_0/0.5)] pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-popover-foreground ring-1 ring-foreground/10 outline-none',
             'duration-200 data-open:animate-in data-closed:animate-out data-open:fade-in-0 data-closed:fade-out-0 data-open:slide-in-from-bottom-6 data-closed:slide-out-to-bottom-6 motion-reduce:animate-none',
             // Desktop: diálogo centrado (sin restricciones de safe-area)
-            'sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:p-6 sm:pt-6 sm:pb-6 sm:data-open:slide-in-from-bottom-0 sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95',
+            'sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[2rem] sm:p-6 sm:pt-6 sm:pb-6 sm:data-open:slide-in-from-bottom-0 sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95',
             popupClassName
           )}
         >
+          {/* Agarradera de la hoja (solo celular), como en iOS. */}
+          <span aria-hidden="true" className="mx-auto -mb-1 h-1.5 w-10 shrink-0 rounded-full bg-foreground/20 sm:hidden" />
           {header ? (
             <div className="relative">
               <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
               {description && <DialogPrimitive.Description className="sr-only">{description}</DialogPrimitive.Description>}
               <DialogPrimitive.Close
-                render={<Button variant="ghost" size="icon-sm" aria-label="Cerrar" className={cn('absolute top-0 right-0', closeButtonClassName)} />}
+                render={<Button variant="ghost" size="icon-sm" aria-label="Cerrar" className={cn('absolute top-0 right-0 bg-foreground/10', closeButtonClassName)} />}
               >
                 <XIcon />
               </DialogPrimitive.Close>
@@ -78,17 +80,17 @@ export function FormSheet({
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-1">
-                <DialogPrimitive.Title className="font-heading text-lg leading-none font-medium">
+                <DialogPrimitive.Title className="font-heading text-[1.625rem] leading-tight font-bold tracking-tight">
                   {title}
                 </DialogPrimitive.Title>
                 {description && (
-                  <DialogPrimitive.Description className="text-sm text-muted-foreground">
+                  <DialogPrimitive.Description className="text-[15px] text-muted-foreground">
                     {description}
                   </DialogPrimitive.Description>
                 )}
               </div>
               <DialogPrimitive.Close
-                render={<Button variant="ghost" size="icon-sm" aria-label="Cerrar" />}
+                render={<Button variant="ghost" size="icon-sm" aria-label="Cerrar" className="shrink-0 bg-foreground/10" />}
               >
                 <XIcon />
               </DialogPrimitive.Close>
