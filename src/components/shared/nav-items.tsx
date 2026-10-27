@@ -60,17 +60,16 @@ export function NavLinks({ onNavigate, collapsed = false }: { onNavigate?: () =>
             aria-current={active ? 'page' : undefined}
             title={collapsed ? item.label : undefined}
             className={cn(
-              'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[14px] font-medium transition-colors',
+              'relative flex min-h-11 items-center gap-3 rounded-full px-4 py-2.5 text-[15px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]',
               collapsed && 'justify-center px-0',
               active
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+                ? 'bg-[var(--glass-active)] text-foreground'
+                : 'text-foreground/85 hover:bg-[var(--glass-active)]/60 hover:text-foreground',
             )}
           >
-            {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />}
-            <Icon
-              className={cn('size-[18px] shrink-0', active ? 'text-sidebar-primary' : 'text-muted-foreground')}
-              weight={active ? 'fill' : 'regular'}
+                        <Icon
+              className={cn('size-[22px] shrink-0', active ? 'text-primary' : 'text-foreground/85')}
+              weight="fill"
             />
             {!collapsed && item.label}
           </Link>
@@ -91,17 +90,16 @@ export function SettingsNavLink({ onNavigate, collapsed = false }: { onNavigate?
       aria-current={active ? 'page' : undefined}
       title={collapsed ? 'Ajustes' : undefined}
       className={cn(
-        'relative flex min-h-11 items-center gap-3 rounded-md px-3.5 py-2.5 font-display text-[14px] font-medium transition-colors',
+        'relative flex min-h-11 items-center gap-3 rounded-full px-4 py-2.5 text-[15px] font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]',
         collapsed && 'justify-center px-0',
         active
-          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-          : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+          ? 'bg-[var(--glass-active)] text-foreground'
+          : 'text-foreground/85 hover:bg-[var(--glass-active)]/60 hover:text-foreground',
       )}
     >
-      {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-sidebar-primary" />}
-      <GearSix
-        className={cn('size-[18px] shrink-0', active ? 'text-sidebar-primary' : 'text-muted-foreground')}
-        weight={active ? 'fill' : 'regular'}
+            <GearSix
+        className={cn('size-[22px] shrink-0', active ? 'text-primary' : 'text-foreground/85')}
+        weight="fill"
       />
       {!collapsed && 'Ajustes'}
     </Link>

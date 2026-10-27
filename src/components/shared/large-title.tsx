@@ -19,8 +19,8 @@ export function LargeTitle({
   className?: string
 }) {
   return (
-    <header className={cn('flex items-center justify-between gap-3 lg:hidden', className)}>
-      <h1 className="large-title min-w-0 truncate">{title}</h1>
+    <header className={cn('flex items-center justify-between gap-3', className)}>
+      <h1 className="large-title min-w-0 truncate lg:text-[2.75rem]">{title}</h1>
       <div className="flex shrink-0 items-center gap-2.5">
         {actions}
         {avatar && (

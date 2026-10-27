@@ -58,7 +58,7 @@ export function AppShell({
           // siempre se ajusta al ancho real del viewport y cualquier
           // desborde interno se queda contenido/scrolleable donde debe.
           'min-w-0 flex-1 transition-[margin] duration-200',
-          collapsed ? 'lg:ml-20' : 'lg:ml-64'
+          collapsed ? 'lg:ml-[5.5rem]' : 'lg:ml-[16.5rem]'
         )}
       >
         {children}

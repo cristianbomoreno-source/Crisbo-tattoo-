@@ -1,4 +1,6 @@
-import { HomeHero } from '@/components/home/home-hero'
+import { HomeGreeting } from '@/components/home/home-greeting'
+import { WorkShiftCard } from '@/components/home/work-shift-card'
+import { SectionTitle } from '@/components/shared/large-title'
 import { NextSessionCard } from '@/components/home/next-session-card'
 import type { MedicalAlert } from '@/queries/consent-links'
 import { CalendarCard } from '@/components/home/calendar-card'
@@ -19,7 +21,9 @@ import type { UpcomingExpenseAlert } from '@/lib/finance/alerts'
  * dos columnas (70/30). Nada de estadísticas históricas aquí — eso vive en
  * `/dashboard/stats`.
  *
- * Jerarquía: 1) Portada  2) Iniciar sesión (dentro del hero)  3) Próxima
+ * Estilo Apple Games (oct 2026): título grande "Inicio" en lugar de la portada
+ * con foto; la jornada pasó a la columna derecha.
+ * Jerarquía: 1) Título  2) Iniciar jornada  3) Próxima
  * sesión  4) Calendario  5) Sesiones de hoy  6) Resumen del mes
  * 7) Pendientes importantes.
  *
@@ -34,6 +38,7 @@ export type HomeDesktopProps = {
   greeting: string
   dateLabel: string
   coverPhotoUrl: string | null
+  logoUrl?: string | null
   activeShift: { id: string; startedAt: string } | null
   todayOrdered: SessionWithProject[]
   photoUrls: Record<string, string | null>
@@ -63,7 +68,7 @@ export function HomeDesktop({
   name,
   greeting,
   dateLabel,
-  coverPhotoUrl,
+  logoUrl,
   activeShift,
   todayOrdered,
   photoUrls,
@@ -89,13 +94,7 @@ export function HomeDesktop({
   return (
     <div className="space-y-6">
       <div data-tour="home-greeting">
-        <HomeHero
-          name={name}
-          greeting={greeting}
-          dateLabel={dateLabel}
-          coverPhotoUrl={coverPhotoUrl}
-          activeShift={activeShift}
-        />
+        <HomeGreeting name={name} greeting={greeting} dateLabel={dateLabel} logoUrl={logoUrl} />
       </div>
 
       {todayOrdered.length > 0 && (
@@ -122,15 +121,15 @@ export function HomeDesktop({
           />
 
           <section className="space-y-3" data-tour="home-today-sessions">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Sesiones de hoy</h2>
-              <a
-                href="/dashboard?openCalendar=1"
-                className="text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Ver agenda completa →
-              </a>
-            </div>
+            <SectionTitle
+              title="Hoy"
+              subtitle={`${todaySessions.length} ${todaySessions.length === 1 ? 'cita' : 'citas'}`}
+              action={
+                <a href="/dashboard?openCalendar=1" className="rounded-full bg-secondary px-4 py-2 text-[15px] font-semibold">
+                  Ver agenda
+                </a>
+              }
+            />
             <TodayAppointments
               sessions={todaySessions}
               balances={balances}
@@ -140,6 +139,7 @@ export function HomeDesktop({
         </div>
 
         <div className="space-y-6 lg:col-span-3">
+          <WorkShiftCard activeShift={activeShift} />
           <MonthSummaryCard
             monthKey={monthKey}
             summary={summary}

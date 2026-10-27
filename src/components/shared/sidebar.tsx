@@ -13,10 +13,11 @@ const STORAGE_KEY = 'ofink-sidebar-collapsed'
 /** Ancho del sidebar expandido/colapsado — `AppShell` usa los mismos
  * valores para el margen del contenido, así que si se cambian acá hay que
  * cambiarlos allá también. */
-export const SIDEBAR_WIDTH = { expanded: 'w-64', collapsed: 'w-20' } as const
+export const SIDEBAR_WIDTH = { expanded: 'w-60', collapsed: 'w-[4.25rem]' } as const
 
 /**
- * Sidebar fijo de escritorio, ahora desplegable a mano. En móvil/tablet
+ * Sidebar de escritorio: panel de vidrio flotante con esquinas redondas (como
+ * la barra lateral de Apple Games en iPad/Mac), desplegable a mano. En móvil/tablet
  * (<lg) se oculta y la navegación pasa al drawer de `AppShell`. El estado
  * (expandido/colapsado) se guarda en localStorage — persiste entre
  * sesiones, por estudio/navegador, no por usuario (no hay datos sensibles).
@@ -45,11 +46,11 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-30 hidden h-screen flex-col border-r bg-sidebar transition-[width] duration-200 lg:flex',
+        'glass fixed top-3 bottom-3 left-3 z-30 hidden flex-col rounded-[2rem] transition-[width] duration-200 lg:flex',
         collapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded
       )}
     >
-      <div className={cn('flex items-center border-b border-sidebar-border p-6', collapsed && 'justify-center px-3')}>
+      <div className={cn('flex items-center px-5 pt-6 pb-4', collapsed && 'justify-center px-3')}>
         {collapsed ? (
           <Link href="/dashboard" aria-label={studio?.name ?? 'Mi estudio'}>
             <span
@@ -66,11 +67,11 @@ export function Sidebar({
         )}
       </div>
 
-      <nav data-tour="nav-bar" className="flex-1 space-y-0.5 p-3">
+      <nav data-tour="nav-bar" className="flex-1 space-y-1 overflow-y-auto px-2.5">
         <NavLinks collapsed={collapsed} />
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="space-y-1 p-2.5">
         <SettingsNavLink collapsed={collapsed} />
         <LogoutButton collapsed={collapsed} />
       </div>
@@ -81,7 +82,7 @@ export function Sidebar({
         aria-label={collapsed ? 'Expandir barra de navegación' : 'Contraer barra de navegación'}
         aria-pressed={collapsed}
         title={collapsed ? 'Expandir' : 'Contraer'}
-        className="absolute -right-3 top-8 grid size-6 place-items-center rounded-full border border-sidebar-border bg-sidebar text-muted-foreground shadow-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute -right-3 top-8 grid size-6 place-items-center rounded-full border border-[var(--glass-border)] bg-popover text-muted-foreground shadow-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {collapsed ? (
           <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden="true" />

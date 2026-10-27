@@ -4,7 +4,6 @@ import { TrendDown, TrendUp } from '@phosphor-icons/react'
 import { cop } from '@/lib/projects/metrics'
 import { deltaPct } from '@/lib/home/month-metrics'
 import { CajaButton } from '@/components/home/caja-button'
-import { Icon3D } from '@/components/ui/icon-3d'
 import { TileGrid } from '@/components/ui/tile'
 import type { MonthSummary } from '@/lib/home/day-metrics'
 import type { ProjectSummary } from '@/queries/projects'
@@ -19,7 +18,7 @@ function monthName(monthKey: string, offset = 0) {
 }
 
 /** Portada de Inicio al estilo Apple Games: tarjeta grande con degradado y
- * brillo dorado, el dinero que entró este mes en grande, la comparación con
+ * brillo dorado y el logo de Crisbo, el dinero que entró este mes en grande, la comparación con
  * el mes anterior y la píldora "Registrar cobro". Debajo, dos tarjetas de
  * color: citas agendadas y cotizaciones en espera. */
 export function MonthSummaryCard({
@@ -46,7 +45,13 @@ export function MonthSummaryCard({
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[repeating-conic-gradient(from_0deg_at_50%_22%,rgb(255_214_150/0.10)_0deg_2deg,transparent_2deg_14deg)] [mask-image:radial-gradient(70%_60%_at_50%_22%,black,transparent)]"
         />
-        <Icon3D name="money-bag" className="relative mx-auto size-24" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/cb-isotipo-v2.png"
+          alt="Crisbo Tattoo"
+          draggable={false}
+          className="relative mx-auto size-24 object-contain drop-shadow-[0_0_18px_rgb(243_201_138/0.55)] select-none"
+        />
         <p className="relative mt-2 text-[13px] font-bold tracking-[0.08em] text-[#f3c98a] uppercase">Entró en {monthName(monthKey)}</p>
         <p className="relative mt-1 font-title text-[2.75rem] leading-none font-bold tracking-tight tabular-nums">{cop(summary.income)}</p>
         {delta !== null ? (

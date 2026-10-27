@@ -343,6 +343,7 @@ export default async function DashboardPage() {
           greeting={greetingWord(hour)}
           dateLabel={dateLabel}
           coverPhotoUrl={studio?.coverPhotoUrl ?? null}
+          logoUrl={studio?.logoUrl}
           activeShift={activeShift}
           todayOrdered={cardSessions}
           daysUntil={daysUntil}
