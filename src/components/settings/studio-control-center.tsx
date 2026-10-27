@@ -9,7 +9,6 @@ import {
   IdentificationBadge,
   InstagramLogo,
   Palette,
-  PaintBrush,
   Storefront,
   Target,
   UserSwitch,
@@ -219,7 +218,6 @@ export function StudioControlCenter({
 
       <SettingsGroup title="Apariencia">
         <SettingsRow href="/dashboard/settings/personalizacion" icon={Palette} tone="tile-purple" label="Tema y colores" />
-        <SettingsRow href="/dashboard/settings/enlace/personalizar" icon={PaintBrush} tone="tile-sunset" label="Diseño de la página de links" />
       </SettingsGroup>
 
       <SettingsGroup title="Cuenta">

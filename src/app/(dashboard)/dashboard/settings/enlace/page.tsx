@@ -1,30 +1,34 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Paintbrush } from 'lucide-react'
 import { getCurrentStudio } from '@/queries/studio'
-import { EnlaceForm } from '@/components/settings/enlace-form'
-import { StudioLinksPanel } from '@/components/settings/studio-links-panel'
+import { getLinkPageConfig } from '@/actions/link-page'
 import { listStudioLinks } from '@/actions/studio-links'
+import { mainStudioId } from '@/lib/link-page/load'
+import { LinkPageEditor } from '@/components/settings/link-page/link-page-editor'
 
+/** Estudio → Página de links: editor único con vista previa real (ver link-page-editor.tsx). */
 export default async function EnlaceSettingsPage() {
   const studio = await getCurrentStudio()
   if (!studio || studio.role !== 'owner') redirect('/dashboard/settings')
 
-  const linksResult = await listStudioLinks()
+  const [configResult, linksResult] = await Promise.all([getLinkPageConfig(), listStudioLinks()])
+  if (!configResult.success) redirect('/dashboard/settings')
 
   return (
-    <div>
-      <EnlaceForm initialSlug={studio.slug} />
-      <div className="mx-auto max-w-2xl px-4">
-        <Link
-          href="/dashboard/settings/enlace/personalizar"
-          className="mt-6 flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-4 text-[1.0625rem] font-semibold text-primary-foreground transition-transform duration-150 ease-out active:scale-[0.97]"
-        >
-          <Paintbrush className="size-4" />
-          Cambiar el diseño
-        </Link>
-        <StudioLinksPanel slug={studio.slug} initialLinks={linksResult.success ? linksResult.data : []} />
-      </div>
-    </div>
+    <LinkPageEditor
+      studio={{
+        slug: studio.slug,
+        name: studio.name,
+        logoUrl: studio.logoUrl,
+        mapsUrl: studio.mapsUrl ?? null,
+        instagram: studio.instagram,
+        tiktok: studio.tiktok,
+        facebook: studio.facebook,
+        website: studio.website,
+        whatsapp: studio.whatsappPhone,
+      }}
+      publicPath={studio.id === mainStudioId() ? '/redes' : `/l/${studio.slug}`}
+      initialConfig={configResult.data}
+      initialLinks={linksResult.success ? linksResult.data : []}
+    />
   )
 }

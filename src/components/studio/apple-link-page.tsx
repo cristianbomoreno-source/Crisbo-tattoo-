@@ -3,21 +3,8 @@ import { CaretRight, FacebookLogo, Globe, InstagramLogo, MapPin, PencilSimple, T
 import { Icon3D, type Icon3DName } from '@/components/ui/icon-3d'
 import { cn } from '@/lib/utils'
 import type { PublicLinkPage } from '@/lib/link-page/load'
+import { linkType } from '@/lib/link-page/types'
 
-/** Ícono 3D y color de tarjeta por tipo de botón (lib/link-page/theme.ts LINK_ICON_OPTIONS). */
-const LINK_STYLE: Record<string, { icon: Icon3DName; tone: string }> = {
-  whatsapp: { icon: 'speech-balloon', tone: 'tile-green' },
-  portfolio: { icon: 'framed-picture', tone: 'tile-purple' },
-  quote: { icon: 'clipboard', tone: 'tile-sunset' },
-  shop: { icon: 'shopping-bags', tone: 'tile-gold' },
-  location: { icon: 'round-pushpin', tone: 'tile-blue' },
-  website: { icon: 'globe', tone: 'tile-teal' },
-  calendar: { icon: 'spiral-calendar', tone: 'tile-indigo' },
-  phone: { icon: 'mobile-phone', tone: 'tile-slate' },
-  star: { icon: 'star', tone: 'tile-gold' },
-  heart: { icon: 'red-heart', tone: 'tile-red' },
-  link: { icon: 'link', tone: 'tile-gray' },
-}
 
 const YEAR = new Date().getFullYear()
 
@@ -184,7 +171,7 @@ export function AppleLinkPage({ page }: { page: PublicLinkPage }) {
         {/* Enlaces */}
         <div className="mt-4 w-full space-y-3">
           {page.links.map((l, i) => {
-            const style = LINK_STYLE[l.icon] ?? LINK_STYLE.link!
+            const style = linkType(l.icon)
             return (
               <a
                 key={l.id}
@@ -213,7 +200,7 @@ export function AppleLinkPage({ page }: { page: PublicLinkPage }) {
 
       {page.isOwner && (
         <Link
-          href="/dashboard/settings/enlace/personalizar"
+          href="/dashboard/settings/enlace"
           className="glass fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] inline-flex h-12 items-center gap-2 rounded-full px-5 text-[15px] font-semibold"
         >
           <PencilSimple className="size-4" weight="bold" />
