@@ -78,6 +78,7 @@ export function StudioControlCenter({
   disabledFeatures = new Set(),
   whatsappConnected = false,
   instagramConnected = false,
+  linkPath,
 }: {
   studio: CurrentStudio
   status: StudioStatus
@@ -89,6 +90,8 @@ export function StudioControlCenter({
   disabledFeatures?: Set<FeatureKey>
   whatsappConnected?: boolean
   instagramConnected?: boolean
+  /** Dirección pública de la página de links (/redes en el estudio principal). */
+  linkPath?: string
 }) {
   const { checks } = status
   const isEstudio = studio.accountKind === 'estudio'
@@ -131,7 +134,7 @@ export function StudioControlCenter({
         <CaretRight className="size-4 shrink-0 text-muted-foreground/70" weight="bold" />
       </Link>
 
-      <LinkPageCard slug={studio.slug} />
+      <LinkPageCard slug={studio.slug} path={linkPath} />
 
       <SettingsGroup title="Tu estudio">
         <SettingsRow

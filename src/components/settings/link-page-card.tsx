@@ -7,11 +7,11 @@ import { Icon3D } from '@/components/ui/icon-3d'
 
 /**
  * "Mi página de links" (tipo Linktree) en la pestaña Estudio: la página
- * pública /l/{slug} con tus redes, WhatsApp y los botones que configures.
+ * pública (/redes o /l/{slug}) con tus redes, WhatsApp y los botones que configures.
  * Abrirla, compartir el enlace (o copiarlo) y editarla.
  */
-export function LinkPageCard({ slug }: { slug: string }) {
-  const path = `/l/${slug}`
+/** `path`: /redes para el estudio principal, /l/{slug} para los demás. */
+export function LinkPageCard({ slug, path = `/l/${slug}` }: { slug: string; path?: string }) {
 
   async function share() {
     const url = `${window.location.origin}${path}`

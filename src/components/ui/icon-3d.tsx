@@ -5,6 +5,11 @@ import { cn } from '@/lib/utils'
  * los íconos 3D de Apple Games. Para íconos de interfaz (barras, botones)
  * se siguen usando los de Phosphor. */
 export type Icon3DName =
+  | 'shopping-bags'
+  | 'round-pushpin'
+  | 'red-heart'
+  | 'link'
+  | 'globe'
   | 'artist-palette'
   | 'bar-chart'
   | 'bell'

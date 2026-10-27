@@ -11,6 +11,7 @@ import {
 } from '@/components/settings/studio-control-center'
 import { StudioBrand } from '@/components/shared/studio-brand'
 import { StudioModules } from '@/components/settings/studio-modules'
+import { mainStudioId } from '@/lib/link-page/load'
 import { listJoinRequests, listTeam } from '@/actions/team'
 import { getDisabledFeatures } from '@/queries/features'
 import { getInstagramAccountStatus, getWhatsAppAccountStatus } from '@/queries/whatsapp'
@@ -89,6 +90,7 @@ export default async function SettingsPage() {
         disabledFeatures={disabledFeatures}
         whatsappConnected={Boolean(whatsappAccount)}
         instagramConnected={Boolean(instagramAccount)}
+        linkPath={studio.id === mainStudioId() ? '/redes' : undefined}
       />
     </div>
   )
