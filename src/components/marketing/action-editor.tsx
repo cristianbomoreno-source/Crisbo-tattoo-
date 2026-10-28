@@ -18,6 +18,7 @@ import {
   type Slide,
   type SlideTemplate,
 } from '@/lib/marketing/types'
+import { slug } from '@/lib/marketing/zip'
 import { SlideCanvas, SlidePreview } from './slide-canvas'
 
 /** Id nuevo para acciones (a…) y láminas (s…). */
@@ -43,15 +44,6 @@ export function autoPhoto(gallery: string[], seed: string) {
   for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   return gallery[h % gallery.length]
 }
-
-const slug = (t: string) =>
-  t
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 40)
 
 /**
  * Hoja para editar una acción del plan: datos (fecha, formato, campaña,

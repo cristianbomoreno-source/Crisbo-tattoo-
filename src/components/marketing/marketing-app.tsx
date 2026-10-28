@@ -25,6 +25,7 @@ import {
 } from '@/lib/marketing/types'
 import { ActionEditor } from './action-editor'
 import { KPI_ROWS } from './kpis'
+import { PiecesView } from './pieces-view'
 
 export const FORMAT_ICON: Record<ActionFormat, typeof FilmSlate> = {
   reel: FilmSlate,
@@ -64,7 +65,7 @@ const shift = (ym: string, n: number) => {
  */
 export function MarketingApp({ initialPlan, gallery, today }: { initialPlan: MarketingPlan; gallery: string[]; today: string }) {
   const [plan, setPlan] = useState(initialPlan)
-  const [view, setView] = useState<'calendario' | 'campanas' | 'kpis'>('calendario')
+  const [view, setView] = useState<'calendario' | 'piezas' | 'campanas' | 'kpis'>('calendario')
   const [month, setMonth] = useState(() => (today >= '2026-10-01' && today <= '2027-01-31' ? today.slice(0, 7) : '2026-11'))
   const [campF, setCampF] = useState<string>('all')
   const [fmtF, setFmtF] = useState<ActionFormat | 'all'>('all')
@@ -169,10 +170,11 @@ export function MarketingApp({ initialPlan, gallery, today }: { initialPlan: Mar
             </span>
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-1 rounded-full bg-foreground/[0.07] p-1">
+        <div className="grid grid-cols-4 gap-1 rounded-full bg-foreground/[0.07] p-1">
           {(
             [
               ['calendario', 'Calendario'],
+              ['piezas', 'Piezas'],
               ['campanas', 'Campañas'],
               ['kpis', 'KPIs'],
             ] as const
@@ -181,7 +183,7 @@ export function MarketingApp({ initialPlan, gallery, today }: { initialPlan: Mar
               key={v}
               type="button"
               onClick={() => setView(v)}
-              className={cn('h-10 rounded-full px-4 text-[15px] font-semibold', view === v ? 'bg-foreground/15 text-foreground' : 'text-muted-foreground')}
+              className={cn('h-10 rounded-full px-2.5 text-[14px] font-semibold sm:px-4 sm:text-[15px]', view === v ? 'bg-foreground/15 text-foreground' : 'text-muted-foreground')}
             >
               {l}
             </button>
@@ -297,6 +299,8 @@ export function MarketingApp({ initialPlan, gallery, today }: { initialPlan: Mar
           </section>
         </>
       )}
+
+      {view === 'piezas' && <PiecesView actions={plan.actions} campaigns={plan.campaigns} gallery={gallery} onEdit={setOpenId} />}
 
       {view === 'campanas' && (
         <div className="grid gap-4 md:grid-cols-2">
