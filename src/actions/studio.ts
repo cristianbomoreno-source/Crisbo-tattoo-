@@ -607,3 +607,26 @@ export async function updateSlotIntervalAction(input: unknown): Promise<Result<v
   revalidatePath('/dashboard/quotes/quick')
   return ok(undefined)
 }
+
+/** Orden de las cuentas (Caja → arrastrar). Se guarda como los medios de
+ * pago del estudio, que es el orden en que salen en toda la app. */
+export async function reorderAccountsAction(names: string[]): Promise<Result<void>> {
+  const gate = await requireOwner()
+  if (!gate.success) return gate
+  const seen = new Set<string>()
+  const methods = names
+    .map((n) => n.trim())
+    .filter((n) => {
+      const k = n.toLowerCase()
+      if (!n || n.length > 40 || seen.has(k)) return false
+      seen.add(k)
+      return true
+    })
+    .slice(0, 12)
+  const supabase = await createClient()
+  const { error } = await supabase.from('studios').update({ payment_methods: methods }).eq('id', gate.data.studioId)
+  if (error) return dbError(error)
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/settings')
+  return ok(undefined)
+}

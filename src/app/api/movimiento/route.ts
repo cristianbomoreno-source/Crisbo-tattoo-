@@ -40,11 +40,11 @@ export async function GET(req: Request) {
 const BASE_ACCOUNTS = ['Efectivo', 'Nequi', 'Daviplata', 'Bold']
 
 /** Medios de pago del estudio (Estudio → Medios de pago) más las cuentas de
- * siempre, sin repetir. Efectivo siempre va primero. */
+ * siempre, sin repetir, en el orden de Caja (arrastrar las cuentas). */
 async function accountOptions(studioId: string) {
   const { data } = await createAdminClient().from('studios').select('payment_methods').eq('id', studioId).maybeSingle()
   const seen = new Set<string>()
-  return [...BASE_ACCOUNTS, ...(((data?.payment_methods as string[] | null) ?? []))].filter((m) => {
+  return [...(((data?.payment_methods as string[] | null) ?? [])), ...BASE_ACCOUNTS].filter((m) => {
     const k = m.trim().toLowerCase()
     if (!k || seen.has(k)) return false
     seen.add(k)

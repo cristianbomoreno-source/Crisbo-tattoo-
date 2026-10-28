@@ -66,13 +66,27 @@ function shortDate(iso: string) {
 }
 
 /** Tarjeta de una cuenta en el Resumen de caja (tocarla abre su libro). */
-export function AccountBookCard({ account: a, onOpen }: { account: AccountBalance; onOpen: () => void }) {
+export function AccountBookCard({
+  account: a,
+  onOpen,
+  handle,
+}: {
+  account: AccountBalance
+  onOpen: () => void
+  /** Agarradera para arrastrar y ordenar (ver sortable-accounts.tsx). */
+  handle?: React.ReactNode
+}) {
   const transfers = a.transfersIn - a.transfersOut
   return (
+    <div className="relative">
+      {handle}
     <button
       type="button"
       onClick={onOpen}
-      className="w-full rounded-2xl bg-card p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={cn(
+        'w-full rounded-[1.25rem] bg-card p-4 text-left transition-[background-color,transform] duration-150 ease-out hover:bg-muted/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        handle && 'pr-12',
+      )}
     >
       <span className="flex items-center gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-foreground/80">
@@ -99,6 +113,7 @@ export function AccountBookCard({ account: a, onOpen }: { account: AccountBalanc
         />
       </span>
     </button>
+    </div>
   )
 }
 

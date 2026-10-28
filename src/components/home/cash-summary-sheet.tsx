@@ -8,6 +8,8 @@ import { ArrowLeft, Briefcase, Check, Plus, Trash2, User, Wallet } from 'lucide-
 
 import { createExpenseAction, deleteExpenseAction, payFixedExpenseAction, setFixedDiscountAction } from '@/actions/expenses'
 import { AccountBookCard, Fab, LedgerView, NewRecordSheet, useSaveBalance } from '@/components/home/cash-ledger'
+import { SortableAccounts } from '@/components/home/sortable-accounts'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { MOVE_IN_PREFIX, OTHER_INCOME_PREFIX, personalCategory } from '@/lib/expenses/scope'
 import { todayKey } from '@/lib/calendar/utils'
 import { Input } from '@/components/ui/input'
@@ -86,18 +88,23 @@ export function CashSummarySheet({
         <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/40 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
         <DialogPrimitive.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto bg-background pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-foreground outline-none duration-250 ease-out data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right motion-reduce:animate-none">
           {adding && <NewRecordSheet accounts={accounts} defaultAccount={viewed?.name ?? null} onClose={() => setAdding(false)} />}
-          {viewed ? (
-            <>
-              <DialogPrimitive.Title className="sr-only">{viewed.name}</DialogPrimitive.Title>
-              <LedgerView
-                account={viewed}
-                entries={summary.ledger.filter((e) => e.account === viewed.name)}
-                accounts={accounts}
-                onBack={() => setView(null)}
-                onAdd={() => setAdding(true)}
-              />
-            </>
-          ) : (
+          {/* Tocar una cuenta abre sus movimientos en un popup, encima del resumen. */}
+          <Dialog open={!!viewed} onOpenChange={(o) => !o && setView(null)}>
+            <DialogContent showCloseButton={false} className="flex max-h-[88vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
+              {viewed && (
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  <DialogTitle className="sr-only">{viewed.name}</DialogTitle>
+                  <LedgerView
+                    account={viewed}
+                    entries={summary.ledger.filter((e) => e.account === viewed.name)}
+                    accounts={accounts}
+                    onBack={() => setView(null)}
+                    onAdd={() => setAdding(true)}
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
             <>
               <header className="sticky top-0 z-10 bg-muted/95 px-4 pb-4 pt-3 text-center backdrop-blur">
                 <div className="flex items-center gap-2">
@@ -140,9 +147,11 @@ export function CashSummarySheet({
                 <section>
                   <SectionTitle>Cuentas</SectionTitle>
                   <div className="space-y-2">
-                    {shown.map((a) => (
-                      <AccountBookCard key={a.name} account={a} onOpen={() => setView(a.name)} />
-                    ))}
+                    <SortableAccounts
+                      items={shown}
+                      allNames={accounts}
+                      render={(a, handle) => <AccountBookCard account={a} onOpen={() => setView(a.name)} handle={handle} />}
+                    />
                     <NewAccountCard />
                   </div>
                 </section>
@@ -236,7 +245,6 @@ export function CashSummarySheet({
               </div>
               <Fab onClick={() => setAdding(true)} />
             </>
-          )}
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
