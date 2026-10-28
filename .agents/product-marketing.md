@@ -1,6 +1,6 @@
 # Product Marketing Context — Crisbo Tattoo
 
-**Document version:** v2
+**Document version:** v3
 **Last updated:** 2026-10-28
 
 > Ficha base que leen todas las skills de mercadeo (offers, launch, social, ads, ad-creative, copywriting, marketing-psychology, instagram-marketing, el plugin de marketing). Escrita en español porque todo el contenido de Crisbo es en español de Colombia. "FALTA" = dato que todavía no tenemos; no inventarlo.
@@ -10,7 +10,7 @@
 **What it does:** Diseña y tatúa piezas personalizadas, desde minimalistas hasta proyectos grandes por sesiones. El cliente escribe por WhatsApp o Instagram, manda su idea y la zona, recibe el valor, aparta con un abono del 20% y agenda. Después de la sesión recibe cuidados y seguimiento.
 **Product category:** Tatuador / estudio de tatuajes en Bogotá (búsquedas: "tatuador Bogotá", "tatuajes Bogotá", "tatuajes Colina Campestre", "tatuaje blanco y negro").
 **Product type:** Servicio presencial (estudio), venta por chat.
-**Business model:** Precio por pieza según tamaño, zona y detalle. Mínimo $160.000. Abono del 20% para apartar la cita; el resto el día de la sesión (o por sesión en piezas grandes). Ticket de referencia: $460.000 por hasta 20 cm en blanco y negro (promo Nuevos Trazos).
+**Business model:** Precio por pieza según tamaño, zona y detalle. Mínimo $160.000. Abono del 20% para apartar la cita; el resto el día de la sesión (o por sesión en piezas grandes). Promedio por pago en oct 2026: ≈ $330.000 (incluye abonos).
 **Ubicación:** Colina Campestre, norte de Bogotá. Dirección en la bio de Instagram: Calle 137B #57B-39. En Google figura Cra. 58 #137a-58 (pendiente unificar).
 **Horario:** lunes a sábado, 10:00 a. m. – 5:00 p. m.
 
@@ -24,7 +24,7 @@
 - Continuar o ampliar una pieza (brazo, manga) con el mismo artista.
 **Use cases:**
 - Primer tatuaje minimalista o fine line.
-- Pieza mediana en blanco y negro (hasta 20 cm): rostros, realismo, lettering.
+- Pieza mediana en blanco y negro: rostros, realismo, lettering.
 - Proyecto grande por sesiones (manga, espalda).
 - Cover up de un tatuaje viejo.
 - Regalo (tarjeta regalo, tatuaje en pareja).
@@ -73,7 +73,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 | Objection | Response |
 |-----------|----------|
 | "¿Duele mucho?" | "Tranqui, es muy llevadero 🙌 depende un poco de la zona, y hacemos pausas cuando lo necesites." |
-| "Está caro" | Mostrar qué incluye y la promo vigente; ofrecer pagar por sesiones en piezas grandes; el abono del 20% aparta la fecha. |
+| "Está caro" | Mostrar qué incluye (diseño personalizado, asesoría, seguimiento); ofrecer pagar por sesiones en piezas grandes; el abono del 20% aparta la fecha. |
 | "No sé qué hacerme" | "¿Qué idea tienes en mente? Cuéntame…" + carrusel de ideas y referencias. |
 | "No tengo tiempo ahora" | Apartar con abono y agendar cuando le quede bien (precio congelado). |
 | "¿Cuánto se demora?" | "El tiempo depende del tamaño y el detalle; cuando tenga clara tu idea te digo cuántas horas sería aprox." |
@@ -82,7 +82,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Switching Dynamics
 **Push:** Malas experiencias, no le responden, precios poco claros, miedo a que le quede mal.
-**Pull:** Los trabajos en Instagram, la cercanía y el humor de Crisbo, la promo con fecha límite.
+**Pull:** Los trabajos en Instagram, la cercanía y el humor de Crisbo, las campañas de temporada con fecha límite.
 **Habit:** "Algún día me lo hago"; seguir con el mismo tatuador de antes.
 **Anxiety:** Dolor, precio final, arrepentirse, la cicatrización.
 
@@ -120,7 +120,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 - Errors (reprogramar, cancelar): "Claro, no hay lío", sin culpas.
 - Sales (WhatsApp): preguntas cortas (zona, tamaño, color, referencia) y luego el valor.
 - Social: humor primero, la oferta al final o en el texto; minúsculas, emojis 😅🔥👇🫡🖤.
-**Terms we own:** "Nuevos Trazos", "te habla Crisbo".
+**Terms we own:** "te habla Crisbo".
 **Never use (and why):** "de Crisbo Tattoo" en saludos de WhatsApp (el cliente habla con Crisbo, no con una empresa); nombre completo del cliente (solo el primer nombre); agregar "una sola sesión" o retoques a las promos (el dueño lo rechazó).
 
 ## Proof Points
@@ -165,6 +165,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 *Decisions and tested lessons. Newest first. Keep it to about 20 active entries.*
 | Date | Learning | Evidence | Applies to | Status |
 |------|----------|----------|------------|--------|
+| 2026-10-28 | La promo de $460.000 (Nuevos Trazos) queda retirada; no volver a usarla ni como referencia de precio | Decisión del dueño | offers, copywriting, social, ads | active |
 | 2026-10-28 | El modelo de humor es TOBO: reels de cara a cámara, portada de texto grande y series por capítulos con suspenso | Perfil de @tobo.artist (118K) | social, ad-creative | watch |
 | 2026-10-28 | Los competidores directos (45–48K) usan destacadas de "disponibles" y "cicatrizados"; Crisbo debería tener ambas | @ongarato_tattoo, @juan_tattooer | social | watch |
 | 2026-10-28 | Los reels de humor alcanzan 2–5× más que los posts de trabajos terminados | 11 posts may–oct 2026: humor 5–10K de alcance, trabajos 0,7–3K | social, ad-creative | active |
@@ -176,5 +177,6 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v3 (2026-10-28) — Retired the $460.000 Nuevos Trazos promo (owner's decision): removed it as price reference, pull factor and owned term; added it to Learnings.
 - v2 (2026-10-28) — Added public Google reviews (5,0 ★, 44) as proof and customer language, competitors @ongarato_tattoo and @juan_tattooer, reference @tobo.artist; learnings on serial humor reels and highlights.
 - v1 (2026-10-28) — Initial context, drafted from the app data, Instagram API insights, past campaigns and real WhatsApp replies.
