@@ -1,6 +1,6 @@
 # Product Marketing Context — Crisbo Tattoo
 
-**Document version:** v1
+**Document version:** v2
 **Last updated:** 2026-10-28
 
 > Ficha base que leen todas las skills de mercadeo (offers, launch, social, ads, ad-creative, copywriting, marketing-psychology, instagram-marketing, el plugin de marketing). Escrita en español porque todo el contenido de Crisbo es en español de Colombia. "FALTA" = dato que todavía no tenemos; no inventarlo.
@@ -46,7 +46,10 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 **Emotional tension:** Miedo al dolor ("¿duele?"), a arrepentirse y a que el diseño no quede como lo imaginó.
 
 ## Competitive Landscape
-**Direct:** Otros tatuadores y estudios del norte de Bogotá — FALTA nombres concretos (usar /competitive-brief).
+**Direct:**
+- **@ongarato_tattoo** (Nicolás Ongarato, Bogotá, 45,7K seguidores, 380 posts): fine line y microrealismo, público mayoritariamente femenino, fotos muy estéticas, destacadas "disponibles" (diseños listos) y "Cicatrizados". Su contenido es catálogo, con poca personalidad y humor.
+- **@juan_tattooer** (Juan Hernández, 47,7K, 301 posts): realismo en negro y gris de gran formato (espaldas, mangas). Agenda en Medellín (@godsnation.studio), cotiza por DM. Destacadas: "Healed", "Gana un tattoo" (sorteo), "small tattoos", "Available", "Designs". Poca presencia en Bogotá; sus piezas grandes intimidan al primerizo.
+**Referente (no competencia):** **@tobo.artist** (TOBO, 118K, tatuador colombiano en EE. UU.): "te abro la mente entre risas y sinceridad". Reels de cara a cámara con portadas de texto grande y series numeradas con suspenso ("¿Se tatuaría el asterisco? 1, 2, 3"). Modelo para el humor de Crisbo: historias por capítulos que la gente sigue y comparte.
 **Secondary:** Estudios grandes de Chapinero/Zona T — más caros y menos cercanos.
 **Indirect:** Postergar ("después me lo hago"), gastarse la plata en otra cosa (en diciembre: regalos y planes).
 
@@ -58,7 +61,13 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 - Humor y cercanía en redes: la gente lo conoce antes de venir.
 **How we do it differently:** Asesoría de la idea antes de cotizar, pausas durante la sesión y seguimiento de la cicatrización.
 **Why that's better:** Menos miedo, menos sorpresas en el precio y un resultado que no hay que tapar después.
-**Why customers choose us:** FALTA (preguntar a 3–5 clientes; revisar reseñas de Google).
+**Why customers choose us** (reseñas públicas de Google, 5,0 ★ con 44 opiniones):
+- Confianza y ambiente: "Es estar en casa con un amigo!!", "te pregunta hasta la música que quiere escuchar".
+- Diseño y trazo: "hace diseños muy buenos y buen trazo", "excelente trabajo muy pulido".
+- Precios justos: "los precios son muy justos", "buenos precios".
+- Lugar seguro y privado: "está en una ubicación segura y privado".
+- Cover up: "tenía un tatuaje de hace años que necesitaba tapar y me hizo un diseño increíble".
+- Clientes que vuelven: "El tatuador de cada una de las historias que he querido plasmar".
 
 ## Objections
 | Objection | Response |
@@ -80,8 +89,11 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 ## Customer Language
 **How they describe the problem:**
 - "¿Duele?" / "¿Cuánto me sale?" / "Quiero algo pequeño para empezar" — FALTA más frases literales de los chats.
-**How they describe us:**
-- FALTA (sacar de reseñas de Google y comentarios de Instagram).
+**How they describe us** (Google):
+- "Es estar en casa con un amigo!!"
+- "Calidad tatuador, diseño y atención 10/10"
+- "Áspero el pana, buenos precios" / "chimba de tatuador" / "diseños chimba, charla y música… el mejor definitivamente"
+- Testimonios de WhatsApp: ver la nota al final de Proof Points (no se guardan en el repositorio).
 **Words to use:** tatuaje, pieza, idea, cupo, abono, sesión, blanco y negro, fine line, minimalista, "tranqui", "de una", "brutal", "te confirmo".
 **Words to avoid:** lenguaje corporativo ("nuestros servicios", "brindamos"), "barato", tecnicismos sin explicar.
 **Glossary:**
@@ -113,13 +125,21 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Proof Points
 **Metrics:** 9.216 seguidores en Instagram (@crisbotattoo), ~9.900 en TikTok (@crisbo.tattoo, un video viral de 2,5 M de vistas en 2024). Base de unos 1.600 contactos de clientes.
-**Customers:** FALTA (clientes conocidos o colaboraciones; hubo trabajo en un torneo de penaltis con @diegon…).
-**Testimonials:** FALTA (se están pidiendo reseñas de Google automáticamente al terminar cada sesión).
+**Google:** 5,0 ★ con 44 opiniones (28 oct 2026): 43 de cinco estrellas y 1 de cuatro.
+**Customers:** Tatuó en el torneo de penaltis más grande de Colombia (jun 2026). FALTA otros clientes conocidos.
+**Testimonials** (públicos, de Google; citar con el primer nombre):
+> "Totalmente recomendado buenos precios, excelente artista, Cris te hace sentir bien… los precios son muy justos y está en una ubicación segura y privado" — Angie
+> "Tenía un tatuaje de hace años que necesitaba tapar y me hizo un diseño increíble" — Julián
+> "El tatuador de cada una de las historias que he querido plasmar! Un crack siempre!" — Jonathan
+> "Es estar en casa con un amigo!!" — Olga
+**Testimonios de WhatsApp:** existen (clientes agradeciendo y mostrando su tatuaje), pero son mensajes privados: se consultan en la app (Mensajes) y solo se publican con permiso del cliente.
 **Value themes:**
 | Theme | Proof |
 |-------|-------|
-| Calidad en blanco y negro | Carruseles de rostros y sombras; FALTA fotos antes/después |
-| Cercanía | Responde Crisbo directamente; humor en reels |
+| Calidad en blanco y negro | Rostros y sombras; reseñas "trabajo muy pulido", "buen trazo" |
+| Cercanía | "Es estar en casa con un amigo", música y charla |
+| Precio justo | "los precios son muy justos", "buenos precios" |
+| Cover up | Reseña de Julián (tapar un tatuaje viejo) |
 
 ## Goals
 **Business goal:** Subir las ventas de noviembre y diciembre de 2026: $16 M en el bimestre ($7 M nov, $9 M dic), frente a unos $5 M/mes.
@@ -145,6 +165,8 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 *Decisions and tested lessons. Newest first. Keep it to about 20 active entries.*
 | Date | Learning | Evidence | Applies to | Status |
 |------|----------|----------|------------|--------|
+| 2026-10-28 | El modelo de humor es TOBO: reels de cara a cámara, portada de texto grande y series por capítulos con suspenso | Perfil de @tobo.artist (118K) | social, ad-creative | watch |
+| 2026-10-28 | Los competidores directos (45–48K) usan destacadas de "disponibles" y "cicatrizados"; Crisbo debería tener ambas | @ongarato_tattoo, @juan_tattooer | social | watch |
 | 2026-10-28 | Los reels de humor alcanzan 2–5× más que los posts de trabajos terminados | 11 posts may–oct 2026: humor 5–10K de alcance, trabajos 0,7–3K | social, ad-creative | active |
 | 2026-10-28 | Casi nadie guarda ni comparte: hacen falta carruseles útiles (precios, primer tatuaje, cuidados) | 1–8 guardados por post | social | watch |
 | 2026-10-15 | La oferta por WhatsApp a clientes antiguos responde ~10% | Nuevos Trazos grupo A: 65 enviados, 6 respuestas | offers, emails/WhatsApp | watch |
@@ -154,4 +176,5 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v2 (2026-10-28) — Added public Google reviews (5,0 ★, 44) as proof and customer language, competitors @ongarato_tattoo and @juan_tattooer, reference @tobo.artist; learnings on serial humor reels and highlights.
 - v1 (2026-10-28) — Initial context, drafted from the app data, Instagram API insights, past campaigns and real WhatsApp replies.
