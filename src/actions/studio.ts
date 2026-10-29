@@ -25,6 +25,7 @@ import {
   LOGO_ALLOWED_TYPES,
 } from '@/lib/validations/studio'
 import { normalizePhone } from '@/lib/intake/phone'
+import { NO_ACCOUNT } from '@/lib/finance/cash-summary'
 import { revalidatePath } from 'next/cache'
 
 const EXT_BY_TYPE: Record<string, string> = {
@@ -618,7 +619,8 @@ export async function reorderAccountsAction(names: string[]): Promise<Result<voi
     .map((n) => n.trim())
     .filter((n) => {
       const k = n.toLowerCase()
-      if (!n || n.length > 40 || seen.has(k)) return false
+      // "Sin cuenta" es el grupo de lo registrado sin cuenta, no una cuenta.
+      if (!n || n.length > 40 || seen.has(k) || k === NO_ACCOUNT.toLowerCase()) return false
       seen.add(k)
       return true
     })

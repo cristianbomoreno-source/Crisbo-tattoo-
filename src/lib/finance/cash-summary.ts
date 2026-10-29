@@ -287,10 +287,13 @@ export function cashSummary({
   today: string
 }): CashSummary {
   const monthKey = today.slice(0, 7)
-  const accountNames = [...knownAccounts]
+  const accountNames: string[] = []
+  // "Sin cuenta" no es una cuenta: si quedó guardada entre los medios de
+  // pago, saldría repetida y el saldo total la sumaría dos veces.
   const addName = (n: string) => {
-    if (n && !accountNames.some((a) => a.toLowerCase() === n.toLowerCase())) accountNames.push(n)
+    if (n && n.toLowerCase() !== NO_ACCOUNT.toLowerCase() && !accountNames.some((a) => a.toLowerCase() === n.toLowerCase())) accountNames.push(n)
   }
+  for (const n of knownAccounts) addName(n.trim())
   for (const p of payments) if (p.payment_method) addName(p.payment_method)
   for (const e of expenses) {
     if (e.category.startsWith(TRANSFER_PREFIX)) addName(e.category.slice(TRANSFER_PREFIX.length).trim())

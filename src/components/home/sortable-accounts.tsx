@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { DotsSixVertical } from '@phosphor-icons/react'
 import { reorderAccountsAction } from '@/actions/studio'
-import type { AccountBalance } from '@/lib/finance/cash-summary'
+import { NO_ACCOUNT, type AccountBalance } from '@/lib/finance/cash-summary'
 
 /**
  * Lista de cuentas de Caja que se ordena arrastrando la agarradera (⋮⋮) de
@@ -68,7 +68,7 @@ export function SortableAccounts({
     const [moved] = next.splice(from, 1)
     next.splice(to, 0, moved!)
     setOrder(next)
-    const full = [...next, ...allNames.filter((n) => !next.includes(n))]
+    const full = [...next, ...allNames.filter((n) => !next.includes(n))].filter((n) => n !== NO_ACCOUNT)
     startTransition(async () => {
       const res = await reorderAccountsAction(full)
       if (!res.success) {

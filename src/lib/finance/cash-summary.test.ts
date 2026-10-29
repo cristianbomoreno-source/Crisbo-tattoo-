@@ -12,6 +12,17 @@ const exp = (o: Partial<CashExpense>): CashExpense => ({
 })
 
 describe('cashSummary', () => {
+  it('"Sin cuenta" guardada entre los medios de pago sale una sola vez y no se suma doble', () => {
+    const s = cashSummary({
+      today: '2026-10-29',
+      accounts: ['Daviplata', 'Sin cuenta', 'Nequi', 'sin cuenta'],
+      payments: [{ amount: 90_000, paid_at: '2026-10-29T01:12:00Z', payment_method: null }],
+      expenses: [],
+    })
+    expect(s.accounts.map((a) => a.name)).toEqual(['Daviplata', 'Nequi', 'Sin cuenta'])
+    expect(s.total).toBe(90_000)
+  })
+
   it('suma por cuenta cobros, ingresos sueltos y gastos con la cuenta en la descripción', () => {
     const s = cashSummary({
       today: '2026-10-26',

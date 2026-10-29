@@ -46,7 +46,7 @@ async function accountOptions(studioId: string) {
   const seen = new Set<string>()
   return [...(((data?.payment_methods as string[] | null) ?? [])), ...BASE_ACCOUNTS].filter((m) => {
     const k = m.trim().toLowerCase()
-    if (!k || seen.has(k)) return false
+    if (!k || k === 'sin cuenta' || seen.has(k)) return false
     seen.add(k)
     return true
   })
