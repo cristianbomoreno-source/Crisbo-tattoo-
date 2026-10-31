@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 import { generateImage, generateText } from 'ai'
+import { google } from '@ai-sdk/google'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
@@ -30,8 +31,11 @@ const fail = (message: string, status: number) => {
 async function runModel(modelId: string, prompt: string, image: Uint8Array): Promise<Uint8Array> {
   const model = STENCIL_MODELS.find((m) => m.id === modelId)!
   if (model.kind === 'language') {
+    // Con llave propia de Google (GOOGLE_GENERATIVE_AI_API_KEY en Vercel),
+    // Nano Banana va directo a Gemini y no gasta saldo del AI Gateway.
+    const direct = model.google && process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(model.google) : null
     const result = await generateText({
-      model: model.gateway,
+      model: direct ?? model.gateway,
       messages: [
         {
           role: 'user',
@@ -82,8 +86,8 @@ export async function POST(req: Request) {
   } catch (e) {
     const msg = (e as Error).message
     console.error('[stencil]', model, msg)
-    if (/free tier|credits|insufficient|balance/i.test(msg))
-      return fail('Falta saldo de IA: recarga créditos en Vercel → AI Gateway.', 402)
+    if (/free tier|credits|insufficient|balance|billing|quota|exhausted/i.test(msg))
+      return fail(process.env.GOOGLE_GENERATIVE_AI_API_KEY ? 'Falta saldo de IA: activa la facturación de tu llave en Google AI Studio.' : 'Falta saldo de IA: recarga créditos en Vercel → AI Gateway.', 402)
     return fail('La IA no pudo crear el stencil. Intenta de nuevo o cambia de modelo.', 502)
   }
 
