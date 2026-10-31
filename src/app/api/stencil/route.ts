@@ -80,7 +80,10 @@ export async function POST(req: Request) {
   try {
     raw = await runModel(model, stencilPrompt(style), source)
   } catch (e) {
-    console.error('[stencil]', model, (e as Error).message)
+    const msg = (e as Error).message
+    console.error('[stencil]', model, msg)
+    if (/free tier|credits|insufficient|balance/i.test(msg))
+      return fail('Falta saldo de IA: recarga créditos en Vercel → AI Gateway.', 402)
     return fail('La IA no pudo crear el stencil. Intenta de nuevo o cambia de modelo.', 502)
   }
 
