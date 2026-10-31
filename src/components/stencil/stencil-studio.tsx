@@ -116,7 +116,8 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
 
   function pick(f: File | undefined) {
     if (!f) return
-    if (!f.type.startsWith('image/')) return toast.error('Escoge una imagen')
+    // Algunas fotos del iPhone llegan sin tipo: se acepta y el navegador la convierte.
+    if (f.type && !f.type.startsWith('image/')) return toast.error('Escoge una imagen')
     setFile(f)
     setPreview(URL.createObjectURL(f))
   }

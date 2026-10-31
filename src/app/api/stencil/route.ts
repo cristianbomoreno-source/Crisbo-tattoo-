@@ -22,7 +22,10 @@ async function studioId(): Promise<string | null> {
   return studio?.id ?? null
 }
 
-const fail = (message: string, status: number) => NextResponse.json({ error: message }, { status })
+const fail = (message: string, status: number) => {
+  console.warn('[stencil]', status, message)
+  return NextResponse.json({ error: message }, { status })
+}
 
 async function runModel(modelId: string, prompt: string, image: Uint8Array): Promise<Uint8Array> {
   const model = STENCIL_MODELS.find((m) => m.id === modelId)!
