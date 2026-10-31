@@ -10,6 +10,7 @@ import {
   House,
   ImagesSquare,
   PenNib,
+  Scribble,
   Signature,
   UsersThree,
   type Icon,
@@ -30,6 +31,7 @@ export const NAV_ITEMS: { href: string; label: string; icon: Icon }[] = [
   { href: '/dashboard/clients', label: 'Clientes', icon: UsersThree },
   { href: '/dashboard/consents', label: 'Consentimientos', icon: Signature },
   { href: '/dashboard/gallery', label: 'Galería', icon: ImagesSquare },
+  { href: '/dashboard/stencil', label: 'Stencils', icon: Scribble },
 ]
 
 /** Pestañas de la barra inferior móvil (más "Estudio", que lleva a /dashboard/settings con el resto de módulos arriba). */
