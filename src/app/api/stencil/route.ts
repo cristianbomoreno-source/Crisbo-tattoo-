@@ -38,6 +38,8 @@ async function runModel(modelId: string, prompt: string, image: Uint8Array): Pro
     const direct = model.google && process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(model.google) : null
     const result = await generateText({
       model: direct ?? model.gateway,
+      // Sin esto Gemini dibuja a 1K y se pierden las caras pequeñas y los ornamentos finos.
+      providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize: '2K' } } },
       messages: [
         {
           role: 'user',

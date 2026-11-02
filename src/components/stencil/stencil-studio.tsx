@@ -349,7 +349,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
           )}
 
           <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Inteligencia artificial</p>
-          <div className="mt-2 grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
+          <div className="mt-2 grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1">
             {STENCIL_MODELS.map((m) => (
               <button
                 key={m.id}
@@ -383,7 +383,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
         <section className="rounded-3xl bg-card p-4">
           <h2 className="text-[17px] font-semibold">Resultado</h2>
           {!result ? (
-            <div className="mt-3 grid aspect-[3/4] place-items-center rounded-2xl bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+            <div className="mt-3 grid aspect-[8.5/11] place-items-center rounded-2xl bg-muted/50 p-6 text-center text-sm text-muted-foreground">
               Aquí aparece tu stencil. Arrastra sobre él para compararlo con la foto original.
             </div>
           ) : (
@@ -393,20 +393,20 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={result.src} alt="Original" draggable={false} className="absolute inset-0 size-full object-contain" />
                 )}
-                {output ? (
+                {output && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={output.url}
                     alt="Stencil"
                     draggable={false}
-                    className="relative block w-full"
+                    className="absolute inset-0 size-full object-contain"
                     style={{ opacity: opacity / 100, clipPath: result.src ? `inset(0 ${100 - split}% 0 0)` : undefined }}
                   />
-                ) : (
-                  <div className="aspect-[3/4]" />
                 )}
               </CompareFrame>
-              {result.src && <p className="mt-2 text-center text-[13px] text-muted-foreground">Arrastra sobre la imagen para comparar con la foto</p>}
+              <p className="mt-2 text-center text-[13px] text-muted-foreground">
+                {result.src ? 'Un dedo compara con la foto · ' : ''}Dos dedos amplían, mueven y giran · Doble toque ajusta
+              </p>
 
               <div className="mt-4 space-y-3">
                 {result.src && <Range label="Opacidad del stencil" value={opacity} onChange={setOpacity} display={`${opacity}%`} />}
@@ -492,10 +492,17 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   )
 }
 
+type View = { x: number; y: number; scale: number; rotation: number }
+const FIT: View = { x: 0, y: 0, scale: 1, rotation: 0 }
+/** Margen de la hoja carta alrededor del diseño, como en lo que se descarga (0,4 in de 8,5 in). */
+const SHEET_PAD = `${(LETTER.margin / LETTER.height) * 100}% ${(LETTER.margin / LETTER.width) * 100}%`
+
 /**
- * Comparador sobre la misma imagen: se arrastra en cualquier punto (no solo en
- * la manija) y la línea sigue el dedo. `touch-action: pan-y` deja hacer scroll
- * vertical en el celular; el arrastre horizontal mueve la línea.
+ * El resultado sobre una hoja carta, manipulable como el lienzo de Procreate:
+ * dos dedos pellizcan para ampliar, arrastran para mover y giran para rotar;
+ * un dedo mueve la línea de comparación (que sigue al dibujo aunque esté
+ * ampliado o girado). Doble toque o "Ajustar" vuelve a la hoja completa. En
+ * computador, la rueda del mouse amplía.
  */
 function CompareFrame({
   split,
@@ -509,43 +516,135 @@ function CompareFrame({
   children: React.ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const pinch = useRef<{ dist: number; angle: number; q: { x: number; y: number }; view: View } | null>(null)
+  const lastTap = useRef(0)
+  const [view, setView] = useState<View>(FIT)
   const comparing = split < 100
+  const moved = view.scale !== 1 || view.rotation !== 0 || view.x !== 0 || view.y !== 0
 
-  function move(clientX: number) {
+  /** Punto de pantalla → coordenadas del dibujo sin transformar, relativas al centro de la hoja. */
+  function toBoard(px: number, py: number, v: View) {
+    const box = ref.current!.getBoundingClientRect()
+    const dx = px - (box.left + box.width / 2) - v.x
+    const dy = py - (box.top + box.height / 2) - v.y
+    const cos = Math.cos(-v.rotation)
+    const sin = Math.sin(-v.rotation)
+    return { x: (dx * cos - dy * sin) / v.scale, y: (dx * sin + dy * cos) / v.scale }
+  }
+
+  function splitAt(px: number, py: number) {
     const box = ref.current?.getBoundingClientRect()
     if (!box) return
-    onSplit(Math.round(Math.min(100, Math.max(0, ((clientX - box.left) / box.width) * 100))))
+    const art = box.width * (1 - (2 * LETTER.margin) / LETTER.width)
+    const q = toBoard(px, py, view)
+    onSplit(Math.round(Math.min(100, Math.max(0, ((q.x + art / 2) / art) * 100))))
+  }
+
+  function startPinch() {
+    const [a, b] = [...pointers.current.values()] as [{ x: number; y: number }, { x: number; y: number }]
+    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+    pinch.current = { dist: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x), q: toBoard(mid.x, mid.y, view), view }
+  }
+
+  function movePinch() {
+    const p = pinch.current
+    const box = ref.current?.getBoundingClientRect()
+    if (!p || !box) return
+    const [a, b] = [...pointers.current.values()] as [{ x: number; y: number }, { x: number; y: number }]
+    const scale = Math.min(8, Math.max(1, (p.view.scale * Math.hypot(b.x - a.x, b.y - a.y)) / p.dist))
+    const rotation = p.view.rotation + Math.atan2(b.y - a.y, b.x - a.x) - p.angle
+    // El punto del dibujo que estaba entre los dedos se queda entre los dedos.
+    const mx = (a.x + b.x) / 2 - (box.left + box.width / 2)
+    const my = (a.y + b.y) / 2 - (box.top + box.height / 2)
+    const cos = Math.cos(rotation)
+    const sin = Math.sin(rotation)
+    setView({ scale, rotation, x: mx - scale * (p.q.x * cos - p.q.y * sin), y: my - scale * (p.q.x * sin + p.q.y * cos) })
+  }
+
+  function release(e: React.PointerEvent) {
+    pointers.current.delete(e.pointerId)
+    if (pointers.current.size < 2) pinch.current = null
   }
 
   return (
-    <div
-      ref={ref}
-      className={cn('relative mt-3 overflow-hidden rounded-2xl bg-white select-none touch-pan-y', comparing && 'cursor-ew-resize')}
-      style={transparent ? { backgroundImage: 'repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%)', backgroundSize: '20px 20px' } : undefined}
-      onPointerDown={(e) => {
-        if (!comparing) return
-        dragging.current = true
-        e.currentTarget.setPointerCapture(e.pointerId)
-        move(e.clientX)
-      }}
-      onPointerMove={(e) => dragging.current && move(e.clientX)}
-      onPointerUp={() => (dragging.current = false)}
-      onPointerCancel={() => (dragging.current = false)}
-    >
-      {children}
-      {comparing && (
-        <>
-          <span className="pointer-events-none absolute top-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Stencil</span>
-          <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Foto</span>
-          <div className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.25)]" style={{ left: `${split}%` }}>
-            <span className="absolute top-1/2 left-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-lg">
-              <CaretLeft weight="bold" className="size-3.5" />
-              <CaretRight weight="bold" className="size-3.5" />
-            </span>
+    <div className="relative mt-3">
+      <div
+        ref={ref}
+        className="relative aspect-[8.5/11] touch-none overflow-hidden rounded-2xl bg-muted select-none"
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId)
+          pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+          if (pointers.current.size === 2) return startPinch()
+          if (pointers.current.size > 2) return
+          const now = Date.now()
+          if (now - lastTap.current < 300) {
+            setView(FIT)
+            lastTap.current = 0
+            return
+          }
+          lastTap.current = now
+          if (comparing) splitAt(e.clientX, e.clientY)
+        }}
+        onPointerMove={(e) => {
+          if (!pointers.current.has(e.pointerId)) return
+          pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+          if (pointers.current.size === 2) movePinch()
+          else if (pointers.current.size === 1 && !pinch.current && comparing) splitAt(e.clientX, e.clientY)
+        }}
+        onPointerUp={release}
+        onPointerCancel={release}
+        onWheel={(e) => {
+          const box = ref.current?.getBoundingClientRect()
+          if (!box) return
+          const q = toBoard(e.clientX, e.clientY, view)
+          const scale = Math.min(8, Math.max(1, view.scale * Math.exp(-e.deltaY / 400)))
+          const mx = e.clientX - (box.left + box.width / 2)
+          const my = e.clientY - (box.top + box.height / 2)
+          const cos = Math.cos(view.rotation)
+          const sin = Math.sin(view.rotation)
+          setView({ ...view, scale, x: mx - scale * (q.x * cos - q.y * sin), y: my - scale * (q.x * sin + q.y * cos) })
+        }}
+      >
+        <div
+          className="absolute inset-0 bg-white shadow-sm"
+          style={{
+            transform: `translate(${view.x}px, ${view.y}px) rotate(${view.rotation}rad) scale(${view.scale})`,
+            ...(transparent ? { backgroundImage: 'repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%)', backgroundSize: '20px 20px' } : {}),
+          }}
+        >
+          <div className="absolute" style={{ inset: SHEET_PAD }}>
+            {children}
+            {comparing && (
+              <div className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.25)]" style={{ left: `${split}%` }}>
+                <span
+                  className="absolute top-1/2 left-1/2 flex size-10 items-center justify-center rounded-full bg-white text-black shadow-lg"
+                  style={{ transform: `translate(-50%, -50%) scale(${1 / view.scale})` }}
+                >
+                  <CaretLeft weight="bold" className="size-3.5" />
+                  <CaretRight weight="bold" className="size-3.5" />
+                </span>
+              </div>
+            )}
           </div>
-        </>
-      )}
+        </div>
+        {comparing && (
+          <>
+            <span className="pointer-events-none absolute top-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Stencil</span>
+            <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Foto</span>
+          </>
+        )}
+        {moved && (
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setView(FIT)}
+            className="absolute right-2 bottom-2 rounded-full bg-black/65 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur transition-transform duration-150 ease-out active:scale-95"
+          >
+            {Math.round(view.scale * 100)}% · Ajustar
+          </button>
+        )}
+      </div>
     </div>
   )
 }
