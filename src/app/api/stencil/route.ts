@@ -5,7 +5,7 @@ import { google } from '@ai-sdk/google'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
-import { STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
+import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
 import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
 import { straightenTattoo } from '@/lib/stencil/straighten'
 
@@ -83,11 +83,17 @@ export async function POST(req: Request) {
     return fail('No se pudo leer la imagen', 400)
   }
   // Tatuaje en piel para aplanar: la app lo recorta y endereza antes (el modelo que dibuja no gira la imagen).
-  if (opts.source !== 'referencia' && opts.source !== 'dibujo' && opts.flatten) source = await straightenTattoo(source)
+  const flattening = opts.source !== 'referencia' && opts.source !== 'dibujo' && opts.flatten
+  if (flattening) source = await straightenTattoo(source)
 
   let raw: Uint8Array
   try {
     raw = await runModel(model, stencilPrompt(style, opts), source)
+    // Hoja plana: segunda pasada sobre el dibujo limpio para quitar el borde del brazo y unir lo que corta.
+    if (flattening) {
+      const drawn = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toBuffer()
+      raw = await runModel(model, COMPLETE_PROMPT, drawn)
+    }
   } catch (e) {
     const msg = (e as Error).message
     console.error('[stencil]', model, msg)

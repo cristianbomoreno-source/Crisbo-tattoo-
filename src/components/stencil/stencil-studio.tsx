@@ -213,6 +213,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   }
 
   const slow = model === 'seedream'
+  const flattenOn = source === 'tatuaje' && flatten
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start">
@@ -335,7 +336,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
         </Button>
         {busy && (
           <p className="text-center text-sm text-muted-foreground">
-            {slow ? 'Seedream tarda hasta 3 minutos.' : 'Tarda entre 20 segundos y 1 minuto.'} No cierres esta página.
+            {slow ? 'Seedream tarda hasta 3 minutos.' : flattenOn ? 'Aplanar y completar tarda entre 40 segundos y 2 minutos.' : 'Tarda entre 20 segundos y 1 minuto.'} No cierres esta página.
           </p>
         )}
       </div>

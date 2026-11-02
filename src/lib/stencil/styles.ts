@@ -86,6 +86,19 @@ const FLATTEN = `- The tattoo was photographed on a curved limb, so the photo on
 - Inside the visible area, the tattoo is the absolute reference: every element keeps its position, size and angle relative to the other elements, its pose, expression and style. Do NOT reinterpret, redraw, "correct" or make it more realistic or anatomically complete. Stylized, abstract, partial or unusual features are intentional: if a feature (eyes, nose, a hand, a face) is not drawn in the tattoo, it must NOT appear in the stencil. Lines hidden by glare, blur or shadow are completed following the strokes next to them.
 - Small elements that ARE in the tattoo (small figures, faces, hands, ornaments) must be traced complete and sharp, with their real features clearly defined, at the same level of care as the main subject: never blur, merge or reduce them to scribbles.`
 
+/**
+ * Segunda pasada del modo "hoja plana": sobre el stencil ya hecho (sin foto ni
+ * piel), quitar las rectas del borde del brazo que quedaron y unir lo que cortan.
+ * En la foto el borde es un corte muy marcado y el modelo lo calca aunque se le
+ * diga que no; sobre un dibujo limpio sí lo resuelve.
+ */
+export const COMPLETE_PROMPT = `This is a tattoo stencil (black line art on white) traced from a photo of a tattoo on a forearm. Edit it:
+- Remove every long straight or slightly curved line that runs along the full height of the design and cuts through it: those are the edges of the arm, not part of the tattoo. Also remove any hard vertical cut where elements stop abruptly.
+- Where those lines cut the design, join the two sides so every element flows continuously across: drapery, hair, clouds, smoke, cracks, ornaments and background shapes continue smoothly from one side to the other.
+- Complete every figure or element that is cut off or unfinished: finish missing arms, hands, legs, drapery and the outline of each small figure following its pose, proportions and style.
+- Keep everything else exactly as it is: same elements, positions, line weight and style. Do not add new figures or objects, do not fill areas with black, do not add text.
+- Output: the same stencil, pure black lines on pure white, complete and continuous.`
+
 /** Foto real (retrato, animal, objeto) que se va a tatuar en realismo: calco técnico fiel. */
 const REFERENCE = `- This is a reference photograph to be tattooed. Make a maximum-fidelity technical trace: an exact line trace perfectly matched to the original, keeping the scale, tilt, perspective and placement of every element. No artistic reinterpretation: never invent elements or change the anatomy, expression or composition.
 - Include: the overall silhouette; the exact facial features and expression; the important wrinkles and folds of the face and neck; ears, earrings and accessories; hands with a clear anatomical structure; clothing with its essential folds; the main objects complete and well defined; the internal details useful for tattooing, simplifying only those that create visual noise.
