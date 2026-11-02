@@ -1,7 +1,7 @@
 # Product Marketing Context — Crisbo Tattoo
 
-**Document version:** v3
-**Last updated:** 2026-10-28
+**Document version:** v4
+**Last updated:** 2026-11-02
 
 > Ficha base que leen todas las skills de mercadeo (offers, launch, social, ads, ad-creative, copywriting, marketing-psychology, instagram-marketing, el plugin de marketing). Escrita en español porque todo el contenido de Crisbo es en español de Colombia. "FALTA" = dato que todavía no tenemos; no inventarlo.
 
@@ -142,7 +142,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 | Cover up | Reseña de Julián (tapar un tatuaje viejo) |
 
 ## Goals
-**Business goal:** Subir las ventas de noviembre y diciembre de 2026: $16 M en el bimestre ($7 M nov, $9 M dic), frente a unos $5 M/mes.
+**Business goal:** Subir las ventas de noviembre y diciembre de 2026: meta de noviembre $11 M (fijada por el dueño el 2 nov; octubre cerró en $4.939.000 en 15 pagos), diciembre $9 M.
 **Conversion action:** Escribir por DM o WhatsApp con la palabra clave de la campaña → recibir valor → pagar el abono del 20%.
 **Current metrics (28 oct 2026):** Ventas oct (al 27): $4.639.000 en 14 pagos. Instagram 30 días: 17.594 cuentas alcanzadas, 88.513 vistas, 705 visitas al perfil, 15 clics al enlace. Último post del feed: 2 oct. Reels de humor: 5.000–10.000 de alcance; posts de trabajos: 700–3.000. Guardados por post: 1–8.
 
@@ -177,6 +177,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v4 (2026-11-02) — Raised the November goal from $7 M to $11 M (owner) and recorded October's real close ($4,94 M).
 - v3 (2026-10-28) — Retired the $460.000 Nuevos Trazos promo (owner's decision): removed it as price reference, pull factor and owned term; added it to Learnings.
 - v2 (2026-10-28) — Added public Google reviews (5,0 ★, 44) as proof and customer language, competitors @ongarato_tattoo and @juan_tattooer, reference @tobo.artist; learnings on serial humor reels and highlights.
 - v1 (2026-10-28) — Initial context, drafted from the app data, Instagram API insights, past campaigns and real WhatsApp replies.
