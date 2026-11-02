@@ -12,6 +12,7 @@ import {
   PenNib,
   Scribble,
   Signature,
+  Stack,
   UsersThree,
   type Icon,
 } from '@phosphor-icons/react'
@@ -32,6 +33,7 @@ export const NAV_ITEMS: { href: string; label: string; icon: Icon }[] = [
   { href: '/dashboard/consents', label: 'Consentimientos', icon: Signature },
   { href: '/dashboard/gallery', label: 'Galería', icon: ImagesSquare },
   { href: '/dashboard/stencil', label: 'Stencils', icon: Scribble },
+  { href: '/dashboard/compositor', label: 'Compositor', icon: Stack },
 ]
 
 /** Pestañas de la barra inferior móvil (más "Estudio", que lleva a /dashboard/settings con el resto de módulos arriba). */

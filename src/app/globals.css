@@ -555,3 +555,6 @@ svg.lucide {
   font-weight: 700;
   letter-spacing: -0.025em;
 }
+
+/* Fondo de cuadros para ver lo transparente (capas del Compositor). */
+@utility checker { background: repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%) 0 0 / 20px 20px; }

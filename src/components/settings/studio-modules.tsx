@@ -10,6 +10,7 @@ const MODULES: Module[] = [
   { href: '/dashboard/consents', icon: 'fountain-pen', tone: 'purple', label: 'Consenti­mientos' },
   { href: '/dashboard/gallery', icon: 'framed-picture', tone: 'green', label: 'Galería' },
   { href: '/dashboard/stencil', icon: 'artist-palette', tone: 'slate', label: 'Stencils' },
+  { href: '/dashboard/compositor', icon: 'framed-picture', tone: 'blue', label: 'Compositor' },
   { href: '/dashboard/stats', icon: 'chart-increasing', tone: 'indigo', label: 'Estadísticas', ownerOnly: true },
 ]
 

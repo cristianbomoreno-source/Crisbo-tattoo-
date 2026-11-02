@@ -115,7 +115,7 @@ export type PreparedTattoo = { image: Uint8Array; analysis: string | null }
  * 4. le abre márgenes a los lados para lo que da la vuelta al brazo.
  * Si algo falla, sigue con lo que alcanzó a preparar.
  */
-export async function prepareTattoo(image: Uint8Array): Promise<PreparedTattoo> {
+export async function prepareTattoo(image: Uint8Array, sideMargin = SIDE_MARGIN): Promise<PreparedTattoo> {
   let cropped: Uint8Array
   try {
     let found = await locate(image)
@@ -165,8 +165,9 @@ export async function prepareTattoo(image: Uint8Array): Promise<PreparedTattoo> 
   }
 
   // Márgenes blancos a los lados: ahí la IA dibuja la parte del diseño que da la vuelta al brazo y no sale en la foto.
+  if (!sideMargin) return { image: prepared, analysis }
   const width = (await sharp(Buffer.from(prepared)).metadata()).width ?? 0
-  const side = Math.round(width * SIDE_MARGIN)
+  const side = Math.round(width * sideMargin)
   const withMargins = await sharp(Buffer.from(prepared)).extend({ left: side, right: side, background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer()
   return { image: withMargins, analysis }
 }
