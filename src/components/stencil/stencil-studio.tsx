@@ -101,6 +101,9 @@ async function toLetter(blob: Blob, transparent: boolean): Promise<Blob> {
   }
 }
 
+/** Hora de inicio de un pedido (se llama desde el clic, no durante el render). */
+const now = () => Date.now()
+
 export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[] }) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -110,6 +113,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [flatten, setFlatten] = useState(true)
   const [symmetry, setSymmetry] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [recovering, setRecovering] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
   const [color, setColor] = useState('#000000')
@@ -128,6 +132,19 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     const t = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000)
     return () => clearInterval(t)
   }, [busy])
+
+  // Al volver a la app se actualiza el historial: ahí aparecen los stencils que terminaron mientras no estaba.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      fetch('/api/stencil')
+        .then((r) => r.json())
+        .then((j: { items?: StencilItem[] }) => j.items && setHistory(j.items))
+        .catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   // Color, fondo y limpieza se aplican en el navegador: cambiarlos no gasta IA.
   useEffect(() => {
@@ -159,10 +176,41 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     setPreview(URL.createObjectURL(f))
   }
 
+  async function refreshHistory(): Promise<StencilItem[]> {
+    const j = (await fetch('/api/stencil').then((r) => r.json())) as { items?: StencilItem[] }
+    if (j.items) setHistory(j.items)
+    return j.items ?? []
+  }
+
+  /**
+   * Si la persona sale de la app mientras se crea, Safari corta la espera ("Load
+   * failed") pero el servidor termina y lo guarda en el historial: al volver se
+   * busca ahí el stencil que se pidió después de `startedAt` y se abre solo.
+   */
+  async function recover(startedAt: number) {
+    setRecovering(true)
+    try {
+      for (let i = 0; i < 48; i++) {
+        const items = await refreshHistory().catch(() => [])
+        const found = items.find((it) => new Date(it.createdAt).getTime() > startedAt)
+        if (found) {
+          openFromHistory(found)
+          toast.success('Tu stencil quedó listo')
+          return
+        }
+        await new Promise((r) => setTimeout(r, 5000))
+      }
+      toast.error('No encontré el stencil. Revisa "Tus stencils" en un momento.')
+    } finally {
+      setRecovering(false)
+    }
+  }
+
   async function create() {
     if (!file) return
     setBusy(true)
     setElapsed(0)
+    const startedAt = now()
     try {
       const body = new FormData()
       body.set('image', await shrink(file), 'imagen.jpg')
@@ -171,7 +219,15 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       body.set('source', source)
       body.set('flatten', flatten ? '1' : '0')
       body.set('symmetry', symmetry ? '1' : '0')
-      const res = await fetch('/api/stencil', { method: 'POST', body })
+      let res: Response
+      try {
+        res = await fetch('/api/stencil', { method: 'POST', body })
+      } catch {
+        // Se cortó la conexión (casi siempre: salió de la app). El servidor sigue y lo guarda.
+        setBusy(false)
+        void recover(startedAt)
+        return
+      }
       const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; src?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudo crear el stencil')
       // La foto que devuelve el servidor ya viene recortada y derecha si se aplanó: así coincide con el stencil.
@@ -179,10 +235,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       setSplit(DEFAULT_SPLIT)
       setOpacity(DEFAULT_OPACITY)
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-      fetch('/api/stencil')
-        .then((r) => r.json())
-        .then((j: { items?: StencilItem[] }) => j.items && setHistory(j.items))
-        .catch(() => {})
+      refreshHistory().catch(() => {})
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -368,10 +421,13 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
           </div>
         </section>
 
-        <Button size="lg" className="h-13 w-full text-base pointer-coarse:h-13" disabled={!file || busy} onClick={create}>
+        <Button size="lg" className="h-13 w-full text-base pointer-coarse:h-13" disabled={!file || busy || recovering} onClick={create}>
           <Sparkle weight="fill" className="size-5" />
           {busy ? `Creando stencil… ${elapsed}s` : 'Crear stencil'}
         </Button>
+        {recovering && (
+          <p className="text-center text-sm text-muted-foreground">Saliste de la app mientras se creaba. El stencil se sigue haciendo: lo abro apenas esté listo.</p>
+        )}
         {busy && (
           <p className="text-center text-sm text-muted-foreground">
             {slow ? 'Seedream tarda hasta 3 minutos.' : flattenOn ? 'Aplanar y completar tarda entre 40 segundos y 2 minutos.' : 'Tarda entre 20 segundos y 1 minuto.'} No cierres esta página.
@@ -388,7 +444,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
             </div>
           ) : (
             <>
-              <CompareFrame split={result.src ? split : 100} onSplit={setSplit} transparent={transparent}>
+              <CompareFrame compare={!!result.src} split={result.src ? split : 100} onSplit={setSplit} transparent={transparent}>
                 {result.src && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={result.src} alt="Original" draggable={false} className="absolute inset-0 size-full object-contain" />
@@ -505,11 +561,13 @@ const SHEET_PAD = `${(LETTER.margin / LETTER.height) * 100}% ${(LETTER.margin / 
  * computador, la rueda del mouse amplía.
  */
 function CompareFrame({
+  compare,
   split,
   onSplit,
   transparent,
   children,
 }: {
+  compare: boolean
   split: number
   onSplit: (v: number) => void
   transparent: boolean
@@ -520,7 +578,8 @@ function CompareFrame({
   const pinch = useRef<{ dist: number; angle: number; q: { x: number; y: number }; view: View } | null>(null)
   const lastTap = useRef(0)
   const [view, setView] = useState<View>(FIT)
-  const comparing = split < 100
+  // La línea se puede seguir moviendo aunque se haya llevado hasta un borde.
+  const comparing = compare
   const moved = view.scale !== 1 || view.rotation !== 0 || view.x !== 0 || view.y !== 0
 
   /** Punto de pantalla → coordenadas del dibujo sin transformar, relativas al centro de la hoja. */
