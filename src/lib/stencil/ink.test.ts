@@ -34,9 +34,9 @@ describe('stencil ink', () => {
   it('cada tipo de imagen usa sus reglas: la referencia conserva la perspectiva y nunca aplana', () => {
     const ref = stencilPrompt('detalle', { source: 'referencia', flatten: true, symmetry: true })
     expect(ref).toMatch(/keeping the scale, tilt, perspective/)
-    expect(ref).not.toMatch(/Unwrap it/)
+    expect(ref).not.toMatch(/unwrap the curvature/)
     expect(ref).not.toMatch(/symmetric/)
-    expect(stencilPrompt('detalle', { source: 'tatuaje', flatten: true })).toMatch(/Unwrap it/)
-    expect(stencilPrompt('detalle', { source: 'dibujo', flatten: true })).not.toMatch(/Unwrap it/)
+    expect(stencilPrompt('detalle', { source: 'tatuaje', flatten: true })).toMatch(/unwrap the curvature/)
+    expect(stencilPrompt('detalle', { source: 'dibujo', flatten: true })).not.toMatch(/unwrap the curvature/)
   })
 })
