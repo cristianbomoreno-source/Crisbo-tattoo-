@@ -69,6 +69,38 @@ async function renderInk(raw: string, opts: { color: string; transparent: boolea
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('No se pudo generar el PNG'))), 'image/png'))
 }
 
+/**
+ * Hoja carta vertical (8,5 × 11 in) a 300 ppp: lo que se descarga, se copia y se
+ * imprime siempre sale de este tamaño, con el diseño centrado lo más grande que
+ * quepa dentro del margen. En pantalla se sigue viendo sin la hoja para que
+ * coincida con la foto al comparar.
+ */
+const LETTER = { width: 2550, height: 3300, margin: 120 }
+
+async function toLetter(blob: Blob, transparent: boolean): Promise<Blob> {
+  const url = URL.createObjectURL(blob)
+  try {
+    const img = await loadImage(url)
+    const c = document.createElement('canvas')
+    c.width = LETTER.width
+    c.height = LETTER.height
+    const ctx = c.getContext('2d')!
+    if (!transparent) {
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, c.width, c.height)
+    }
+    const k = Math.min((c.width - 2 * LETTER.margin) / img.naturalWidth, (c.height - 2 * LETTER.margin) / img.naturalHeight)
+    const w = img.naturalWidth * k
+    const h = img.naturalHeight * k
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h)
+    return await new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('No se pudo generar la hoja'))), 'image/png'))
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[] }) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -86,7 +118,6 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [output, setOutput] = useState<{ url: string; blob: Blob } | null>(null)
   const [split, setSplit] = useState(100)
   const [opacity, setOpacity] = useState(100)
-  const [printCm, setPrintCm] = useState(15)
   const [history, setHistory] = useState(initialHistory)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<HTMLDivElement>(null)
@@ -159,40 +190,47 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     }
   }
 
-  function download() {
+  async function download() {
     if (!output || !result) return
+    const url = URL.createObjectURL(await toLetter(output.blob, transparent))
     const a = document.createElement('a')
-    a.href = output.url
+    a.href = url
     a.download = `stencil-${STENCIL_STYLES.find((s) => s.id === style)?.id ?? 'crisbo'}-${result.id.split('__')[0]}.png`
     a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   async function copy() {
     if (!output) return
     try {
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': output.blob })])
+      // La promesa va dentro del ClipboardItem para que Safari no pierda el toque del usuario.
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': toLetter(output.blob, transparent) })])
       toast.success('Copiado. Pégalo en Procreate')
     } catch {
       toast.error('Este navegador no deja copiar imágenes. Usa Descargar.')
     }
   }
 
-  function print() {
+  async function print() {
     if (!output) return
+    const url = URL.createObjectURL(await toLetter(output.blob, false))
     const frame = document.createElement('iframe')
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
     document.body.appendChild(frame)
     const doc = frame.contentDocument!
     doc.open()
     doc.write(
-      `<!doctype html><html><head><title>Stencil</title><style>@page{margin:10mm}html,body{margin:0}img{width:${printCm}cm;height:auto;display:block}</style></head><body><img src="${output.url}"></body></html>`,
+      `<!doctype html><html><head><title>Stencil</title><style>@page{size:letter portrait;margin:0}html,body{margin:0}img{width:8.5in;height:11in;display:block}</style></head><body><img src="${url}"></body></html>`,
     )
     doc.close()
     const img = doc.querySelector('img')!
     const go = () => {
       frame.contentWindow?.focus()
       frame.contentWindow?.print()
-      setTimeout(() => frame.remove(), 1000)
+      setTimeout(() => {
+        frame.remove()
+        URL.revokeObjectURL(url)
+      }, 1000)
     }
     if (img.complete) go()
     else img.onload = go
@@ -408,23 +446,10 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
                   <Copy className="size-5" /> Copiar para Procreate
                 </Button>
               </div>
-              <div className="mt-2 flex items-center gap-2 rounded-2xl bg-muted/60 p-2 pl-4">
-                <span className="text-sm font-medium">Imprimir de</span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={2}
-                  max={40}
-                  value={printCm}
-                  onChange={(e) => setPrintCm(Math.max(2, Math.min(40, Number(e.target.value) || 0)))}
-                  className="h-10 w-16 rounded-xl bg-background text-center font-semibold tabular-nums"
-                  aria-label="Ancho en centímetros"
-                />
-                <span className="text-sm font-medium">cm de ancho</span>
-                <Button onClick={print} disabled={!output} variant="outline" className="ml-auto">
-                  <Printer className="size-5" /> Imprimir
-                </Button>
-              </div>
+              <Button onClick={print} disabled={!output} variant="outline" size="lg" className="mt-2 w-full">
+                <Printer className="size-5" /> Imprimir en hoja carta
+              </Button>
+              <p className="mt-2 text-center text-[13px] text-muted-foreground">Descargar, copiar e imprimir salen en tamaño carta.</p>
             </>
           )}
         </section>
