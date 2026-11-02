@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Copy, DownloadSimple, ImageSquare, Printer, Sparkle, Trash } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Copy, DownloadSimple, ImageSquare, Printer, Sparkle, Trash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { STENCIL_MODELS, STENCIL_STYLES, type StencilModelId, type StencilStyleId } from '@/lib/stencil/styles'
 import { applyInk } from '@/lib/stencil/ink'
@@ -18,6 +18,9 @@ const COLORS = [
 ]
 /** Lado largo del stencil final: suficiente para imprimir a 300 ppp ~25 cm. */
 const OUTPUT_LONG_SIDE = 3000
+/** Vista inicial del resultado: stencil semitransparente encima de la foto, con la línea de comparación al 60 %. */
+const DEFAULT_SPLIT = 60
+const DEFAULT_OPACITY = 73
 
 type Result = { id: string; raw: string; src: string | null }
 
@@ -139,8 +142,8 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudo crear el stencil')
       setResult({ id: json.id, raw: json.image, src: preview })
-      setSplit(100)
-      setOpacity(100)
+      setSplit(DEFAULT_SPLIT)
+      setOpacity(DEFAULT_OPACITY)
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
       fetch('/api/stencil')
         .then((r) => r.json())
@@ -201,7 +204,8 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     setStyle(item.style)
     setModel(item.model)
     setResult({ id: item.id, raw: item.url, src: item.srcUrl })
-    setSplit(100)
+    setSplit(item.srcUrl ? DEFAULT_SPLIT : 100)
+    setOpacity(item.srcUrl ? DEFAULT_OPACITY : 100)
     requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
@@ -311,36 +315,31 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
           <h2 className="text-[17px] font-semibold">Resultado</h2>
           {!result ? (
             <div className="mt-3 grid aspect-[3/4] place-items-center rounded-2xl bg-muted/50 p-6 text-center text-sm text-muted-foreground">
-              Aquí aparece tu stencil. Desliza para compararlo con la foto original.
+              Aquí aparece tu stencil. Arrastra sobre él para compararlo con la foto original.
             </div>
           ) : (
             <>
-              <div
-                className="relative mt-3 overflow-hidden rounded-2xl bg-white select-none"
-                style={transparent ? { backgroundImage: 'repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%)', backgroundSize: '20px 20px' } : undefined}
-              >
+              <CompareFrame split={result.src ? split : 100} onSplit={setSplit} transparent={transparent}>
                 {result.src && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={result.src} alt="Original" className="absolute inset-0 size-full object-contain" />
+                  <img src={result.src} alt="Original" draggable={false} className="absolute inset-0 size-full object-contain" />
                 )}
                 {output ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={output.url}
                     alt="Stencil"
+                    draggable={false}
                     className="relative block w-full"
-                    style={{ opacity: opacity / 100, clipPath: `inset(0 ${100 - split}% 0 0)` }}
+                    style={{ opacity: opacity / 100, clipPath: result.src ? `inset(0 ${100 - split}% 0 0)` : undefined }}
                   />
                 ) : (
                   <div className="aspect-[3/4]" />
                 )}
-                {result.src && split < 100 && (
-                  <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.3)]" style={{ left: `${split}%` }} />
-                )}
-              </div>
+              </CompareFrame>
+              {result.src && <p className="mt-2 text-center text-[13px] text-muted-foreground">Arrastra sobre la imagen para comparar con la foto</p>}
 
               <div className="mt-4 space-y-3">
-                {result.src && <Range label="Comparar con la foto" value={split} onChange={setSplit} display={split === 100 ? 'Stencil' : `${split}%`} />}
                 {result.src && <Range label="Opacidad del stencil" value={opacity} onChange={setOpacity} display={`${opacity}%`} />}
                 <Range label="Limpieza" value={threshold} min={90} max={235} onChange={setThreshold} display={threshold < 150 ? 'Menos trazos' : threshold > 200 ? 'Más detalle' : 'Normal'} />
               </div>
@@ -433,6 +432,64 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
           </section>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Comparador sobre la misma imagen: se arrastra en cualquier punto (no solo en
+ * la manija) y la línea sigue el dedo. `touch-action: pan-y` deja hacer scroll
+ * vertical en el celular; el arrastre horizontal mueve la línea.
+ */
+function CompareFrame({
+  split,
+  onSplit,
+  transparent,
+  children,
+}: {
+  split: number
+  onSplit: (v: number) => void
+  transparent: boolean
+  children: React.ReactNode
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+  const comparing = split < 100
+
+  function move(clientX: number) {
+    const box = ref.current?.getBoundingClientRect()
+    if (!box) return
+    onSplit(Math.round(Math.min(100, Math.max(0, ((clientX - box.left) / box.width) * 100))))
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={cn('relative mt-3 overflow-hidden rounded-2xl bg-white select-none touch-pan-y', comparing && 'cursor-ew-resize')}
+      style={transparent ? { backgroundImage: 'repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%)', backgroundSize: '20px 20px' } : undefined}
+      onPointerDown={(e) => {
+        if (!comparing) return
+        dragging.current = true
+        e.currentTarget.setPointerCapture(e.pointerId)
+        move(e.clientX)
+      }}
+      onPointerMove={(e) => dragging.current && move(e.clientX)}
+      onPointerUp={() => (dragging.current = false)}
+      onPointerCancel={() => (dragging.current = false)}
+    >
+      {children}
+      {comparing && (
+        <>
+          <span className="pointer-events-none absolute top-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Stencil</span>
+          <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">Foto</span>
+          <div className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.25)]" style={{ left: `${split}%` }}>
+            <span className="absolute top-1/2 left-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-lg">
+              <CaretLeft weight="bold" className="size-3.5" />
+              <CaretRight weight="bold" className="size-3.5" />
+            </span>
+          </div>
+        </>
+      )}
     </div>
   )
 }
