@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
 import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
 import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
-import { straightenTattoo } from '@/lib/stencil/straighten'
+import { prepareTattoo } from '@/lib/stencil/straighten'
 import { hollowFills } from '@/lib/stencil/hollow'
 
 // Seedream puede tardar ~3 min.
@@ -83,13 +83,15 @@ export async function POST(req: Request) {
   } catch {
     return fail('No se pudo leer la imagen', 400)
   }
-  // Tatuaje en piel para aplanar: la app lo recorta y endereza antes (el modelo que dibuja no gira la imagen).
+  // Tatuaje en piel para aplanar: la app lo endereza, recorta, analiza y corrige la postura del brazo antes de dibujar.
   const flattening = opts.source !== 'referencia' && opts.source !== 'dibujo' && opts.flatten
-  if (flattening) source = await straightenTattoo(source)
+  let analysis: string | null = null
+  if (flattening) ({ image: source, analysis } = await prepareTattoo(source))
 
   let raw: Uint8Array
   try {
-    raw = await runModel(model, stencilPrompt(style, opts), source)
+    const prompt = stencilPrompt(style, opts)
+    raw = await runModel(model, analysis ? `${prompt}\n${analysis}` : prompt, source)
     // Hoja plana: segunda pasada sobre el dibujo limpio para quitar el borde del brazo y unir lo que corta.
     if (flattening) {
       const drawn = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toBuffer()
