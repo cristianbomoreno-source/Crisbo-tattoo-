@@ -1,6 +1,6 @@
 # Product Marketing Context — Crisbo Tattoo
 
-**Document version:** v4
+**Document version:** v5
 **Last updated:** 2026-11-02
 
 > Ficha base que leen todas las skills de mercadeo (offers, launch, social, ads, ad-creative, copywriting, marketing-psychology, instagram-marketing, el plugin de marketing). Escrita en español porque todo el contenido de Crisbo es en español de Colombia. "FALTA" = dato que todavía no tenemos; no inventarlo.
@@ -165,6 +165,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 *Decisions and tested lessons. Newest first. Keep it to about 20 active entries.*
 | Date | Learning | Evidence | Applies to | Status |
 |------|----------|----------|------------|--------|
+| 2026-11-02 | Pauta de noviembre para clientes nuevos: antebrazo (interno o externo) $470.000 y brazo completo (interno o externo) $1.100.000, precio fijo | Decisión del dueño | offers, ads, copywriting | active |
 | 2026-10-28 | La promo de $460.000 (Nuevos Trazos) queda retirada; no volver a usarla ni como referencia de precio | Decisión del dueño | offers, copywriting, social, ads | active |
 | 2026-10-28 | El modelo de humor es TOBO: reels de cara a cámara, portada de texto grande y series por capítulos con suspenso | Perfil de @tobo.artist (118K) | social, ad-creative | watch |
 | 2026-10-28 | Los competidores directos (45–48K) usan destacadas de "disponibles" y "cicatrizados"; Crisbo debería tener ambas | @ongarato_tattoo, @juan_tattooer | social | watch |
@@ -177,6 +178,7 @@ B2C: no hay varios decisores. Dos perfiles útiles:
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v5 (2026-11-02) — Added the owner's November new-client offer (forearm $470.000, full arm $1.100.000) to Learnings.
 - v4 (2026-11-02) — Raised the November goal from $7 M to $11 M (owner) and recorded October's real close ($4,94 M).
 - v3 (2026-10-28) — Retired the $460.000 Nuevos Trazos promo (owner's decision): removed it as price reference, pull factor and owned term; added it to Learnings.
 - v2 (2026-10-28) — Added public Google reviews (5,0 ★, 44) as proof and customer language, competitors @ongarato_tattoo and @juan_tattooer, reference @tobo.artist; learnings on serial humor reels and highlights.
