@@ -9,7 +9,6 @@ import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPro
 import { deleteStencil, listStencils, readStencil, saveStencil, stencilId } from '@/lib/stencil/store'
 import { prepareTattoo } from '@/lib/stencil/straighten'
 import { hollowFills } from '@/lib/stencil/hollow'
-import { hasArmEdgeLines } from '@/lib/stencil/edges'
 
 // Seedream puede tardar ~3 min.
 export const maxDuration = 300
@@ -147,13 +146,9 @@ export async function POST(req: Request) {
   try {
     const prompt = stencilPrompt(style, opts)
     raw = await runModel(model, analysis ? `${prompt}\n${analysis}` : prompt, source)
-    // Hoja plana: segunda pasada (otra imagen de IA) solo si quedaron líneas del borde del brazo.
-    if (flattening) {
-      const first = await toGray(raw)
-      const lines = hasArmEdgeLines(first.data, first.info.width, first.info.height)
-      console.info('[stencil] segunda pasada', lines ? 'sí: líneas del brazo' : 'no hizo falta')
-      if (lines) raw = await removeArmLines(model, raw)
-    }
+    // Hoja plana: segunda pasada siempre. Detectar las líneas del brazo para saltarla no fue confiable
+    // (la IA también dibuja por fuera de ellas y hay diseños con trazos largos parecidos).
+    if (flattening) raw = await removeArmLines(model, raw)
   } catch (e) {
     return aiFail(model, e)
   }
