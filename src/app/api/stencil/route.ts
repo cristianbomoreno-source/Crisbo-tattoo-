@@ -62,6 +62,7 @@ export async function POST(req: Request) {
   const file = form?.get('image')
   const style = form?.get('style')
   const model = form?.get('model') ?? 'nano-banana'
+  const opts = { flatten: form?.get('flatten') === '1', symmetry: form?.get('symmetry') === '1' }
   if (!(file instanceof Blob) || !file.size) return fail('Sube una imagen', 400)
   if (file.size > MAX_BYTES) return fail('La imagen pesa más de 4 MB', 400)
   if (!isStyle(style)) return fail('Estilo inválido', 400)
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
 
   let raw: Uint8Array
   try {
-    raw = await runModel(model, stencilPrompt(style), source)
+    raw = await runModel(model, stencilPrompt(style, opts), source)
   } catch (e) {
     const msg = (e as Error).message
     console.error('[stencil]', model, msg)

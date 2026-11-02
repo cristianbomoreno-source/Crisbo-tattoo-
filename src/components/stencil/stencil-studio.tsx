@@ -71,6 +71,8 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [preview, setPreview] = useState<string | null>(null)
   const [style, setStyle] = useState<StencilStyleId>('detalle')
   const [model, setModel] = useState<StencilModelId>('nano-banana')
+  const [flatten, setFlatten] = useState(true)
+  const [symmetry, setSymmetry] = useState(true)
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
@@ -131,6 +133,8 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       body.set('image', await shrink(file), 'imagen.jpg')
       body.set('style', style)
       body.set('model', model)
+      body.set('flatten', flatten ? '1' : '0')
+      body.set('symmetry', symmetry ? '1' : '0')
       const res = await fetch('/api/stencil', { method: 'POST', body })
       const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudo crear el stencil')
@@ -253,6 +257,22 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
                 <span className="mt-0.5 block text-[13px] leading-snug text-muted-foreground">{s.hint}</span>
               </button>
             ))}
+          </div>
+
+          <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Mejorar el diseño</p>
+          <div className="mt-2 divide-y divide-border rounded-2xl border border-border">
+            <Toggle
+              checked={flatten}
+              onChange={setFlatten}
+              title="Pasar a hoja plana y completar"
+              hint="Quita la curva de la piel y dibuja lo que no se ve en la foto"
+            />
+            <Toggle
+              checked={symmetry}
+              onChange={setSymmetry}
+              title="Corregir simetría"
+              hint="Si el diseño es simétrico (mandala, alas, ornamento), lo empareja"
+            />
           </div>
 
           <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Inteligencia artificial</p>
@@ -414,6 +434,18 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
         )}
       </div>
     </div>
+  )
+}
+
+function Toggle({ checked, onChange, title, hint }: { checked: boolean; onChange: (v: boolean) => void; title: string; hint: string }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-3 p-3">
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-semibold">{title}</span>
+        <span className="mt-0.5 block text-[13px] leading-snug text-muted-foreground">{hint}</span>
+      </span>
+      <input type="checkbox" className="size-5 shrink-0 accent-[var(--primary)]" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    </label>
   )
 }
 

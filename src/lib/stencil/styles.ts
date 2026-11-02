@@ -57,13 +57,26 @@ const BASE = `Convert this image into a professional tattoo transfer stencil (th
 Rules:
 - Pure black lines on a pure white background. No gray, no solid fills, no gradients, no color, no shading.
 - Trace ONLY the tattoo design. If the image is a photo of a tattoo on skin, trace only the inked design: ignore the skin, the outline of the arm or body, clothing, fabric, the background, reflections and lighting.
-- Keep the composition, proportions and every element exactly as in the original. Do not add, invent, remove or restyle anything. Do not add text, signatures or borders.
+- Do not add text, signatures or borders.
 - The design fills the frame, centered, with a small white margin.
 - Clean, continuous lines and closed shapes. No noise, no stray dots, no smudges.`
 
-export function stencilPrompt(style: StencilStyleId): string {
+const FAITHFUL = `- Keep the composition, proportions and every element exactly as in the original. Do not add, invent, remove or restyle anything.`
+
+/** Foto de un tatuaje en piel → diseño plano, completo, como si estuviera dibujado en una hoja. */
+const FLATTEN = `- The tattoo is photographed on a curved body part (arm, leg, ribs, back). Unwrap it onto a flat sheet of paper: undo the curvature and the camera perspective, so circles are round again, straight lines are straight, and the proportions are the ones the artist drew, as if the design were scanned from the original drawing, seen straight from the front.
+- Reconstruct every part that is hidden, cut off by the edge of the photo, wrapped around the limb, blurred, faded, in shadow or covered by glare: continue the lines and repeat the patterns so the design is complete and closed, in the same style as the visible parts. Never leave lines broken or missing because the photo did not show them.
+- Keep every element, its style and its position in the composition. Do not add new elements that are not part of the design.`
+
+/** Diseños pensados simétricos (mandalas, ornamentos, alas, caras de frente). */
+const SYMMETRY = `- Analyze the design. If it is meant to be symmetric (mandala, ornament, geometric, wings, a frontal face, a centered emblem), make it perfectly symmetric around its natural axis or center: mirror the best-drawn side, equalize repeated elements and their spacing, make circles and concentric rings perfect. If the design is not meant to be symmetric, leave its composition as it is.`
+
+export type StencilOptions = { flatten?: boolean; symmetry?: boolean }
+
+export function stencilPrompt(style: StencilStyleId, opts: StencilOptions = {}): string {
   const s = STENCIL_STYLES.find((x) => x.id === style) ?? STENCIL_STYLES[0]!
-  return `${BASE}\nStyle: ${s.prompt}`
+  const rules = [BASE, opts.flatten ? FLATTEN : FAITHFUL, opts.symmetry ? SYMMETRY : null].filter(Boolean).join('\n')
+  return `${rules}\nStyle: ${s.prompt}`
 }
 
 export const isStyle = (v: unknown): v is StencilStyleId => STENCIL_STYLES.some((s) => s.id === v)
