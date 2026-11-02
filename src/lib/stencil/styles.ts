@@ -63,13 +63,17 @@ Rules:
 
 const FAITHFUL = `- Keep the composition, proportions and every element exactly as in the original. Do not add, invent, remove or restyle anything.`
 
-/** Foto de un tatuaje en piel → diseño plano, completo, como si estuviera dibujado en una hoja. */
-const FLATTEN = `- The tattoo is photographed on a curved body part (arm, leg, ribs, back). Unwrap it onto a flat sheet of paper: undo the curvature and the camera perspective, so circles are round again, straight lines are straight, and the proportions are the ones the artist drew, as if the design were scanned from the original drawing, seen straight from the front.
-- Reconstruct every part that is hidden, cut off by the edge of the photo, wrapped around the limb, blurred, faded, in shadow or covered by glare: continue the lines and repeat the patterns so the design is complete and closed, in the same style as the visible parts. Never leave lines broken or missing because the photo did not show them.
-- Keep every element, its style and its position in the composition. Do not add new elements that are not part of the design.`
+/**
+ * Foto de un tatuaje en piel → diseño plano, como si estuviera dibujado en una hoja.
+ * Solo completa lo que la foto no deja ver; nunca reinterpreta el diseño (un
+ * tigre estilizado sin ojos sigue sin ojos).
+ */
+const FLATTEN = `- The tattoo is photographed on a curved body part (arm, leg, ribs, back). Unwrap it onto a flat sheet of paper: undo only the curvature of the body and the camera perspective, as if the original drawing had been scanned, seen straight from the front.
+- The visible design is the absolute reference. Copy every visible shape, line, stroke and empty area exactly as it is drawn, in the same place, size and angle. Do NOT reinterpret, redraw, "correct" or make it more realistic or anatomically complete. Stylized, abstract, partial or unusual features are intentional: if a feature (eyes, nose, a hand, a face) is not drawn in the tattoo, it must NOT appear in the stencil. Keep empty skin areas and negative space empty. Do not rotate the subject or change its pose, angle or expression.
+- Reconstruct ONLY the parts that the photo physically does not show: lines cut off by the edge of the photo or wrapping around the side of the limb out of view, and lines hidden by glare, blur or shadow. Continue those lines and patterns minimally, following the exact direction and style of the visible strokes next to them. Never add new elements or details that are not already part of the design.`
 
-/** Diseños pensados simétricos (mandalas, ornamentos, alas, caras de frente). */
-const SYMMETRY = `- Analyze the design. If it is meant to be symmetric (mandala, ornament, geometric, wings, a frontal face, a centered emblem), make it perfectly symmetric around its natural axis or center: mirror the best-drawn side, equalize repeated elements and their spacing, make circles and concentric rings perfect. If the design is not meant to be symmetric, leave its composition as it is.`
+/** Solo diseños geométricos u ornamentales: nunca caras, animales ni figuras. */
+const SYMMETRY = `- If the design is geometric or ornamental and clearly meant to be symmetric (mandala, sacred geometry, ornament, a centered emblem or frame), make it perfectly symmetric: mirror the best-drawn side, equalize repeated elements and their spacing, make circles and concentric rings perfect. Never apply symmetry to faces, animals, people, figures or organic compositions: leave those exactly as drawn.`
 
 export type StencilOptions = { flatten?: boolean; symmetry?: boolean }
 
