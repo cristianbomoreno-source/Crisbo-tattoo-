@@ -220,10 +220,10 @@ export function CompositorStudio({ initialHistory }: { initialHistory: Compositi
       const blob = await buildPsd(layers, plano.naturalWidth, plano.naturalHeight)
       const name = `compositor-${comp.id}.psd`
       const psd = new File([blob], name, { type: 'image/vnd.adobe.photoshop' })
-      // En el iPad la hoja de compartir permite "Abrir en Procreate" directamente.
+      // Solo el archivo, sin título: con título iOS a veces lo comparte como texto y esconde las apps que abren PSD.
       if (share && navigator.canShare?.({ files: [psd] })) {
         try {
-          await navigator.share({ files: [psd], title: name })
+          await navigator.share({ files: [psd] })
           return
         } catch (e) {
           if ((e as Error).name === 'AbortError') return
@@ -524,7 +524,7 @@ export function CompositorStudio({ initialHistory }: { initialHistory: Compositi
                   <p className="mt-2 text-center text-[13px] text-muted-foreground">
                     {exportando
                       ? 'Armando el archivo…'
-                      : 'Archivo .psd con una capa por elemento. En el iPad toca "Enviar a Procreate" y escoge Procreate; la referencia y el diseño completo van ocultos abajo y arriba.'}
+                      : 'Archivo .psd con una capa por elemento; la referencia y el diseño completo van ocultos abajo y arriba. Si Procreate no aparece al compartir, busca en "Más" o toca "Guardar en Archivos" y en Procreate usa Importar.'}
                   </p>
                 </>
               )}
