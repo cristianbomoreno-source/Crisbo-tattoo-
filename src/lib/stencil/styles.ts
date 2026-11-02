@@ -96,7 +96,7 @@ const FLATTEN = `- The tattoo was photographed on a curved limb, so the photo on
 export const COMPLETE_PROMPT = `This is a tattoo stencil (black line art on white) traced from a photo of a tattoo on a forearm. Edit it:
 - Remove every long straight or slightly curved line that runs along the full height of the design and cuts through it: those are the edges of the arm, not part of the tattoo. Also remove any hard vertical cut where elements stop abruptly.
 - Where those lines cut the design, join the two sides so every element flows continuously across: drapery, hair, clouds, smoke, cracks, ornaments and background shapes continue smoothly from one side to the other.
-- Complete every figure or element that is cut off or unfinished: finish its missing arms, hands, drapery and outline following its pose, proportions and style, only where that figure clearly continues.
+- Where a removed line cut through a figure, finish that same figure's limb, hand or drapery right at the cut, following its pose, proportions and style. Do not extend or complete anything else.
 - Keep everything else exactly as it is: same elements, positions, line weight and style. Do not add new figures, body parts or objects, never repeat, mirror or duplicate a face or figure, do not fill areas with black, do not add text.
 - Output: the same stencil, pure black lines on pure white, complete and continuous.`
 

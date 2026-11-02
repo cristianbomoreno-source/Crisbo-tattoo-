@@ -8,6 +8,7 @@ import { getCurrentStudio } from '@/queries/studio'
 import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
 import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
 import { straightenTattoo } from '@/lib/stencil/straighten'
+import { hollowFills } from '@/lib/stencil/hollow'
 
 // Seedream puede tardar ~3 min.
 export const maxDuration = 300
@@ -103,7 +104,11 @@ export async function POST(req: Request) {
   }
 
   // Escala de grises y contraste al máximo; el color y la transparencia los pone el navegador.
-  const png = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().normalise().png().toBuffer()
+  const gray = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().normalise().raw().toBuffer({ resolveWithObject: true })
+  const { width, height } = gray.info
+  // Sin masas negras: lo que la IA rellene se queda solo en contorno.
+  hollowFills(gray.data, width, height, Math.max(4, Math.round(Math.max(width, height) / 300)))
+  const png = await sharp(gray.data, { raw: { width, height, channels: 1 } }).png().toBuffer()
 
   const id = stencilId(style, model)
   try {

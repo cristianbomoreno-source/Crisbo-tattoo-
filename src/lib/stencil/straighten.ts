@@ -32,45 +32,57 @@ const Located = z.object({
 const PROMPT =
   'This photo shows a tattoo on a body part. Find the whole tattoo (only the ink, not the whole arm) and tell how much the design is tilted. Answer only with the requested fields.'
 
-/** Corta al tatuaje, lo deja vertical y le abre márgenes a los lados. Si algo falla, devuelve la foto tal cual. */
+async function locate(image: Uint8Array) {
+  const model = process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(VISION.google) : VISION.gateway
+  const { output } = await generateText({
+    model,
+    output: Output.object({ schema: Located }),
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'image', image, mediaType: 'image/jpeg' },
+          { type: 'text', text: PROMPT },
+        ],
+      },
+    ],
+  })
+  return output
+}
+
+/**
+ * Endereza la foto, vuelve a ubicar el tatuaje ya derecho (un brazo en diagonal
+ * ocupa casi toda la foto: recortar antes de girar no quita la pared), recorta
+ * y le abre márgenes a los lados. Si algo falla, devuelve la foto tal cual.
+ */
 export async function straightenTattoo(image: Uint8Array): Promise<Uint8Array> {
   try {
-    const model = process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(VISION.google) : VISION.gateway
-    const { output } = await generateText({
-      model,
-      output: Output.object({ schema: Located }),
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'image', image, mediaType: 'image/jpeg' },
-            { type: 'text', text: PROMPT },
-          ],
-        },
-      ],
-    })
-    const meta = await sharp(Buffer.from(image)).metadata()
+    let found = await locate(image)
+    let upright = image
+    const tilt = Math.round(found.tilt)
+    if (Math.abs(tilt) >= 4) {
+      upright = await sharp(Buffer.from(image)).rotate(-tilt, { background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer()
+      found = await locate(upright)
+    }
+
+    const meta = await sharp(Buffer.from(upright)).metadata()
     const w = meta.width ?? 0
     const h = meta.height ?? 0
     if (!w || !h) return image
-
-    const [ymin, xmin, ymax, xmax] = output.box.map((v) => v / 1000) as [number, number, number, number]
-    const pad = 0.04
+    const [ymin, xmin, ymax, xmax] = found.box.map((v) => v / 1000) as [number, number, number, number]
+    const pad = 0.03
     const left = Math.max(0, Math.floor((xmin - pad) * w))
     const top = Math.max(0, Math.floor((ymin - pad) * h))
     const right = Math.min(w, Math.ceil((xmax + pad) * w))
     const bottom = Math.min(h, Math.ceil((ymax + pad) * h))
     const box = { left, top, width: right - left, height: bottom - top }
-    // Una caja absurda (casi nada o casi toda la foto sin inclinación) no vale la pena.
+    // Una caja absurda (casi nada) no vale la pena.
     if (box.width < w * 0.1 || box.height < h * 0.1) return image
 
-    let img = sharp(Buffer.from(image)).extract(box)
-    if (Math.abs(output.tilt) >= 4) img = sharp(await img.toBuffer()).rotate(-output.tilt, { background: '#ffffff' })
     // Márgenes blancos a los lados: ahí la IA dibuja la parte del diseño que da la vuelta al brazo y no sale en la foto.
-    const straight = await img.toBuffer({ resolveWithObject: true })
-    const side = Math.round(straight.info.width * SIDE_MARGIN)
-    console.info('[stencil] enderezado', { tilt: Math.round(output.tilt), box, side })
-    return await sharp(straight.data).extend({ left: side, right: side, background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer()
+    const side = Math.round(box.width * SIDE_MARGIN)
+    console.info('[stencil] enderezado', { tilt, box, side })
+    return await sharp(Buffer.from(upright)).extract(box).extend({ left: side, right: side, background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer()
   } catch (e) {
     console.warn('[stencil] no se pudo enderezar', (e as Error).message)
     return image
