@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
 import { STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
 import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
+import { straightenTattoo } from '@/lib/stencil/straighten'
 
 // Seedream puede tardar ~3 min.
 export const maxDuration = 300
@@ -81,6 +82,8 @@ export async function POST(req: Request) {
   } catch {
     return fail('No se pudo leer la imagen', 400)
   }
+  // Tatuaje en piel para aplanar: la app lo recorta y endereza antes (el modelo que dibuja no gira la imagen).
+  if (opts.source !== 'referencia' && opts.source !== 'dibujo' && opts.flatten) source = await straightenTattoo(source)
 
   let raw: Uint8Array
   try {
@@ -102,7 +105,7 @@ export async function POST(req: Request) {
   } catch (e) {
     console.error('[stencil] guardar', (e as Error).message)
   }
-  return NextResponse.json({ id, image: `data:image/png;base64,${png.toString('base64')}` })
+  return NextResponse.json({ id, image: `data:image/png;base64,${png.toString('base64')}`, src: `data:image/jpeg;base64,${Buffer.from(source).toString('base64')}` })
 }
 
 export async function GET() {

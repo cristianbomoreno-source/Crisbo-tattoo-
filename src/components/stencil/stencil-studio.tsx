@@ -141,9 +141,10 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       body.set('flatten', flatten ? '1' : '0')
       body.set('symmetry', symmetry ? '1' : '0')
       const res = await fetch('/api/stencil', { method: 'POST', body })
-      const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; error?: string }
+      const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; src?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudo crear el stencil')
-      setResult({ id: json.id, raw: json.image, src: preview })
+      // La foto que devuelve el servidor ya viene recortada y derecha si se aplanó: así coincide con el stencil.
+      setResult({ id: json.id, raw: json.image, src: json.src ?? preview })
       setSplit(DEFAULT_SPLIT)
       setOpacity(DEFAULT_OPACITY)
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
