@@ -28,6 +28,15 @@ describe('stencil ink', () => {
 
   it('el prompt pide solo el tatuaje, sin piel ni fondo', () => {
     expect(stencilPrompt('mapa-tonal')).toMatch(/ignore the skin/)
-    expect(stencilPrompt('mapa-tonal')).toMatch(/Tonal-map/)
+    expect(stencilPrompt('mapa-tonal')).toMatch(/Shadow-map/)
+  })
+
+  it('cada tipo de imagen usa sus reglas: la referencia conserva la perspectiva y nunca aplana', () => {
+    const ref = stencilPrompt('detalle', { source: 'referencia', flatten: true, symmetry: true })
+    expect(ref).toMatch(/keeping the scale, tilt, perspective/)
+    expect(ref).not.toMatch(/Unwrap it/)
+    expect(ref).not.toMatch(/symmetric/)
+    expect(stencilPrompt('detalle', { source: 'tatuaje', flatten: true })).toMatch(/Unwrap it/)
+    expect(stencilPrompt('detalle', { source: 'dibujo', flatten: true })).not.toMatch(/Unwrap it/)
   })
 })
