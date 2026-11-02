@@ -122,6 +122,13 @@ export async function listCompositions(admin: SupabaseClient, studioId: string, 
   }))
 }
 
+/** Borra las máscaras y capas de una composición (al rehacer el diseño plano ya no encajan). */
+export async function clearLayers(admin: SupabaseClient, studioId: string, id: string) {
+  const { data } = await admin.storage.from(BUCKET).list(dir(studioId, id), { limit: 100 })
+  const paths = (data ?? []).filter((f) => /^(capa|mascara)-/.test(f.name)).map((f) => `${dir(studioId, id)}/${f.name}`)
+  if (paths.length) await admin.storage.from(BUCKET).remove(paths)
+}
+
 export async function deleteComposition(admin: SupabaseClient, studioId: string, id: string) {
   const { data } = await admin.storage.from(BUCKET).list(dir(studioId, id), { limit: 100 })
   const paths = (data ?? []).map((f) => `${dir(studioId, id)}/${f.name}`)

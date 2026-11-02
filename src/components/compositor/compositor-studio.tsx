@@ -176,6 +176,11 @@ export function CompositorStudio({ initialHistory }: { initialHistory: Compositi
         for (let id = queue.shift(); id; id = queue.shift()) await crearCapa(c, id)
       }),
     )
+    // Corte final con todas las máscaras: cada píxel en una sola capa y el fondo con lo que sobró.
+    try {
+      const { composition } = await post({ paso: 'recortar', id: c.id })
+      if (composition) setComp((prev) => (prev && prev.id === c.id ? composition : prev))
+    } catch {}
     refreshHistory()
   }
 

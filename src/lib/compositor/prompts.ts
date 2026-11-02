@@ -7,8 +7,9 @@ import type { Elemento } from './store'
  * editarlo en Procreate. Tres pasos de IA:
  * 1. un modelo de visión identifica los elementos (león, flores, vela…);
  * 2. Nano Banana redibuja la referencia como diseño plano sobre blanco;
- * 3. Nano Banana aísla cada elemento sobre ese diseño plano (editar sobre la
- *    misma imagen mantiene la posición y el tamaño, así las capas encajan).
+ * 3. Nano Banana marca la silueta (máscara) de cada elemento sobre ese diseño
+ *    plano y la app corta los píxeles exactos: ninguna capa se redibuja, cada
+ *    píxel queda en una sola capa y el fondo es lo que sobra.
  */
 
 export type CompositorModelId = 'nano-banana' | 'nano-banana-pro'
@@ -69,27 +70,20 @@ export function planoPrompt(source: CompositorSourceId, subject: string) {
   ].join('\n')
 }
 
-export function capaPrompt(el: Elemento, all: Elemento[], fondo: string) {
+/**
+ * La IA no redibuja la capa: solo pinta la silueta del elemento. La app corta
+ * después los píxeles exactos del diseño plano con esa silueta (lib/compositor/mask.ts).
+ */
+export function mascaraPrompt(el: Elemento, all: Elemento[], fondo: string) {
   const others = all.filter((e) => e.id !== el.id).map((e) => e.descripcion)
   if (fondo !== 'none') others.push(`the background (${fondo})`)
   return [
-    'This is a flat tattoo design on white. Prepare ONE layer for Procreate that contains only this element:',
+    'This is a flat tattoo design on white. Make a selection MASK of exactly one element, like a precise selection in Procreate or Photoshop.',
     `ELEMENT: ${el.descripcion}`,
-    'Return the same image, at the same size and framing, where:',
-    '- the element stays exactly where it is, with the same size, outline, shading, colors and details, pixel-aligned with the original;',
-    `- everything else is erased to solid pure white (#FFFFFF)${others.length ? `: ${others.join('; ')}` : ''};`,
-    '- where another element covered part of this element, draw the hidden part so the element is complete, in the same style;',
-    '- nothing new is added, nothing is moved, resized, mirrored or redrawn in a different style, and no background, shadow or frame is added around it.',
-  ].join('\n')
-}
-
-export function fondoPrompt(all: Elemento[], fondo: string) {
-  return [
-    'This is a flat tattoo design on white. Prepare the BACKGROUND layer for Procreate.',
-    `The background is: ${fondo}`,
-    `Erase these elements completely to solid pure white (#FFFFFF): ${all.map((e) => e.descripcion).join('; ')}.`,
-    '- Where those elements covered the background, continue the background naturally so it has no holes or outlines of the removed elements.',
-    '- Keep the background exactly where it is, with the same size, shading and style, pixel-aligned with the original. Same image size and framing.',
-    '- Do not add anything new.',
+    'Return an image with exactly the same size and framing, where:',
+    '- every pixel that belongs to the element is solid pure black (#000000): its outline, its whole interior, its shading, highlights and all its small details, as one solid silhouette with no lines or holes inside;',
+    `- every other pixel is solid pure white (#FFFFFF)${others.length ? `, including ${others.join('; ')}` : ''};`,
+    '- where another element is in front of this one, that covering part is white (do not include it, do not complete what is hidden);',
+    '- follow the real edge of the element precisely; no gray, no gradients, no outlines, no drawing, nothing else.',
   ].join('\n')
 }

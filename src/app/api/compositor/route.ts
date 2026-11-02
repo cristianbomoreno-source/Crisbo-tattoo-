@@ -8,9 +8,11 @@ import { getCurrentStudio } from '@/queries/studio'
 import { STENCIL_MODELS } from '@/lib/stencil/styles'
 import { prepareTattoo } from '@/lib/stencil/straighten'
 import { whiteToAlpha } from '@/lib/compositor/alpha'
-import { ANALISIS_PROMPT, Analisis, capaPrompt, fondoPrompt, isCompositorModel, isCompositorSource, planoPrompt } from '@/lib/compositor/prompts'
+import { ANALISIS_PROMPT, Analisis, isCompositorModel, isCompositorSource, mascaraPrompt, planoPrompt } from '@/lib/compositor/prompts'
+import { cleanMask, maskFromGray, splitLayers } from '@/lib/compositor/mask'
 import {
   FONDO,
+  clearLayers,
   deleteComposition,
   getComposition,
   isCompositionId,
@@ -182,8 +184,41 @@ async function plano(sid: string, form: FormData) {
     return aiError(e)
   }
   const png = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).png().toBuffer()
+  // Un diseño plano nuevo: las máscaras y capas del anterior ya no encajan.
+  await clearLayers(admin, sid, id)
   const url = await saveFile(admin, sid, id, 'plano.png', png, 'image/png')
   return NextResponse.json({ planoUrl: url, composition: await getComposition(admin, sid, id) })
+}
+
+/**
+ * Corta todas las capas del diseño plano con las máscaras que ya existan: el
+ * elemento de adelante gana donde dos se pisan y el fondo es lo que sobra. Se
+ * llama cada vez que llega una máscara y una vez al final ("recortar"), así la
+ * última versión siempre tiene todas.
+ */
+async function rebuild(admin: ReturnType<typeof createAdminClient>, sid: string, meta: CompositionMeta, planoPng: Uint8Array) {
+  const plano = await sharp(Buffer.from(planoPng)).flatten({ background: '#ffffff' }).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { width, height } = plano.info
+  const masks = await Promise.all(
+    meta.elementos.map(async (e) => {
+      const png = await readFile(admin, sid, meta.id, `mascara-${e.id}.png`)
+      if (!png) return null
+      const g = await sharp(Buffer.from(png)).grayscale().resize(width, height, { fit: 'fill' }).raw().toBuffer()
+      return maskFromGray(new Uint8Array(g))
+    }),
+  )
+  const { layers, fondo } = splitLayers(new Uint8Array(plano.data), width, height, masks)
+  const save = async (name: string, rgba: Uint8Array) => {
+    // Lo que no es de la capa ya es blanco transparente; el blanco que rodea el dibujo dentro de la silueta también se vuelve transparente.
+    whiteToAlpha(rgba, width, height)
+    const png = await sharp(rgba, { raw: { width, height, channels: 4 } }).png().toBuffer()
+    return [name, await saveFile(admin, sid, meta.id, `capa-${name}.png`, png, 'image/png')] as const
+  }
+  const saved = await Promise.all([
+    ...meta.elementos.map((e, k) => (layers[k] ? save(e.id, layers[k]!) : null)).filter((p) => p !== null),
+    ...(meta.fondo !== 'none' ? [save('fondo', fondo)] : []),
+  ])
+  return Object.fromEntries(saved) as Record<string, string | null>
 }
 
 async function capa(sid: string, form: FormData) {
@@ -197,25 +232,34 @@ async function capa(sid: string, form: FormData) {
   const el = capaId === 'fondo' ? FONDO : meta.elementos.find((e) => e.id === capaId)
   if (!el) return fail('Ese elemento ya no está en la lista', 404)
 
-  const { width, height } = await sharp(Buffer.from(planoPng)).metadata()
-  let raw: Uint8Array
-  try {
-    const prompt = el.id === 'fondo' ? fondoPrompt(meta.elementos, meta.fondo) : capaPrompt(el, meta.elementos, meta.fondo)
-    raw = await draw(meta.model, prompt, await toJpeg(planoPng))
-  } catch (e) {
-    return aiError(e)
+  // El fondo no necesita IA: es lo que ningún elemento reclamó.
+  if (el.id !== 'fondo') {
+    const { width, height } = await sharp(Buffer.from(planoPng)).metadata()
+    let raw: Uint8Array
+    try {
+      raw = await draw(meta.model, mascaraPrompt(el, meta.elementos, meta.fondo), await toJpeg(planoPng))
+    } catch (e) {
+      return aiError(e)
+    }
+    const gray = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().resize(width, height, { fit: 'fill' }).raw().toBuffer()
+    const mask = cleanMask(maskFromGray(new Uint8Array(gray)), width!, height!)
+    const png = await sharp(Buffer.from(mask.map((v) => (v ? 0 : 255))), { raw: { width: width!, height: height!, channels: 1 } }).png().toBuffer()
+    await saveFile(admin, sid, id, `mascara-${el.id}.png`, png, 'image/png')
   }
-  // Mismo tamaño que el diseño plano para que las capas encajen una encima de otra; el blanco de alrededor queda transparente.
-  const rgba = await sharp(Buffer.from(raw))
-    .flatten({ background: '#ffffff' })
-    .resize(width, height, { fit: 'fill' })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-  whiteToAlpha(rgba.data, rgba.info.width, rgba.info.height)
-  const png = await sharp(rgba.data, { raw: { width: rgba.info.width, height: rgba.info.height, channels: 4 } }).png().toBuffer()
-  const url = await saveFile(admin, sid, id, `capa-${el.id}.png`, png, 'image/png')
-  return NextResponse.json({ capa: el.id, url })
+  const urls = await rebuild(admin, sid, meta, planoPng)
+  return NextResponse.json({ capa: el.id, url: urls[el.id] ?? null })
+}
+
+/** Paso final: vuelve a cortar todas las capas con todas las máscaras ya guardadas. */
+async function recortar(sid: string, form: FormData) {
+  const id = form.get('id')
+  if (!isCompositionId(id)) return fail('Composición inválida', 400)
+  const admin = createAdminClient()
+  const meta = await readMeta(admin, sid, id)
+  const planoPng = meta && (await readFile(admin, sid, id, 'plano.png'))
+  if (!meta || !planoPng) return fail('Primero hay que crear el diseño plano', 409)
+  await rebuild(admin, sid, meta, planoPng)
+  return NextResponse.json({ composition: await getComposition(admin, sid, id) })
 }
 
 export async function POST(req: Request) {
@@ -227,6 +271,7 @@ export async function POST(req: Request) {
   if (paso === 'analizar') return analizar(sid, form)
   if (paso === 'plano') return plano(sid, form)
   if (paso === 'capa') return capa(sid, form)
+  if (paso === 'recortar') return recortar(sid, form)
   return fail('Paso inválido', 400)
 }
 
