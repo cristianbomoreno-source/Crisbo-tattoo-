@@ -114,6 +114,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [symmetry, setSymmetry] = useState(false)
   const [busy, setBusy] = useState(false)
   const [recovering, setRecovering] = useState(false)
+  const [fixing, setFixing] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
   const [color, setColor] = useState('#000000')
@@ -240,6 +241,29 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       toast.error((e as Error).message)
     } finally {
       setBusy(false)
+    }
+  }
+
+  /** Solo la segunda pasada sobre el resultado que se está viendo (una imagen de IA, no todo el stencil). */
+  async function fixLines() {
+    if (!result) return
+    setBusy(true)
+    setFixing(true)
+    setElapsed(0)
+    try {
+      const body = new FormData()
+      body.set('fix', result.id)
+      const res = await fetch('/api/stencil', { method: 'POST', body })
+      const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; src?: string; error?: string }
+      if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudieron quitar las líneas')
+      setResult({ id: json.id, raw: json.image, src: json.src ?? result.src })
+      refreshHistory().catch(() => {})
+      toast.success('Listo, sin las líneas del brazo')
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setBusy(false)
+      setFixing(false)
     }
   }
 
@@ -423,12 +447,12 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
 
         <Button size="lg" className="h-13 w-full text-base pointer-coarse:h-13" disabled={!file || busy || recovering} onClick={create}>
           <Sparkle weight="fill" className="size-5" />
-          {busy ? `Creando stencil… ${elapsed}s` : 'Crear stencil'}
+          {busy && !fixing ? `Creando stencil… ${elapsed}s` : 'Crear stencil'}
         </Button>
         {recovering && (
           <p className="text-center text-sm text-muted-foreground">Saliste de la app mientras se creaba. El stencil se sigue haciendo: lo abro apenas esté listo.</p>
         )}
-        {busy && (
+        {busy && !fixing && (
           <p className="text-center text-sm text-muted-foreground">
             {slow ? 'Seedream tarda hasta 3 minutos.' : flattenOn ? 'Aplanar y completar tarda entre 40 segundos y 2 minutos.' : 'Tarda entre 20 segundos y 1 minuto.'} No cierres esta página.
           </p>
@@ -506,6 +530,10 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
                 <Printer className="size-5" /> Imprimir en hoja carta
               </Button>
               <p className="mt-2 text-center text-[13px] text-muted-foreground">Descargar, copiar e imprimir salen en tamaño carta.</p>
+              <Button onClick={fixLines} disabled={!output || busy || recovering} variant="ghost" size="lg" className="mt-2 w-full">
+                <Sparkle className="size-5" /> {fixing ? `Quitando líneas… ${elapsed}s` : 'Quitar líneas del brazo'}
+              </Button>
+              <p className="text-center text-[12px] text-muted-foreground">Solo si quedó la línea del borde del brazo. Usa una imagen de IA (~270 pesos).</p>
             </>
           )}
         </section>

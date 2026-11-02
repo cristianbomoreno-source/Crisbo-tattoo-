@@ -10,6 +10,7 @@ import { prepareTattoo } from '@/lib/stencil/straighten'
 import { whiteToAlpha } from '@/lib/compositor/alpha'
 import { ANALISIS_PROMPT, Analisis, isCompositorModel, isCompositorSource, mascaraPrompt, planoPrompt } from '@/lib/compositor/prompts'
 import { cleanMask, maskFromGray, splitLayers } from '@/lib/compositor/mask'
+import { segmentElement } from '@/lib/compositor/segment'
 import {
   FONDO,
   clearLayers,
@@ -56,13 +57,13 @@ function aiError(e: unknown) {
   return fail('La IA no pudo terminar este paso. Intenta de nuevo o cambia de modelo.', 502)
 }
 
-/** Nano Banana (o Pro) edita la imagen que recibe y devuelve otra a 2K. */
-async function draw(modelId: string, prompt: string, image: Uint8Array): Promise<Uint8Array> {
+/** Nano Banana (o Pro) edita la imagen que recibe. 2K para el diseño; una máscara basta a 1K (Google cobra según la resolución). */
+async function draw(modelId: string, prompt: string, image: Uint8Array, imageSize: '1K' | '2K' = '2K'): Promise<Uint8Array> {
   const model = STENCIL_MODELS.find((m) => m.id === modelId)!
   const direct = model.google && process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(model.google) : null
   const result = await generateText({
     model: direct ?? model.gateway,
-    providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize: '2K' } } },
+    providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize } } },
     messages: [
       {
         role: 'user',
@@ -235,14 +236,26 @@ async function capa(sid: string, form: FormData) {
   // El fondo no necesita IA: es lo que ningún elemento reclamó.
   if (el.id !== 'fondo') {
     const { width, height } = await sharp(Buffer.from(planoPng)).metadata()
-    let raw: Uint8Array
+    const jpeg = await toJpeg(planoPng)
+    // Primero la segmentación (centavos); si no devuelve una silueta útil, Nano Banana pinta la máscara a 1K.
+    let found: Uint8Array | null = null
     try {
-      raw = await draw(meta.model, mascaraPrompt(el, meta.elementos, meta.fondo), await toJpeg(planoPng))
+      found = await segmentElement(jpeg, width!, height!, el.descripcion)
     } catch (e) {
-      return aiError(e)
+      console.warn('[compositor] segmentación', (e as Error).message)
     }
-    const gray = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().resize(width, height, { fit: 'fill' }).raw().toBuffer()
-    const mask = cleanMask(maskFromGray(new Uint8Array(gray)), width!, height!)
+    console.info('[compositor] máscara', { capa: el.id, metodo: found ? 'segmentacion' : 'nano-banana' })
+    if (!found) {
+      let raw: Uint8Array
+      try {
+        raw = await draw(meta.model, mascaraPrompt(el, meta.elementos, meta.fondo), jpeg, '1K')
+      } catch (e) {
+        return aiError(e)
+      }
+      const gray = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().resize(width, height, { fit: 'fill' }).raw().toBuffer()
+      found = maskFromGray(new Uint8Array(gray))
+    }
+    const mask = cleanMask(found, width!, height!)
     const png = await sharp(Buffer.from(mask.map((v) => (v ? 0 : 255))), { raw: { width: width!, height: height!, channels: 1 } }).png().toBuffer()
     await saveFile(admin, sid, id, `mascara-${el.id}.png`, png, 'image/png')
   }

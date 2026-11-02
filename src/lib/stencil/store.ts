@@ -63,6 +63,17 @@ export async function listStencils(admin: SupabaseClient, studioId: string, limi
   })
 }
 
+/** El resultado y la imagen original de un stencil guardado (para volver a limpiarlo sin rehacerlo). */
+export async function readStencil(admin: SupabaseClient, studioId: string, id: string) {
+  if (!parseId(id)) return null
+  const get = async (name: string) => {
+    const { data } = await admin.storage.from(BUCKET).download(`${dir(studioId)}/${name}`)
+    return data ? new Uint8Array(await data.arrayBuffer()) : null
+  }
+  const [result, source] = await Promise.all([get(`${id}.png`), get(`${id}.src.jpg`)])
+  return result ? { result, source, ...parseId(id)! } : null
+}
+
 export async function deleteStencil(admin: SupabaseClient, studioId: string, id: string) {
   if (!parseId(id)) return
   await admin.storage.from(BUCKET).remove([`${dir(studioId)}/${id}.png`, `${dir(studioId)}/${id}.src.jpg`])

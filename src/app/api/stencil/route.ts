@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
 import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
-import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
+import { deleteStencil, listStencils, readStencil, saveStencil, stencilId } from '@/lib/stencil/store'
 import { prepareTattoo } from '@/lib/stencil/straighten'
 import { hollowFills } from '@/lib/stencil/hollow'
+import { hasArmEdgeLines } from '@/lib/stencil/edges'
 
 // Seedream puede tardar ~3 min.
 export const maxDuration = 300
@@ -58,11 +59,63 @@ async function runModel(modelId: string, prompt: string, image: Uint8Array): Pro
   return out.uint8Array
 }
 
+function aiFail(model: string, e: unknown) {
+  const msg = (e as Error).message
+  console.error('[stencil]', model, msg)
+  if (/free tier|credits|insufficient|balance|billing|quota|exhausted/i.test(msg))
+    return fail(process.env.GOOGLE_GENERATIVE_AI_API_KEY ? 'Falta saldo de IA: activa la facturación de tu llave en Google AI Studio.' : 'Falta saldo de IA: recarga créditos en Vercel → AI Gateway.', 402)
+  return fail('La IA no pudo crear el stencil. Intenta de nuevo o cambia de modelo.', 502)
+}
+
+const toGray = (img: Uint8Array) => sharp(Buffer.from(img)).flatten({ background: '#ffffff' }).grayscale().normalise().raw().toBuffer({ resolveWithObject: true })
+
+/** Segunda pasada sobre el dibujo limpio: quita el borde del brazo y une lo que corta. */
+async function removeArmLines(model: string, raw: Uint8Array) {
+  const drawn = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toBuffer()
+  return runModel(model, COMPLETE_PROMPT, drawn)
+}
+
+/** Escala de grises, contraste al máximo y sin masas negras; el color y la transparencia los pone el navegador. */
+async function finish(raw: Uint8Array) {
+  const gray = await toGray(raw)
+  const { width, height } = gray.info
+  hollowFills(gray.data, width, height, Math.max(4, Math.round(Math.max(width, height) / 300)))
+  return sharp(gray.data, { raw: { width, height, channels: 1 } }).png().toBuffer()
+}
+
+/**
+ * "Quitar líneas del brazo" sobre un stencil ya hecho: si alguna línea se le
+ * escapó al detector, la persona pide solo la segunda pasada (una imagen) en
+ * vez de rehacer todo. Se guarda como un stencil nuevo con la misma foto.
+ */
+async function fixStencil(sid: string, fixId: string) {
+  const admin = createAdminClient()
+  const saved = await readStencil(admin, sid, fixId)
+  if (!saved) return fail('No encontré ese stencil', 404)
+  let raw: Uint8Array
+  try {
+    raw = await removeArmLines(saved.model, saved.result)
+  } catch (e) {
+    return aiFail(saved.model, e)
+  }
+  const png = await finish(raw)
+  const id = stencilId(saved.style, saved.model)
+  const source = saved.source ?? (await sharp(Buffer.from(saved.result)).jpeg().toBuffer())
+  try {
+    await saveStencil(admin, sid, id, png, source)
+  } catch (e) {
+    console.error('[stencil] guardar', (e as Error).message)
+  }
+  return NextResponse.json({ id, image: `data:image/png;base64,${png.toString('base64')}`, src: `data:image/jpeg;base64,${Buffer.from(source).toString('base64')}` })
+}
+
 export async function POST(req: Request) {
   const sid = await studioId()
   if (!sid) return fail('Inicia sesión', 401)
 
   const form = await req.formData().catch(() => null)
+  const fixId = form?.get('fix')
+  if (typeof fixId === 'string' && fixId) return fixStencil(sid, fixId)
   const file = form?.get('image')
   const style = form?.get('style')
   const model = form?.get('model') ?? 'nano-banana'
@@ -94,26 +147,18 @@ export async function POST(req: Request) {
   try {
     const prompt = stencilPrompt(style, opts)
     raw = await runModel(model, analysis ? `${prompt}\n${analysis}` : prompt, source)
-    // Hoja plana: segunda pasada sobre el dibujo limpio para quitar el borde del brazo y unir lo que corta.
+    // Hoja plana: segunda pasada (otra imagen de IA) solo si quedaron líneas del borde del brazo.
     if (flattening) {
-      const drawn = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toBuffer()
-      raw = await runModel(model, COMPLETE_PROMPT, drawn)
+      const first = await toGray(raw)
+      const lines = hasArmEdgeLines(first.data, first.info.width, first.info.height)
+      console.info('[stencil] segunda pasada', lines ? 'sí: líneas del brazo' : 'no hizo falta')
+      if (lines) raw = await removeArmLines(model, raw)
     }
   } catch (e) {
-    const msg = (e as Error).message
-    console.error('[stencil]', model, msg)
-    if (/free tier|credits|insufficient|balance|billing|quota|exhausted/i.test(msg))
-      return fail(process.env.GOOGLE_GENERATIVE_AI_API_KEY ? 'Falta saldo de IA: activa la facturación de tu llave en Google AI Studio.' : 'Falta saldo de IA: recarga créditos en Vercel → AI Gateway.', 402)
-    return fail('La IA no pudo crear el stencil. Intenta de nuevo o cambia de modelo.', 502)
+    return aiFail(model, e)
   }
 
-  // Escala de grises y contraste al máximo; el color y la transparencia los pone el navegador.
-  const gray = await sharp(Buffer.from(raw)).flatten({ background: '#ffffff' }).grayscale().normalise().raw().toBuffer({ resolveWithObject: true })
-  const { width, height } = gray.info
-  // Sin masas negras: lo que la IA rellene se queda solo en contorno.
-  hollowFills(gray.data, width, height, Math.max(4, Math.round(Math.max(width, height) / 300)))
-  const png = await sharp(gray.data, { raw: { width, height, channels: 1 } }).png().toBuffer()
-
+  const png = await finish(raw)
   const id = stencilId(style, model)
   try {
     await saveStencil(createAdminClient(), sid, id, png, source)
