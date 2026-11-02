@@ -29,6 +29,17 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
+/** Tamaño original de la imagen, antes de achicarla: si es tamaño carta, el PSD sale de ese tamaño. */
+async function naturalSize(file: File) {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await loadImage(url)
+    return { ancho: String(img.naturalWidth), alto: String(img.naturalHeight) }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 /** Achica la foto antes de subirla (máx. 2048 px, JPEG) para no pasar el límite de 4 MB. */
 async function shrink(file: File): Promise<Blob> {
   const url = URL.createObjectURL(file)
@@ -145,7 +156,7 @@ export function CompositorStudio({ initialHistory }: { initialHistory: Compositi
     setAnalizando(true)
     setElapsed(0)
     try {
-      const { composition } = await post({ paso: 'analizar', image: await shrink(file), source, model })
+      const { composition } = await post({ paso: 'analizar', image: await shrink(file), source, model, ...(await naturalSize(file)) })
       if (!composition) throw new Error('No se pudo analizar la referencia')
       open(composition)
       refreshHistory()
@@ -222,7 +233,8 @@ export function CompositorStudio({ initialHistory }: { initialHistory: Compositi
         if (url) layers.push({ name: l.nombre, url })
       }
       layers.push({ name: 'Diseño completo', url: comp.planoUrl, hidden: true })
-      const blob = await buildPsd(layers, plano.naturalWidth, plano.naturalHeight)
+      // Un diseño tamaño carta sale con los píxeles exactos de la imagen subida: encaja encima del original en Procreate.
+      const blob = await buildPsd(layers, comp.lienzo?.width ?? plano.naturalWidth, comp.lienzo?.height ?? plano.naturalHeight)
       const name = `compositor-${comp.id}.psd`
       const psd = new File([blob], name, { type: 'image/vnd.adobe.photoshop' })
       // Solo el archivo, sin título: con título iOS a veces lo comparte como texto y esconde las apps que abren PSD.

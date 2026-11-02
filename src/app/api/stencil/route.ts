@@ -9,6 +9,7 @@ import { COMPLETE_PROMPT, STENCIL_MODELS, isModel, isSource, isStyle, stencilPro
 import { deleteStencil, listStencils, readStencil, saveStencil, stencilId } from '@/lib/stencil/store'
 import { prepareTattoo } from '@/lib/stencil/straighten'
 import { hollowFills } from '@/lib/stencil/hollow'
+import { cropBack, fitToRatio } from '@/lib/stencil/frame'
 
 // Seedream puede tardar ~3 min.
 export const maxDuration = 300
@@ -36,15 +37,17 @@ async function runModel(modelId: string, prompt: string, image: Uint8Array): Pro
     // Con llave propia de Google (GOOGLE_GENERATIVE_AI_API_KEY en Vercel),
     // Nano Banana va directo a Gemini y no gasta saldo del AI Gateway.
     const direct = model.google && process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(model.google) : null
+    // Misma proporción exacta que la imagen que llega (ver lib/stencil/frame.ts).
+    const framed = await fitToRatio(image)
     const result = await generateText({
       model: direct ?? model.gateway,
-      // Sin esto Gemini dibuja a 1K y se pierden las caras pequeñas y los ornamentos finos.
-      providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize: '2K' } } },
+      // Sin imageSize Gemini dibuja a 1K y se pierden las caras pequeñas y los ornamentos finos.
+      providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize: '2K', aspectRatio: framed.aspectRatio } } },
       messages: [
         {
           role: 'user',
           content: [
-            { type: 'image', image, mediaType: 'image/jpeg' },
+            { type: 'image', image: framed.image, mediaType: 'image/jpeg' },
             { type: 'text', text: prompt },
           ],
         },
@@ -52,7 +55,7 @@ async function runModel(modelId: string, prompt: string, image: Uint8Array): Pro
     })
     const file = result.files.find((f) => f.mediaType.startsWith('image/'))
     if (!file) throw new Error('La IA no devolvió imagen')
-    return file.uint8Array
+    return cropBack(file.uint8Array, framed.crop)
   }
   const { image: out } = await generateImage({ model: model.gateway, prompt: { text: prompt, images: [image] } })
   return out.uint8Array

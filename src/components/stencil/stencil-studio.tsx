@@ -22,7 +22,12 @@ const OUTPUT_LONG_SIDE = 3000
 const DEFAULT_SPLIT = 60
 const DEFAULT_OPACITY = 73
 
-type Result = { id: string; raw: string; src: string | null }
+type Size = { width: number; height: number }
+/** `canvas`: la imagen subida era tamaño carta y el stencil coincide con ella; se exporta con sus mismos píxeles. */
+type Result = { id: string; raw: string; src: string | null; canvas?: Size | null }
+
+/** ¿Tamaño carta (8,5 × 11, vertical u horizontal)? */
+const isLetter = (s: Size) => Math.abs(Math.min(s.width, s.height) / Math.max(s.width, s.height) - 8.5 / 11) < 0.015
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -77,24 +82,29 @@ async function renderInk(raw: string, opts: { color: string; transparent: boolea
  */
 const LETTER = { width: 2550, height: 3300, margin: 120 }
 
-async function toLetter(blob: Blob, transparent: boolean): Promise<Blob> {
+async function toLetter(blob: Blob, transparent: boolean, canvas?: Size | null): Promise<Blob> {
   const url = URL.createObjectURL(blob)
   try {
     const img = await loadImage(url)
     const c = document.createElement('canvas')
-    c.width = LETTER.width
-    c.height = LETTER.height
+    c.width = canvas?.width ?? LETTER.width
+    c.height = canvas?.height ?? LETTER.height
     const ctx = c.getContext('2d')!
     if (!transparent) {
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, c.width, c.height)
     }
-    const k = Math.min((c.width - 2 * LETTER.margin) / img.naturalWidth, (c.height - 2 * LETTER.margin) / img.naturalHeight)
-    const w = img.naturalWidth * k
-    const h = img.naturalHeight * k
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h)
+    if (canvas) {
+      // La imagen subida ya era carta: el stencil ocupa toda la hoja, píxel a píxel sobre el original.
+      ctx.drawImage(img, 0, 0, c.width, c.height)
+    } else {
+      const k = Math.min((c.width - 2 * LETTER.margin) / img.naturalWidth, (c.height - 2 * LETTER.margin) / img.naturalHeight)
+      const w = img.naturalWidth * k
+      const h = img.naturalHeight * k
+      ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h)
+    }
     return await new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('No se pudo generar la hoja'))), 'image/png'))
   } finally {
     URL.revokeObjectURL(url)
@@ -107,6 +117,7 @@ const now = () => Date.now()
 export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[] }) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [sourceSize, setSourceSize] = useState<Size | null>(null)
   const [style, setStyle] = useState<StencilStyleId>('detalle')
   const [model, setModel] = useState<StencilModelId>('nano-banana')
   const [source, setSource] = useState<StencilSourceId>('tatuaje')
@@ -174,7 +185,12 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     // Algunas fotos del iPhone llegan sin tipo: se acepta y el navegador la convierte.
     if (f.type && !f.type.startsWith('image/')) return toast.error('Escoge una imagen')
     setFile(f)
-    setPreview(URL.createObjectURL(f))
+    const url = URL.createObjectURL(f)
+    setPreview(url)
+    setSourceSize(null)
+    loadImage(url)
+      .then((img) => setSourceSize({ width: img.naturalWidth, height: img.naturalHeight }))
+      .catch(() => {})
   }
 
   async function refreshHistory(): Promise<StencilItem[]> {
@@ -232,7 +248,9 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; src?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudo crear el stencil')
       // La foto que devuelve el servidor ya viene recortada y derecha si se aplanó: así coincide con el stencil.
-      setResult({ id: json.id, raw: json.image, src: json.src ?? preview })
+      // Con "hoja plana" la imagen se endereza y recorta: ya no coincide con la subida, va a la hoja carta con margen.
+      const canvas = sourceSize && isLetter(sourceSize) && !flattenOn ? sourceSize : null
+      setResult({ id: json.id, raw: json.image, src: json.src ?? preview, canvas })
       setSplit(DEFAULT_SPLIT)
       setOpacity(DEFAULT_OPACITY)
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -256,7 +274,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       const res = await fetch('/api/stencil', { method: 'POST', body })
       const json = (await res.json().catch(() => ({}))) as { id?: string; image?: string; src?: string; error?: string }
       if (!res.ok || !json.image || !json.id) throw new Error(json.error ?? 'No se pudieron quitar las líneas')
-      setResult({ id: json.id, raw: json.image, src: json.src ?? result.src })
+      setResult({ id: json.id, raw: json.image, src: json.src ?? result.src, canvas: result.canvas })
       refreshHistory().catch(() => {})
       toast.success('Listo, sin las líneas del brazo')
     } catch (e) {
@@ -269,7 +287,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
 
   async function download() {
     if (!output || !result) return
-    const url = URL.createObjectURL(await toLetter(output.blob, transparent))
+    const url = URL.createObjectURL(await toLetter(output.blob, transparent, result.canvas))
     const a = document.createElement('a')
     a.href = url
     a.download = `stencil-${STENCIL_STYLES.find((s) => s.id === style)?.id ?? 'crisbo'}-${result.id.split('__')[0]}.png`
@@ -281,7 +299,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
     if (!output) return
     try {
       // La promesa va dentro del ClipboardItem para que Safari no pierda el toque del usuario.
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': toLetter(output.blob, transparent) })])
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': toLetter(output.blob, transparent, result?.canvas) })])
       toast.success('Copiado. Pégalo en Procreate')
     } catch {
       toast.error('Este navegador no deja copiar imágenes. Usa Descargar.')
@@ -290,14 +308,15 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
 
   async function print() {
     if (!output) return
-    const url = URL.createObjectURL(await toLetter(output.blob, false))
+    const url = URL.createObjectURL(await toLetter(output.blob, false, result?.canvas))
+    const landscape = !!result?.canvas && result.canvas.width > result.canvas.height
     const frame = document.createElement('iframe')
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
     document.body.appendChild(frame)
     const doc = frame.contentDocument!
     doc.open()
     doc.write(
-      `<!doctype html><html><head><title>Stencil</title><style>@page{size:letter portrait;margin:0}html,body{margin:0}img{width:8.5in;height:11in;display:block}</style></head><body><img src="${url}"></body></html>`,
+      `<!doctype html><html><head><title>Stencil</title><style>@page{size:letter ${landscape ? 'landscape' : 'portrait'};margin:0}html,body{margin:0}img{width:${landscape ? '11in' : '8.5in'};height:${landscape ? '8.5in' : '11in'};display:block}</style></head><body><img src="${url}"></body></html>`,
     )
     doc.close()
     const img = doc.querySelector('img')!

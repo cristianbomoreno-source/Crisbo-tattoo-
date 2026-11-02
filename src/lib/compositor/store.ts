@@ -25,6 +25,8 @@ export type CompositionMeta = {
   /** Inventario del tatuaje en piel (prepareTattoo) para que el diseño plano no deje nada por fuera. */
   analisis: string | null
   elementos: Elemento[]
+  /** Tamaño exacto de la imagen subida cuando era un diseño tamaño carta: el PSD sale de ese mismo tamaño. */
+  lienzo?: { width: number; height: number } | null
 }
 
 export type Composition = CompositionMeta & {

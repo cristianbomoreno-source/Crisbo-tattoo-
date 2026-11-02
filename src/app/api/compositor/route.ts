@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
 import { STENCIL_MODELS } from '@/lib/stencil/styles'
 import { prepareTattoo } from '@/lib/stencil/straighten'
+import { cropBack, fitToRatio, isLetter } from '@/lib/stencil/frame'
 import { whiteToAlpha } from '@/lib/compositor/alpha'
 import { ANALISIS_PROMPT, Analisis, isCompositorModel, isCompositorSource, mascaraPrompt, planoPrompt } from '@/lib/compositor/prompts'
 import { cleanMask, maskFromGray, splitLayers } from '@/lib/compositor/mask'
@@ -61,14 +62,16 @@ function aiError(e: unknown) {
 async function draw(modelId: string, prompt: string, image: Uint8Array, imageSize: '1K' | '2K' = '2K'): Promise<Uint8Array> {
   const model = STENCIL_MODELS.find((m) => m.id === modelId)!
   const direct = model.google && process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(model.google) : null
+  // Misma proporción exacta que la imagen que llega (ver lib/stencil/frame.ts): así una hoja carta sigue siendo carta.
+  const framed = await fitToRatio(image)
   const result = await generateText({
     model: direct ?? model.gateway,
-    providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize } } },
+    providerOptions: { google: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { imageSize, aspectRatio: framed.aspectRatio } } },
     messages: [
       {
         role: 'user',
         content: [
-          { type: 'image', image, mediaType: 'image/jpeg' },
+          { type: 'image', image: framed.image, mediaType: 'image/jpeg' },
           { type: 'text', text: prompt },
         ],
       },
@@ -76,7 +79,7 @@ async function draw(modelId: string, prompt: string, image: Uint8Array, imageSiz
   })
   const file = result.files.find((f) => f.mediaType.startsWith('image/'))
   if (!file) throw new Error('La IA no devolvió imagen')
-  return file.uint8Array
+  return cropBack(file.uint8Array, framed.crop)
 }
 
 const toJpeg = (img: Uint8Array) => sharp(Buffer.from(img)).flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toBuffer()
@@ -105,6 +108,9 @@ async function analizar(sid: string, form: FormData) {
   const file = form.get('image')
   const kind = form.get('source')
   const model = form.get('model') ?? 'nano-banana'
+  // Tamaño original de la imagen (el navegador la achica antes de subirla).
+  const ancho = Math.round(Number(form.get('ancho')) || 0)
+  const alto = Math.round(Number(form.get('alto')) || 0)
   if (!(file instanceof Blob) || !file.size) return fail('Sube una imagen', 400)
   if (file.size > MAX_BYTES) return fail('La imagen pesa más de 4 MB', 400)
   if (!isCompositorSource(kind)) return fail('Tipo de imagen inválido', 400)
@@ -155,6 +161,7 @@ async function analizar(sid: string, form: FormData) {
     fondo: found.fondo.trim() || 'none',
     analisis,
     elementos: found.elementos.map((e, i) => ({ id: `e${i + 1}`, nombre: e.nombre.trim(), descripcion: e.descripcion })),
+    lienzo: kind === 'diseno' && isLetter(ancho, alto) ? { width: ancho, height: alto } : null,
   }
   await saveFile(admin, sid, meta.id, 'fuente.jpg', source, 'image/jpeg')
   await saveMeta(admin, sid, meta)
