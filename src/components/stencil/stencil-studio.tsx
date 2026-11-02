@@ -108,7 +108,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [model, setModel] = useState<StencilModelId>('nano-banana')
   const [source, setSource] = useState<StencilSourceId>('tatuaje')
   const [flatten, setFlatten] = useState(true)
-  const [symmetry, setSymmetry] = useState(true)
+  const [symmetry, setSymmetry] = useState(false)
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [result, setResult] = useState<Result | null>(null)

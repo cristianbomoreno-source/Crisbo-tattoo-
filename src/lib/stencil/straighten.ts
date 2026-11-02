@@ -13,7 +13,7 @@ import { z } from 'zod'
 const VISION = { google: 'gemini-3.5-flash', gateway: 'google/gemini-3.5-flash' }
 
 /** Ancho de cada margen lateral, relativo al ancho del tatuaje enderezado. */
-const SIDE_MARGIN = 0.3
+const SIDE_MARGIN = 0.15
 
 const Located = z.object({
   box: z
