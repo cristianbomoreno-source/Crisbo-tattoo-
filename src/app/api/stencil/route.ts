@@ -5,7 +5,7 @@ import { google } from '@ai-sdk/google'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentStudio } from '@/queries/studio'
-import { STENCIL_MODELS, isModel, isStyle, stencilPrompt } from '@/lib/stencil/styles'
+import { STENCIL_MODELS, isModel, isSource, isStyle, stencilPrompt } from '@/lib/stencil/styles'
 import { deleteStencil, listStencils, saveStencil, stencilId } from '@/lib/stencil/store'
 
 // Seedream puede tardar ~3 min.
@@ -62,7 +62,8 @@ export async function POST(req: Request) {
   const file = form?.get('image')
   const style = form?.get('style')
   const model = form?.get('model') ?? 'nano-banana'
-  const opts = { flatten: form?.get('flatten') === '1', symmetry: form?.get('symmetry') === '1' }
+  const kind = form?.get('source')
+  const opts = { source: isSource(kind) ? kind : undefined, flatten: form?.get('flatten') === '1', symmetry: form?.get('symmetry') === '1' }
   if (!(file instanceof Blob) || !file.size) return fail('Sube una imagen', 400)
   if (file.size > MAX_BYTES) return fail('La imagen pesa más de 4 MB', 400)
   if (!isStyle(style)) return fail('Estilo inválido', 400)

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CaretLeft, CaretRight, Copy, DownloadSimple, ImageSquare, Printer, Sparkle, Trash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
-import { STENCIL_MODELS, STENCIL_STYLES, type StencilModelId, type StencilStyleId } from '@/lib/stencil/styles'
+import { STENCIL_MODELS, STENCIL_SOURCES, STENCIL_STYLES, type StencilModelId, type StencilSourceId, type StencilStyleId } from '@/lib/stencil/styles'
 import { applyInk } from '@/lib/stencil/ink'
 import type { StencilItem } from '@/lib/stencil/store'
 import { cn } from '@/lib/utils'
@@ -74,6 +74,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
   const [preview, setPreview] = useState<string | null>(null)
   const [style, setStyle] = useState<StencilStyleId>('detalle')
   const [model, setModel] = useState<StencilModelId>('nano-banana')
+  const [source, setSource] = useState<StencilSourceId>('tatuaje')
   const [flatten, setFlatten] = useState(true)
   const [symmetry, setSymmetry] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -136,6 +137,7 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
       body.set('image', await shrink(file), 'imagen.jpg')
       body.set('style', style)
       body.set('model', model)
+      body.set('source', source)
       body.set('flatten', flatten ? '1' : '0')
       body.set('symmetry', symmetry ? '1' : '0')
       const res = await fetch('/api/stencil', { method: 'POST', body })
@@ -243,7 +245,28 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
         </section>
 
         <section className="rounded-3xl bg-card p-4">
-          <Step n={2} title="Estilo" />
+          <Step n={2} title="¿Qué subes?" />
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {STENCIL_SOURCES.map((src) => (
+              <button
+                key={src.id}
+                type="button"
+                onClick={() => setSource(src.id)}
+                aria-pressed={source === src.id}
+                className={cn(
+                  'rounded-2xl border p-3 text-left transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.98]',
+                  source === src.id ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50',
+                )}
+              >
+                <span className="block text-[14px] leading-tight font-semibold">{src.label}</span>
+                <span className="mt-1 block text-[12px] leading-snug text-muted-foreground">{src.hint}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-card p-4">
+          <Step n={3} title="Estilo" />
           <div className="mt-3 grid grid-cols-2 gap-2">
             {STENCIL_STYLES.map((s) => (
               <button
@@ -263,21 +286,27 @@ export function StencilStudio({ initialHistory }: { initialHistory: StencilItem[
             ))}
           </div>
 
-          <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Mejorar el diseño</p>
-          <div className="mt-2 divide-y divide-border rounded-2xl border border-border">
-            <Toggle
-              checked={flatten}
-              onChange={setFlatten}
-              title="Pasar a hoja plana y completar"
-              hint="Quita la curva de la piel y dibuja lo que no se ve en la foto"
-            />
-            <Toggle
-              checked={symmetry}
-              onChange={setSymmetry}
-              title="Corregir simetría"
-              hint="Si el diseño es simétrico (mandala, alas, ornamento), lo empareja"
-            />
-          </div>
+          {source !== 'referencia' && (
+            <>
+              <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Mejorar el diseño</p>
+              <div className="mt-2 divide-y divide-border rounded-2xl border border-border">
+                {source === 'tatuaje' && (
+                  <Toggle
+                    checked={flatten}
+                    onChange={setFlatten}
+                    title="Pasar a hoja plana y completar"
+                    hint="Quita la curva de la piel y dibuja lo que no se ve en la foto"
+                  />
+                )}
+                <Toggle
+                  checked={symmetry}
+                  onChange={setSymmetry}
+                  title="Corregir simetría"
+                  hint="Si el diseño es simétrico (mandala, alas, ornamento), lo empareja"
+                />
+              </div>
+            </>
+          )}
 
           <p className="mt-4 text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Inteligencia artificial</p>
           <div className="mt-2 grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
