@@ -12,6 +12,9 @@ import { z } from 'zod'
  */
 const VISION = { google: 'gemini-3.5-flash', gateway: 'google/gemini-3.5-flash' }
 
+/** Ancho de cada margen lateral, relativo al ancho del tatuaje enderezado. */
+const SIDE_MARGIN = 0.3
+
 const Located = z.object({
   box: z
     .array(z.number().min(0).max(1000))
@@ -29,7 +32,7 @@ const Located = z.object({
 const PROMPT =
   'This photo shows a tattoo on a body part. Find the whole tattoo (only the ink, not the whole arm) and tell how much the design is tilted. Answer only with the requested fields.'
 
-/** Corta al tatuaje (con margen) y lo deja vertical. Si algo falla, devuelve la foto tal cual. */
+/** Corta al tatuaje, lo deja vertical y le abre márgenes a los lados. Si algo falla, devuelve la foto tal cual. */
 export async function straightenTattoo(image: Uint8Array): Promise<Uint8Array> {
   try {
     const model = process.env.GOOGLE_GENERATIVE_AI_API_KEY ? google(VISION.google) : VISION.gateway
@@ -63,8 +66,11 @@ export async function straightenTattoo(image: Uint8Array): Promise<Uint8Array> {
 
     let img = sharp(Buffer.from(image)).extract(box)
     if (Math.abs(output.tilt) >= 4) img = sharp(await img.toBuffer()).rotate(-output.tilt, { background: '#ffffff' })
-    console.info('[stencil] enderezado', { tilt: Math.round(output.tilt), box })
-    return await img.jpeg({ quality: 92 }).toBuffer()
+    // Márgenes blancos a los lados: ahí la IA dibuja la parte del diseño que da la vuelta al brazo y no sale en la foto.
+    const straight = await img.toBuffer({ resolveWithObject: true })
+    const side = Math.round(straight.info.width * SIDE_MARGIN)
+    console.info('[stencil] enderezado', { tilt: Math.round(output.tilt), box, side })
+    return await sharp(straight.data).extend({ left: side, right: side, background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer()
   } catch (e) {
     console.warn('[stencil] no se pudo enderezar', (e as Error).message)
     return image
