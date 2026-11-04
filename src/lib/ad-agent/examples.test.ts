@@ -66,6 +66,8 @@ describe('redact', () => {
   it('tapa precios, teléfonos y correos', () => {
     expect(redact('Te sale en 450.000')).toBe('Te sale en [valor]')
     expect(redact('Son 300 mil')).toBe('Son [valor]')
+    expect(redact('Si a las 9 la idea es que rinda')).toBe('Si a las [hora] la idea es que rinda')
+    expect(redact('Te espero 2:30 pm')).toBe('Te espero [hora]')
     expect(redact('Sería de 470000')).toBe('Sería de [valor]')
     expect(redact('Escribe al 3202107769 o a ana@mail.com')).toBe('Escribe al [valor] o a [correo]')
   })

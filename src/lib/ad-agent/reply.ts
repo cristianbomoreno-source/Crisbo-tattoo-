@@ -34,8 +34,13 @@ function line(m: AgentMessage) {
   return `${who}: ${label}${m.body ?? ''}`.trim()
 }
 
+/** Separa lo ya respondido de lo que falta por contestar: sin eso la IA puede
+ * retomar un plan viejo del chat como si fuera de hoy. */
 export function buildTranscript(messages: AgentMessage[]) {
-  return messages.map(line).join('\n')
+  const pending = messages.findLastIndex((m) => m.direction === 'out') + 1
+  const before = messages.slice(0, pending).map(line).join('\n')
+  const now = messages.slice(pending).map(line).join('\n')
+  return `${before ? `Conversación anterior, ya respondida. Solo es contexto:\n${before}\n\n` : ''}MENSAJES NUEVOS QUE DEBES RESPONDER:\n${now}`
 }
 
 export async function writeReply(opts: {
@@ -55,8 +60,8 @@ export async function writeReply(opts: {
     PERSONA,
     `INFORMACIÓN\n${opts.knowledge}`,
     `AGENDA DISPONIBLE\n${opts.agenda || 'No hay espacios en las próximas semanas: pasa el chat a Crisbo.'}`,
-    opts.examples ? `RESPUESTAS REALES TUYAS A MENSAJES PARECIDOS (imita el tono, [valor] es un dato oculto: nunca lo copies)\n${opts.examples}` : '',
-    opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general. [valor] es un dato oculto: nunca lo copies)\n${opts.clientTone}` : '',
+    opts.examples ? `RESPUESTAS REALES TUYAS A MENSAJES PARECIDOS (imita el tono, no son de este cliente. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.examples}` : '',
+    opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general. Solo sirve para copiar el trato: no son hechos de hoy, nunca saques de ahí horas, citas ni planes. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.clientTone}` : '',
     opts.confianza ? 'CON ESTA PERSONA HAY CONFIANZA: puedes usar "mk" de forma amistosa.' : 'Con esta persona todavía no hay confianza: no uses "mk".',
     `Hoy es ${today}. Nombre del contacto en WhatsApp: ${opts.contactName || 'desconocido'}.`,
     opts.fromAd ? 'Este chat llegó por la pauta.' : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
@@ -66,7 +71,7 @@ export async function writeReply(opts: {
     .join('\n\n')
 
   const content: (TextPart | ImagePart | FilePart)[] = [
-    { type: 'text', text: `Conversación hasta ahora:\n${buildTranscript(opts.messages)}\n\nEscribe tu respuesta al cliente.` },
+    { type: 'text', text: `${buildTranscript(opts.messages)}\n\nEscribe tu respuesta a los mensajes nuevos.` },
     ...opts.media.map((m) =>
       m.type === 'image'
         ? ({ type: 'image', image: m.bytes, mediaType: m.mime } as const)

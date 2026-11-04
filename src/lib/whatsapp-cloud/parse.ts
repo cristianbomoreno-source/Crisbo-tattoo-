@@ -44,6 +44,12 @@ export type ParsedStatus = {
   error: string | null
 }
 
+/** Un mensaje que se editó o se eliminó después de enviarlo. */
+export type ParsedEdit = {
+  originalId: string
+  body: string
+}
+
 const MEDIA_TYPES = ['image', 'audio', 'video', 'document', 'sticker'] as const
 
 type WaMedia = { id?: string; mime_type?: string; caption?: string; filename?: string }
@@ -65,6 +71,9 @@ type WaMessage = {
   location?: { latitude?: number; longitude?: number; name?: string; address?: string }
   reaction?: { emoji?: string }
   referral?: { source_type?: string; source_id?: string }
+  edit?: { original_message_id?: string; message?: WaMessage }
+  revoke?: { original_message_id?: string }
+  unsupported?: { type?: string }
 } & Partial<Record<(typeof MEDIA_TYPES)[number], WaMedia>>
 
 type WaValue = {
@@ -103,10 +112,23 @@ function messageText(m: WaMessage): string | null {
   }
 }
 
+/** Coexistencia: editar o eliminar llega como un mensaje nuevo que apunta al
+ * original. */
+function editOf(m: WaMessage): ParsedEdit | null {
+  if (m.type === 'revoke' && m.revoke?.original_message_id) {
+    return { originalId: m.revoke.original_message_id, body: 'Mensaje eliminado' }
+  }
+  const body = m.type === 'edit' && m.edit?.message ? messageText(m.edit.message) : null
+  return body && m.edit?.original_message_id ? { originalId: m.edit.original_message_id, body } : null
+}
+
 function toParsed(phoneNumberId: string, waId: string, contactName: string | null, m: WaMessage & { id: string }): ParsedInbound {
   const isMedia = MEDIA_TYPES.includes(m.type as (typeof MEDIA_TYPES)[number])
   const media = isMedia ? m[m.type as (typeof MEDIA_TYPES)[number]] : undefined
   const knownTypes = ['text', 'button', 'interactive', 'location', 'reaction', ...MEDIA_TYPES]
+  const editedWithoutText = m.type === 'edit' || m.unsupported?.type === 'edit'
+  if (editedWithoutText) m = { ...m, type: 'text', text: { body: '✏️ Editó un mensaje' } }
+  else if (!knownTypes.includes(m.type ?? '')) console.warn('[whatsapp] tipo no soportado', m.type, m.unsupported?.type)
   const nfm = m.type === 'interactive' ? m.interactive?.nfm_reply : undefined
   return {
     phoneNumberId,
@@ -135,10 +157,12 @@ export function parseWebhook(payload: unknown): {
   messages: ParsedInbound[]
   statuses: ParsedStatus[]
   echoes: ParsedInbound[]
+  edits: ParsedEdit[]
 } {
   const messages: ParsedInbound[] = []
   const statuses: ParsedStatus[] = []
   const echoes: ParsedInbound[] = []
+  const edits: ParsedEdit[] = []
   const body = payload as WaWebhook
 
   for (const entry of body?.entry ?? []) {
@@ -150,12 +174,22 @@ export function parseWebhook(payload: unknown): {
 
       for (const m of value.messages ?? []) {
         if (!m.from || !m.id) continue
+        const edit = editOf(m)
+        if (edit) {
+          edits.push(edit)
+          continue
+        }
         const contact = value.contacts?.find((c) => c.wa_id === m.from) ?? value.contacts?.[0]
         messages.push(toParsed(phoneNumberId, m.from, contact?.profile?.name ?? null, { ...m, id: m.id }))
       }
 
       for (const m of value.message_echoes ?? []) {
         if (!m.to || !m.id) continue
+        const edit = editOf(m)
+        if (edit) {
+          edits.push(edit)
+          continue
+        }
         echoes.push(toParsed(phoneNumberId, m.to.replace(/\D/g, ''), null, { ...m, id: m.id }))
       }
 
@@ -171,7 +205,7 @@ export function parseWebhook(payload: unknown): {
       }
     }
   }
-  return { messages, statuses, echoes }
+  return { messages, statuses, echoes, edits }
 }
 
 /** Texto corto para la lista de chats. */

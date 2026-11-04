@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_KNOWLEDGE } from './persona'
+import { buildTranscript } from './reply'
 import { AGENT_MARK, HANDOFF_MARK, allowedAmounts, amountsIn, chatMode, checkReply, decide, firstUnanswered, type AgentMessage } from './guard'
 
 const ON = '2026-11-04T00:00:00Z'
@@ -124,8 +125,22 @@ describe('checkReply', () => {
   it('nunca deja salir otra grosería, ni con confianza', () => {
     expect(checkReply(reply(['Que hubo hpta']), DEFAULT_KNOWLEDGE, undefined, true)).toMatchObject({ handoff: true })
   })
+  it('nunca deja salir una hora fuera del horario del estudio', () => {
+    expect(checkReply(reply(['Hágale de una a las 9 nos vemos']), DEFAULT_KNOWLEDGE)).toMatchObject({ handoff: true })
+    expect(checkReply(reply(['Sería a las 10 am']), DEFAULT_KNOWLEDGE)).toMatchObject({ handoff: false })
+  })
   it('sin texto, responde en espera y pasa el chat', () => {
     expect(checkReply(reply([]), DEFAULT_KNOWLEDGE)).toMatchObject({ handoff: true })
+  })
+})
+
+describe('buildTranscript', () => {
+  it('separa lo respondido de lo que falta por contestar', () => {
+    const text = buildTranscript([msg('in', 'Mañana a las 9'), msg('out', 'Listo'), msg('in', 'No nada parce')])
+    const [before, now] = text.split('MENSAJES NUEVOS QUE DEBES RESPONDER:')
+    expect(before).toContain('Mañana a las 9')
+    expect(now).toContain('No nada parce')
+    expect(now).not.toContain('Mañana a las 9')
   })
 })
 

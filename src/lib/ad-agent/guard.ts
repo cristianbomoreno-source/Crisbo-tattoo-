@@ -114,6 +114,8 @@ export type CheckedReply = { bubbles: string[]; handoff: boolean; reason: string
 const FALLBACK = 'Dame un momento y ya te confirmo'
 const SWEAR = /\b(hpta?|hijueputa|gonorrea|marica|malparido|pirobo|verg\w*)\b/
 const MK = /\bmk\b/
+/** El estudio trabaja de 10 am a 5 pm: "a las 3" es de la tarde. */
+const STUDIO_CLOSED_HOUR = /\ba las? (?:[6-9]|0[6-9])(?!\d)/
 
 /** Revisa la respuesta antes de enviarla. Si trae un valor que no está en la
  * información del estudio no sale: el cliente recibe un mensaje de espera y el
@@ -131,6 +133,9 @@ export function checkReply(reply: ModelReply, knowledge: string, openDays?: Set<
   const written = normalizeText(bubbles.join(' '))
   if (SWEAR.test(written) || (!confianza && MK.test(written))) {
     return { bubbles: [FALLBACK], handoff: true, reason: 'El agente iba a decir una grosería', location: false }
+  }
+  if (STUDIO_CLOSED_HOUR.test(written)) {
+    return { bubbles: [FALLBACK], handoff: true, reason: 'El agente iba a decir una hora fuera del horario', location: false }
   }
   const badDate = openDays && bubbles.flatMap(datesIn).find((d) => !openDays.has(d))
   if (badDate) {

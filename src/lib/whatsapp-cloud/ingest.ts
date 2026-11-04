@@ -8,6 +8,7 @@ import {
   normalizeWaPhone,
   phoneSuffixPattern,
   shouldAdvanceStatus,
+  type ParsedEdit,
   type ParsedInbound,
   type ParsedStatus,
 } from './parse'
@@ -326,6 +327,13 @@ export async function ingestEchoes(admin: Admin, echoes: ParsedInbound[]) {
         answered_from_phone: true,
       })
       .eq('id', conv.id)
+  }
+}
+
+export async function ingestEdits(admin: Admin, edits: ParsedEdit[]) {
+  for (const e of edits) {
+    const { error } = await admin.from('wa_messages').update({ body: e.body }).eq('wa_message_id', e.originalId)
+    if (error) throw error
   }
 }
 

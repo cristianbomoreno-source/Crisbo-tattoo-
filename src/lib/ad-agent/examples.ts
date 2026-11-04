@@ -39,6 +39,8 @@ function words(text: string) {
 export function redact(text: string) {
   return text
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '[correo]')
+    .replace(/\b(a las?|tipo|sobre las?) \d{1,2}(?:[:.]\d{2})?(?:\s*[ap]\.?m\.?)?/gi, '$1 [hora]')
+    .replace(/\b\d{1,2}(?:[:.]\d{2})?\s*[ap]\.?m\b\.?/gi, '[hora]')
     .replace(/\$?\d{1,3}(?:[.,]\d{3})+|\b\d{5,}\b/g, '[valor]')
     .replace(/\b\d+(?:[.,]\d+)?\s*(?:mil|millones|millón)\b/gi, '[valor]')
 }

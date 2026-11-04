@@ -87,6 +87,34 @@ describe('parseWebhook', () => {
     expect(messages[3]).toMatchObject({ type: 'unsupported', body: null })
   })
 
+  const hook = (key: 'messages' | 'message_echoes', m: object) => ({
+    entry: [{ changes: [{ value: { metadata: { phone_number_id: 'PNID' }, [key]: [{ id: 'wamid.new', from: '573001234567', to: '573001234567', ...m }] } }] }],
+  })
+
+  it('aplica la edición de un texto al mensaje original', () => {
+    const edit = { original_message_id: 'wamid.old', message: { type: 'text', text: { body: 'Corregido' } } }
+    const { messages, edits } = parseWebhook(hook('messages', { type: 'edit', edit }))
+    expect(messages).toEqual([])
+    expect(edits).toEqual([{ originalId: 'wamid.old', body: 'Corregido' }])
+  })
+
+  it('aplica la edición del pie de una foto y las ediciones hechas desde el celular', () => {
+    const edit = { original_message_id: 'wamid.old', message: { type: 'image', image: { caption: 'Nuevo pie', id: '1' } } }
+    const { echoes, edits } = parseWebhook(hook('message_echoes', { type: 'edit', edit }))
+    expect(echoes).toEqual([])
+    expect(edits).toEqual([{ originalId: 'wamid.old', body: 'Nuevo pie' }])
+  })
+
+  it('marca como eliminado lo que borraron', () => {
+    const { edits } = parseWebhook(hook('messages', { type: 'revoke', revoke: { original_message_id: 'wamid.old' } }))
+    expect(edits).toEqual([{ originalId: 'wamid.old', body: 'Mensaje eliminado' }])
+  })
+
+  it('avisa la edición aunque Meta no mande el texto', () => {
+    const { messages } = parseWebhook(hook('messages', { type: 'unsupported', unsupported: { type: 'edit' } }))
+    expect(messages[0]).toMatchObject({ type: 'text', body: '✏️ Editó un mensaje' })
+  })
+
   it('extrae estados válidos con su error', () => {
     const { statuses } = parseWebhook(payload)
     expect(statuses).toEqual([
@@ -96,11 +124,12 @@ describe('parseWebhook', () => {
   })
 
   it('tolera payloads vacíos o raros', () => {
-    expect(parseWebhook(null)).toEqual({ messages: [], statuses: [], echoes: [] })
+    expect(parseWebhook(null)).toEqual({ messages: [], statuses: [], echoes: [], edits: [] })
     expect(parseWebhook({ entry: [{ changes: [{ field: 'account_update', value: {} }] }] })).toEqual({
       messages: [],
       statuses: [],
       echoes: [],
+      edits: [],
     })
   })
 })
