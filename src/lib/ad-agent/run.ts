@@ -7,16 +7,17 @@ import { messagePreview } from '@/lib/whatsapp-cloud/parse'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { loadAgenda, type Agenda } from './agenda'
 import { buildExamples, loadExampleRows, type ExampleRow } from './examples'
-import { AGENT_MARK, HANDOFF_MARK, chatMode, checkReply, decide, isAdMessage, type AgentMessage, type StoredChatMode } from './guard'
+import { AGENT_MARK, HANDOFF_MARK, REPLY_WINDOW_MS, chatMode, checkReply, decide, isAdMessage, type AgentMessage, type StoredChatMode } from './guard'
 import { writeReply, type AgentMedia } from './reply'
 import { acquireAdAgentLock, loadAdAgentSettings, loadChatModes, releaseAdAgentLock, saveChatModes } from './store'
 
 /**
- * Agente de la pauta: cada minuto busca chats de anuncios con mensajes sin
- * responder y contesta como Crisbo. Espera un poco tras el último mensaje para
+ * Agente de la pauta: cada minuto busca chats con mensajes sin responder y
+ * contesta como Crisbo. Espera un poco tras el último mensaje para
  * leer las ráfagas juntas (texto + foto + audio). Si algo falla no envía nada y
  * el siguiente minuto lo reintenta, hasta que el chat sale de la ventana y
- * queda para Crisbo.
+ * queda para Crisbo. Los chats con el botón en IA esperan más: se contestan
+ * mientras WhatsApp lo permita.
  */
 
 const DEBOUNCE_MS = 40_000
@@ -171,22 +172,25 @@ export async function runAdAgent(admin: Admin) {
 
     try {
       const now = Date.now()
+      const modes = await loadChatModes(admin, studioId)
       const { data } = await admin
         .from('wa_conversations')
-        .select('id, wa_id, contact_name, client_id, lead_stage, created_at, channel')
+        .select('id, wa_id, contact_name, client_id, lead_stage, created_at, channel, last_inbound_at')
         .eq('studio_id', studioId)
         .neq('channel', 'instagram')
         .eq('last_message_direction', 'in')
-        .gte('last_inbound_at', new Date(now - WINDOW_MS).toISOString())
+        .gte('last_inbound_at', new Date(now - REPLY_WINDOW_MS).toISOString())
         .lte('last_inbound_at', new Date(now - DEBOUNCE_MS).toISOString())
         .order('last_inbound_at', { ascending: true })
-        .limit(20)
+        .limit(200)
 
-      const conversations = (data ?? []) as Conversation[]
+      const fresh = new Date(now - WINDOW_MS).toISOString()
+      const conversations = ((data ?? []) as (Conversation & { last_inbound_at: string })[])
+        .filter((c) => c.last_inbound_at >= fresh || modes[c.id]?.mode === 'ai')
+        .slice(0, 20)
       if (conversations.length === 0) continue
-      const [groups, modes, agenda, history] = await Promise.all([
+      const [groups, agenda, history] = await Promise.all([
         loadContactGroups(admin, studioId),
-        loadChatModes(admin, studioId),
         loadAgenda(admin, studioId),
         loadExampleRows(admin, studioId),
       ])

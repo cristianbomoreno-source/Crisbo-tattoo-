@@ -8,7 +8,7 @@ import { ok, err, type Result } from '@/lib/errors/types'
 import { loadContactGroups } from '@/lib/crm/contact-groups'
 import { loadAgenda } from '@/lib/ad-agent/agenda'
 import { buildExamples, loadExampleRows } from '@/lib/ad-agent/examples'
-import { checkReply, type AgentMessage, type CheckedReply } from '@/lib/ad-agent/guard'
+import { checkReply, firstUnanswered, type AgentMessage, type CheckedReply } from '@/lib/ad-agent/guard'
 import { writeReply } from '@/lib/ad-agent/reply'
 import { loadAdAgentSettings, saveAdAgentSettings, saveChatModes } from '@/lib/ad-agent/store'
 
@@ -85,7 +85,15 @@ export async function setChatMode(input: unknown): Promise<Result<void>> {
     const admin = createAdminClient()
     const { data } = await admin.from('wa_conversations').select('id').eq('id', conversationId).eq('studio_id', studio.id).maybeSingle()
     if (!data) return err('NOT_FOUND', 'Chat no encontrado')
-    await saveChatModes(admin, studio.id, { [conversationId]: { mode, since: new Date().toISOString() } })
+    // Al pasar a la IA también contesta lo que el cliente ya tenía sin responder.
+    const { data: recent } = await admin
+      .from('wa_messages')
+      .select('direction, created_at')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    const waiting = mode === 'ai' ? firstUnanswered((recent ?? []).reverse()) : null
+    await saveChatModes(admin, studio.id, { [conversationId]: { mode, since: waiting ?? new Date().toISOString() } })
   } catch (e) {
     return err('DB_ERROR', (e as Error).message)
   }

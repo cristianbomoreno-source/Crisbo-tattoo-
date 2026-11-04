@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_KNOWLEDGE } from './persona'
-import { AGENT_MARK, HANDOFF_MARK, allowedAmounts, amountsIn, chatMode, checkReply, decide, type AgentMessage } from './guard'
+import { AGENT_MARK, HANDOFF_MARK, allowedAmounts, amountsIn, chatMode, checkReply, decide, firstUnanswered, type AgentMessage } from './guard'
 
 const ON = '2026-11-04T00:00:00Z'
 const msg = (direction: 'in' | 'out', body: string, extra: Partial<AgentMessage> = {}): AgentMessage => ({
@@ -118,5 +118,24 @@ describe('checkReply', () => {
   })
   it('sin texto, responde en espera y pasa el chat', () => {
     expect(checkReply(reply([]), DEFAULT_KNOWLEDGE)).toMatchObject({ handoff: true })
+  })
+})
+
+describe('firstUnanswered', () => {
+  const NOW = Date.parse('2026-11-04T14:00:00Z')
+  const at = (direction: 'in' | 'out', created_at: string) => ({ direction, created_at })
+  it('encuentra el primer mensaje que sigue sin respuesta', () => {
+    const chat = [at('in', '2026-11-04T04:03:00Z'), at('out', '2026-11-04T05:05:00Z'), at('in', '2026-11-04T05:06:00Z'), at('in', '2026-11-04T05:07:00Z')]
+    expect(firstUnanswered(chat, NOW)).toBe('2026-11-04T05:06:00Z')
+  })
+  it('no marca nada si el último mensaje ya fue respondido', () => {
+    expect(firstUnanswered([at('in', '2026-11-04T05:06:00Z'), at('out', '2026-11-04T05:07:00Z')], NOW)).toBeNull()
+  })
+  it('no marca nada si WhatsApp ya no deja contestar', () => {
+    expect(firstUnanswered([at('in', '2026-11-02T05:06:00Z')], NOW)).toBeNull()
+  })
+  it('deja que el agente conteste aunque Crisbo haya saludado antes', () => {
+    const chat = [ad, msg('out', 'Hola', { created_at: '2026-11-04T10:01:00Z' }), msg('in', 'Antebrazo', { created_at: '2026-11-04T10:02:00Z' })]
+    expect(decide(chat, firstUnanswered(chat, Date.parse('2026-11-04T11:00:00Z'))!, true)).toEqual({ act: true, adIndex: 2 })
   })
 })

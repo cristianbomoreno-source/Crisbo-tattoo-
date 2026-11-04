@@ -15,6 +15,10 @@ export const HANDOFF_MARK = 'ai-agent:handoff'
 /** Tope por chat: si no ha cerrado con esto, mejor que siga una persona. */
 export const MAX_AGENT_MESSAGES = 14
 
+/** WhatsApp solo deja escribir texto libre 24 h después del último mensaje del
+ * cliente; se deja una hora de margen. */
+export const REPLY_WINDOW_MS = 23 * 3_600_000
+
 /** Texto precargado de los anuncios: respaldo si Meta no manda el referral. */
 const AD_PHRASES = [/\bcupo de noviembre\b/]
 
@@ -49,6 +53,14 @@ export function chatMode(
   if (conv.channel === 'instagram') return 'human'
   if (stored) return stored.mode
   return enabledAt && !conv.client_id && conv.created_at >= enabledAt ? 'ai' : 'human'
+}
+
+/** Desde cuándo el cliente espera respuesta, si todavía se le puede contestar.
+ * `messages` en orden cronológico. */
+export function firstUnanswered(messages: Pick<AgentMessage, 'direction' | 'created_at'>[], now = Date.now()) {
+  const first = messages[messages.findLastIndex((m) => m.direction === 'out') + 1]
+  const last = messages.at(-1)
+  return first && last && Date.parse(last.created_at) >= now - REPLY_WINDOW_MS ? first.created_at : null
 }
 
 export type Decision = { act: true; adIndex: number } | { act: false; reason: string; handoff?: boolean }
