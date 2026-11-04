@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_KNOWLEDGE } from './persona'
-import { AGENT_MARK, HANDOFF_MARK, allowedAmounts, amountsIn, checkReply, decide, type AgentMessage } from './guard'
+import { AGENT_MARK, HANDOFF_MARK, allowedAmounts, amountsIn, chatMode, checkReply, decide, type AgentMessage } from './guard'
 
 const ON = '2026-11-04T00:00:00Z'
 const msg = (direction: 'in' | 'out', body: string, extra: Partial<AgentMessage> = {}): AgentMessage => ({
@@ -46,6 +46,39 @@ describe('decide', () => {
   })
 })
 
+describe('decide con el botón IA', () => {
+  it('contesta cualquier chat desde que se activó', () => {
+    expect(decide([msg('in', 'Hola, tengo una duda')], ON, true).act).toBe(true)
+  })
+  it('no contesta lo que llegó antes de activarlo', () => {
+    expect(decide([msg('in', 'Hola', { created_at: '2026-11-03T10:00:00Z' })], ON, true).act).toBe(false)
+  })
+  it('se aparta si Crisbo escribe después', () => {
+    expect(decide([msg('in', 'Hola'), msg('out', 'Yo te atiendo'), msg('in', 'ok')], ON, true)).toMatchObject({ reason: 'human' })
+  })
+})
+
+describe('chatMode', () => {
+  const conv = { created_at: '2026-11-04T10:00:00Z', client_id: null, channel: 'whatsapp' }
+  it('un chat nuevo sin cliente arranca con la IA', () => {
+    expect(chatMode(conv, undefined, ON)).toBe('ai')
+  })
+  it('clientes y chats viejos arrancan con Crisbo', () => {
+    expect(chatMode({ ...conv, client_id: 'c1' }, undefined, ON)).toBe('human')
+    expect(chatMode({ ...conv, created_at: '2026-10-01T10:00:00Z' }, undefined, ON)).toBe('human')
+  })
+  it('manda lo que se escogió en el botón', () => {
+    expect(chatMode({ ...conv, client_id: 'c1' }, { mode: 'ai', since: ON }, ON)).toBe('ai')
+    expect(chatMode(conv, { mode: 'human', since: ON }, ON)).toBe('human')
+  })
+  it('Instagram sigue con Crisbo', () => {
+    expect(chatMode({ ...conv, channel: 'instagram' }, { mode: 'ai', since: ON }, ON)).toBe('human')
+  })
+  it('con el agente nunca encendido no hay chats en IA', () => {
+    expect(chatMode(conv, undefined, null)).toBe('human')
+  })
+})
+
 describe('amountsIn', () => {
   it('lee los formatos de precio', () => {
     expect(amountsIn('470.000')).toEqual([470000])
@@ -74,6 +107,11 @@ describe('checkReply', () => {
     const r = checkReply(reply(['Te lo dejo en 400.000']), DEFAULT_KNOWLEDGE)
     expect(r.bubbles).toEqual(['Dame un momento y ya te confirmo'])
     expect(r.handoff).toBe(true)
+  })
+  it('una fecha fuera de la agenda no sale y pasa el chat', () => {
+    const open = new Set(['14 de noviembre'])
+    expect(checkReply(reply(['Te sirve el 14 de noviembre?']), DEFAULT_KNOWLEDGE, open).handoff).toBe(false)
+    expect(checkReply(reply(['Te sirve el 15 de noviembre?']), DEFAULT_KNOWLEDGE, open)).toMatchObject({ handoff: true, bubbles: ['Dame un momento y ya te confirmo'] })
   })
   it('deja máximo 3 burbujas y quita las vacías', () => {
     expect(checkReply(reply(['a', '', 'b', 'c', 'd']), DEFAULT_KNOWLEDGE).bubbles).toEqual(['a', 'b', 'c'])

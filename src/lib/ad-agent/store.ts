@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DEFAULT_KNOWLEDGE } from './persona'
+import type { StoredChatMode } from './guard'
 
 /** Ajustes del agente de la pauta: JSON en el bucket privado, igual que
  * lib/social/store.ts, para no tocar el esquema. */
@@ -7,6 +8,7 @@ import { DEFAULT_KNOWLEDGE } from './persona'
 const BUCKET = 'studio-private'
 const settingsPath = (studioId: string) => `${studioId}/ad-agent.json`
 const lockPath = (studioId: string) => `${studioId}/ad-agent.lock`
+const chatsPath = (studioId: string) => `${studioId}/ad-agent-chats.json`
 
 /** Un cron que muera sin soltar el candado no frena al agente más de esto. */
 const LOCK_TTL_MS = 3 * 60_000
@@ -37,6 +39,25 @@ export async function saveAdAgentSettings(admin: SupabaseClient, studioId: strin
     await admin.storage.createBucket(BUCKET, { public: false })
     ;({ error } = await admin.storage.from(BUCKET).upload(settingsPath(studioId), body, { upsert: true, contentType: 'application/json' }))
   }
+  if (error) throw new Error(error.message)
+}
+
+/** Quién contesta cada chat: { conversationId: modo }. */
+export async function loadChatModes(admin: SupabaseClient, studioId: string): Promise<Record<string, StoredChatMode>> {
+  const { data, error } = await admin.storage.from(BUCKET).download(chatsPath(studioId))
+  if (error || !data) return {}
+  try {
+    return JSON.parse(await data.text()) as Record<string, StoredChatMode>
+  } catch {
+    return {}
+  }
+}
+
+export async function saveChatModes(admin: SupabaseClient, studioId: string, changes: Record<string, StoredChatMode>) {
+  if (Object.keys(changes).length === 0) return
+  const merged = { ...(await loadChatModes(admin, studioId)), ...changes }
+  const body = new Blob([JSON.stringify(merged)], { type: 'application/json' })
+  const { error } = await admin.storage.from(BUCKET).upload(chatsPath(studioId), body, { upsert: true, contentType: 'application/json' })
   if (error) throw new Error(error.message)
 }
 

@@ -5,9 +5,11 @@ import { looksAutomated } from '@/lib/whatsapp-cloud/auto-reply'
 import { downloadMedia, sendLocationMessage, sendTextMessage, type WaAccountCredentials } from '@/lib/whatsapp-cloud/api'
 import { messagePreview } from '@/lib/whatsapp-cloud/parse'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
-import { AGENT_MARK, HANDOFF_MARK, checkReply, decide, type AgentMessage } from './guard'
+import { loadAgenda, type Agenda } from './agenda'
+import { buildExamples, loadExampleRows, type ExampleRow } from './examples'
+import { AGENT_MARK, HANDOFF_MARK, chatMode, checkReply, decide, isAdMessage, type AgentMessage, type StoredChatMode } from './guard'
 import { writeReply, type AgentMedia } from './reply'
-import { acquireAdAgentLock, loadAdAgentSettings, releaseAdAgentLock } from './store'
+import { acquireAdAgentLock, loadAdAgentSettings, loadChatModes, releaseAdAgentLock, saveChatModes } from './store'
 
 /**
  * Agente de la pauta: cada minuto busca chats de anuncios con mensajes sin
@@ -26,7 +28,23 @@ const MAX_MEDIA_BYTES = 8 * 1024 * 1024
 const BUBBLE_GAP_MS = 1200
 
 type Admin = SupabaseClient
-type Conversation = { id: string; wa_id: string; contact_name: string | null; client_id: string | null; lead_stage: string | null }
+type Conversation = {
+  id: string
+  wa_id: string
+  contact_name: string | null
+  client_id: string | null
+  lead_stage: string | null
+  created_at: string
+  channel: string | null
+}
+type Context = {
+  knowledge: string
+  enabledAt: string
+  modes: Record<string, StoredChatMode>
+  personal: Set<string>
+  agenda: Agenda
+  history: ExampleRow[]
+}
 type Row = AgentMessage & { media_id: string | null; media_mime: string | null }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -75,7 +93,12 @@ async function notifyHandoff(studioId: string, conv: Conversation, reason: strin
   })
 }
 
-async function handleConversation(admin: Admin, account: WaAccountCredentials, studioId: string, conv: Conversation, knowledge: string, enabledAt: string) {
+/** Devuelve el cambio de modo del chat, si hubo. */
+async function handleConversation(admin: Admin, account: WaAccountCredentials, studioId: string, conv: Conversation, ctx: Context): Promise<StoredChatMode | null> {
+  const stored = ctx.modes[conv.id]
+  if (stored?.mode === 'human' || (ctx.personal.has(conv.id) && !stored)) return null
+  const start = stored?.since ?? ctx.enabledAt
+  const anyChat = chatMode(conv, stored, ctx.enabledAt) === 'ai'
   const { data } = await admin
     .from('wa_messages')
     .select('direction, type, body, media_filename, media_id, media_mime, created_at')
@@ -84,22 +107,35 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
     .limit(60)
   const messages = ((data ?? []) as Row[]).reverse()
 
-  const decision = decide(messages, enabledAt)
+  const decision = decide(messages, start, anyChat)
   if (!decision.act) {
+    const passed = decision.reason === 'human' || decision.reason === 'handed-off' || decision.reason === 'limit'
     if (decision.handoff) {
       const text = 'Dame un momento y ya te confirmo'
       const id = await sendTextMessage(account, conv.wa_id, text)
       await saveOut(admin, studioId, conv.id, { id, type: 'text', body: text, mark: HANDOFF_MARK })
       await notifyHandoff(studioId, conv, 'Lleva muchos mensajes con el agente sin cerrar')
     }
-    return false
+    return passed ? { mode: 'human', since: new Date().toISOString() } : null
   }
-  if (looksAutomated(messages.at(-1)?.body)) return false
+  if (looksAutomated(messages.at(-1)?.body)) return null
 
   const media = await loadMedia(messages, account)
+  const lastOut = messages.findLastIndex((m) => m.direction === 'out')
+  const pending = messages.slice(lastOut + 1).map((m) => m.body ?? '').join(' ')
   const reply = checkReply(
-    await writeReply({ messages, media, knowledge, contactName: conv.contact_name, returningClient: !!conv.client_id }),
-    knowledge
+    await writeReply({
+      messages,
+      media,
+      knowledge: ctx.knowledge,
+      contactName: conv.contact_name,
+      returningClient: !!conv.client_id,
+      fromAd: messages.some(isAdMessage),
+      agenda: ctx.agenda.text,
+      examples: buildExamples(ctx.history, pending, new Set([...ctx.personal, conv.id])),
+    }),
+    ctx.knowledge,
+    ctx.agenda.days
   )
 
   for (const [i, body] of reply.bubbles.entries()) {
@@ -116,14 +152,16 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
   if (conv.lead_stage !== 'abono' && reply.bubbles.some((b) => /\bllave\b/i.test(b))) {
     await admin.from('wa_conversations').update({ lead_stage: 'abono', lead_stage_at: new Date().toISOString() }).eq('id', conv.id)
   }
-  if (reply.handoff) await notifyHandoff(studioId, conv, reply.reason ?? 'Revisar este chat')
-  return true
+  if (reply.handoff) {
+    await notifyHandoff(studioId, conv, reply.reason ?? 'Revisar este chat')
+    return { mode: 'human', since: new Date().toISOString() }
+  }
+  return stored ? null : { mode: 'ai', since: start }
 }
 
 export async function runAdAgent(admin: Admin) {
   const started = Date.now()
   const { data: accounts } = await admin.from('whatsapp_accounts').select('studio_id, phone_number_id, access_token')
-  let replied = 0
 
   for (const account of accounts ?? []) {
     const studioId = account.studio_id as string
@@ -135,7 +173,7 @@ export async function runAdAgent(admin: Admin) {
       const now = Date.now()
       const { data } = await admin
         .from('wa_conversations')
-        .select('id, wa_id, contact_name, client_id, lead_stage')
+        .select('id, wa_id, contact_name, client_id, lead_stage, created_at, channel')
         .eq('studio_id', studioId)
         .neq('channel', 'instagram')
         .eq('last_message_direction', 'in')
@@ -144,19 +182,28 @@ export async function runAdAgent(admin: Admin) {
         .order('last_inbound_at', { ascending: true })
         .limit(20)
 
-      const personal = await loadContactGroups(admin, studioId)
-      for (const conv of (data ?? []) as Conversation[]) {
-        if (personal[conv.id]) continue
+      const conversations = (data ?? []) as Conversation[]
+      if (conversations.length === 0) continue
+      const [groups, modes, agenda, history] = await Promise.all([
+        loadContactGroups(admin, studioId),
+        loadChatModes(admin, studioId),
+        loadAgenda(admin, studioId),
+        loadExampleRows(admin, studioId),
+      ])
+      const ctx: Context = { knowledge: settings.knowledge, enabledAt: settings.enabledAt, modes, personal: new Set(Object.keys(groups)), agenda, history }
+      const changes: Record<string, StoredChatMode> = {}
+      for (const conv of conversations) {
         if (Date.now() - started > TIME_BUDGET_MS) break
         try {
-          if (await handleConversation(admin, account as WaAccountCredentials, studioId, conv, settings.knowledge, settings.enabledAt)) replied++
+          const change = await handleConversation(admin, account as WaAccountCredentials, studioId, conv, ctx)
+          if (change) changes[conv.id] = change
         } catch (e) {
           console.error('[ad-agent] chat', conv.id, (e as Error).message)
         }
       }
+      await saveChatModes(admin, studioId, changes)
     } finally {
       await releaseAdAgentLock(admin, studioId)
     }
   }
-  if (replied) console.log(`[ad-agent] ${replied} chat(s) respondido(s)`)
 }

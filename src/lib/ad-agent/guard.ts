@@ -1,4 +1,5 @@
 import { normalizeText } from '@/lib/whatsapp-cloud/tattoo-keywords'
+import { datesIn } from './agenda'
 
 /**
  * Reglas del agente de la pauta, sin I/O. La marca de cada mensaje va en
@@ -34,13 +35,29 @@ export function isAdMessage(m: AgentMessage) {
   return AD_PHRASES.some((re) => re.test(text))
 }
 
+/** Quién contesta un chat. `since` = desde cuándo manda esa decisión. */
+export type ChatMode = 'ai' | 'human'
+export type StoredChatMode = { mode: ChatMode; since: string }
+
+/** Los chats nuevos (sin cliente) arrancan con la IA; Instagram y lo que ya
+ * existía siguen con Crisbo hasta que escoja otra cosa en la bandeja. */
+export function chatMode(
+  conv: { created_at: string; client_id: string | null; channel?: string | null },
+  stored: StoredChatMode | undefined,
+  enabledAt: string | null
+): ChatMode {
+  if (conv.channel === 'instagram') return 'human'
+  if (stored) return stored.mode
+  return enabledAt && !conv.client_id && conv.created_at >= enabledAt ? 'ai' : 'human'
+}
+
 export type Decision = { act: true; adIndex: number } | { act: false; reason: string; handoff?: boolean }
 
 /** ¿Le toca contestar al agente? Ante la duda no contesta: cualquier mensaje
  * saliente que no sea suyo después del anuncio (Crisbo desde el celular, la
  * bandeja, una plantilla) significa que el chat ya tiene dueño. */
-export function decide(messages: AgentMessage[], enabledAt: string): Decision {
-  const adIndex = messages.findIndex((m) => isAdMessage(m) && m.created_at >= enabledAt)
+export function decide(messages: AgentMessage[], start: string, anyChat = false): Decision {
+  const adIndex = messages.findIndex((m) => m.direction === 'in' && m.created_at >= start && (anyChat || isAdMessage(m)))
   if (adIndex === -1) return { act: false, reason: 'not-ad' }
   const after = messages.slice(adIndex)
   const out = after.filter((m) => m.direction === 'out')
@@ -87,7 +104,7 @@ const FALLBACK = 'Dame un momento y ya te confirmo'
 /** Revisa la respuesta antes de enviarla. Si trae un valor que no está en la
  * información del estudio no sale: el cliente recibe un mensaje de espera y el
  * chat pasa a Crisbo. */
-export function checkReply(reply: ModelReply, knowledge: string): CheckedReply {
+export function checkReply(reply: ModelReply, knowledge: string, openDays?: Set<string>): CheckedReply {
   const bubbles = reply.mensajes
     .map((b) => b.trim())
     .filter(Boolean)
@@ -96,6 +113,10 @@ export function checkReply(reply: ModelReply, knowledge: string): CheckedReply {
   const invented = bubbles.flatMap(amountsIn).find((n) => !allowed.has(n))
   if (invented !== undefined) {
     return { bubbles: [FALLBACK], handoff: true, reason: `El agente iba a decir un valor no autorizado (${invented})`, location: false }
+  }
+  const badDate = openDays && bubbles.flatMap(datesIn).find((d) => !openDays.has(d))
+  if (badDate) {
+    return { bubbles: [FALLBACK], handoff: true, reason: `El agente iba a ofrecer una fecha fuera de la agenda (${badDate})`, location: false }
   }
   if (bubbles.length === 0) {
     return { bubbles: [FALLBACK], handoff: true, reason: reply.motivo || 'El agente no supo qué responder', location: false }

@@ -24,12 +24,12 @@ export function AdAgentForm({ enabled, knowledge }: { enabled: boolean; knowledg
   }
 
   return (
-    <SettingsSubpage title="Agente de pauta" description="Contesta como tú los chats que llegan por los anuncios de WhatsApp.">
+    <SettingsSubpage title="Agente de pauta" description="Contesta como tú en WhatsApp y ofrece los espacios libres de tu agenda.">
       <div className="space-y-5">
         <div className="rounded-2xl bg-card p-4">
           <p className="text-[15px] font-semibold">{enabled ? 'Encendido' : 'Apagado'}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Solo atiende anuncios nuevos. Si escribes en un chat, se aparta. Te avisa cuando un chat te necesita: comprobantes, fechas, precios fuera de la oferta.
+            Atiende la pauta y los chats nuevos. En Mensajes escoges con el botón IA / Yo quién contesta cada chat. Si escribes en un chat, se aparta. Te avisa con comprobantes y precios fuera de la oferta.
           </p>
           <Button className="mt-3" variant={enabled ? 'secondary' : 'default'} disabled={pending} onClick={() => save(!enabled)}>
             {enabled ? 'Apagar agente' : 'Encender agente'}

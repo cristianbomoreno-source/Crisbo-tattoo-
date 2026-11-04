@@ -12,6 +12,8 @@ import { UsersThree } from '@phosphor-icons/react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { WaConversation } from '@/queries/whatsapp'
+import { ChatModeToggle } from '@/components/inbox/chat-mode-toggle'
+import type { ChatMode } from '@/lib/ad-agent/guard'
 import { LEAD_STAGES, followUpDue, leadStageInfo, type LeadStage } from '@/lib/whatsapp-cloud/lead'
 import { chatChannel, type ChatChannel } from '@/lib/instagram/channel'
 import { InstagramIcon } from '@/components/shared/instagram-icon'
@@ -33,6 +35,8 @@ export function InboxShell({
   conversations,
   leadValues = {},
   personalGroups = {},
+  chatModes,
+  agentEnabled = false,
   children,
 }: {
   studioId: string
@@ -41,6 +45,9 @@ export function InboxShell({
   leadValues?: Record<string, number>
   /** Chats "Personal" (familia, contador…): { conversationId: grupo }. */
   personalGroups?: Record<string, ContactGroup>
+  /** Botón IA / Yo por chat; solo lo recibe el dueño. */
+  chatModes?: Record<string, ChatMode>
+  agentEnabled?: boolean
   children: React.ReactNode
 }) {
   const router = useRouter()
@@ -335,11 +342,11 @@ export function InboxShell({
               const tag = visibleTags(c.client?.preferred_services)[0]
               const group = personalGroups[c.id]
               return (
-                <li key={c.id}>
+                <li key={c.id} className="flex items-center">
                   <Link
                     href={`/dashboard/inbox/${c.id}`}
                     className={cn(
-                      'flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] hover:bg-foreground/[0.05]',
+                      'flex min-w-0 flex-1 items-center gap-3 rounded-[1.25rem] px-2 py-2.5 transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] hover:bg-foreground/[0.05]',
                       activeId === c.id && 'bg-foreground/[0.08]'
                     )}
                   >
@@ -413,6 +420,9 @@ export function InboxShell({
                       </span>
                     </span>
                   </Link>
+                  {chatModes && !instagram && (
+                    <ChatModeToggle key={chatModes[c.id]} conversationId={c.id} mode={chatModes[c.id] ?? 'human'} agentEnabled={agentEnabled} />
+                  )}
                 </li>
               )
             })

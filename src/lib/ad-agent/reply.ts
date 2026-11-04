@@ -44,13 +44,19 @@ export async function writeReply(opts: {
   knowledge: string
   contactName: string | null
   returningClient: boolean
+  fromAd: boolean
+  agenda: string
+  examples: string
 }): Promise<ModelReply> {
   const today = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const system = [
     PERSONA,
     `INFORMACIÓN\n${opts.knowledge}`,
+    `AGENDA DISPONIBLE\n${opts.agenda || 'No hay espacios en las próximas semanas: pasa el chat a Crisbo.'}`,
+    opts.examples ? `RESPUESTAS REALES TUYAS A MENSAJES PARECIDOS (imita el tono, [valor] es un dato oculto: nunca lo copies)\n${opts.examples}` : '',
     `Hoy es ${today}. Nombre del contacto en WhatsApp: ${opts.contactName || 'desconocido'}.`,
-    opts.returningClient ? 'Esta persona ya es cliente del estudio.' : '',
+    opts.fromAd ? 'Este chat llegó por la pauta.' : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
+    opts.returningClient ? 'Esta persona ya es cliente del estudio: la oferta no le aplica.' : '',
   ]
     .filter(Boolean)
     .join('\n\n')

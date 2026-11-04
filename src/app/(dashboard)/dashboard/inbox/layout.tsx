@@ -5,6 +5,9 @@ import { getConversations, getInstagramAccountStatus, getWhatsAppAccountStatus }
 import { InboxShell } from '@/components/inbox/inbox-shell'
 import { getContactGroups, getLeadValues } from '@/queries/crm'
 import { PageHeader } from '@/components/shared/page-header'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { chatMode, type ChatMode } from '@/lib/ad-agent/guard'
+import { loadAdAgentSettings, loadChatModes } from '@/lib/ad-agent/store'
 
 export default async function InboxLayout({ children }: { children: React.ReactNode }) {
   const studio = await getCurrentStudio()
@@ -55,8 +58,25 @@ export default async function InboxLayout({ children }: { children: React.ReactN
     getContactGroups(studio.id),
   ])
 
+  // Botón IA / Yo de cada chat: solo el dueño decide quién contesta.
+  let chatModes: Record<string, ChatMode> | undefined
+  let agentEnabled = false
+  if (studio.role === 'owner') {
+    const admin = createAdminClient()
+    const [settings, stored] = await Promise.all([loadAdAgentSettings(admin, studio.id), loadChatModes(admin, studio.id)])
+    agentEnabled = settings.enabled
+    chatModes = Object.fromEntries(conversations.map((c) => [c.id, chatMode(c, stored[c.id], settings.enabledAt)]))
+  }
+
   return (
-    <InboxShell studioId={studio.id} conversations={conversations} leadValues={leadValues} personalGroups={personalGroups}>
+    <InboxShell
+      studioId={studio.id}
+      conversations={conversations}
+      leadValues={leadValues}
+      personalGroups={personalGroups}
+      chatModes={chatModes}
+      agentEnabled={agentEnabled}
+    >
       {children}
     </InboxShell>
   )
