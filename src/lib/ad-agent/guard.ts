@@ -112,6 +112,7 @@ export type ModelReply = { mensajes: string[]; pasarACrisbo: boolean; motivo: st
 export type CheckedReply = { bubbles: string[]; handoff: boolean; reason: string | null; location: boolean }
 
 const FALLBACK = 'Dame un momento y ya te confirmo'
+const SWEAR = /\b(mk|hpta?|hijueputa|gonorrea|marica|malparido|pirobo|verg\w*)\b/
 
 /** Revisa la respuesta antes de enviarla. Si trae un valor que no está en la
  * información del estudio no sale: el cliente recibe un mensaje de espera y el
@@ -125,6 +126,9 @@ export function checkReply(reply: ModelReply, knowledge: string, openDays?: Set<
   const invented = bubbles.flatMap(amountsIn).find((n) => !allowed.has(n))
   if (invented !== undefined) {
     return { bubbles: [FALLBACK], handoff: true, reason: `El agente iba a decir un valor no autorizado (${invented})`, location: false }
+  }
+  if (SWEAR.test(normalizeText(bubbles.join(' ')))) {
+    return { bubbles: [FALLBACK], handoff: true, reason: 'El agente iba a decir una grosería', location: false }
   }
   const badDate = openDays && bubbles.flatMap(datesIn).find((d) => !openDays.has(d))
   if (badDate) {

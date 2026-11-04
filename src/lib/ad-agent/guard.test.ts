@@ -116,6 +116,9 @@ describe('checkReply', () => {
   it('deja máximo 3 burbujas y quita las vacías', () => {
     expect(checkReply(reply(['a', '', 'b', 'c', 'd']), DEFAULT_KNOWLEDGE).bubbles).toEqual(['a', 'b', 'c'])
   })
+  it('nunca deja salir una grosería', () => {
+    expect(checkReply(reply(['Jajajaja qué se va a hacer mk']), DEFAULT_KNOWLEDGE)).toMatchObject({ bubbles: ['Dame un momento y ya te confirmo'], handoff: true })
+  })
   it('sin texto, responde en espera y pasa el chat', () => {
     expect(checkReply(reply([]), DEFAULT_KNOWLEDGE)).toMatchObject({ handoff: true })
   })
