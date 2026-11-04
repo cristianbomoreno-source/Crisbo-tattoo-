@@ -17,6 +17,7 @@ import { signConsentFromWhatsApp } from '@/lib/consents/whatsapp-sign'
 import { handleAppointmentReply, isAppointmentReply } from '@/lib/appointments/reply'
 import { dropAutomatedResponder, isAutomatedReplyToTemplate } from './auto-reply'
 import { INTEREST_YES } from '@/lib/campaigns/custom'
+import { AD_MARK } from '@/lib/ad-agent/guard'
 
 /** Guarda en Supabase lo que llega por el webhook de Meta. Corre con el
  * cliente admin (service role): el webhook no tiene sesión de usuario. */
@@ -211,7 +212,7 @@ Firma: ${consent.signerName}`
       body: m.body,
       media_id: m.mediaId,
       media_mime: m.mediaMime,
-      media_filename: m.mediaFilename,
+      media_filename: m.adId ? `${AD_MARK}${m.adId}` : m.mediaFilename,
       status: 'received',
       created_at: m.timestamp,
     })

@@ -9,6 +9,7 @@ import {
   IdentificationBadge,
   InstagramLogo,
   Palette,
+  Robot,
   Storefront,
   Target,
   UserSwitch,
@@ -187,6 +188,7 @@ export function StudioControlCenter({
           value={instagramConnected ? 'Conectado' : 'Sin conectar'}
           pending={!instagramConnected}
         />
+        <SettingsRow href="/dashboard/settings/agente" icon={Robot} tone="tile-blue" label="Agente de pauta" />
         <SettingsRow
           href="/dashboard/settings/mensajes"
           icon={ChatCircleText}

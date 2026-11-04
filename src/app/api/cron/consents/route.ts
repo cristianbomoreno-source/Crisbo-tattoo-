@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import { authorizedCron } from '@/lib/cron/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendDueConsents } from '@/lib/consents/send-due'
+import { runAdAgent } from '@/lib/ad-agent/run'
 
 /** Envía el consentimiento por WhatsApp a las citas que empezaron hace 5
  * min. Lo llama cada pocos minutos un cron externo con
@@ -10,11 +11,14 @@ import { sendDueConsents } from '@/lib/consents/send-due'
  *   GitHub lo firma, se verifica contra sus llaves públicas y que venga de
  *   este repo en main — sin secretos compartidos.
  * - o pg_cron (consents-cron.sql) / manual con CRON_SECRET.
- * Es idempotente: una cita nunca recibe dos. */
+ * Es idempotente: una cita nunca recibe dos.
+ * Aprovecha ese mismo minuto para correr el agente de la pauta, después de
+ * responder: pg_cron no espera y los consentimientos no dependen de la IA. */
 export const maxDuration = 60
 
 async function run(req: Request) {
   if (!(await authorizedCron(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  after(() => runAdAgent(createAdminClient()).catch((e) => console.error('[ad-agent]', (e as Error).message)))
   try {
     const res = await sendDueConsents(createAdminClient())
     if (res.sent || res.failed.length || res.skipped) console.log('[consent-cron]', res)

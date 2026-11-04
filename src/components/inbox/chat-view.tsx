@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { isAgentMessage } from '@/lib/ad-agent/guard'
 import {
   AlertCircle,
   Archive,
@@ -676,6 +677,7 @@ function MessageBubble({ message: m }: { message: WaMessage }) {
         )}
         {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
         <div className="mt-0.5 flex items-center justify-end gap-1 text-[11px] opacity-60">
+          {isAgentMessage(m) && <span>Agente ·</span>}
           <span>{formatMessageTime(m.created_at)}</span>
           {out && <StatusIcon status={m.status} />}
         </div>

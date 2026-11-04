@@ -33,6 +33,8 @@ export type ParsedInbound = {
   mediaFilename: string | null
   /** `response_json` de un WhatsApp Flow completado (type 'form'). */
   flowResponse: string | null
+  /** Id del anuncio de Meta si el cliente llegó por uno (click-to-WhatsApp). */
+  adId: string | null
 }
 
 export type ParsedStatus = {
@@ -62,6 +64,7 @@ type WaMessage = {
   }
   location?: { latitude?: number; longitude?: number; name?: string; address?: string }
   reaction?: { emoji?: string }
+  referral?: { source_type?: string; source_id?: string }
 } & Partial<Record<(typeof MEDIA_TYPES)[number], WaMedia>>
 
 type WaValue = {
@@ -121,6 +124,7 @@ function toParsed(phoneNumberId: string, waId: string, contactName: string | nul
     mediaMime: media?.mime_type ?? null,
     mediaFilename: media?.filename ?? null,
     flowResponse: nfm?.response_json ?? null,
+    adId: m.referral?.source_type === 'ad' ? (m.referral.source_id ?? 'sin-id') : null,
   }
 }
 
