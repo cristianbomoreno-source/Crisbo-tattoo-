@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildClientTone, buildExamples, redact, type ExampleRow } from './examples'
+import { buildClientTone, buildExamples, hasConfidence, redact, type ExampleRow } from './examples'
 
 let minute = 0
 const row = (conversation_id: string, direction: 'in' | 'out', body: string, extra: Partial<ExampleRow> = {}): ExampleRow => ({
@@ -48,6 +48,17 @@ describe('buildClientTone', () => {
     expect(tone).toContain('[valor]')
     expect(tone).not.toContain('300000')
     expect(tone).not.toContain('Soy el agente')
+  })
+})
+
+describe('hasConfidence', () => {
+  it('reconoce el trato de cualquiera de los dos', () => {
+    expect(hasConfidence([row('a', 'in', 'Que hubo mk')])).toBe(true)
+    expect(hasConfidence([row('a', 'out', 'Dime papito')])).toBe(true)
+  })
+  it('no la saca de un chat normal ni de lo que dijo el agente', () => {
+    expect(hasConfidence([row('a', 'in', 'Quiero un perro en el brazo')])).toBe(false)
+    expect(hasConfidence([row('a', 'out', 'Dale mk', { media_filename: 'ai-agent' })])).toBe(false)
   })
 })
 

@@ -7,7 +7,7 @@ import { getCurrentStudio } from '@/queries/studio'
 import { ok, err, type Result } from '@/lib/errors/types'
 import { loadContactGroups } from '@/lib/crm/contact-groups'
 import { loadAgenda } from '@/lib/ad-agent/agenda'
-import { buildExamples, loadExampleRows } from '@/lib/ad-agent/examples'
+import { buildExamples, hasConfidence, loadExampleRows } from '@/lib/ad-agent/examples'
 import { checkReply, firstUnanswered, type AgentMessage, type CheckedReply } from '@/lib/ad-agent/guard'
 import { writeReply } from '@/lib/ad-agent/reply'
 import { loadAdAgentSettings, saveAdAgentSettings, saveChatModes } from '@/lib/ad-agent/store'
@@ -64,8 +64,9 @@ export async function tryAdAgent(input: unknown): Promise<Result<CheckedReply>> 
     ])
     const examples = buildExamples(rows, messages.at(-1)?.body ?? '', new Set(Object.keys(groups)))
     const fromAd = messages.some((m) => /cupo/i.test(m.body ?? ''))
-    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, agenda: agenda.text, examples })
-    return ok(checkReply(reply, knowledge, agenda.days))
+    const confianza = hasConfidence(messages)
+    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, agenda: agenda.text, examples, confianza })
+    return ok(checkReply(reply, knowledge, agenda.days, confianza))
   } catch (e) {
     return err('DB_ERROR', (e as Error).message)
   }

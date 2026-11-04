@@ -29,6 +29,7 @@ const PAGE_SIZE = 1000
 
 const CASUAL = /\b(mk|hpta?|hp|gonorrea|marica|pirobo|verg\w*|perro|papi|papito|nene|gordo)\b/
 const AUTOMATED = /^[¡📝🔔🎁]|cita qued|recomendaciones importantes|Confirmamos tu pago/
+const CONFIDENCE = /\b(mk|hpta?|hp|gonorrea|marica|pirobo|papi|papito|gordo)\b/
 const STOP = new Set(['hola', 'para', 'como', 'esta', 'este', 'esto', 'pero', 'porque', 'tengo', 'quiero', 'buenas', 'gracias', 'sería', 'seria'])
 
 function words(text: string) {
@@ -114,6 +115,12 @@ export async function loadClientRows(admin: SupabaseClient, studioId: string, co
     .limit(TONE_MESSAGES)
   if (error) throw error
   return ((data ?? []) as ExampleRow[]).reverse()
+}
+
+/** ¿Se tratan con confianza? Lo dice el trato de cualquiera de los dos, sin
+ * contar lo que escribió el agente. */
+export function hasConfidence(rows: Pick<ExampleRow, 'body' | 'media_filename'>[]) {
+  return rows.some((r) => !r.media_filename?.startsWith(AGENT_MARK) && CONFIDENCE.test(normalizeText(r.body ?? '')))
 }
 
 /** Trae paginado: Supabase corta cada consulta en 1.000 filas. */
