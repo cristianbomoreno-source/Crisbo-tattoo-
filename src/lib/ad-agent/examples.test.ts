@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildExamples, redact, type ExampleRow } from './examples'
+import { buildClientTone, buildExamples, redact, type ExampleRow } from './examples'
 
 let minute = 0
 const row = (conversation_id: string, direction: 'in' | 'out', body: string, extra: Partial<ExampleRow> = {}): ExampleRow => ({
@@ -29,6 +29,25 @@ describe('buildExamples', () => {
   it('no aprende de sus propias respuestas', () => {
     const rows = [row('a', 'in', 'Quiero cotizar un tatuaje'), row('a', 'out', 'Claro', { media_filename: 'ai-agent' })]
     expect(buildExamples(rows, 'tatuaje', new Set())).toBe('')
+  })
+})
+
+describe('buildClientTone', () => {
+  const talk = (id: string, reply: string) => [row(id, 'in', 'Hola'), row(id, 'out', reply)]
+  it('junta lo que Crisbo le dijo a esa persona en todos sus chats', () => {
+    const tone = buildClientTone([...talk('wa', 'Quiubo Caro'), ...talk('ig', 'Dime reina'), ...talk('wa', 'Listo Caro')])
+    expect(tone).toContain('Quiubo Caro')
+    expect(tone).toContain('Dime reina')
+  })
+  it('necesita varias respuestas para saber cómo le habla', () => {
+    expect(buildClientTone([...talk('a', 'Hola'), ...talk('a', 'Claro')])).toBe('')
+  })
+  it('no aprende del agente y tapa los valores', () => {
+    const rows = [...talk('a', 'Te sale en 300000'), ...talk('a', 'Listo'), ...talk('a', 'Dale'), row('a', 'in', 'Hola'), row('a', 'out', 'Soy el agente', { media_filename: 'ai-agent' })]
+    const tone = buildClientTone(rows)
+    expect(tone).toContain('[valor]')
+    expect(tone).not.toContain('300000')
+    expect(tone).not.toContain('Soy el agente')
   })
 })
 

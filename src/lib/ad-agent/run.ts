@@ -6,7 +6,7 @@ import { downloadMedia, sendLocationMessage, sendTextMessage, type WaAccountCred
 import { messagePreview } from '@/lib/whatsapp-cloud/parse'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { loadAgenda, type Agenda } from './agenda'
-import { buildExamples, loadExampleRows, type ExampleRow } from './examples'
+import { buildClientTone, buildExamples, loadClientRows, loadExampleRows, type ExampleRow } from './examples'
 import { AGENT_MARK, HANDOFF_MARK, REPLY_WINDOW_MS, chatMode, checkReply, decide, isAdMessage, type AgentMessage, type StoredChatMode } from './guard'
 import { writeReply, type AgentMedia } from './reply'
 import { acquireAdAgentLock, loadAdAgentSettings, loadChatModes, releaseAdAgentLock, saveChatModes } from './store'
@@ -122,6 +122,7 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
   if (looksAutomated(messages.at(-1)?.body)) return null
 
   const media = await loadMedia(messages, account)
+  const clientTone = buildClientTone(await loadClientRows(admin, studioId, conv))
   const lastOut = messages.findLastIndex((m) => m.direction === 'out')
   const pending = messages.slice(lastOut + 1).map((m) => m.body ?? '').join(' ')
   const reply = checkReply(
@@ -134,6 +135,7 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
       fromAd: messages.some(isAdMessage),
       agenda: ctx.agenda.text,
       examples: buildExamples(ctx.history, pending, new Set([...ctx.personal, conv.id])),
+      clientTone,
     }),
     ctx.knowledge,
     ctx.agenda.days

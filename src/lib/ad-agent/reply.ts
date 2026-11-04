@@ -47,6 +47,7 @@ export async function writeReply(opts: {
   fromAd: boolean
   agenda: string
   examples: string
+  clientTone?: string
 }): Promise<ModelReply> {
   const today = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const system = [
@@ -54,6 +55,7 @@ export async function writeReply(opts: {
     `INFORMACIÓN\n${opts.knowledge}`,
     `AGENDA DISPONIBLE\n${opts.agenda || 'No hay espacios en las próximas semanas: pasa el chat a Crisbo.'}`,
     opts.examples ? `RESPUESTAS REALES TUYAS A MENSAJES PARECIDOS (imita el tono, [valor] es un dato oculto: nunca lo copies)\n${opts.examples}` : '',
+    opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general, pero sin groserías. [valor] es un dato oculto: nunca lo copies)\n${opts.clientTone}` : '',
     `Hoy es ${today}. Nombre del contacto en WhatsApp: ${opts.contactName || 'desconocido'}.`,
     opts.fromAd ? 'Este chat llegó por la pauta.' : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
     opts.returningClient ? 'Esta persona ya es cliente del estudio: la oferta no le aplica.' : '',

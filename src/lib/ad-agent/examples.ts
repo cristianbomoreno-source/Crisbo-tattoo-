@@ -19,6 +19,10 @@ export type ExampleRow = {
 }
 
 const MAX_EXAMPLES = 12
+const MAX_TONE = 15
+/** Con menos de esto todavía no se sabe cómo le habla Crisbo a esa persona. */
+const MIN_TONE = 3
+const TONE_MESSAGES = 400
 const HISTORY_DAYS = 60
 const PAGES = 3
 const PAGE_SIZE = 1000
@@ -40,6 +44,23 @@ export function redact(text: string) {
 
 type Pair = { client: string; reply: string; at: string; score: number }
 
+/** Respuestas de Crisbo escritas a mano en un chat, en orden cronológico. */
+function pairsIn(messages: ExampleRow[], wanted = new Set<string>()) {
+  const pairs: Pair[] = []
+  for (let i = 0; i < messages.length - 1; i++) {
+    const asked = messages[i]!
+    const answer = messages[i + 1]!
+    if (asked.direction !== 'in' || answer.direction !== 'out') continue
+    if (asked.type !== 'text' || answer.type !== 'text' || !asked.body || !answer.body) continue
+    if (answer.media_filename?.startsWith(AGENT_MARK) || answer.body.length > 220 || AUTOMATED.test(answer.body)) continue
+    const score = [...words(asked.body)].filter((w) => wanted.has(w)).length
+    pairs.push({ client: redact(asked.body).slice(0, 200), reply: redact(answer.body), at: answer.created_at, score })
+  }
+  return pairs
+}
+
+const format = (p: Pair) => `Cliente: ${p.client}\nTú: ${p.reply}`
+
 /** `rows` en orden cronológico. */
 export function buildExamples(rows: ExampleRow[], query: string, excluded: Set<string>) {
   const byChat = new Map<string, ExampleRow[]>()
@@ -55,15 +76,7 @@ export function buildExamples(rows: ExampleRow[], query: string, excluded: Set<s
     if (mine.some((m) => CASUAL.test(normalizeText(m.body ?? '')))) continue
     if (!messages.some((m) => m.direction === 'in' && isTattooInquiry(m.body))) continue
 
-    for (let i = 0; i < messages.length - 1; i++) {
-      const asked = messages[i]!
-      const answer = messages[i + 1]!
-      if (asked.direction !== 'in' || answer.direction !== 'out') continue
-      if (asked.type !== 'text' || answer.type !== 'text' || !asked.body || !answer.body) continue
-      if (answer.media_filename?.startsWith(AGENT_MARK) || answer.body.length > 220 || AUTOMATED.test(answer.body)) continue
-      const score = [...words(asked.body)].filter((w) => wanted.has(w)).length
-      pairs.push({ client: redact(asked.body).slice(0, 200), reply: redact(answer.body), at: answer.created_at, score })
-    }
+    pairs.push(...pairsIn(messages, wanted))
   }
 
   const seen = new Set<string>()
@@ -71,8 +84,36 @@ export function buildExamples(rows: ExampleRow[], query: string, excluded: Set<s
     .sort((a, b) => b.score - a.score || b.at.localeCompare(a.at))
     .filter((p) => (seen.has(p.reply) ? false : !!seen.add(p.reply)))
     .slice(0, MAX_EXAMPLES)
-    .map((p) => `Cliente: ${p.client}\nTú: ${p.reply}`)
+    .map(format)
     .join('\n\n')
+}
+
+/** Cómo le habla Crisbo a esta persona: sus últimas respuestas en todos sus
+ * chats. `rows` en orden cronológico. */
+export function buildClientTone(rows: ExampleRow[]) {
+  const byChat = Map.groupBy(rows, (r) => r.conversation_id)
+  const pairs = [...byChat.values()].flatMap((messages) => pairsIn(messages))
+  if (pairs.length < MIN_TONE) return ''
+  return pairs
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .slice(-MAX_TONE)
+    .map(format)
+    .join('\n\n')
+}
+
+/** Un cliente puede tener chat de WhatsApp y de Instagram. */
+export async function loadClientRows(admin: SupabaseClient, studioId: string, conv: { id: string; client_id: string | null }) {
+  const { data: chats } = conv.client_id
+    ? await admin.from('wa_conversations').select('id').eq('studio_id', studioId).eq('client_id', conv.client_id)
+    : { data: [{ id: conv.id }] }
+  const { data, error } = await admin
+    .from('wa_messages')
+    .select('conversation_id, direction, type, body, media_filename, created_at')
+    .in('conversation_id', (chats ?? []).map((c) => c.id))
+    .order('created_at', { ascending: false })
+    .limit(TONE_MESSAGES)
+  if (error) throw error
+  return ((data ?? []) as ExampleRow[]).reverse()
 }
 
 /** Trae paginado: Supabase corta cada consulta en 1.000 filas. */
