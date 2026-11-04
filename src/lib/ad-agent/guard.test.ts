@@ -67,8 +67,8 @@ describe('checkReply', () => {
   const reply = (mensajes: string[], pasarACrisbo = false) => ({ mensajes, pasarACrisbo, motivo: null, enviarUbicacion: false })
 
   it('los valores de la oferta y su abono están autorizados', () => {
-    expect([...allowedAmounts(DEFAULT_KNOWLEDGE)]).toEqual(expect.arrayContaining([470000, 1100000, 94000, 220000]))
-    expect(checkReply(reply(['Sería de 470.000', 'El abono es 94.000']), DEFAULT_KNOWLEDGE).handoff).toBe(false)
+    expect([...allowedAmounts(DEFAULT_KNOWLEDGE)]).toEqual(expect.arrayContaining([470000, 1100000, 100000, 200000]))
+    expect(checkReply(reply(['Sería de 470.000', 'El abono es 100000']), DEFAULT_KNOWLEDGE).handoff).toBe(false)
   })
   it('un precio inventado no sale y pasa el chat', () => {
     const r = checkReply(reply(['Te lo dejo en 400.000']), DEFAULT_KNOWLEDGE)
