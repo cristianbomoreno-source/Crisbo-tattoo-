@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { isAgentMessage } from '@/lib/ad-agent/guard'
+import { useCatchUp } from './use-catch-up'
 import {
   AlertCircle,
   Archive,
@@ -186,6 +187,37 @@ export function ChatView({
       supabase.removeChannel(channel)
     }
   }, [conversation.id, router])
+
+  // Lo que Realtime no alcanzó a entregar: mensajes nuevos, palomitas y ediciones.
+  useCatchUp(async () => {
+    const { data } = await createClient()
+      .from('wa_messages')
+      .select('*')
+      .eq('conversation_id', conversation.id)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (!data) return
+    const fresh = data as WaMessage[]
+    const known = new Map(messages.map((m) => [m.id, m]))
+    const added = fresh.filter((m) => !known.has(m.id))
+    const changed = fresh.some((m) => {
+      const old = known.get(m.id)
+      return old && (old.status !== m.status || old.body !== m.body)
+    })
+    if (added.length === 0 && !changed) return
+    const byId = new Map(fresh.map((m) => [m.id, m]))
+    setMessages((prev) => {
+      const ids = new Set(prev.map((m) => m.id))
+      return [...prev.map((m) => ({ ...m, ...byId.get(m.id) })), ...added.filter((m) => !ids.has(m.id))].sort(
+        (x, y) => Date.parse(x.created_at) - Date.parse(y.created_at)
+      )
+    })
+    const inbound = added.filter((m) => m.direction === 'in')
+    if (inbound.length > 0) {
+      setLastInboundAt(inbound[0]!.created_at)
+      markConversationRead(conversation.id)
+    }
+  })
 
   // Al abrir: contador a 0 (la lista se actualiza sola por Realtime).
   useEffect(() => {

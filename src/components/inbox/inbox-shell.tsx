@@ -18,6 +18,7 @@ import { LEAD_STAGES, followUpDue, leadStageInfo, type LeadStage } from '@/lib/w
 import { chatChannel, type ChatChannel } from '@/lib/instagram/channel'
 import { InstagramIcon } from '@/components/shared/instagram-icon'
 import { chatInitials, chatName, formatListTime } from './format'
+import { useCatchUp } from './use-catch-up'
 
 type Filter = 'todos' | 'seguimiento' | LeadStage
 
@@ -98,6 +99,20 @@ export function InboxShell({
       supabase.removeChannel(channel)
     }
   }, [studioId, router])
+
+  // Sin Realtime la lista se queda quieta: solo recarga si de verdad hay algo nuevo.
+  useCatchUp(async () => {
+    const { data } = await createClient()
+      .from('wa_conversations')
+      .select('last_message_at')
+      .eq('studio_id', studioId)
+      .not('last_message_at', 'is', null)
+      .order('last_message_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const shown = Math.max(0, ...conversations.map((c) => Date.parse(c.last_message_at ?? '') || 0))
+    if (data?.last_message_at && Date.parse(data.last_message_at) > shown) router.refresh()
+  })
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
