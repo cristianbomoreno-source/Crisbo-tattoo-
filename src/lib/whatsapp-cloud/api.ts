@@ -2,8 +2,13 @@
  * en el servidor: recibe el token del estudio (`whatsapp_accounts`), que
  * nunca llega al navegador. */
 
+import { isWaUserId } from './parse'
+
 const GRAPH_VERSION = process.env.WHATSAPP_GRAPH_VERSION || 'v23.0'
 const GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`
+
+/** Sin teléfono, Meta recibe el id del usuario en `recipient`. */
+const target = (to: string) => (isWaUserId(to) ? { recipient: to } : { to })
 
 export type WaAccountCredentials = {
   phone_number_id: string
@@ -74,7 +79,7 @@ export async function sendTextMessage(account: WaAccountCredentials, to: string,
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        ...target(to),
         type: 'text',
         text: { preview_url: true, body },
       }),
@@ -207,7 +212,7 @@ export async function sendFlowTemplate(
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        ...target(to),
         type: 'template',
         template: {
           name: t.name,
@@ -246,7 +251,7 @@ export async function sendLocationMessage(
     account.access_token,
     {
       method: 'POST',
-      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'location', location: loc }),
+      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', ...target(to), type: 'location', location: loc }),
     }
   )
   const id = json.messages?.[0]?.id
@@ -261,7 +266,7 @@ export async function sendImageMessage(account: WaAccountCredentials, to: string
     account.access_token,
     {
       method: 'POST',
-      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'image', image }),
+      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', ...target(to), type: 'image', image }),
     }
   )
   const id = json.messages?.[0]?.id
@@ -353,7 +358,7 @@ export async function sendImageTemplate(
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        ...target(to),
         type: 'template',
         template: {
           name: t.name,
@@ -457,7 +462,7 @@ export async function sendBodyTemplate(
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        ...target(to),
         type: 'template',
         template: {
           name: t.name,

@@ -11,6 +11,10 @@ export function normalizeWaPhone(phone: string | null | undefined): string | nul
   return digits
 }
 
+/** Id de WhatsApp de quien escribe con nombre de usuario y oculta su número
+ * ("CO.1349120865"). En esos chats va en `wa_id` en lugar del teléfono. */
+export const isWaUserId = (waId: string) => /^[A-Z]{2}\./.test(waId)
+
 /** Meta abre una ventana de 24 h para escribir texto libre desde el último
  * mensaje que mandó el cliente. Fuera de ella solo se aceptan plantillas. */
 export const SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000
@@ -55,8 +59,11 @@ const MEDIA_TYPES = ['image', 'audio', 'video', 'document', 'sticker'] as const
 type WaMedia = { id?: string; mime_type?: string; caption?: string; filename?: string }
 type WaMessage = {
   from?: string
+  /** Quien usa nombre de usuario puede llegar sin teléfono, solo con este id. */
+  from_user_id?: string
   /** Solo en ecos (`smb_message_echoes`): número del cliente. */
   to?: string
+  recipient_user_id?: string
   id?: string
   timestamp?: string
   type?: string
@@ -78,7 +85,7 @@ type WaMessage = {
 
 type WaValue = {
   metadata?: { phone_number_id?: string }
-  contacts?: { wa_id?: string; profile?: { name?: string } }[]
+  contacts?: { wa_id?: string; user_id?: string; profile?: { name?: string; username?: string } }[]
   messages?: WaMessage[]
   /** Coexistencia: lo que el estudio envía desde la app WhatsApp Business del celular. */
   message_echoes?: WaMessage[]
@@ -173,24 +180,28 @@ export function parseWebhook(payload: unknown): {
       if (!value || !phoneNumberId) continue
 
       for (const m of value.messages ?? []) {
-        if (!m.from || !m.id) continue
+        const sender = m.from ?? m.from_user_id
+        if (!sender || !m.id) continue
         const edit = editOf(m)
         if (edit) {
           edits.push(edit)
           continue
         }
-        const contact = value.contacts?.find((c) => c.wa_id === m.from) ?? value.contacts?.[0]
-        messages.push(toParsed(phoneNumberId, m.from, contact?.profile?.name ?? null, { ...m, id: m.id }))
+        const contact = value.contacts?.find((c) => c.wa_id === sender || c.user_id === sender) ?? value.contacts?.[0]
+        const username = contact?.profile?.username?.replace(/^@/, '')
+        const name = contact?.profile?.name ?? (username ? `@${username}` : null)
+        messages.push(toParsed(phoneNumberId, sender, name, { ...m, id: m.id }))
       }
 
       for (const m of value.message_echoes ?? []) {
-        if (!m.to || !m.id) continue
+        const recipient = m.to?.replace(/\D/g, '') || m.recipient_user_id
+        if (!recipient || !m.id) continue
         const edit = editOf(m)
         if (edit) {
           edits.push(edit)
           continue
         }
-        echoes.push(toParsed(phoneNumberId, m.to.replace(/\D/g, ''), null, { ...m, id: m.id }))
+        echoes.push(toParsed(phoneNumberId, recipient, null, { ...m, id: m.id }))
       }
 
       for (const s of value.statuses ?? []) {

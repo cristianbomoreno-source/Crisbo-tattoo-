@@ -1,3 +1,5 @@
+import { isWaUserId } from '@/lib/whatsapp-cloud/parse'
+
 /** Formatos de hora/fecha de la bandeja, SIEMPRE en hora de Colombia: el
  * servidor (UTC en Vercel) y el navegador deben producir el mismo texto, o
  * React lanza un error de hidratación (#418). */
@@ -43,6 +45,7 @@ export function sameDay(a: string, b: string) {
 
 /** "+57 300 123 4567" a partir de "573001234567" (solo Colombia; resto tal cual). */
 export function formatWaPhone(waId: string) {
+  if (isWaUserId(waId)) return 'Número oculto'
   if (waId.length === 12 && waId.startsWith('57')) {
     return `+57 ${waId.slice(2, 5)} ${waId.slice(5, 8)} ${waId.slice(8)}`
   }

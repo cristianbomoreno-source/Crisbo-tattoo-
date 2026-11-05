@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { isAgentMessage } from '@/lib/ad-agent/guard'
+import { isWaUserId } from '@/lib/whatsapp-cloud/parse'
 import { useCatchUp } from './use-catch-up'
 import {
   AlertCircle,
@@ -644,7 +645,7 @@ export function ChatView({
         onOpenChange={setScheduleOpen}
         initialDay={todayKey()}
         presetClientName={client?.name ?? conversation.contact_name ?? ''}
-        presetPhone={client?.phone ?? (instagram ? '' : `+${conversation.wa_id}`)}
+        presetPhone={client?.phone ?? (instagram || isWaUserId(conversation.wa_id) ? '' : `+${conversation.wa_id}`)}
         presetClientId={client?.id}
         onBooked={(sessionId) => {
           setScheduleOpen(false)

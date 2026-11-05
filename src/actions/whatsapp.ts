@@ -22,7 +22,7 @@ import {
   setPhoneWebhookOverride,
   subscribeAppToWaba,
 } from '@/lib/whatsapp-cloud/api'
-import { isServiceWindowOpen, messagePreview } from '@/lib/whatsapp-cloud/parse'
+import { isServiceWindowOpen, isWaUserId, messagePreview } from '@/lib/whatsapp-cloud/parse'
 import {
   FORM_BUTTON_TEXT,
   FORM_TEMPLATE_LANGUAGE,
@@ -422,7 +422,7 @@ export async function createClientFromConversation(
       name: trimmed.slice(0, 150),
       ...(instagram
         ? { phone: null, instagram: conv.ig_username ? `@${conv.ig_username}` : null, source: 'Instagram' }
-        : { phone: `+${conv.wa_id}` }),
+        : { phone: isWaUserId(conv.wa_id) ? null : `+${conv.wa_id}` }),
       studio_id: studio.id,
       artist_id: studio.role === 'owner' ? null : studio.artistId,
     })

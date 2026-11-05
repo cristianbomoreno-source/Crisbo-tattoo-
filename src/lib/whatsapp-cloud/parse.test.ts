@@ -91,6 +91,19 @@ describe('parseWebhook', () => {
     entry: [{ changes: [{ value: { metadata: { phone_number_id: 'PNID' }, [key]: [{ id: 'wamid.new', from: '573001234567', to: '573001234567', ...m }] } }] }],
   })
 
+  it('recibe a quien escribe con nombre de usuario y sin teléfono', () => {
+    const message = { id: 'wamid.u', from_user_id: 'CO.123', type: 'text', text: { body: 'Para el 16 amigo' } }
+    const contacts = [{ user_id: 'CO.123', profile: { username: 'Jly11' } }]
+    const { messages } = parseWebhook({ entry: [{ changes: [{ value: { metadata: { phone_number_id: 'PNID' }, contacts, messages: [message] } }] }] })
+    expect(messages[0]).toMatchObject({ waId: 'CO.123', contactName: '@Jly11', body: 'Para el 16 amigo' })
+  })
+
+  it('guarda lo que se le responde desde el celular a un chat sin teléfono', () => {
+    const echo = { id: 'wamid.e', from: '573000000000', recipient_user_id: 'CO.123', type: 'text', text: { body: 'Agendamos' } }
+    const { echoes } = parseWebhook({ entry: [{ changes: [{ value: { metadata: { phone_number_id: 'PNID' }, message_echoes: [echo] } }] }] })
+    expect(echoes[0]).toMatchObject({ waId: 'CO.123', body: 'Agendamos' })
+  })
+
   it('aplica la edición de un texto al mensaje original', () => {
     const edit = { original_message_id: 'wamid.old', message: { type: 'text', text: { body: 'Corregido' } } }
     const { messages, edits } = parseWebhook(hook('messages', { type: 'edit', edit }))
