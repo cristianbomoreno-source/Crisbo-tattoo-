@@ -28,6 +28,7 @@ export function EstudioHome({
   days,
   today,
   blockedKeys,
+  blockedDates,
 }: {
   studio: CurrentStudio
   data: StudioHomeData
@@ -36,6 +37,7 @@ export function EstudioHome({
   days: { key: string; count: number }[]
   today: string
   blockedKeys: string[]
+  blockedDates?: string[]
 }) {
   const balances: Record<string, ProjectBalance> = {}
   // El donut/las cifras de dinero del día ya vienen agregadas en `data`;
@@ -62,6 +64,7 @@ export function EstudioHome({
         todaySessions={data.todaySessions}
         balances={balances}
         blockedDays={blockedKeys}
+        blockedDates={blockedDates}
       />
 
       <WorkingTodayRow team={data.team} />

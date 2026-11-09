@@ -98,6 +98,7 @@ export default async function DashboardPage() {
         days={days}
         today={today}
         blockedKeys={blockedKeys}
+        blockedDates={blockedDateKeys}
       />
     )
     // BUG REAL corregido: RestDayGate envolvía esto SIEMPRE, sin mirar
@@ -266,7 +267,7 @@ export default async function DashboardPage() {
         paymentMethods={studio?.paymentMethods}
       />
 
-      <CalendarCard days={days} today={today} todaySessions={todaySessions} balances={balances} blockedDays={blockedKeys} />
+      <CalendarCard days={days} today={today} todaySessions={todaySessions} balances={balances} blockedDays={blockedKeys} blockedDates={blockedDateKeys} />
 
       {cardSessions.length > 0 && (
         <NextSessionCard
@@ -323,6 +324,7 @@ export default async function DashboardPage() {
           todaySessions={todaySessions}
           balances={balances}
           blockedDays={blockedKeys}
+          blockedDates={blockedDateKeys}
           monthKey={monthKey}
           summary={summary}
           pendingQuotes={pendingQuotes}

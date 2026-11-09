@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { CaretRight } from '@phosphor-icons/react'
+import { CaretRight, Prohibit, LockOpen } from '@phosphor-icons/react'
+import { toast } from 'sonner'
+import { blockDayAction, unblockDayAction } from '@/actions/sessions'
 import { MonthGrid } from '@/components/home/month-grid'
 import { HomeCalendarDialog } from '@/components/home/home-calendar-dialog'
 import { QuickScheduleDialog } from '@/components/calendar/quick-schedule-dialog'
@@ -26,12 +28,16 @@ export function CalendarCard({
   today,
   todaySessions,
   blockedDays = [],
+  blockedDates,
 }: {
   days: { key: string; count: number; paid?: boolean; green?: boolean }[]
   today: string
   todaySessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
   blockedDays?: string[]
+  /** Fechas bloqueadas a mano (`blocked_days`), sin los días no laborales del
+   * horario: solo esas se pueden desbloquear desde aquí. */
+  blockedDates?: string[]
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -43,6 +49,27 @@ export function CalendarCard({
   // Tocar un día del mes abre directo "Agendar cita" para ese día.
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const count = todaySessions.length
+  const [blocking, setBlocking] = useState(false)
+  const isBlocked = blockedDays.includes(selectedDay)
+  // Un día no laboral del horario (p. ej. domingo) no está en `blocked_days`:
+  // se reabre desde Ajustes → Horario, no desde aquí.
+  const canUnblock = (blockedDates ?? blockedDays).includes(selectedDay)
+
+  // "Bloquear día" del popup de agendar: el día queda tachado en gris, igual
+  // que un domingo. Si ya tiene citas, la acción lo rechaza con su mensaje.
+  async function toggleBlock() {
+    if (blocking) return
+    setBlocking(true)
+    const res = isBlocked ? await unblockDayAction(selectedDay) : await blockDayAction({ date: selectedDay })
+    setBlocking(false)
+    if (!res.success) {
+      toast.error(res.error.message)
+      return
+    }
+    toast.success(isBlocked ? 'Día desbloqueado' : 'Día bloqueado')
+    setScheduleOpen(false)
+    router.refresh()
+  }
 
   useEffect(() => {
     if (searchParams.get('openCalendar') !== '1') return
@@ -138,6 +165,21 @@ export function CalendarCard({
           setInitialView('day')
           setDialogOpen(true)
         }}
+        extraActions={
+          !isBlocked || canUnblock ? (
+            <button
+              type="button"
+              onClick={toggleBlock}
+              disabled={blocking}
+              className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold transition-transform duration-150 ease-out active:scale-[0.95] disabled:opacity-50"
+            >
+              {isBlocked ? <LockOpen className="size-3.5" weight="bold" /> : <Prohibit className="size-3.5" weight="bold" />}
+              {blocking ? 'Guardando…' : isBlocked ? 'Desbloquear día' : 'Bloquear día'}
+            </button>
+          ) : (
+            <span className="text-xs text-muted-foreground">Día no laboral</span>
+          )
+        }
       />
 
       <AgendaListDialog open={agendaOpen} onOpenChange={setAgendaOpen} />

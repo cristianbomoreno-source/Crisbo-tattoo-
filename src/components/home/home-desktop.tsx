@@ -50,6 +50,8 @@ export type HomeDesktopProps = {
   todaySessions: SessionWithProject[]
   balances: Record<string, ProjectBalance>
   blockedDays: string[]
+  /** Solo las fechas de `blocked_days` (sin los días no laborales), para ofrecer "Desbloquear". */
+  blockedDates?: string[]
   monthKey: string
   summary: MonthSummary
   pendingQuotes: number
@@ -79,6 +81,7 @@ export function HomeDesktop({
   todaySessions,
   balances,
   blockedDays,
+  blockedDates,
   monthKey,
   summary,
   pendingQuotes,
@@ -116,6 +119,7 @@ export function HomeDesktop({
             todaySessions={todaySessions}
             balances={balances}
             blockedDays={blockedDays}
+            blockedDates={blockedDates}
           />
 
         </div>

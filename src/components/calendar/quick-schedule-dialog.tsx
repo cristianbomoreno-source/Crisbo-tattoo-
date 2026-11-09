@@ -58,6 +58,7 @@ export function QuickScheduleDialog({
   onBooked,
   editableTime = false,
   onViewDay,
+  extraActions,
 }: {
   dayKey: string
   defaultTime: string
@@ -84,6 +85,8 @@ export function QuickScheduleDialog({
   editableTime?: boolean
   /** Enlace "Ver agenda del día" (abre el calendario de ese día). */
   onViewDay?: () => void
+  /** Botones extra junto a "Ver agenda del día" (ej. "Bloquear día" desde Inicio). */
+  extraActions?: React.ReactNode
 }) {
   const router = useRouter()
   const [name, setName] = useState(presetClientName ?? '')
@@ -350,10 +353,17 @@ export function QuickScheduleDialog({
               {dayKey} · {time || '—'}
             </div>
           )}
-          {onViewDay && (
-            <button type="button" onClick={onViewDay} className="text-xs font-medium text-primary hover:underline">
-              Ver agenda del día
-            </button>
+          {(onViewDay || extraActions) && (
+            <div className="flex items-center justify-between gap-3">
+              {onViewDay ? (
+                <button type="button" onClick={onViewDay} className="text-xs font-medium text-primary hover:underline">
+                  Ver agenda del día
+                </button>
+              ) : (
+                <span />
+              )}
+              {extraActions}
+            </div>
           )}
 
           {presetProjectId ? (
