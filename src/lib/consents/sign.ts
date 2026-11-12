@@ -31,21 +31,22 @@ export async function finalizeSignedConsent(
     signerUserAgent: string | null
   }
 ): Promise<Result<void>> {
-  const { form, signatureData: signature_data, signerIp: signer_ip, signerUserAgent: signer_user_agent } = input
+  const { form, signatureData: signature_data, signerIp: signer_ip, signerUserAgent } = input
   const now = new Date().toISOString()
   const medicalAlert = hasMedicalAlert(form)
 
   // 1) Reclamar el link PRIMERO (update condicional): dos envíos simultáneos
   //    pasaban ambos el check de 'pending' y creaban consents duplicados.
   //    Solo el que gana la fila continúa.
+  //    El dispositivo va dentro de form_data: consent_links no tiene columna
+  //    signer_user_agent y mandarla tumbaba TODAS las firmas (PGRST204).
   const { data: claimed, error: uErr } = await admin
     .from('consent_links')
     .update({
       status: 'signed',
-      form_data: form,
+      form_data: signerUserAgent ? { ...form, dispositivo_firma: signerUserAgent } : form,
       signature_data,
       signer_ip,
-      signer_user_agent,
       signed_at: now,
       has_medical_alert: medicalAlert,
     })
