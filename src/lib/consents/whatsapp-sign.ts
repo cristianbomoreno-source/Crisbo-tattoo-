@@ -21,21 +21,35 @@ export async function signConsentFromWhatsApp(
       .eq('token', answers.token)
       .eq('studio_id', m.studioId)
       .maybeSingle()
-    if (!link || link.status !== 'pending') return
+    if (!link || link.status !== 'pending') {
+      // Sin link firmable: dejar las respuestas en el log para no perderlas.
+      console.error('[consent] respuesta sin link pendiente', JSON.stringify({ waId: m.waId, answers }))
+      return
+    }
+
+    const form = {
+      ...((link.form_data as Record<string, unknown> | null) ?? {}),
+      ...answers.form,
+      telefono: `+${m.waId}`,
+      firma_electronica: {
+        canal: 'WhatsApp',
+        numero: `+${m.waId}`,
+        nombre: answers.signerName,
+        mensaje_id: m.waMessageId,
+        fecha: m.timestamp,
+      },
+    }
+    // Guardar las respuestas en el link ANTES de firmar: WhatsApp las
+    // entrega una sola vez, y si la firma falla (pasó del 16-oct al
+    // 12-nov-2026) se perdían. Con esto quedan para firmarlas a mano.
+    await admin
+      .from('consent_links')
+      .update({ form_data: { ...form, respuesta_sin_firmar: true } })
+      .eq('id', link.id)
+      .eq('status', 'pending')
 
     const res = await finalizeSignedConsent(admin, link, {
-      form: {
-        ...((link.form_data as Record<string, unknown> | null) ?? {}),
-        ...answers.form,
-        telefono: `+${m.waId}`,
-        firma_electronica: {
-          canal: 'WhatsApp',
-          numero: `+${m.waId}`,
-          nombre: answers.signerName,
-          mensaje_id: m.waMessageId,
-          fecha: m.timestamp,
-        },
-      },
+      form,
       signatureData: null,
       signerIp: null,
       signerUserAgent: `WhatsApp +${m.waId}`,

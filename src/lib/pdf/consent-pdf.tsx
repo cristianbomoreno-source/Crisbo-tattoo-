@@ -68,6 +68,14 @@ export function ConsentPdf({
           {projectName ? `Proyecto: ${projectName} · ` : ''}Cliente: {clientName}
         </Text>
 
+        {/* Firmas de WhatsApp del 16-oct al 12-nov-2026: la app no guardó
+            las respuestas, solo la evidencia de la firma. */}
+        {formStr(formData, 'constancia_recuperada') !== '' && (
+          <View style={styles.section}>
+            <Text style={styles.declLine}>Nota: {formStr(formData, 'constancia_recuperada')}</Text>
+          </View>
+        )}
+
         {templateContent && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{templateName ?? 'Términos'}</Text>
