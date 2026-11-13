@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { SquaresFour, type Icon as IconType } from '@phosphor-icons/react'
@@ -19,6 +20,37 @@ import { MOBILE_TAB_ITEMS } from '@/components/shared/nav-items'
  */
 export function MobileNav() {
   const pathname = usePathname()
+  const navRef = useRef<HTMLElement>(null)
+
+  // iPhone: al abrir/cerrar un popup, el bloqueo de scroll cambia el
+  // `overflow` de <html>/<body> y la barra (fija, en su propia capa) puede
+  // quedar pintada donde estaba la página, flotando a mitad de pantalla.
+  // Cada vez que cambia ese estilo (o el viewport) se fuerza a recolocarla.
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    let frame = 0
+    const replace = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        nav.style.display = 'none'
+        void nav.offsetHeight
+        nav.style.display = ''
+      })
+    }
+    const observer = new MutationObserver(replace)
+    const opts = { attributes: true, attributeFilter: ['style'] }
+    observer.observe(document.documentElement, opts)
+    observer.observe(document.body, opts)
+    window.visualViewport?.addEventListener('resize', replace)
+    window.addEventListener('pageshow', replace)
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+      window.visualViewport?.removeEventListener('resize', replace)
+      window.removeEventListener('pageshow', replace)
+    }
+  }, [pathname])
 
   const isActive = (href: string) => (href === '/dashboard' ? pathname === href : pathname === href || pathname.startsWith(href + '/'))
 
@@ -30,6 +62,7 @@ export function MobileNav() {
 
   return (
     <nav
+      ref={navRef}
       aria-label="Navegación principal"
       data-tour="nav-bar"
       className="glass fixed inset-x-4 [transform:translate3d(0,0,0)] [backface-visibility:hidden] bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
