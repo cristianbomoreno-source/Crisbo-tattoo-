@@ -6,8 +6,8 @@ import { toast } from 'sonner'
 import { CalendarPlus, ChevronLeft } from 'lucide-react'
 
 import { getCalendarPopupDataAction } from '@/actions/availability'
-import { createSessionAction, getBookingConfirmationLinkAction } from '@/actions/sessions'
-import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
+import { createSessionAction } from '@/actions/sessions'
+import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 import { CalendarNav, type CalendarView } from '@/components/calendar/calendar-nav'
 import { DurationDial } from '@/components/sessions/duration-dial'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -103,11 +103,8 @@ export function ScheduleSessionsDialog({
     // bloqueado, choque de horario), se detiene ahí y vuelve a esa sesión
     // para corregirla, sin perder las que ya quedaron creadas.
     setLoading(true)
-    // Igual que en el resto de flujos de agendar: se abre YA (síncrono con
-    // el tap del slot) para que Safari/iOS no bloquee el popup. Solo con
-    // UNA sesión (lo más común al convertir una cotización) -- con varias
-    // no hay una cita puntual que confirmar.
-    const waTab = total === 1 ? openWhatsAppTab() : null
+    // Con UNA sesión el cliente recibe solo los datos de la cita por
+    // WhatsApp; con varias no hay una cita puntual que confirmar.
     const createdIds: string[] = []
     for (let i = 0; i < total; i++) {
       const v = next[i]
@@ -121,7 +118,6 @@ export function ScheduleSessionsDialog({
         setLoading(false)
         toast.error(total > 1 ? `Sesión ${i + 1}: ${res.error.message}` : res.error.message)
         setStep(i)
-        redirectWhatsAppTab(waTab, null)
         return
       }
       createdIds.push(res.data.id)
@@ -133,10 +129,7 @@ export function ScheduleSessionsDialog({
     onScheduled?.()
     router.refresh()
 
-    if (waTab && createdIds[0]) {
-      const linkRes = await getBookingConfirmationLinkAction(createdIds[0])
-      redirectWhatsAppTab(waTab, linkRes.success ? linkRes.data.link : null)
-    }
+    if (total === 1 && createdIds[0]) await deliverBookingConfirmation(createdIds[0])
   }
 
   return (

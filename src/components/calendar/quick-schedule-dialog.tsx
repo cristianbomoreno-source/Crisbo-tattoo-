@@ -15,8 +15,8 @@ import {
 import { createProjectAction, getProjectMoneyAction, updateProjectValueAction } from '@/actions/projects'
 import { createPaymentAction } from '@/actions/payments'
 import { cop } from '@/lib/projects/metrics'
-import { createSessionAction, getBookingConfirmationLinkAction } from '@/actions/sessions'
-import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
+import { createSessionAction } from '@/actions/sessions'
+import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 import { PhoneInput } from '@/components/shared/phone-input'
 import { DurationDial } from '@/components/sessions/duration-dial'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -230,11 +230,6 @@ export function QuickScheduleDialog({
       return
     }
     setLoading(true)
-    // Se abre YA (síncrono con el tap del botón) para que Safari/iOS no
-    // bloquee el popup -- se redirige más abajo cuando ya se tiene el link
-    // real, o se cierra sola si algo falla o el cliente no tiene teléfono.
-    const waTab = onBooked ? null : openWhatsAppTab()
-
     let projectId = presetProjectId ?? null
 
     if (!projectId) {
@@ -253,7 +248,6 @@ export function QuickScheduleDialog({
         if (!clientRes.success) {
           toast.error(clientRes.error.message)
           setLoading(false)
-          redirectWhatsAppTab(waTab, null)
           return
         }
         clientId = clientRes.data.id
@@ -269,7 +263,6 @@ export function QuickScheduleDialog({
         if (!projectRes.success) {
           toast.error(projectRes.error.message)
           setLoading(false)
-          redirectWhatsAppTab(waTab, null)
           return
         }
         projectId = projectRes.data.id
@@ -291,7 +284,6 @@ export function QuickScheduleDialog({
     setLoading(false)
     if (!sessionRes.success) {
       toast.error(sessionRes.error.message)
-      redirectWhatsAppTab(waTab, null)
       return
     }
 
@@ -319,8 +311,7 @@ export function QuickScheduleDialog({
       onBooked(sessionRes.data.id)
       return
     }
-    const linkRes = await getBookingConfirmationLinkAction(sessionRes.data.id)
-    redirectWhatsAppTab(waTab, linkRes.success ? linkRes.data.link : null)
+    await deliverBookingConfirmation(sessionRes.data.id)
   }
 
   return (

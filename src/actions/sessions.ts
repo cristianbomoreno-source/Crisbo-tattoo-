@@ -13,6 +13,8 @@ import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendGoogleReviewRequest } from '@/lib/reviews/google-review'
 import { sendRescheduleNotice } from '@/lib/appointments/reschedule-notice'
+import { sendBookingDetails } from '@/lib/appointments/booking-notice'
+import { nowAsWallClock } from '@/lib/calendar/utils'
 import { ownsRow } from '@/lib/authz'
 import { findSessionConflict, findBlockedDay, isWeekdayClosed } from '@/lib/sessions/availability'
 import { blockDaySchema } from '@/lib/validations/blocked-days'
@@ -223,19 +225,44 @@ export async function rescheduleSessionAction(
   return ok(data as Session)
 }
 
-/** Envía al cliente por WhatsApp el nuevo horario de la cita para que lo
- * confirme (botones Confirmo / Cancelar). Se llama después de reagendar. */
+/** Avisa al cliente por WhatsApp el nuevo horario tras reagendar. Si la
+ * cita es en menos de 24 h, el aviso ya pide confirmar (botones Confirmo /
+ * Cancelar) y cuenta como recordatorio. Si falta más, solo le llega el
+ * mensaje con los datos de la cita: la confirmación la pide el cron 24 h antes. */
 export async function notifyRescheduleAction(id: string): Promise<Result<void>> {
   const artist = await getArtistAndStudio()
   if (!artist) return err('AUTH_ERROR', 'No autenticado')
   // Con RLS: si no se ve, no es de este estudio.
   const supabase = await createClient()
-  const { data: own } = await supabase.from('sessions').select('id').eq('id', id).maybeSingle()
+  const { data: own } = await supabase.from('sessions').select('scheduled_at').eq('id', id).maybeSingle()
   if (!own) return err('NOT_FOUND', 'Cita no encontrada')
 
-  const problem = await sendRescheduleNotice(createAdminClient(), id)
+  const soon = new Date(own.scheduled_at).getTime() - nowAsWallClock().getTime() <= 24 * 3_600_000
+  let problem: string | null
+  if (soon) problem = await sendRescheduleNotice(createAdminClient(), id)
+  else {
+    const confirmation = await buildBookingConfirmation(id)
+    if (!confirmation.success) return confirmation
+    problem = await sendBookingDetails(
+      createAdminClient(),
+      id,
+      `🔁 *Cambiamos el horario de tu cita*\n\n${confirmation.data.message}`
+    )
+  }
   if (problem) return err('VALIDATION_ERROR', problem)
   revalidatePath('/dashboard')
+  return ok(undefined)
+}
+
+/** Al agendar: manda solo, por WhatsApp, el mensaje con todos los datos de la
+ * cita (plantilla del estudio). Si no se pudo, devuelve el error y la app
+ * ofrece abrir WhatsApp con el mensaje listo. */
+export async function sendBookingConfirmationAction(id: string): Promise<Result<void>> {
+  const confirmation = await buildBookingConfirmation(id)
+  if (!confirmation.success) return confirmation
+  const problem = await sendBookingDetails(createAdminClient(), id, confirmation.data.message)
+  if (problem) return err('VALIDATION_ERROR', problem)
+  revalidatePath('/dashboard/inbox', 'layout')
   return ok(undefined)
 }
 

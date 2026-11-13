@@ -16,8 +16,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DurationPicker } from '@/components/sessions/duration-picker'
-import { createSessionsBulkAction, getBookingConfirmationLinkAction } from '@/actions/sessions'
-import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
+import { createSessionsBulkAction } from '@/actions/sessions'
+import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 
 type Row = { scheduled_at: string; duration_minutes: string }
 
@@ -54,15 +54,12 @@ export function MultiSessionDialog({
       return
     }
     setLoading(true)
-    // Igual que en el calendario: se abre YA (síncrono con el submit) para
-    // que Safari/iOS no bloquee el popup. Si se agendó más de una sesión a
-    // la vez, no hay una sola cita que confirmar -- se cierra sola.
-    const waTab = valid.length === 1 ? openWhatsAppTab() : null
+    // Con una sola sesión el cliente recibe solo los datos de la cita por
+    // WhatsApp; con varias no hay una cita puntual que confirmar.
     const result = await createSessionsBulkAction(projectId, { sessions: valid })
     setLoading(false)
     if (!result.success) {
       toast.error(result.error.message)
-      redirectWhatsAppTab(waTab, null)
       return
     }
     toast.success(valid.length > 1 ? 'Sesiones agendadas' : 'Sesión agendada')
@@ -70,10 +67,7 @@ export function MultiSessionDialog({
     setRows([emptyRow()])
     router.refresh()
 
-    if (waTab && result.data[0]) {
-      const linkRes = await getBookingConfirmationLinkAction(result.data[0].id)
-      redirectWhatsAppTab(waTab, linkRes.success ? linkRes.data.link : null)
-    }
+    if (valid.length === 1 && result.data[0]) await deliverBookingConfirmation(result.data[0].id)
   }
 
   return (

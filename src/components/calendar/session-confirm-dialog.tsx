@@ -9,7 +9,6 @@ import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  getBookingConfirmationLinkAction,
   deleteSessionAction,
   getSessionPopupInfoAction,
   type SessionPopupInfo,
@@ -17,7 +16,7 @@ import {
 import { createPaymentAction } from '@/actions/payments'
 import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
 import { RescheduleSessionForm } from '@/components/sessions/reschedule-session'
-import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
+import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 import { formatTime } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
 import { PAYMENT_METHOD_OPTIONS } from '@/lib/validations/studio'
@@ -103,22 +102,8 @@ export function SessionConfirmDialog({
   async function handleConfirm() {
     if (!session) return
     setSending(true)
-    // Abrir YA, síncrono con el tap -- si se espera la respuesta del
-    // servidor antes de abrir, Safari/iOS bloquea el popup.
-    const waTab = openWhatsAppTab()
-    const linkRes = await getBookingConfirmationLinkAction(session.id)
+    await deliverBookingConfirmation(session.id)
     setSending(false)
-    if (!linkRes.success) {
-      toast.error(linkRes.error.message)
-      redirectWhatsAppTab(waTab, null)
-      return
-    }
-    if (!linkRes.data.link) {
-      toast.error('Este cliente no tiene teléfono guardado')
-      redirectWhatsAppTab(waTab, null)
-      return
-    }
-    redirectWhatsAppTab(waTab, linkRes.data.link)
     onOpenChange(false)
   }
 
@@ -268,7 +253,7 @@ export function SessionConfirmDialog({
                   disabled={sending}
                 >
                   <MessageCircle className="size-4" strokeWidth={2} />
-                  {sending ? 'Abriendo…' : 'Confirmar cita'}
+                  {sending ? 'Enviando…' : 'Confirmar cita'}
                 </Button>
                 {session.status !== 'completed' && (
                   <Button

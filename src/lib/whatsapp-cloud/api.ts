@@ -380,7 +380,7 @@ export async function sendImageTemplate(
 export async function createUtilityTemplate(
   wabaId: string,
   token: string,
-  t: { name: string; language: string; body: string; example: string[]; buttons: string[] }
+  t: { name: string; language: string; body: string; example: string[]; buttons?: string[] }
 ) {
   templateStatusCache.delete(`${wabaId}:${t.name}`)
   return graph<{ id: string; status?: string; category?: string }>(
@@ -394,7 +394,7 @@ export async function createUtilityTemplate(
         category: 'UTILITY',
         components: [
           { type: 'BODY', text: t.body, example: { body_text: [t.example] } },
-          { type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) },
+          ...(t.buttons?.length ? [{ type: 'BUTTONS', buttons: t.buttons.map((text) => ({ type: 'QUICK_REPLY', text })) }] : []),
         ],
       }),
     }
