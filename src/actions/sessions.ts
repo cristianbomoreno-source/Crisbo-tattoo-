@@ -12,6 +12,7 @@ import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendGoogleReviewRequest } from '@/lib/reviews/google-review'
+import { sendRescheduleNotice } from '@/lib/appointments/reschedule-notice'
 import { ownsRow } from '@/lib/authz'
 import { findSessionConflict, findBlockedDay, isWeekdayClosed } from '@/lib/sessions/availability'
 import { blockDaySchema } from '@/lib/validations/blocked-days'
@@ -220,6 +221,22 @@ export async function rescheduleSessionAction(
   revalidatePath('/dashboard/stats')
   if (projectId) revalidatePath(`/dashboard/projects/${projectId}`)
   return ok(data as Session)
+}
+
+/** Envía al cliente por WhatsApp el nuevo horario de la cita para que lo
+ * confirme (botones Confirmo / Cancelar). Se llama después de reagendar. */
+export async function notifyRescheduleAction(id: string): Promise<Result<void>> {
+  const artist = await getArtistAndStudio()
+  if (!artist) return err('AUTH_ERROR', 'No autenticado')
+  // Con RLS: si no se ve, no es de este estudio.
+  const supabase = await createClient()
+  const { data: own } = await supabase.from('sessions').select('id').eq('id', id).maybeSingle()
+  if (!own) return err('NOT_FOUND', 'Cita no encontrada')
+
+  const problem = await sendRescheduleNotice(createAdminClient(), id)
+  if (problem) return err('VALIDATION_ERROR', problem)
+  revalidatePath('/dashboard')
+  return ok(undefined)
 }
 
 export async function deleteSessionAction(id: string): Promise<Result<void>> {

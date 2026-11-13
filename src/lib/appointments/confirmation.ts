@@ -12,6 +12,9 @@ import { RECOMENDACIONES } from '@/lib/whatsapp-cloud/chat-shortcuts'
 
 export const REMINDER_TEMPLATE = 'cita_recordatorio_v1'
 export const FOLLOWUP_TEMPLATE = 'cita_por_confirmar_v1'
+/** Aviso al reagendar desde la app; mientras Meta no la apruebe se usa la
+ * del recordatorio (mismo texto con fecha/hora y los mismos botones). */
+export const RESCHEDULED_TEMPLATE = 'cita_reprogramada_v1'
 export const REMINDER_LANGUAGE = 'es'
 export const BUTTON_CONFIRM = 'Confirmo mi cita'
 export const BUTTON_CANCEL = 'Cancelar cita'
@@ -30,7 +33,18 @@ export const REMINDER_TEMPLATES = {
     body: 'Hola {{1}}, aún no recibimos la confirmación de tu cita del {{2}} a las {{3}} en Crisbo Tattoo. Por favor confírmanos para mantener tu espacio reservado.',
     example: ['Laura', 'viernes 17 de octubre', '10:00 a. m.'],
   },
+  rescheduled: {
+    name: RESCHEDULED_TEMPLATE,
+    body: 'Hola {{1}}, tu cita de tatuaje en Crisbo Tattoo quedó reprogramada para el {{2}} a las {{3}}. ¿Nos confirmas tu asistencia?',
+    example: ['Laura', 'viernes 17 de octubre', '10:00 a. m.'],
+  },
 } as const
+
+const CHAT_TITLES: Record<keyof typeof REMINDER_TEMPLATES, string> = {
+  reminder: 'Recordatorio de cita',
+  followup: 'Cita por confirmar',
+  rescheduled: 'Cita reprogramada',
+}
 
 /** "viernes 17 de octubre" desde la hora de pared guardada. */
 export function citaDate(iso: string) {
@@ -85,5 +99,5 @@ export function cancelledText(name: string, iso: string, now = new Date()) {
 /** Texto que guarda el chat para las plantillas enviadas. */
 export function templateChatText(kind: keyof typeof REMINDER_TEMPLATES, params: string[]) {
   const body = REMINDER_TEMPLATES[kind].body.replace(/\{\{(\d+)\}\}/g, (m, n) => params[Number(n) - 1] ?? m)
-  return `🔔 ${kind === 'reminder' ? 'Recordatorio de cita' : 'Cita por confirmar'}\n\n${body}\n\n[${BUTTON_CONFIRM}] [${BUTTON_CANCEL}]`
+  return `🔔 ${CHAT_TITLES[kind]}\n\n${body}\n\n[${BUTTON_CONFIRM}] [${BUTTON_CANCEL}]`
 }

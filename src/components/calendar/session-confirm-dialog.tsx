@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, ArrowUpRight, Trash2, Wallet, ChevronLeft, X, Image as ImageIcon } from 'lucide-react'
+import { MessageCircle, ArrowUpRight, Trash2, Wallet, ChevronLeft, X, CalendarClock, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ import {
 } from '@/actions/sessions'
 import { createPaymentAction } from '@/actions/payments'
 import { ConfirmationMenu } from '@/components/sessions/confirmation-menu'
+import { RescheduleSessionForm } from '@/components/sessions/reschedule-session'
 import { openWhatsAppTab, redirectWhatsAppTab } from '@/lib/whatsapp-client'
 import { formatTime } from '@/lib/calendar/utils'
 import { cop } from '@/lib/projects/metrics'
@@ -32,7 +33,8 @@ const photoTexture: React.CSSProperties = {
  * (`SessionActionsDialog`, que es Reagendar/Eliminar). Encabezado con la
  * foto más reciente del proyecto y su saldo; acciones: cobrar (paso de pago
  * dentro del mismo popup, el pago queda ligado a esta sesión), mandar la
- * confirmación por WhatsApp, ir a la ficha del proyecto o cancelar la cita.
+ * confirmación por WhatsApp, reagendar (y enviarle al cliente el nuevo
+ * horario para que confirme), ir a la ficha del proyecto o cancelar la cita.
  */
 export function SessionConfirmDialog({
   session,
@@ -59,7 +61,7 @@ export function SessionConfirmDialog({
 }) {
   const router = useRouter()
   const [sending, setSending] = useState(false)
-  const [mode, setMode] = useState<'menu' | 'pay' | 'confirmDelete'>('menu')
+  const [mode, setMode] = useState<'menu' | 'pay' | 'confirmDelete' | 'reschedule'>('menu')
   const [deleting, setDeleting] = useState(false)
   const [info, setInfo] = useState<SessionPopupInfo | null>(null)
   const [amount, setAmount] = useState('')
@@ -174,7 +176,10 @@ export function SessionConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="max-h-[90vh] max-w-sm gap-0 overflow-y-auto p-0">
+      <DialogContent
+        showCloseButton={false}
+        className={`max-h-[90vh] gap-0 overflow-y-auto p-0 ${mode === 'reschedule' ? 'max-w-md' : 'max-w-sm'}`}
+      >
         {/* ===== Encabezado: foto del proyecto ===== */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-card">
           {info?.coverUrl ? (
@@ -193,7 +198,13 @@ export function SessionConfirmDialog({
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-4 text-white">
             <DialogTitle className="truncate font-title text-xl font-bold leading-tight text-white">
-              {mode === 'confirmDelete' ? 'Cancelar cita' : mode === 'pay' ? 'Registrar pago' : clientName}
+              {mode === 'confirmDelete'
+                ? 'Cancelar cita'
+                : mode === 'pay'
+                  ? 'Registrar pago'
+                  : mode === 'reschedule'
+                    ? 'Reagendar cita'
+                    : clientName}
             </DialogTitle>
             <p className="mt-0.5 truncate text-sm text-white/75">
               {formatTime(session.scheduled_at)} · {session.projects?.name ?? ''}
@@ -259,6 +270,17 @@ export function SessionConfirmDialog({
                   <MessageCircle className="size-4" strokeWidth={2} />
                   {sending ? 'Abriendo…' : 'Confirmar cita'}
                 </Button>
+                {session.status !== 'completed' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="justify-start gap-2"
+                    onClick={() => setMode('reschedule')}
+                  >
+                    <CalendarClock className="size-4" strokeWidth={2} />
+                    Reagendar
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -348,6 +370,25 @@ export function SessionConfirmDialog({
                 </Button>
               </div>
             </form>
+          )}
+
+          {mode === 'reschedule' && (
+            <div className="space-y-3">
+              <Button type="button" variant="outline" size="sm" onClick={() => setMode('menu')}>
+                <ChevronLeft className="size-4" />
+                Volver
+              </Button>
+              <RescheduleSessionForm
+                sessionId={session.id}
+                scheduledAt={session.scheduled_at}
+                durationMinutes={session.duration_minutes ?? 60}
+                projectId={session.project_id}
+                onDone={() => {
+                  onStatusChanged?.()
+                  onOpenChange(false)
+                }}
+              />
+            </div>
           )}
 
           {mode === 'confirmDelete' && (

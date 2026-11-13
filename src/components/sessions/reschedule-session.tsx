@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { DurationDial } from '@/components/sessions/duration-dial'
 import { CalendarNav, type CalendarView } from '@/components/calendar/calendar-nav'
 import { getCalendarPopupDataAction } from '@/actions/availability'
-import { rescheduleSessionAction } from '@/actions/sessions'
+import { notifyRescheduleAction, rescheduleSessionAction } from '@/actions/sessions'
 import { shiftMonth, dayKey, todayKey } from '@/lib/calendar/utils'
 import type { SessionWithProject } from '@/queries/sessions'
 
@@ -49,6 +49,8 @@ export function RescheduleSessionForm({
 
   const [duration, setDuration] = React.useState(durationMinutes || 60)
   const [loading, setLoading] = React.useState(false)
+  // Avisar al cliente el nuevo horario por WhatsApp para que lo confirme.
+  const [notify, setNotify] = React.useState(true)
 
   const [view, setView] = React.useState<CalendarView>('day')
   const [monthKey, setMonthKey] = React.useState(initialDay.slice(0, 7))
@@ -102,12 +104,21 @@ export function RescheduleSessionForm({
       { scheduled_at: `${selectedDay}T${time}`, duration_minutes: duration },
       projectId
     )
-    setLoading(false)
     if (!result.success) {
+      setLoading(false)
       toast.error(result.error.message)
       return
     }
-    toast.success('Sesión reagendada')
+    const moved = `${selectedDay}T${time}` !== scheduledAt.slice(0, 16)
+    if (notify && moved) {
+      const sent = await notifyRescheduleAction(sessionId)
+      if (sent.success) toast.success('Cita reagendada y nuevo horario enviado al cliente')
+      else {
+        toast.success('Cita reagendada')
+        toast.error(sent.error.message)
+      }
+    } else toast.success('Cita reagendada')
+    setLoading(false)
     onDone()
     router.refresh()
   }
@@ -154,6 +165,15 @@ export function RescheduleSessionForm({
       <p className="text-xs text-muted-foreground">
         {selectedDay} · {time || '—'}
       </p>
+      <label className="flex items-start gap-2.5 rounded-2xl bg-accent/50 px-3 py-2.5 text-sm">
+        <input
+          type="checkbox"
+          checked={notify}
+          onChange={(e) => setNotify(e.target.checked)}
+          className="mt-0.5 size-4 accent-primary"
+        />
+        <span>Enviar el nuevo horario al cliente por WhatsApp para que confirme</span>
+      </label>
     </div>
   )
 }

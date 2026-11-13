@@ -38,7 +38,8 @@ const cardVariants = {
 /**
  * Tarjeta destacada de sesiones de HOY: desliza izquierda/derecha (o con las
  * flechitas) entre todas las citas del día, no solo la próxima. Tocar la
- * tarjeta (fuera de los botones) va directo al proyecto. El botón principal
+ * tarjeta (fuera de los botones) abre el popup de la cita: reagendar,
+ * cancelar, cobrar o ir al proyecto. El botón principal
  * muestra si la cita está confirmada, cancelada o por confirmar (respuesta
  * al recordatorio de WhatsApp) y abre el chat del cliente. Tocar la hora
  * despliega las horas del día para mover la cita.
@@ -73,7 +74,9 @@ export function NextSessionCard({
   // o de un swipe táctil.
   const [direction, setDirection] = useState(1)
   const touchStartX = useRef<number | null>(null)
-  const [payOpen, setPayOpen] = useState(false)
+  // Popup de la cita: 'menu' al tocar la tarjeta (reagendar, cancelar,
+  // cobrar, ver proyecto); 'pay' desde el botón Cobrar.
+  const [popup, setPopup] = useState<'menu' | 'pay' | null>(null)
   const [alertOpen, setAlertOpen] = useState(false)
   const [finishing, setFinishing] = useState(false)
   // Proyecto al que preguntar "¿cómo va el proyecto?" tras finalizar (solo
@@ -139,9 +142,9 @@ export function NextSessionCard({
     <article
       role="link"
       tabIndex={0}
-      onClick={() => router.push(`/dashboard/projects/${session.project_id}`)}
+      onClick={() => setPopup('menu')}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') router.push(`/dashboard/projects/${session.project_id}`)
+        if (e.key === 'Enter') setPopup('menu')
       }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -284,7 +287,7 @@ export function NextSessionCard({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  setPayOpen(true)
+                  setPopup('pay')
                 }}
                 className="flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
@@ -356,11 +359,15 @@ export function NextSessionCard({
         onTouchEnd={(e) => e.stopPropagation()}
       >
         <SessionConfirmDialog
-          session={payOpen ? session : null}
-          open={payOpen}
-          onOpenChange={setPayOpen}
-          initialMode="pay"
+          session={popup ? session : null}
+          open={popup !== null}
+          onOpenChange={(o) => {
+            if (!o) setPopup(null)
+          }}
+          initialMode={popup ?? 'menu'}
           onGoToProject={(s) => router.push(`/dashboard/projects/${s.project_id}`)}
+          onDeleted={() => router.refresh()}
+          onStatusChanged={() => router.refresh()}
         />
         <Dialog
           open={completionFor !== null}
