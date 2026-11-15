@@ -72,8 +72,9 @@ describe('chatMode', () => {
     expect(chatMode({ ...conv, client_id: 'c1' }, { mode: 'ai', since: ON }, ON)).toBe('ai')
     expect(chatMode(conv, { mode: 'human', since: ON }, ON)).toBe('human')
   })
-  it('Instagram sigue con Crisbo', () => {
-    expect(chatMode({ ...conv, channel: 'instagram' }, { mode: 'ai', since: ON }, ON)).toBe('human')
+  it('Instagram funciona igual que WhatsApp', () => {
+    expect(chatMode({ ...conv, channel: 'instagram' }, undefined, ON)).toBe('ai')
+    expect(chatMode({ ...conv, channel: 'instagram', client_id: 'c1' }, undefined, ON)).toBe('human')
   })
   it('con el agente nunca encendido no hay chats en IA', () => {
     expect(chatMode(conv, undefined, null)).toBe('human')

@@ -24,7 +24,7 @@ export function AdAgentForm({ enabled, knowledge }: { enabled: boolean; knowledg
   }
 
   return (
-    <SettingsSubpage title="Agente de pauta" description="Contesta como tú en WhatsApp y ofrece los espacios libres de tu agenda.">
+    <SettingsSubpage title="Agente de pauta" description="Contesta como tú en WhatsApp e Instagram y ofrece los espacios libres de tu agenda.">
       <div className="space-y-5">
         <div className="rounded-2xl bg-card p-4">
           <p className="text-[15px] font-semibold">{enabled ? 'Encendido' : 'Apagado'}</p>

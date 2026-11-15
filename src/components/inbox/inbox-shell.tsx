@@ -435,7 +435,7 @@ export function InboxShell({
                       </span>
                     </span>
                   </Link>
-                  {chatModes && !instagram && (
+                  {chatModes && (
                     <ChatModeToggle key={chatModes[c.id]} conversationId={c.id} mode={chatModes[c.id] ?? 'human'} agentEnabled={agentEnabled} />
                   )}
                 </li>

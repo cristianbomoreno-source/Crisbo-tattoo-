@@ -43,14 +43,13 @@ export function isAdMessage(m: AgentMessage) {
 export type ChatMode = 'ai' | 'human'
 export type StoredChatMode = { mode: ChatMode; since: string }
 
-/** Los chats nuevos (sin cliente) arrancan con la IA; Instagram y lo que ya
- * existía siguen con Crisbo hasta que escoja otra cosa en la bandeja. */
+/** Los chats nuevos (sin cliente), de WhatsApp o Instagram, arrancan con la
+ * IA; lo que ya existía sigue con Crisbo hasta que escoja otra cosa en la bandeja. */
 export function chatMode(
   conv: { created_at: string; client_id: string | null; channel?: string | null },
   stored: StoredChatMode | undefined,
   enabledAt: string | null
 ): ChatMode {
-  if (conv.channel === 'instagram') return 'human'
   if (stored) return stored.mode
   return enabledAt && !conv.client_id && conv.created_at >= enabledAt ? 'ai' : 'human'
 }

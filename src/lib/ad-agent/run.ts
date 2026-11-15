@@ -4,6 +4,8 @@ import { loadContactGroups } from '@/lib/crm/contact-groups'
 import { looksAutomated } from '@/lib/whatsapp-cloud/auto-reply'
 import { downloadMedia, sendLocationMessage, sendTextMessage, type WaAccountCredentials } from '@/lib/whatsapp-cloud/api'
 import { messagePreview } from '@/lib/whatsapp-cloud/parse'
+import { loadInstagramAccount } from '@/lib/instagram/account'
+import { sendInstagramText, type IgAccountCredentials } from '@/lib/instagram/api'
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { loadAgenda, type Agenda } from './agenda'
 import { buildClientTone, buildExamples, hasConfidence, loadClientRows, loadExampleRows, type ExampleRow } from './examples'
@@ -46,18 +48,53 @@ type Context = {
   agenda: Agenda
   history: ExampleRow[]
 }
-type Row = AgentMessage & { media_id: string | null; media_mime: string | null }
+type Row = AgentMessage & { media_id: string | null; media_mime: string | null; media_url: string | null }
+
+/** Por dónde contesta: WhatsApp o Instagram (mismo agente, mismas reglas). */
+type Channel = {
+  text: (body: string) => Promise<string>
+  location: () => Promise<{ id: string; type: string; body: string }>
+  media: (m: Row) => Promise<{ bytes: Uint8Array; mime: string } | null>
+}
+
+function whatsappChannel(account: WaAccountCredentials, to: string): Channel {
+  return {
+    text: (body) => sendTextMessage(account, to, body),
+    location: async () => ({ id: await sendLocationMessage(account, to, STUDIO_LOCATION), type: 'location', body: studioLocationText() }),
+    media: async (m) => {
+      if (!m.media_id) return null
+      const file = await downloadMedia(m.media_id, account.access_token)
+      return { bytes: new Uint8Array(await new Response(file.body).arrayBuffer()), mime: m.media_mime || file.mime }
+    },
+  }
+}
+
+function instagramChannel(account: IgAccountCredentials, to: string): Channel {
+  return {
+    text: (body) => sendInstagramText(account, to, body),
+    // Instagram no tiene mensajes de ubicación: dirección + enlace a Maps.
+    location: async () => {
+      const body = `📍 ${studioLocationText()}`
+      return { id: await sendInstagramText(account, to, body), type: 'text', body }
+    },
+    media: async (m) => {
+      if (!m.media_url) return null
+      const res = await fetch(m.media_url)
+      if (!res.ok) throw new Error(`Instagram ${res.status}`)
+      return { bytes: new Uint8Array(await res.arrayBuffer()), mime: m.media_mime || res.headers.get('content-type') || 'image/jpeg' }
+    },
+  }
+}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-async function loadMedia(messages: Row[], account: WaAccountCredentials) {
-  const wanted = messages.filter((m) => m.direction === 'in' && m.media_id && ['image', 'audio'].includes(m.type)).slice(-MAX_MEDIA)
+async function loadMedia(messages: Row[], channel: Channel) {
+  const wanted = messages.filter((m) => m.direction === 'in' && (m.media_id || m.media_url) && ['image', 'audio'].includes(m.type)).slice(-MAX_MEDIA)
   const media: AgentMedia[] = []
   for (const m of wanted) {
     try {
-      const file = await downloadMedia(m.media_id!, account.access_token)
-      const bytes = new Uint8Array(await new Response(file.body).arrayBuffer())
-      if (bytes.length <= MAX_MEDIA_BYTES) media.push({ type: m.type, bytes, mime: (m.media_mime || file.mime).split(';')[0]!.trim() })
+      const file = await channel.media(m)
+      if (file && file.bytes.length <= MAX_MEDIA_BYTES) media.push({ type: m.type, bytes: file.bytes, mime: file.mime.split(';')[0]!.trim() })
     } catch (e) {
       // Meta borra los archivos viejos: se sigue con el texto del chat.
       console.warn('[ad-agent] media', (e as Error).message)
@@ -68,7 +105,9 @@ async function loadMedia(messages: Row[], account: WaAccountCredentials) {
 
 async function saveOut(admin: Admin, studioId: string, conversationId: string, m: { id: string; type: string; body: string; mark: string }) {
   const now = new Date().toISOString()
-  const { error } = await admin.from('wa_messages').insert({
+  // upsert: en Instagram el eco del mensaje puede llegar por el webhook antes
+  // que esto; así queda con la marca del agente y no cuenta como de Crisbo.
+  const { error } = await admin.from('wa_messages').upsert({
     conversation_id: conversationId,
     studio_id: studioId,
     wa_message_id: m.id,
@@ -78,7 +117,7 @@ async function saveOut(admin: Admin, studioId: string, conversationId: string, m
     media_filename: m.mark,
     status: 'sent',
     created_at: now,
-  })
+  }, { onConflict: 'wa_message_id' })
   if (error) throw error
   await admin
     .from('wa_conversations')
@@ -95,14 +134,14 @@ async function notifyHandoff(studioId: string, conv: Conversation, reason: strin
 }
 
 /** Devuelve el cambio de modo del chat, si hubo. */
-async function handleConversation(admin: Admin, account: WaAccountCredentials, studioId: string, conv: Conversation, ctx: Context): Promise<StoredChatMode | null> {
+async function handleConversation(admin: Admin, channel: Channel, studioId: string, conv: Conversation, ctx: Context): Promise<StoredChatMode | null> {
   const stored = ctx.modes[conv.id]
   if (stored?.mode === 'human' || (ctx.personal.has(conv.id) && !stored)) return null
   const start = stored?.since ?? ctx.enabledAt
   const anyChat = chatMode(conv, stored, ctx.enabledAt) === 'ai'
   const { data } = await admin
     .from('wa_messages')
-    .select('direction, type, body, media_filename, media_id, media_mime, created_at')
+    .select('direction, type, body, media_filename, media_id, media_mime, media_url, created_at')
     .eq('conversation_id', conv.id)
     .order('created_at', { ascending: false })
     .limit(60)
@@ -113,7 +152,7 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
     const passed = decision.reason === 'human' || decision.reason === 'handed-off' || decision.reason === 'limit'
     if (decision.handoff) {
       const text = 'Dame un momento y ya te confirmo'
-      const id = await sendTextMessage(account, conv.wa_id, text)
+      const id = await channel.text(text)
       await saveOut(admin, studioId, conv.id, { id, type: 'text', body: text, mark: HANDOFF_MARK })
       await notifyHandoff(studioId, conv, 'Lleva muchos mensajes con el agente sin cerrar')
     }
@@ -121,7 +160,7 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
   }
   if (looksAutomated(messages.at(-1)?.body)) return null
 
-  const media = await loadMedia(messages, account)
+  const media = await loadMedia(messages, channel)
   const clientRows = await loadClientRows(admin, studioId, conv)
   const confianza = hasConfidence(clientRows)
   const lastOut = messages.findLastIndex((m) => m.direction === 'out')
@@ -147,12 +186,12 @@ async function handleConversation(admin: Admin, account: WaAccountCredentials, s
   for (const [i, body] of reply.bubbles.entries()) {
     if (i > 0) await sleep(BUBBLE_GAP_MS)
     const last = i === reply.bubbles.length - 1
-    const id = await sendTextMessage(account, conv.wa_id, body)
+    const id = await channel.text(body)
     await saveOut(admin, studioId, conv.id, { id, type: 'text', body, mark: last && reply.handoff ? HANDOFF_MARK : AGENT_MARK })
   }
   if (reply.location) {
-    const id = await sendLocationMessage(account, conv.wa_id, STUDIO_LOCATION)
-    await saveOut(admin, studioId, conv.id, { id, type: 'location', body: studioLocationText(), mark: AGENT_MARK })
+    const sent = await channel.location()
+    await saveOut(admin, studioId, conv.id, { ...sent, mark: AGENT_MARK })
   }
   // Ya tiene los datos de pago: el embudo lo muestra esperando el abono.
   if (conv.lead_stage !== 'abono' && reply.bubbles.some((b) => /\bllave\b/i.test(b))) {
@@ -182,7 +221,6 @@ export async function runAdAgent(admin: Admin) {
         .from('wa_conversations')
         .select('id, wa_id, contact_name, client_id, lead_stage, created_at, channel, last_inbound_at')
         .eq('studio_id', studioId)
-        .neq('channel', 'instagram')
         .eq('last_message_direction', 'in')
         .gte('last_inbound_at', new Date(now - REPLY_WINDOW_MS).toISOString())
         .lte('last_inbound_at', new Date(now - DEBOUNCE_MS).toISOString())
@@ -200,11 +238,17 @@ export async function runAdAgent(admin: Admin) {
         loadExampleRows(admin, studioId),
       ])
       const ctx: Context = { knowledge: settings.knowledge, enabledAt: settings.enabledAt, modes, personal: new Set(Object.keys(groups)), agenda, history }
+      const instagram = conversations.some((c) => c.channel === 'instagram') ? await loadInstagramAccount(admin, studioId) : null
       const changes: Record<string, StoredChatMode> = {}
       for (const conv of conversations) {
         if (Date.now() - started > TIME_BUDGET_MS) break
         try {
-          const change = await handleConversation(admin, account as WaAccountCredentials, studioId, conv, ctx)
+          let channel: Channel
+          if (conv.channel === 'instagram') {
+            if (!instagram) continue
+            channel = instagramChannel(instagram, conv.wa_id)
+          } else channel = whatsappChannel(account as WaAccountCredentials, conv.wa_id)
+          const change = await handleConversation(admin, channel, studioId, conv, ctx)
           if (change) changes[conv.id] = change
         } catch (e) {
           console.error('[ad-agent] chat', conv.id, (e as Error).message)

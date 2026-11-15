@@ -9,7 +9,7 @@ import type { AgentMessage, ModelReply } from './guard'
 const MODEL = { google: 'gemini-3.5-flash', gateway: 'google/gemini-3.5-flash' }
 
 const Reply = z.object({
-  mensajes: z.array(z.string()).describe('Las burbujas de WhatsApp a enviar, en orden. De 1 a 3.'),
+  mensajes: z.array(z.string()).describe('Las burbujas del chat a enviar, en orden. De 1 a 3.'),
   pasarACrisbo: z.boolean().describe('true si Crisbo debe seguir este chat. El agente ya no contestará más ahí.'),
   motivo: z.string().nullable().describe('Si pasa el chat: en una línea, qué necesita Crisbo revisar. Si no, null.'),
   enviarUbicacion: z.boolean().describe('true si pidió la ubicación exacta.'),
@@ -63,7 +63,7 @@ export async function writeReply(opts: {
     opts.examples ? `RESPUESTAS REALES TUYAS A MENSAJES PARECIDOS (imita el tono, no son de este cliente. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.examples}` : '',
     opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general. Solo sirve para copiar el trato: no son hechos de hoy, nunca saques de ahí horas, citas ni planes. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.clientTone}` : '',
     opts.confianza ? 'CON ESTA PERSONA HAY CONFIANZA: puedes usar "mk" de forma amistosa.' : 'Con esta persona todavía no hay confianza: no uses "mk".',
-    `Hoy es ${today}. Nombre del contacto en WhatsApp: ${opts.contactName || 'desconocido'}.`,
+    `Hoy es ${today}. Nombre del contacto: ${opts.contactName || 'desconocido'}.`,
     opts.fromAd ? 'Este chat llegó por la pauta.' : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
     opts.returningClient ? 'Esta persona ya es cliente del estudio: la oferta no le aplica.' : '',
   ]
