@@ -20,7 +20,7 @@ export const MAX_AGENT_MESSAGES = 14
 export const REPLY_WINDOW_MS = 23 * 3_600_000
 
 /** Texto precargado de los anuncios: respaldo si Meta no manda el referral. */
-const AD_PHRASES = [/\bcupo de noviembre\b/]
+const AD_PHRASES = [/\bcupo de noviembre\b/, /\bquiero la promo\b/]
 
 export const isAgentMessage = (m: { media_filename: string | null }) => !!m.media_filename?.startsWith(AGENT_MARK)
 
