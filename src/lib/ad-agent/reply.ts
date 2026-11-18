@@ -50,6 +50,7 @@ export async function writeReply(opts: {
   contactName: string | null
   returningClient: boolean
   fromAd: boolean
+  fromClub: boolean
   agenda: string
   examples: string
   clientTone?: string
@@ -64,8 +65,12 @@ export async function writeReply(opts: {
     opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general. Solo sirve para copiar el trato: no son hechos de hoy, nunca saques de ahí horas, citas ni planes. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.clientTone}` : '',
     opts.confianza ? 'CON ESTA PERSONA HAY CONFIANZA: puedes usar "mk" de forma amistosa.' : 'Con esta persona todavía no hay confianza: no uses "mk".',
     `Hoy es ${today}. Nombre del contacto: ${opts.contactName || 'desconocido'}.`,
-    opts.fromAd ? 'Este chat llegó por la pauta.' : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
-    opts.returningClient ? 'Esta persona ya es cliente del estudio: la oferta no le aplica.' : '',
+    opts.fromClub
+      ? 'Este chat llegó por el Club de Leales de la barbería: sigue las reglas de CLUB DE LEALES y no ofrezcas la promo de noviembre a menos que pregunte por ella.'
+      : opts.fromAd
+        ? 'Este chat llegó por la pauta.'
+        : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
+    opts.returningClient ? 'Esta persona ya es cliente del estudio: la promo de noviembre no le aplica (el Club de Leales sí).' : '',
   ]
     .filter(Boolean)
     .join('\n\n')

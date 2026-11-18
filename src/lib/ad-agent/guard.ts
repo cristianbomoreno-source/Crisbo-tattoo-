@@ -21,6 +21,9 @@ export const REPLY_WINDOW_MS = 23 * 3_600_000
 
 /** Texto precargado de los anuncios: respaldo si Meta no manda el referral. */
 const AD_PHRASES = [/\bcupo de noviembre\b/, /\bquiero la promo\b/]
+/** Club de Leales de la barbería Diego Neira: esos chats también los toma el
+ * agente aunque la persona ya sea cliente, con las reglas del club. */
+const CLUB_PHRASE = /\bclub de (?:los )?leales\b/
 
 export const isAgentMessage = (m: { media_filename: string | null }) => !!m.media_filename?.startsWith(AGENT_MARK)
 
@@ -37,6 +40,10 @@ export function isAdMessage(m: AgentMessage) {
   if (m.media_filename?.startsWith(AD_MARK)) return true
   const text = normalizeText(m.body ?? '')
   return AD_PHRASES.some((re) => re.test(text))
+}
+
+export function isClubMessage(m: AgentMessage) {
+  return m.direction === 'in' && CLUB_PHRASE.test(normalizeText(m.body ?? ''))
 }
 
 /** Quién contesta un chat. `since` = desde cuándo manda esa decisión. */
@@ -68,7 +75,7 @@ export type Decision = { act: true; adIndex: number } | { act: false; reason: st
  * saliente que no sea suyo después del anuncio (Crisbo desde el celular, la
  * bandeja, una plantilla) significa que el chat ya tiene dueño. */
 export function decide(messages: AgentMessage[], start: string, anyChat = false): Decision {
-  const adIndex = messages.findIndex((m) => m.direction === 'in' && m.created_at >= start && (anyChat || isAdMessage(m)))
+  const adIndex = messages.findIndex((m) => m.direction === 'in' && m.created_at >= start && (anyChat || isAdMessage(m) || isClubMessage(m)))
   if (adIndex === -1) return { act: false, reason: 'not-ad' }
   const after = messages.slice(adIndex)
   const out = after.filter((m) => m.direction === 'out')

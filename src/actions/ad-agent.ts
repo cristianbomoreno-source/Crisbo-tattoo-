@@ -65,7 +65,8 @@ export async function tryAdAgent(input: unknown): Promise<Result<CheckedReply>> 
     const examples = buildExamples(rows, messages.at(-1)?.body ?? '', new Set(Object.keys(groups)))
     const fromAd = messages.some((m) => /cupo/i.test(m.body ?? ''))
     const confianza = hasConfidence(messages)
-    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, agenda: agenda.text, examples, confianza })
+    const fromClub = messages.some((m) => /club de (los )?leales/i.test(m.body ?? ''))
+    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, fromClub, agenda: agenda.text, examples, confianza })
     return ok(checkReply(reply, knowledge, agenda.days, confianza))
   } catch (e) {
     return err('DB_ERROR', (e as Error).message)

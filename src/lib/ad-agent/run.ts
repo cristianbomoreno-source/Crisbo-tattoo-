@@ -9,7 +9,7 @@ import { sendInstagramText, type IgAccountCredentials } from '@/lib/instagram/ap
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { loadAgenda, type Agenda } from './agenda'
 import { buildClientTone, buildExamples, hasConfidence, loadClientRows, loadExampleRows, type ExampleRow } from './examples'
-import { AGENT_MARK, HANDOFF_MARK, REPLY_WINDOW_MS, chatMode, checkReply, decide, isAdMessage, type AgentMessage, type StoredChatMode } from './guard'
+import { AGENT_MARK, HANDOFF_MARK, REPLY_WINDOW_MS, chatMode, checkReply, decide, isAdMessage, isClubMessage, type AgentMessage, type StoredChatMode } from './guard'
 import { writeReply, type AgentMedia } from './reply'
 import { acquireAdAgentLock, loadAdAgentSettings, loadChatModes, releaseAdAgentLock, saveChatModes } from './store'
 
@@ -173,6 +173,7 @@ async function handleConversation(admin: Admin, channel: Channel, studioId: stri
       contactName: conv.contact_name,
       returningClient: !!conv.client_id,
       fromAd: messages.some(isAdMessage),
+      fromClub: messages.some(isClubMessage),
       agenda: ctx.agenda.text,
       examples: buildExamples(ctx.history, pending, new Set([...ctx.personal, conv.id])),
       clientTone: buildClientTone(clientRows),

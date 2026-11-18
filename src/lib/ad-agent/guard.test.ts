@@ -22,6 +22,9 @@ describe('decide', () => {
   it('reconoce el referral de Meta aunque el cliente cambie el texto', () => {
     expect(decide([msg('in', 'Hola precio', { media_filename: 'ad:123' })], ON).act).toBe(true)
   })
+  it('contesta a quien viene del Club de Leales de la barbería', () => {
+    expect(decide([msg('in', 'Hola vengo del Club de Leales, soy Oro')], ON).act).toBe(true)
+  })
   it('ignora chats que no vienen de la pauta', () => {
     expect(decide([msg('in', 'Hola, cuánto vale?')], ON)).toMatchObject({ act: false, reason: 'not-ad' })
   })
