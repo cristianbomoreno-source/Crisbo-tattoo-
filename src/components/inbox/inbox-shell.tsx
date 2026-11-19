@@ -245,7 +245,7 @@ export function InboxShell({
   }
 
   return (
-    <div className="-mx-4 -mt-4 flex h-[calc(100dvh-7rem-env(safe-area-inset-bottom))] overflow-hidden sm:mx-0 sm:mt-0 lg:h-[calc(100dvh-4rem)] lg:gap-4">
+    <div className="-mx-4 -mt-4 flex h-[calc(100dvh-7.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-hidden sm:mx-0 sm:mt-0 sm:h-[calc(100dvh-9rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-4rem)] lg:gap-4">
       <aside
         className={cn(
           'flex w-full shrink-0 flex-col lg:w-[380px] lg:rounded-[2rem] lg:bg-card',

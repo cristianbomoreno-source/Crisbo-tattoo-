@@ -26,6 +26,8 @@ export function MobileNav() {
   // `overflow` de <html>/<body> y la barra (fija, en su propia capa) puede
   // quedar pintada donde estaba la página, flotando a mitad de pantalla.
   // Cada vez que cambia ese estilo (o el viewport) se fuerza a recolocarla.
+  // Al cerrar el teclado, además, un scroll en el mismo sitio hace que iOS
+  // devuelva el viewport a su tamaño (ver `tab-bar-anchor` en globals.css).
   useEffect(() => {
     const nav = navRef.current
     if (!nav) return
@@ -38,14 +40,26 @@ export function MobileNav() {
         nav.style.display = ''
       })
     }
+    let keyboardTimer = 0
+    const onFocusOut = () => {
+      clearTimeout(keyboardTimer)
+      keyboardTimer = window.setTimeout(() => {
+        if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) return
+        window.scrollTo(window.scrollX, window.scrollY)
+        replace()
+      }, 250)
+    }
     const observer = new MutationObserver(replace)
     const opts = { attributes: true, attributeFilter: ['style'] }
     observer.observe(document.documentElement, opts)
     observer.observe(document.body, opts)
     window.visualViewport?.addEventListener('resize', replace)
     window.addEventListener('pageshow', replace)
+    document.addEventListener('focusout', onFocusOut)
     return () => {
       cancelAnimationFrame(frame)
+      clearTimeout(keyboardTimer)
+      document.removeEventListener('focusout', onFocusOut)
       observer.disconnect()
       window.visualViewport?.removeEventListener('resize', replace)
       window.removeEventListener('pageshow', replace)
@@ -65,7 +79,7 @@ export function MobileNav() {
       ref={navRef}
       aria-label="Navegación principal"
       data-tour="nav-bar"
-      className="glass fixed inset-x-4 [transform:translate3d(0,0,0)] [backface-visibility:hidden] bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
+      className="glass fixed inset-x-4 [transform:translate3d(0,0,0)] [backface-visibility:hidden] tab-bar-anchor z-30 flex h-[4.25rem] items-stretch gap-0.5 rounded-full p-1.5 lg:hidden"
     >
       {MOBILE_TAB_ITEMS.map((item) => (
         <TabLink

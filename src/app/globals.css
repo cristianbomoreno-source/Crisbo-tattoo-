@@ -558,3 +558,16 @@ svg.lucide {
 
 /* Fondo de cuadros para ver lo transparente (capas del Compositor). */
 @utility checker { background: repeating-conic-gradient(#e5e5e5 0 25%, #fff 0 50%) 0 0 / 20px 20px; }
+
+/* Tab bar móvil. En la app instalada (iPhone) va anclada a la altura física
+ * de la pantalla (100lvh) y no a `bottom`: con `interactive-widget:
+ * resizes-content` el teclado encoge el viewport y, al cerrarlo, iOS a veces no
+ * lo devuelve a su tamaño; anclada al fondo, la barra quedaba flotando a mitad
+ * de pantalla. 100lvh no cambia con el teclado. */
+@utility tab-bar-anchor {
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  @media (display-mode: standalone) {
+    bottom: auto;
+    top: calc(100lvh - 4.25rem - 8px - env(safe-area-inset-bottom));
+  }
+}
