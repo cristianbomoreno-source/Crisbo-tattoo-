@@ -329,8 +329,8 @@ export function ChatView({
   actions.sort((a, b) => rank(a.key) - rank(b.key))
 
   /** Cita creada desde el chat: la confirmación sale por este mismo chat. */
-  async function confirmBooking(sessionId: string) {
-    const result = await sendBookingConfirmationToChat(conversation.id, sessionId)
+  async function confirmBooking(sessionId: string, otherSessionIds: string[] = []) {
+    const result = await sendBookingConfirmationToChat(conversation.id, sessionId, otherSessionIds)
     router.refresh()
     if (!result.success) {
       toast.error(`Cita agendada, pero no se envió la confirmación: ${result.error.message}`)
@@ -647,9 +647,9 @@ export function ChatView({
         presetClientName={client?.name ?? conversation.contact_name ?? ''}
         presetPhone={client?.phone ?? (instagram || isWaUserId(conversation.wa_id) ? '' : `+${conversation.wa_id}`)}
         presetClientId={client?.id}
-        onBooked={(sessionId) => {
+        onBooked={(sessionId, otherSessionIds) => {
           setScheduleOpen(false)
-          confirmBooking(sessionId)
+          confirmBooking(sessionId, otherSessionIds)
         }}
       />
 

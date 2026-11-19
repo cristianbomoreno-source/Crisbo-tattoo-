@@ -45,7 +45,7 @@ export function HomeCalendarDialog({
   presetClientId?: string
   onScheduled?: () => void
   /** Ver `QuickScheduleDialog.onBooked`. */
-  onBooked?: (sessionId: string) => void
+  onBooked?: (sessionId: string, otherSessionIds?: string[]) => void
 }) {
   const router = useRouter()
   const [view, setView] = useState<CalendarView>(initialView)

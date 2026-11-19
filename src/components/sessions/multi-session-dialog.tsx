@@ -54,8 +54,8 @@ export function MultiSessionDialog({
       return
     }
     setLoading(true)
-    // Con una sola sesión el cliente recibe solo los datos de la cita por
-    // WhatsApp; con varias no hay una cita puntual que confirmar.
+    // El cliente recibe por WhatsApp los datos de la primera sesión y la
+    // lista de todas.
     const result = await createSessionsBulkAction(projectId, { sessions: valid })
     setLoading(false)
     if (!result.success) {
@@ -67,7 +67,8 @@ export function MultiSessionDialog({
     setRows([emptyRow()])
     router.refresh()
 
-    if (valid.length === 1 && result.data[0]) await deliverBookingConfirmation(result.data[0].id)
+    const [first, ...rest] = [...result.data].sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
+    if (first) await deliverBookingConfirmation(first.id, rest.map((s) => s.id))
   }
 
   return (

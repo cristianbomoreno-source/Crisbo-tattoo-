@@ -122,6 +122,12 @@ export async function createSessionsBulkAction(
   const artist = await getArtistAndStudio()
   if (!artist) return err('AUTH_ERROR', 'No autenticado')
 
+  const gate = await getCurrentPermissions()
+  if (gate && !gate.permissions.can_create_appointments)
+    return err('FORBIDDEN', 'No tienes permiso para crear citas')
+
+  if (!(await ownsRow('projects', projectId))) return err('NOT_FOUND', 'Proyecto no encontrado')
+
   // Validar cada sesión contra días bloqueados y choques con citas existentes
   // (mismo estudio) — igual que createSessionAction. Antes el alta en lote no
   // validaba nada, así que desde el proyecto se podía duplicar horario.
@@ -257,8 +263,8 @@ export async function notifyRescheduleAction(id: string): Promise<Result<void>> 
 /** Al agendar: manda solo, por WhatsApp, el mensaje con todos los datos de la
  * cita (plantilla del estudio). Si no se pudo, devuelve el error y la app
  * ofrece abrir WhatsApp con el mensaje listo. */
-export async function sendBookingConfirmationAction(id: string): Promise<Result<void>> {
-  const confirmation = await buildBookingConfirmation(id)
+export async function sendBookingConfirmationAction(id: string, otherSessionIds: string[] = []): Promise<Result<void>> {
+  const confirmation = await buildBookingConfirmation(id, otherSessionIds)
   if (!confirmation.success) return confirmation
   const problem = await sendBookingDetails(createAdminClient(), id, confirmation.data.message)
   if (problem) return err('VALIDATION_ERROR', problem)
@@ -378,9 +384,10 @@ function formatBookingTime(iso: string): string {
  * mismo criterio que el resto de botones de WhatsApp de la app).
  */
 export async function getBookingConfirmationLinkAction(
-  sessionId: string
+  sessionId: string,
+  otherSessionIds: string[] = []
 ): Promise<Result<{ link: string | null }>> {
-  const res = await buildBookingConfirmation(sessionId)
+  const res = await buildBookingConfirmation(sessionId, otherSessionIds)
   if (!res.success) return res
   return ok({ link: waLink(res.data.phone, res.data.message) })
 }
@@ -389,7 +396,9 @@ export async function getBookingConfirmationLinkAction(
  * cliente. Lo usan el link wa.me de arriba y el envío por la API desde la
  * bandeja de Mensajes (`sendBookingConfirmationToChat`). */
 export async function buildBookingConfirmation(
-  sessionId: string
+  sessionId: string,
+  /** Las demás sesiones agendadas junto con esta: el mensaje las lista todas. */
+  otherSessionIds: string[] = []
 ): Promise<Result<{ message: string; phone: string | null }>> {
   const supabase = await createClient()
 
@@ -446,7 +455,14 @@ export async function buildBookingConfirmation(
     })
   )
 
-  return ok({ message, phone: client?.phone ?? null })
+  if (otherSessionIds.length === 0) return ok({ message, phone: client?.phone ?? null })
+  const { data: all } = await supabase
+    .from('sessions')
+    .select('scheduled_at')
+    .in('id', [sessionId, ...otherSessionIds])
+    .order('scheduled_at')
+  const list = (all ?? []).map((s, i) => `${i + 1}. ${formatBookingDate(s.scheduled_at)} · ${formatBookingTime(s.scheduled_at)}`)
+  return ok({ message: `${message}\n\n🗓️ *Tus ${list.length} sesiones*\n${list.join('\n')}`, phone: client?.phone ?? null })
 }
 
 export type SessionPopupInfo = {

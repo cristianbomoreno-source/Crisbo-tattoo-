@@ -608,7 +608,8 @@ export async function sendDataForm(conversationId: string): Promise<Result<WaMes
  * (texto libre: solo dentro de la ventana de 24 h). */
 export async function sendBookingConfirmationToChat(
   conversationId: string,
-  sessionId: string
+  sessionId: string,
+  otherSessionIds: string[] = []
 ): Promise<Result<WaMessage>> {
   // Si el chat aún no tenía cliente, queda vinculado al de la cita.
   const supabase = await createClient()
@@ -637,7 +638,7 @@ export async function sendBookingConfirmationToChat(
     .eq('id', conversationId)
   revalidatePath('/dashboard/inbox', 'layout')
 
-  const confirmation = await buildBookingConfirmation(sessionId)
+  const confirmation = await buildBookingConfirmation(sessionId, otherSessionIds)
   if (!confirmation.success) return confirmation
   return sendWhatsAppMessage({ conversationId, body: confirmation.data.message })
 }

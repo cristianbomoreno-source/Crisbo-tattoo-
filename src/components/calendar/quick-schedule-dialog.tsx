@@ -15,7 +15,7 @@ import {
 import { createProjectAction, getProjectMoneyAction, updateProjectValueAction } from '@/actions/projects'
 import { createPaymentAction } from '@/actions/payments'
 import { cop } from '@/lib/projects/metrics'
-import { createSessionAction } from '@/actions/sessions'
+import { createSessionAction, createSessionsBulkAction } from '@/actions/sessions'
 import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 import { PhoneInput } from '@/components/shared/phone-input'
 import { DurationDial } from '@/components/sessions/duration-dial'
@@ -34,6 +34,16 @@ const NEW_PROJECT = '__new__'
 /** "460000" → "460.000" (solo dígitos). */
 const formatMoney = (digits: string) => (digits ? Number(digits).toLocaleString('es-CO') : '')
 const onlyDigits = (v: string) => v.replace(/\D/g, '').slice(0, 10)
+
+/** "2026-11-20" + 7 → "2026-11-27". */
+function addDays(dayKey: string, days: number) {
+  const d = new Date(`${dayKey}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+const MAX_SESSIONS = 6
+type ExtraSession = { date: string; time: string }
 
 /**
  * Popup de "agendar cita" al tocar un hueco vacío del calendario (día).
@@ -79,7 +89,7 @@ export function QuickScheduleDialog({
   onScheduled?: () => void
   /** Si se pasa, la confirmación la manda quien llama (ej. la bandeja de
    * Mensajes, por la API) y NO se abre la pestaña de wa.me. */
-  onBooked?: (sessionId: string) => void
+  onBooked?: (sessionId: string, otherSessionIds?: string[]) => void
   /** Muestra un selector de hora (cuando se abre tocando un día del mes,
    * no un hueco concreto del calendario). */
   editableTime?: boolean
@@ -93,6 +103,25 @@ export function QuickScheduleDialog({
   const [phone, setPhone] = useState(presetPhone ?? '')
   const [time, setTime] = useState(defaultTime)
   const [duration, setDuration] = useState(presetDurationMinutes ?? 60)
+  // Sesiones 2, 3… de la misma pieza (la 1 es el día y hora de arriba).
+  // Van atadas al día tocado: si abren otro día, arrancan otra vez en 1.
+  const [extraState, setExtraState] = useState<{ day: string; list: ExtraSession[] }>({ day: dayKey, list: [] })
+  const extra = extraState.day === dayKey ? extraState.list : []
+  const setExtra = (list: ExtraSession[]) => setExtraState({ day: dayKey, list })
+  const sessionCount = extra.length + 1
+
+  /** Cada sesión nueva arranca una semana ("cada 8 días") después de la
+   * anterior, a la misma hora; se puede cambiar. */
+  function setSessionCount(n: number) {
+    const next = extra.slice(0, n - 1)
+    while (next.length < n - 1) {
+      const last = next.at(-1) ?? { date: dayKey, time }
+      next.push({ date: addDays(last.date, 7), time: last.time || time })
+    }
+    setExtra(next)
+  }
+  const setExtraAt = (i: number, patch: Partial<ExtraSession>) =>
+    setExtra(extra.map((s, idx) => (idx === i ? { ...s, ...patch } : s)))
   const [loading, setLoading] = useState(false)
   const [checkingPhone, setCheckingPhone] = useState(false)
   const [match, setMatch] = useState<ClientBookingMatch | null>(null)
@@ -131,7 +160,6 @@ export function QuickScheduleDialog({
   useEffect(() => {
     if (open) setTime(defaultTime)
   }, [open, defaultTime])
-
   async function loadPresetClient(id: string) {
     setCheckingPhone(true)
     const res = await getClientBookingMatchAction(id)
@@ -225,6 +253,10 @@ export function QuickScheduleDialog({
       toast.error('Elige una hora')
       return
     }
+    if (extra.some((s) => !s.date || !s.time)) {
+      toast.error('Ponle día y hora a todas las sesiones')
+      return
+    }
     if (depositNum > 0 && balance !== null && depositNum > balance) {
       toast.error(`El abono supera el saldo del proyecto (${cop(Math.max(balance, 0))})`)
       return
@@ -276,26 +308,45 @@ export function QuickScheduleDialog({
       if (!res.success) toast.error(`No se actualizó el valor: ${res.error.message}`)
     }
 
-    const sessionRes = await createSessionAction({
-      project_id: projectId,
-      scheduled_at: `${dayKey}T${time}`,
-      duration_minutes: duration,
-    })
-    setLoading(false)
-    if (!sessionRes.success) {
-      toast.error(sessionRes.error.message)
-      return
+    // Varias sesiones van en lote: si una choca o cae en día cerrado no se
+    // agenda ninguna.
+    const firstAt = `${dayKey}T${time}`
+    let firstId: string
+    let otherIds: string[] = []
+    if (extra.length === 0) {
+      const sessionRes = await createSessionAction({ project_id: projectId, scheduled_at: firstAt, duration_minutes: duration })
+      if (!sessionRes.success) {
+        setLoading(false)
+        toast.error(sessionRes.error.message)
+        return
+      }
+      firstId = sessionRes.data.id
+    } else {
+      const bulkRes = await createSessionsBulkAction(projectId, {
+        sessions: [{ date: dayKey, time }, ...extra].map((s) => ({ scheduled_at: `${s.date}T${s.time}`, duration_minutes: duration })),
+      })
+      if (!bulkRes.success) {
+        setLoading(false)
+        toast.error(bulkRes.error.message)
+        return
+      }
+      const first = bulkRes.data.find((s) => s.scheduled_at.slice(0, 16) === firstAt) ?? bulkRes.data[0]!
+      firstId = first.id
+      otherIds = bulkRes.data.filter((s) => s.id !== first.id).map((s) => s.id)
     }
+    setLoading(false)
 
-    // El abono queda como pago de esta cita (antes del mensaje de
+    // El abono queda como pago de la primera cita (antes del mensaje de
     // confirmación, que muestra valor, abonado y saldo).
     if (depositNum > 0) {
-      const payRes = await createPaymentAction({ project_id: projectId, session_id: sessionRes.data.id, amount: depositNum })
+      const payRes = await createPaymentAction({ project_id: projectId, session_id: firstId, amount: depositNum })
       if (!payRes.success) toast.error(`Cita agendada, pero el abono no se guardó: ${payRes.error.message}`)
     }
 
-    toast.success(depositNum > 0 ? `Cita agendada · abono de ${cop(depositNum)}` : 'Cita agendada')
+    const booked = extra.length ? `${sessionCount} sesiones agendadas` : 'Cita agendada'
+    toast.success(depositNum > 0 ? `${booked} · abono de ${cop(depositNum)}` : booked)
     onOpenChange(false)
+    setExtra([])
     setValueEdit(null)
     setDepositEdit(null)
     setName(presetClientName ?? '')
@@ -308,10 +359,10 @@ export function QuickScheduleDialog({
     router.refresh()
 
     if (onBooked) {
-      onBooked(sessionRes.data.id)
+      onBooked(firstId, otherIds)
       return
     }
-    await deliverBookingConfirmation(sessionRes.data.id)
+    await deliverBookingConfirmation(firstId, otherIds)
   }
 
   return (
@@ -531,8 +582,52 @@ export function QuickScheduleDialog({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <span className="block text-xs font-medium text-muted-foreground">
+              Sesiones{sessionCount > 1 && ' · todas con la misma duración'}
+            </span>
+            <div role="radiogroup" aria-label="Número de sesiones" className="grid grid-cols-6 gap-1 rounded-xl bg-muted p-1">
+              {Array.from({ length: MAX_SESSIONS }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={sessionCount === n}
+                  onClick={() => setSessionCount(n)}
+                  disabled={loading}
+                  className={`h-8 rounded-lg text-sm font-medium tabular-nums transition-colors ${
+                    sessionCount === n ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            {extra.map((s, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="w-16 shrink-0 text-xs font-medium text-muted-foreground">Sesión {i + 2}</span>
+                <input
+                  type="date"
+                  value={s.date}
+                  onChange={(e) => setExtraAt(i, { date: e.target.value })}
+                  aria-label={`Día de la sesión ${i + 2}`}
+                  disabled={loading}
+                  className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+                <input
+                  type="time"
+                  value={s.time}
+                  onChange={(e) => setExtraAt(i, { time: e.target.value })}
+                  aria-label={`Hora de la sesión ${i + 2}`}
+                  disabled={loading}
+                  className="h-10 w-28 shrink-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
+            ))}
+          </div>
+
           <Button type="button" className="w-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Agendando…' : 'Agendar cita'}
+            {loading ? 'Agendando…' : sessionCount > 1 ? `Agendar ${sessionCount} sesiones` : 'Agendar cita'}
           </Button>
         </div>
       </DialogContent>
