@@ -15,6 +15,7 @@ import {
 import { createProjectAction, getProjectMoneyAction, updateProjectValueAction } from '@/actions/projects'
 import { createPaymentAction } from '@/actions/payments'
 import { cop } from '@/lib/projects/metrics'
+import { capitalize, dayLabel } from '@/lib/calendar/utils'
 import { createSessionAction, createSessionsBulkAction } from '@/actions/sessions'
 import { deliverBookingConfirmation } from '@/lib/booking-confirmation-client'
 import { PhoneInput } from '@/components/shared/phone-input'
@@ -365,72 +366,82 @@ export function QuickScheduleDialog({
     await deliverBookingConfirmation(firstId, otherIds)
   }
 
+  const initials = (match?.clientName ?? presetClientName ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('')
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CalendarPlus className="size-4 text-primary" strokeWidth={2} />
-            Agendar cita
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 pt-5 pb-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarPlus className="size-4 text-primary" strokeWidth={2} />
+              Agendar cita
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-3">
-          {editableTime ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
-                {dayKey}
-              </div>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                aria-label="Hora de la cita"
-                disabled={loading}
-                className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              />
-            </div>
-          ) : (
-            <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
-              {dayKey} · {time || '—'}
-            </div>
-          )}
-          {(onViewDay || extraActions) && (
-            <div className="flex items-center justify-between gap-3">
-              {onViewDay ? (
-                <button type="button" onClick={onViewDay} className="text-xs font-medium text-primary hover:underline">
-                  Ver agenda del día
-                </button>
-              ) : (
-                <span />
-              )}
-              {extraActions}
-            </div>
-          )}
-
-          {presetProjectId ? (
-            <p className="rounded-lg bg-accent px-3 py-2 text-sm">
-              Para: <span className="font-medium">{presetClientName || 'Cliente'}</span>
+          {/* Cuándo: el día en palabras y la hora grande. */}
+          <div className="rounded-2xl bg-primary/10 p-4 ring-1 ring-primary/20">
+            <p className="text-[0.6875rem] font-semibold tracking-wide text-primary/80 uppercase">
+              {sessionCount > 1 ? 'Primera sesión' : 'Cita'}
             </p>
-          ) : (
-            <>
-              {/* Nombre con autocompletar: lo más rápido para un cliente que ya existe. */}
-              <div className="relative">
-                <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <p className="font-title text-xl leading-tight font-bold">{capitalize(dayLabel(dayKey))}</p>
+            <div className="mt-2.5 flex items-center gap-2">
+              {editableTime ? (
                 <input
-                  value={name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                  placeholder="Buscar o escribir nombre del cliente"
-                  autoComplete="off"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  aria-label="Hora de la cita"
                   disabled={loading}
-                  role="combobox"
-                  aria-expanded={showSuggestions && suggestions.length > 0}
-                  aria-controls="quick-schedule-client-list"
-                  className="h-11 w-full rounded-xl border border-input bg-transparent pr-9 pl-10 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="h-10 rounded-xl bg-background/70 px-3 text-base font-semibold tabular-nums outline-none ring-1 ring-primary/30 focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
-                {match && (
+              ) : (
+                <span className="rounded-xl bg-background/70 px-3 py-1.5 text-base font-semibold tabular-nums">{time || '—'}</span>
+              )}
+            </div>
+            {(onViewDay || extraActions) && (
+              <div className="mt-3 flex items-center justify-between gap-3 border-t border-primary/15 pt-3">
+                {onViewDay ? (
+                  <button type="button" onClick={onViewDay} className="text-xs font-semibold text-primary hover:underline">
+                    Ver agenda del día
+                  </button>
+                ) : (
+                  <span />
+                )}
+                {extraActions}
+              </div>
+            )}
+          </div>
+
+          {/* Cliente y proyecto. */}
+          <section className="space-y-2">
+            <SectionLabel>Cliente</SectionLabel>
+            {presetProjectId || match ? (
+              <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                  {initials || <UserRound className="size-4.5" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">
+                    {match?.clientName ?? (presetClientName || 'Cliente')}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {presetProjectId ? (
+                      'Proyecto ya elegido'
+                    ) : (
+                      <>
+                        <Check className="size-3.5 text-primary" />
+                        {match!.projects.length === 0 ? 'Cliente guardado · sin proyectos activos' : 'Cliente guardado'}
+                      </>
+                    )}
+                  </span>
+                </span>
+                {match && !presetProjectId && (
                   <button
                     type="button"
                     onClick={() => {
@@ -439,104 +450,117 @@ export function QuickScheduleDialog({
                       setPhone('')
                     }}
                     aria-label="Quitar cliente elegido"
-                    className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                    className="grid size-8 shrink-0 place-items-center rounded-full bg-foreground/10 text-muted-foreground hover:text-foreground"
                   >
                     <X className="size-4" />
                   </button>
                 )}
-                {showSuggestions && !match && suggestions.length > 0 && (
-                  <ul
-                    id="quick-schedule-client-list"
-                    role="listbox"
-                    className="absolute inset-x-0 top-full z-10 mt-1 max-h-64 overflow-y-auto rounded-xl bg-popover p-1 shadow-lg ring-1 ring-foreground/10"
-                  >
-                    {suggestions.map((c) => (
-                      <li key={c.id} role="option" aria-selected={false}>
-                        <button
-                          type="button"
-                          // onMouseDown: se dispara antes del blur del input.
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            pickSuggestion(c.id)
-                          }}
-                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-accent"
-                        >
-                          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-                            <UserRound className="size-4" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-medium">{c.name}</span>
-                            {c.phone && <span className="block truncate text-xs text-muted-foreground">{c.phone}</span>}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
-
-              <PhoneInput value={phone} onChange={setPhone} onBlur={() => !match && handlePhoneBlur()} />
-              {checkingPhone ? (
-                <p className="text-xs text-muted-foreground">Buscando cliente…</p>
-              ) : match ? (
-                <p className="flex items-center gap-1 text-xs text-primary">
-                  <Check className="size-3.5" />
-                  Cliente: {match.clientName}
-                  {match.projects.length === 0 && ' (sin proyectos activos)'}
-                </p>
-              ) : (
-                name.trim().length >= 2 && (
-                  <p className="text-xs text-muted-foreground">
-                    No elegiste un cliente de la lista — se creará un cliente nuevo.
-                  </p>
-                )
-              )}
-
-              {match && match.projects.length > 0 ? (
-                <div className="space-y-1">
-                  <label className="block text-xs font-medium text-muted-foreground">Proyecto</label>
-                  <Select
-                    items={{
-                      ...Object.fromEntries(match.projects.map((p) => [p.id, p.name])),
-                      [NEW_PROJECT]: '+ Nuevo proyecto',
-                    }}
-                    value={projectChoice}
-                    onValueChange={(v) => v && setProjectChoice(v)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {match.projects.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value={NEW_PROJECT}>+ Nuevo proyecto</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
-
-              {projectChoice === NEW_PROJECT && (
-                <div className="space-y-1">
-                  <label htmlFor="quick-schedule-project-name" className="block text-xs font-medium text-muted-foreground">
-                    Nombre del proyecto nuevo
-                  </label>
+            ) : (
+              <>
+                {/* Nombre con autocompletar: lo más rápido para un cliente que ya existe. */}
+                <div className="relative">
+                  <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
                   <input
-                    id="quick-schedule-project-name"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="Cita rápida"
+                    value={name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    placeholder="Buscar o escribir nombre del cliente"
+                    autoComplete="off"
                     disabled={loading}
-                    className="h-11 w-full rounded-xl border border-input bg-transparent px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    role="combobox"
+                    aria-expanded={showSuggestions && suggestions.length > 0}
+                    aria-controls="quick-schedule-client-list"
+                    className={`${FIELD} pl-10`}
                   />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul
+                      id="quick-schedule-client-list"
+                      role="listbox"
+                      className="absolute inset-x-0 top-full z-10 mt-1 max-h-64 overflow-y-auto rounded-xl bg-popover p-1 shadow-lg ring-1 ring-foreground/10"
+                    >
+                      {suggestions.map((c) => (
+                        <li key={c.id} role="option" aria-selected={false}>
+                          <button
+                            type="button"
+                            // onMouseDown: se dispara antes del blur del input.
+                            onMouseDown={(e) => {
+                              e.preventDefault()
+                              pickSuggestion(c.id)
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-accent"
+                          >
+                            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                              <UserRound className="size-4" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-medium">{c.name}</span>
+                              {c.phone && <span className="block truncate text-xs text-muted-foreground">{c.phone}</span>}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              )}
-            </>
-          )}
 
-          <div className="space-y-1">
+                <PhoneInput value={phone} onChange={setPhone} onBlur={() => handlePhoneBlur()} />
+                {checkingPhone ? (
+                  <p className="text-xs text-muted-foreground">Buscando cliente…</p>
+                ) : (
+                  name.trim().length >= 2 && (
+                    <p className="text-xs text-muted-foreground">
+                      No elegiste un cliente de la lista — se creará un cliente nuevo.
+                    </p>
+                  )
+                )}
+              </>
+            )}
+
+            {!presetProjectId && match && match.projects.length > 0 && (
+              <Select
+                items={{
+                  ...Object.fromEntries(match.projects.map((p) => [p.id, p.name])),
+                  [NEW_PROJECT]: '+ Nuevo proyecto',
+                }}
+                value={projectChoice}
+                onValueChange={(v) => v && setProjectChoice(v)}
+              >
+                <SelectTrigger className="h-11 w-full rounded-xl" aria-label="Proyecto">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {match.projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={NEW_PROJECT}>+ Nuevo proyecto</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
+            {!presetProjectId && projectChoice === NEW_PROJECT && (
+              <div className="space-y-1">
+                <label htmlFor="quick-schedule-project-name" className="block text-xs font-medium text-muted-foreground">
+                  Nombre del proyecto nuevo
+                </label>
+                <input
+                  id="quick-schedule-project-name"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  placeholder="Cita rápida"
+                  disabled={loading}
+                  className={FIELD}
+                />
+              </div>
+            )}
+          </section>
+
+          {/* Valor y abono. */}
+          <section className="space-y-2">
+            <SectionLabel>Pago</SectionLabel>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label htmlFor="quick-schedule-value" className="block text-xs font-medium text-muted-foreground">
@@ -549,7 +573,7 @@ export function QuickScheduleDialog({
                   onChange={(e) => setValue(onlyDigits(e.target.value))}
                   placeholder="$0"
                   disabled={loading}
-                  className="h-11 w-full rounded-xl border border-input bg-transparent px-3.5 text-sm tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className={`${FIELD} tabular-nums`}
                 />
               </div>
               <div className="space-y-1">
@@ -563,30 +587,36 @@ export function QuickScheduleDialog({
                   onChange={(e) => setDeposit(onlyDigits(e.target.value))}
                   placeholder="$0"
                   disabled={loading}
-                  className="h-11 w-full rounded-xl border border-input bg-transparent px-3.5 text-sm tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className={`${FIELD} tabular-nums`}
                 />
               </div>
             </div>
             {(paid > 0 || (balance !== null && depositNum > 0)) && (
-              <p className={`text-xs ${balance !== null && depositNum > balance ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {paid > 0 && `Ya abonó ${cop(paid)}`}
-                {paid > 0 && balance !== null && ' · '}
-                {balance !== null && `Saldo ${cop(Math.max(balance - depositNum, 0))}${depositNum > 0 ? ' después de este abono' : ''}`}
-              </p>
+              <div
+                className={`flex flex-wrap gap-x-3 gap-y-1 rounded-xl px-3 py-2 text-xs ${
+                  balance !== null && depositNum > balance ? 'bg-destructive/10 text-destructive' : 'bg-muted/60 text-muted-foreground'
+                }`}
+              >
+                {paid > 0 && (
+                  <span>
+                    Ya abonó <span className="font-semibold text-foreground tabular-nums">{cop(paid)}</span>
+                  </span>
+                )}
+                {balance !== null && (
+                  <span>
+                    Saldo{depositNum > 0 ? ' después del abono' : ''}{' '}
+                    <span className="font-semibold text-foreground tabular-nums">{cop(Math.max(balance - depositNum, 0))}</span>
+                  </span>
+                )}
+              </div>
             )}
-          </div>
+          </section>
 
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <DurationDial value={duration} onChange={setDuration} />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <span className="block text-xs font-medium text-muted-foreground">
-              Sesiones{sessionCount > 1 && ' · todas con la misma duración'}
-            </span>
-            <div role="radiogroup" aria-label="Número de sesiones" className="grid grid-cols-6 gap-1 rounded-xl bg-muted p-1">
+          {/* Duración y número de sesiones. */}
+          <section className="space-y-2">
+            <SectionLabel>Sesiones</SectionLabel>
+            <DurationDial value={duration} onChange={setDuration} />
+            <div role="radiogroup" aria-label="Número de sesiones" className="grid grid-cols-6 gap-1 rounded-xl bg-foreground/5 p-1 ring-1 ring-foreground/10">
               {Array.from({ length: MAX_SESSIONS }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
@@ -595,7 +625,7 @@ export function QuickScheduleDialog({
                   aria-checked={sessionCount === n}
                   onClick={() => setSessionCount(n)}
                   disabled={loading}
-                  className={`h-8 rounded-lg text-sm font-medium tabular-nums transition-colors ${
+                  className={`h-9 rounded-lg text-sm font-semibold tabular-nums transition-all duration-150 active:scale-95 ${
                     sessionCount === n ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -603,34 +633,86 @@ export function QuickScheduleDialog({
                 </button>
               ))}
             </div>
-            {extra.map((s, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="w-16 shrink-0 text-xs font-medium text-muted-foreground">Sesión {i + 2}</span>
-                <input
-                  type="date"
-                  value={s.date}
-                  onChange={(e) => setExtraAt(i, { date: e.target.value })}
-                  aria-label={`Día de la sesión ${i + 2}`}
-                  disabled={loading}
-                  className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
-                <input
-                  type="time"
-                  value={s.time}
-                  onChange={(e) => setExtraAt(i, { time: e.target.value })}
-                  aria-label={`Hora de la sesión ${i + 2}`}
-                  disabled={loading}
-                  className="h-10 w-28 shrink-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
-              </div>
-            ))}
-          </div>
 
-          <Button type="button" className="w-full" onClick={handleSubmit} disabled={loading}>
+            {extra.length > 0 && (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  Todas duran lo mismo. Cada una va una semana después de la anterior; puedes cambiar día y hora.
+                </p>
+                <ol className="relative space-y-2 before:absolute before:top-4 before:bottom-4 before:left-[0.9375rem] before:w-px before:bg-foreground/15">
+                  <li className="relative flex items-center gap-3">
+                    <StepDot n={1} active />
+                    <span className="flex h-10 min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 text-sm">
+                      <span className="truncate font-medium">{capitalize(shortDay(dayKey))}</span>
+                      <span className="shrink-0 font-semibold tabular-nums">{time || '—'}</span>
+                    </span>
+                  </li>
+                  {extra.map((s, i) => (
+                    <li key={i} className="relative flex items-center gap-3">
+                      <StepDot n={i + 2} />
+                      <input
+                        type="date"
+                        value={s.date}
+                        onChange={(e) => setExtraAt(i, { date: e.target.value })}
+                        aria-label={`Día de la sesión ${i + 2}`}
+                        disabled={loading}
+                        className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-background/40 px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      />
+                      <input
+                        type="time"
+                        value={s.time}
+                        onChange={(e) => setExtraAt(i, { time: e.target.value })}
+                        aria-label={`Hora de la sesión ${i + 2}`}
+                        disabled={loading}
+                        className="h-10 w-[8.5rem] shrink-0 rounded-xl border border-input bg-background/40 px-2 text-sm tabular-nums outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      />
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+          </section>
+        </div>
+
+        {/* Botón siempre a la vista, aunque haya muchas sesiones. */}
+        <div className="border-t border-foreground/10 bg-popover px-5 pt-3 pb-5">
+          <Button type="button" className="h-12 w-full rounded-2xl text-base font-semibold" onClick={handleSubmit} disabled={loading}>
             {loading ? 'Agendando…' : sessionCount > 1 ? `Agendar ${sessionCount} sesiones` : 'Agendar cita'}
           </Button>
+          {depositNum > 0 && !loading && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Con abono de <span className="font-semibold text-foreground tabular-nums">{cop(depositNum)}</span>
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+const FIELD =
+  'h-11 w-full rounded-xl border border-input bg-background/40 px-3.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h3 className="text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase">{children}</h3>
+}
+
+function StepDot({ n, active = false }: { n: number; active?: boolean }) {
+  return (
+    <span
+      className={`relative z-10 grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold tabular-nums ring-4 ring-popover ${
+        active ? 'bg-primary text-primary-foreground' : 'bg-foreground/15 text-foreground'
+      }`}
+    >
+      {n}
+    </span>
+  )
+}
+
+/** "2026-11-27" → "jue, 27 nov". */
+function shortDay(key: string) {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(y!, m! - 1, d!))
   )
 }
