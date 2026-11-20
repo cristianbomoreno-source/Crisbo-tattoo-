@@ -66,11 +66,11 @@ export async function writeReply(opts: {
     opts.confianza ? 'CON ESTA PERSONA HAY CONFIANZA: puedes usar "mk" de forma amistosa.' : 'Con esta persona todavía no hay confianza: no uses "mk".',
     `Hoy es ${today}. Nombre del contacto: ${opts.contactName || 'desconocido'}.`,
     opts.fromClub
-      ? 'Este chat llegó por el Club de Leales de la barbería: sigue las reglas de CLUB DE LEALES y no ofrezcas la promo de noviembre a menos que pregunte por ella.'
+      ? 'Este chat llegó por el Club de Leales de la barbería: sigue las reglas de CLUB DE LEALES y no ofrezcas la promo de diciembre a menos que pregunte por ella.'
       : opts.fromAd
         ? 'Este chat llegó por la pauta.'
         : 'Este chat no llegó por la pauta: no ofrezcas la promo a menos que pregunte por ella.',
-    opts.returningClient ? 'Esta persona ya es cliente del estudio: la promo de noviembre no le aplica (el Club de Leales sí).' : '',
+    opts.returningClient ? 'Esta persona ya es cliente del estudio: la promo de diciembre no le aplica (el Club de Leales sí).' : '',
   ]
     .filter(Boolean)
     .join('\n\n')

@@ -58,7 +58,7 @@ type TrialMessage = { direction: 'in' | 'out'; body: string }
 /** Conversa con el agente como si fueras un cliente. No envía nada a nadie. */
 function AdAgentTrial({ knowledge }: { knowledge: string }) {
   const [messages, setMessages] = useState<TrialMessage[]>([])
-  const [draft, setDraft] = useState('Hola Crisbo, quiero un CUPO de noviembre')
+  const [draft, setDraft] = useState('Hola Crisbo, quiero un CUPO de diciembre')
   const [handoff, setHandoff] = useState<string | null>(null)
   const [pending, start] = useTransition()
 

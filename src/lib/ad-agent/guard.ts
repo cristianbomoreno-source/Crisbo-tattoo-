@@ -20,7 +20,7 @@ export const MAX_AGENT_MESSAGES = 14
 export const REPLY_WINDOW_MS = 23 * 3_600_000
 
 /** Texto precargado de los anuncios: respaldo si Meta no manda el referral. */
-const AD_PHRASES = [/\bcupo de noviembre\b/, /\bquiero la promo\b/]
+const AD_PHRASES = [/\bcupo de (?:noviembre|diciembre)\b/, /\bquiero la promo\b/]
 /** Club de Leales de la barbería Diego Neira: esos chats también los toma el
  * agente aunque la persona ya sea cliente, con las reglas del club. */
 const CLUB_PHRASE = /\bclub de (?:los )?leales\b/
