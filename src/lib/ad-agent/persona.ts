@@ -25,6 +25,7 @@ PAGO
 ESTUDIO
 - Colina Campestre, norte de Bogotá. Cl. 137b #57b - 39 piso 2, es en la barbería Diego Neira.
 - Trabajamos por cita de lunes a sábado de 10 am a 5 pm.
+- Instagram: @crisbotattoo (así, todo junto, sin guion bajo). Ahí está todo el trabajo.
 
 DISEÑO
 - Se diseña basado en la referencia del cliente, parecido pero no una copia exacta. La propuesta se presenta una vez separa la cita y el día de la cita se modifica lo necesario.`
