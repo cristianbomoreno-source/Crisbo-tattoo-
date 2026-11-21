@@ -9,6 +9,7 @@ import { sendInstagramText, type IgAccountCredentials } from '@/lib/instagram/ap
 import { STUDIO_LOCATION, studioLocationText } from '@/lib/whatsapp-cloud/studio-location'
 import { loadAgenda, type Agenda } from './agenda'
 import { buildClientTone, buildExamples, hasConfidence, loadClientRows, loadExampleRows, type ExampleRow } from './examples'
+import { guessGender } from './gender'
 import { AGENT_MARK, HANDOFF_MARK, REPLY_WINDOW_MS, chatMode, checkReply, decide, isAdMessage, isClubMessage, type AgentMessage, type StoredChatMode } from './guard'
 import { writeReply, type AgentMedia } from './reply'
 import { acquireAdAgentLock, loadAdAgentSettings, loadChatModes, releaseAdAgentLock, saveChatModes } from './store'
@@ -165,6 +166,10 @@ async function handleConversation(admin: Admin, channel: Channel, studioId: stri
   const confianza = hasConfidence(clientRows)
   const lastOut = messages.findLastIndex((m) => m.direction === 'out')
   const pending = messages.slice(lastOut + 1).map((m) => m.body ?? '').join(' ')
+  const gender = guessGender(
+    conv.contact_name,
+    messages.filter((m) => m.direction === 'in').map((m) => m.body ?? '')
+  )
   const reply = checkReply(
     await writeReply({
       messages,
@@ -178,10 +183,12 @@ async function handleConversation(admin: Admin, channel: Channel, studioId: stri
       examples: buildExamples(ctx.history, pending, new Set([...ctx.personal, conv.id])),
       clientTone: buildClientTone(clientRows),
       confianza,
+      gender,
     }),
     ctx.knowledge,
     ctx.agenda.days,
-    confianza
+    confianza,
+    gender
   )
 
   for (const [i, body] of reply.bubbles.entries()) {

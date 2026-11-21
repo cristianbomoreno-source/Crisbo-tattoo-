@@ -10,6 +10,7 @@ import { loadAgenda } from '@/lib/ad-agent/agenda'
 import { buildExamples, hasConfidence, loadExampleRows } from '@/lib/ad-agent/examples'
 import { checkReply, firstUnanswered, type AgentMessage, type CheckedReply } from '@/lib/ad-agent/guard'
 import { writeReply } from '@/lib/ad-agent/reply'
+import { guessGender } from '@/lib/ad-agent/gender'
 import { loadAdAgentSettings, saveAdAgentSettings, saveChatModes } from '@/lib/ad-agent/store'
 
 const schema = z.object({ enabled: z.boolean(), knowledge: z.string().trim().min(20).max(6000) })
@@ -66,8 +67,9 @@ export async function tryAdAgent(input: unknown): Promise<Result<CheckedReply>> 
     const fromAd = messages.some((m) => /cupo/i.test(m.body ?? ''))
     const confianza = hasConfidence(messages)
     const fromClub = messages.some((m) => /club de (los )?leales/i.test(m.body ?? ''))
-    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, fromClub, agenda: agenda.text, examples, confianza })
-    return ok(checkReply(reply, knowledge, agenda.days, confianza))
+    const gender = guessGender(null, messages.filter((m) => m.direction === 'in').map((m) => m.body ?? ''))
+    const reply = await writeReply({ messages, media: [], knowledge, contactName: null, returningClient: false, fromAd, fromClub, agenda: agenda.text, examples, confianza, gender })
+    return ok(checkReply(reply, knowledge, agenda.days, confianza, gender))
   } catch (e) {
     return err('DB_ERROR', (e as Error).message)
   }

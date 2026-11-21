@@ -3,6 +3,7 @@ import { google } from '@ai-sdk/google'
 import { z } from 'zod'
 import { PERSONA } from './persona'
 import type { AgentMessage, ModelReply } from './guard'
+import type { Gender } from './gender'
 
 /** Con la llave del estudio va directo a Google; si no, por el AI Gateway.
  * Para probar otra IA solo se cambia esta línea. */
@@ -16,6 +17,15 @@ const Reply = z.object({
 })
 
 export type AgentMedia = { type: string; bytes: Uint8Array; mime: string }
+
+/** Cómo tratar a la persona según si es hombre o mujer (ver gender.ts). */
+const GENDER_RULE: Record<Gender | 'desconocido', string> = {
+  hombre: 'ESTA PERSONA ES HOMBRE: puedes decirle "bro", "mi bro" o "pa" como siempre.',
+  mujer:
+    'ESTA PERSONA ES MUJER: nunca le digas "bro", "mi bro", "pa", "parce" ni "hermano", y tampoco "amiga", "linda", "mi amor" ni "mi vida". Háblale sin apodos (si quieres, por su nombre) y escribe en femenino lo que se refiera a ella: "bienvenida", "interesada", "lista".',
+  desconocido:
+    'NO SE SABE SI ES HOMBRE O MUJER: no le digas "bro", "pa" ni ningún apodo, y evita palabras que cambien con el género ("interesado/a", "listo/a"). Si por lo que escribe queda claro, trátalo según eso.',
+}
 
 const LABELS: Record<string, string> = {
   image: '[foto]',
@@ -55,6 +65,7 @@ export async function writeReply(opts: {
   examples: string
   clientTone?: string
   confianza?: boolean
+  gender?: Gender | null
 }): Promise<ModelReply> {
   const today = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const system = [
@@ -65,6 +76,7 @@ export async function writeReply(opts: {
     opts.clientTone ? `ASÍ LE HABLAS A ESTA PERSONA (usa el mismo trato: tú o usted, apodos y qué tan cercano eres. Esto manda sobre el trato general. Solo sirve para copiar el trato: no son hechos de hoy, nunca saques de ahí horas, citas ni planes. [valor] y [hora] son datos ocultos: nunca los copies)\n${opts.clientTone}` : '',
     opts.confianza ? 'CON ESTA PERSONA HAY CONFIANZA: puedes usar "mk" de forma amistosa.' : 'Con esta persona todavía no hay confianza: no uses "mk".',
     `Hoy es ${today}. Nombre del contacto: ${opts.contactName || 'desconocido'}.`,
+    GENDER_RULE[opts.gender ?? 'desconocido'],
     opts.fromClub
       ? 'Este chat llegó por el Club de Leales de la barbería: sigue las reglas de CLUB DE LEALES y no ofrezcas la promo de diciembre a menos que pregunte por ella.'
       : opts.fromAd

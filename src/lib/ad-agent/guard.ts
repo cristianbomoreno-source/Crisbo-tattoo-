@@ -1,5 +1,6 @@
 import { normalizeText } from '@/lib/whatsapp-cloud/tattoo-keywords'
 import { datesIn } from './agenda'
+import { stripMaleVocatives, type Gender } from './gender'
 
 /**
  * Reglas del agente de la pauta, sin I/O. La marca de cada mensaje va en
@@ -126,9 +127,9 @@ const STUDIO_CLOSED_HOUR = /\ba las? (?:[6-9]|0[6-9])(?!\d)/
 /** Revisa la respuesta antes de enviarla. Si trae un valor que no está en la
  * información del estudio no sale: el cliente recibe un mensaje de espera y el
  * chat pasa a Crisbo. */
-export function checkReply(reply: ModelReply, knowledge: string, openDays?: Set<string>, confianza = false): CheckedReply {
+export function checkReply(reply: ModelReply, knowledge: string, openDays?: Set<string>, confianza = false, gender: Gender | null = null): CheckedReply {
   const bubbles = reply.mensajes
-    .map((b) => b.trim())
+    .map((b) => (gender === 'mujer' ? stripMaleVocatives(b) : b.trim()))
     .filter(Boolean)
     .slice(0, 3)
   const allowed = allowedAmounts(knowledge)
